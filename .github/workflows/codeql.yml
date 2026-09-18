@@ -14,8 +14,15 @@ name: "CodeQL Advanced"
 on:
   push:
     branches: [ "main" ]
+  # Scan every pull request targeting main. These are the default activity
+  # types, listed explicitly so that PR submission and later head-branch
+  # updates are auditable here: `opened` covers submission, `synchronize`
+  # covers new commits pushed to the PR, and `reopened` covers a PR brought
+  # back after being closed. A PR with a merge conflict does not trigger
+  # the workflow until the conflict is resolved.
   pull_request:
     branches: [ "main" ]
+    types: [opened, synchronize, reopened]
   schedule:
     - cron: '39 20 * * 4'
 
