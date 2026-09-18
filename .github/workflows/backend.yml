@@ -1,0 +1,70 @@
+name: Backend foundation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:check
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm test:unit
+      - run: pnpm test:contract
+      - run: pnpm scan:secrets
+      - run: pnpm scan:licenses
+      - run: pnpm audit --audit-level high
+      - run: pnpm build
+  runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [node, workerd]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:${{ matrix.profile }}
+
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      database:
+        image: postgres:18.6
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: hyperbug_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d hyperbug_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: hyperbug_test
+      HYPERBUG_TEST_POSTGRES: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run --project postgres

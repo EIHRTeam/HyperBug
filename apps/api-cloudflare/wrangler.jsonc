@@ -1,0 +1,30 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "hyperbug-api-local",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-16",
+  "compatibility_flags": ["nodejs_compat", "enable_request_signal"],
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "vars": {
+    "HYPERBUG_ENV": "local",
+    "ALLOWED_ORIGINS": "http://localhost:5173",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hyperbug-local",
+      "database_id": "00000000-0000-4000-8000-000000000001",
+      "migrations_dir": "../../packages/database/d1/migrations",
+    },
+  ],
+  "env": {
+    "staging": {
+      "name": "hyperbug-api-staging",
+      "vars": { "HYPERBUG_ENV": "staging" },
+    },
+    "production": {
+      "name": "hyperbug-api",
+      "vars": { "HYPERBUG_ENV": "production" },
+    },
+  },
+}

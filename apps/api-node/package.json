@@ -1,0 +1,12 @@
+{
+  "name": "@hyperbug/api-node",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@hyperbug/server": "workspace:*",
+    "@hyperbug/config": "workspace:*",
+    "@hyperbug/observability": "workspace:*",
+    "@elysia/node": "1.4.6"
+  }
+}
