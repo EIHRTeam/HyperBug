@@ -157,3 +157,9 @@ _MACOSX
 
 # Windows system
 desktop.ini
+
+# HyperBug local runtime state
+.wrangler/
+.dev.vars
+.dev.vars.*
+.local/

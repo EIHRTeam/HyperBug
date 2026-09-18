@@ -1,0 +1,19 @@
+packages:
+  - apps/*
+  - packages/*
+  - packages/database/*
+
+allowBuilds:
+  esbuild: true
+  workerd: true
+  sharp: false
+
+minimumReleaseAgeExclude:
+  - '@cloudflare/workers-types@5.20260917.1'
+  - miniflare@5.20260916.0-alpha
+  - wrangler@4.133.0
+
+strictPeerDependencies: true
+
+# Dependency installation is explicit; scripts never rewrite the frozen graph.
+verifyDepsBeforeRun: error
