@@ -35,10 +35,13 @@ Create a reproducible workspace and one shared HTTP application running in Worke
 - [x] **01.3c** Provide local PostgreSQL 18.x and an S3-compatible test service for later modules; record exact images and startup/cleanup instructions without committing credentials.
 - [x] **01.3d** Define telemetry ports for logs, metrics, traces, and correlation; implement initial runtime adapters with redaction and bounded metric cardinality.
 - [x] **01.3e** Consider an allowed-to-fail Elysia next compatibility lane separately from required stable checks.
+- [ ] **01.3f** Add static application security testing (SAST) for first-party source alongside the dependency/secret/license scans from 01.3b. Use the committed-workflow form rather than repository-settings-only configuration, keep the token scope job-local, and record the chosen query suite. Sec 127 lists only supply-chain scanning, so this extends the module beyond its original scope; it does not reopen 01.3b.
 
 ## Acceptance evidence
 
-[Local validation report](../evidence/01-foundation-validation.md). All checklist and verification items are complete. Commit `bcd417c` includes the workspace and single lockfile; its separate clean checkout and all four required hosted CI jobs pass, with 80 tests and no expected failures. See the linked report for immutable run evidence and the write-driven workerd disconnect constraint.
+[Local validation report](../evidence/01-foundation-validation.md). Every original checklist and verification item is complete. Commit `bcd417c` includes the workspace and single lockfile; its separate clean checkout and all four required hosted CI jobs pass, with 80 tests and no expected failures. See the linked report for immutable run evidence and the write-driven workerd disconnect constraint.
+
+`01.3f` and `01.V4` were added on 2026-09-18 as a post-completion security increment and are not yet satisfied, so this module currently has open work. Nothing in the change alters the foundation acceptance above; it only removes the previous claim that no item remains open.
 
 A clean checkout installs reproducibly and serves the same validated sample contract on both runtimes. Required CI lanes pass; incompatible runtime APIs are detected. No application implementation depends on the frontend.
 
@@ -47,6 +50,7 @@ A clean checkout installs reproducibly and serves the same validated sample cont
 - [x] **01.V1** Compare success, validation failure, missing route, oversized body, internal error, and request ID behavior across runtimes.
 - [x] **01.V2** Reject invalid production configuration and verify secrets/stack traces are absent from responses and logs.
 - [x] **01.V3** Confirm a deliberately forbidden import fails the boundary check.
+- [ ] **01.V4** Confirm the SAST workflow actually runs on `main` push and on pull-request open/update, and that its results reach the Security tab. Requires a real hosted run; local YAML validation alone cannot satisfy this case.
 
 ## Source coverage
 

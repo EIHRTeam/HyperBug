@@ -1,8 +1,8 @@
 # HyperBug master progress
 
-Last updated: 2026-09-18 (Markdown representation/transport/pagination direction recorded).
+Last updated: 2026-09-18 (CodeQL SAST increment opened against module 01).
 
-**Current state: module 00 is complete and G0 has passed; modules 01 and 02 are Complete with committed clean-checkout and hosted-CI evidence. Module 07 has an accepted content representation policy but no implementation.**
+**Current state: module 00 is complete and G0 has passed; module 02 is Complete with committed clean-checkout and hosted-CI evidence. Module 01 remains In progress because the post-completion SAST items 01.3f and 01.V4 are still open, although its original foundation acceptance was met. Module 07 has an accepted content representation policy but no implementation.**
 
 **Phase 01/02 implementation is complete; subsequent work follows the next eligible backend module when authorized.** Use the registered development skill; SPA work still waits for G1.
 
@@ -11,7 +11,7 @@ Last updated: 2026-09-18 (Markdown representation/transport/pagination direction
 | ID | Module | Status | Evidence and handoff |
 | --- | --- | --- | --- |
 | 00 | [Project maintenance and development guidance skills](modules/00-project-guidance-skills.md) | Complete | [Session record](progress/00-project-guidance-skills.md) |
-| 01 | [Backend workspace and runtime foundation](modules/01-backend-foundation.md) | Complete | [Session record](progress/01-backend-foundation.md) |
+| 01 | [Backend workspace and runtime foundation](modules/01-backend-foundation.md) | In progress | [Session record](progress/01-backend-foundation.md) |
 | 02 | [Public contracts, domain model, and database foundations](modules/02-contracts-and-data.md) | Complete | [Session record](progress/02-contracts-and-data.md) |
 | 03 | [Core security, cryptography, audit, and abuse controls](modules/03-security-foundation.md) | Not started | [Session record](progress/03-security-foundation.md) |
 | 04 | [Authentication, identity, and project authorization](modules/04-identity-and-access.md) | Not started | [Session record](progress/04-identity-and-access.md) |

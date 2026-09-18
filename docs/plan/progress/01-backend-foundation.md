@@ -6,15 +6,15 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Complete
+- Status: In progress
 - Delivery scope: MVP backend
 - Prerequisites: 00 complete; G0 passed.
 - Implementation started: Yes.
 - Completed implementation checklist IDs: 01.1a–01.1e, 01.2a–01.2f, 01.3a–01.3e, 01.V1–01.V3.
-- Active/next checklist group: Phase complete; later modules require their own authorized scope.
+- Active/next checklist group: 01.3f and 01.V4, the post-completion SAST increment added on 2026-09-18. The original foundation acceptance remains met; these two items are open, so the module is no longer Complete.
 - Last updated: 2026-09-18.
-- Blocking issues discovered: None remaining for phase acceptance. An earlier intermittent Node reset remains recorded; later local, clean-checkout and hosted runs pass.
-- Evidence: [Local foundation validation](../evidence/01-foundation-validation.md).
+- Blocking issues discovered: None remaining for the original phase acceptance. An earlier intermittent Node reset remains recorded; later local, clean-checkout and hosted runs pass.
+- Evidence: [Local foundation validation](../evidence/01-foundation-validation.md). The SAST increment has local configuration validation only; no hosted run exists yet.
 
 ## Step tracking
 
@@ -136,3 +136,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None remaining for these phases. Production/provider acceptance, feature authorization and SPA gates belong to later modules. Earlier Node reset has not recurred in the verified runs; no root-cause fix is claimed.
 - Next actions: Hand off the completed foundation; use the plan's next eligible backend module only when authorized. Preserve and extend the required checks.
 - Next-session cautions: Keep migrations immutable after shared application, use Node/Corepack pins and separate runtime processes, preserve unrelated uncommitted work, and never deploy fixture routes or treat repository integrity as authorization.
+
+### 2026-09-18 — CodeQL SAST increment and commit convention
+
+- Scope and checklist IDs: 01.3f and 01.V4, both added by this session. Also anchored the repository commit convention in `AGENTS.md`. No previously completed item was reopened or re-scoped.
+- Progress: Added CodeQL code scanning for first-party JavaScript/TypeScript as the SAST layer that `01.3b` does not cover. `01.3b` already satisfies SECURITY §127 with dependency (`pnpm audit`), secret (`scan:secrets`), and license (`scan:licenses`) scanning, and §127 itself does not request static analysis, so this is deliberately an extension of the module rather than a corrected omission. Both new items are left unchecked: the workflow has not run on a hosted runner.
+- Change summary: Added `.github/workflows/codeql.yml` from the GitHub advanced-setup template with the language matrix populated as `javascript-typescript` / `build-mode: none`; the template referenced `matrix.build-mode` without defining the key, so the value had to be set explicitly. Exposed `opened`, `synchronize`, and `reopened` under the `pull_request` trigger; these are already the defaults, so behavior is unchanged and the intent is now auditable in the file. Left the default query suite in place with `security-extended` still commented out. In `backend.yml`, `actions/checkout` and `actions/setup-node` moved from v4 to v7, and `node-version` changed from the exact `24.21.0` to `24`. Recorded the Conventional Commits rule in `AGENTS.md` since no commit convention existed in `EXECUTION.md` or any hook.
+- Files/artifacts: `.github/workflows/codeql.yml` (new); `.github/workflows/backend.yml`; `AGENTS.md`; `docs/plan/modules/01-backend-foundation.md`; `docs/plan/progress/01-backend-foundation.md`; `docs/plan/PROGRESS.md`. Commits on `feat/v1`: `8655cee` (commit convention), `1b6e54e` (workflow action bump), `873b718` (CodeQL workflow), `336ef86` (explicit PR trigger).
+- Verification: YAML parsed and asserted for triggers, matrix, and schedule; every `matrix.*` reference resolves to a defined key; cron `39 20 * * 4` has five valid fields; `actions/checkout@v7`, `actions/setup-node@v7`, and `github/codeql-action@v4` tags all resolve through the GitHub API. Live repository state read with `gh`: `code-scanning/default-setup` reports `not-configured` with query suite `default`; `branches/main/protection` reports `Branch not protected`; the repository is public and `default_workflow_permissions` is `write`. The four commit subjects match the newly documented pattern. **Not run:** no push or pull request occurred, so no hosted CodeQL analysis exists and `01.V4` is unsatisfied. Fork pull request behavior for `security-events: write` was not reproduced and is not claimed.
+- Decisions and deviations: Chose a committed workflow file over repositories-settings-only default setup so the configuration is reviewable and versioned and so the extra `security-events: write` scope stays job-local; `backend.yml` keeps its `permissions: contents: read` posture and was not modified for this. Kept CodeQL advisory by leaving `main` unprotected at the user's direction, so findings will not block merges. Kept the default query suite until real findings are reviewed. This session was driven by Context7 lookups against `/github/docs`, `/websites/github_en_code-security`, and `/websites/github_en_actions`; the CodeQL query-suite and default-activity-type statements come from those retrievals rather than memory.
+- Blockers/open questions: `01.V4` cannot close without a hosted run, which needs the workflow pushed to `main` or opened as a pull request targeting it. `01.3f` stays open on the same evidence. Whether the CodeQL job needs an explicit top-level `permissions: contents: read` remains an open hardening question, because this repository's default workflow permission is `write`.
+- Next actions: Push to `main` or open a pull request targeting it, then confirm the CodeQL job runs and its results reach the Security tab, which closes `01.V4` and `01.3f`. Afterwards consider requiring the CodeQL check on `main` and reviewing whether `security-extended` is worth its lower precision.
+- Next-session cautions: The triggers are limited to `main`, so pushes to `feat/v1` do not run CodeQL. `main` has no branch protection, so scanning is advisory only. `node-version: 24` in `backend.yml` is now a floating minor rather than the previous exact pin, bounded by `engines.node` in `package.json`. The default query suite is active and `security-extended` remains commented out. `.github/**` and `AGENTS.md` fall outside the paths covered by `pnpm format:check` and Biome, so those checks do not guard them. No ADR and no `TOOLCHAIN.md` lookup record were written for this increment.
