@@ -13,6 +13,16 @@ Module 00 has now created and validated the [development](../../.agents/skills/h
 3. Execute the earliest unfinished eligible checklist item. Read the applicable registered repository guidance skill.
 4. Record progress, changed files, verification, and next-session cautions in every affected module's progress document during and at the end of every session.
 
+## Specification index
+
+Module 07 policies and their implementation items live in these English specifications rather than in this plan:
+
+| Specification | Scope | Owner |
+| --- | --- | --- |
+| [MARKDOWN-POLICY](../MARKDOWN-POLICY.md) | Canonical Markdown storage, representation/transport kinds, determinism, derivation and pagination contract | 07.1 |
+| [ADR 0003](../decisions/0003-markdown-representation-and-pagination.md) | Accepted direction for Markdown representation, transport and pagination | 07 |
+| [DATA-MODEL](../DATA-MODEL.md), [API-CONVENTIONS](../API-CONVENTIONS.md), [API-OPERATIONS](../API-OPERATIONS.md) | Records, public contract, cursor rules and permission matrix | 02, 06–10 |
+
 ## Module index
 
 | ID | Detailed plan | Delivery scope | Session record |

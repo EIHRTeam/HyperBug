@@ -20,7 +20,7 @@ Deliver the whole public feedback and staff triage journey through the accepted 
 
 ### Step 12.2 — Implement Issue submission and discussion
 
-- [ ] **12.2a** Build template selection, every supported Issue Form field, accessible labels/help, native constraints, server-error mapping, and deterministic Markdown preview through the centralized sanitizer.
+- [ ] **12.2a** Build template selection, every supported Issue Form field, accessible labels/help, native constraints, server-error mapping, and deterministic Markdown preview from the server-derived safe representation under the centralized content policy (no client-side Markdown re-parsing or HTML sink). See [MARKDOWN-POLICY](../../MARKDOWN-POLICY.md).
 - [ ] **12.2b** Apply the retrieved forms/error-announcement guidance: validation after interaction, coordinated ARIA, actionable error summary/focus, paste/autofill support, and IME-safe submission.
 - [ ] **12.2c** Implement upload intent → direct PUT/multipart → finalize with progress/cancel/retry, quota/type errors, expired capability recovery, and safe attachment preview/download.
 - [ ] **12.2d** Handle stale form versions, network failures, expired login, and duplicate submission using backend idempotency. Define a privacy-aware draft policy separate from token storage.
@@ -42,11 +42,11 @@ Deliver the whole public feedback and staff triage journey through the accepted 
 - [ ] **12.V2** Cover search/share/back navigation, all form fields, upload retry, create/comment/react, triage, close/reopen, and timeline permalinks.
 - [ ] **12.V3** Test expired/revoked auth, stale edits, offline/network failure, duplicate retries, disabled plugins, API errors, and permission changes.
 - [ ] **12.V4** Check WCAG 2.2 AA targets with automated checks plus manual keyboard/screen-reader, touch, 200% zoom, contrast, and reduced-motion testing.
-- [ ] **12.V5** Re-run the Markdown corpus through actual browser rendering and test isolated dangerous-file downloads and CSP.
+- [ ] **12.V5** Re-run the Markdown corpus through actual browser rendering of the transported representation and test isolated dangerous-file downloads and CSP; confirm the SPA performs no Markdown parsing, sanitization or HTML-sink rendering of user content.
 - [ ] **12.V6** Record list/detail/create/admin bundles, LCP/INP/CLS, long tasks, request counts, and large timeline behavior; investigate regressions without weakening functionality.
 
 ## Source coverage
 
 PRODUCT §§6–24, 29; ARCHITECTURE §§12–21, 39; SECURITY §§46–66, 99–105, 132–141; PERFORMANCE §§25–32, 62–77.
-See [Modern web research and adaptations](../SOURCES.md#modern-web-guidance).
+See [Modern web research and adaptations](../SOURCES.md#modern-web-guidance), [MARKDOWN-POLICY](../../MARKDOWN-POLICY.md), and [ADR 0003](../../decisions/0003-markdown-representation-and-pagination.md).
 

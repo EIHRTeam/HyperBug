@@ -18,6 +18,10 @@ Complete safe public content submission and direct uploads across R2 and S3, wit
 - [ ] **07.1c** Strip dangerous elements/attributes/schemes, unapproved SVG/MathML, and DOM-clobbering vectors; bound body size, nesting, and processing time.
 - [ ] **07.1d** Choose click-to-load external images initially unless a secure image proxy is justified; document referrer/privacy behavior and attachment URL handling.
 - [ ] **07.1e** Include sanitizer policy version in any rendered cache key and define invalidation/re-rendering after a policy update.
+- [ ] **07.1f** Implement the representation and transport policy: raw Markdown is the only stored body form, the safe element tree is derived per request and never persisted, and sanitized HTML exists only for non-browser consumers (email, unfurl, webhook, export). Never persist a rendered HTML string, element tree or other derived artifact. Follow [ADR 0003](../../decisions/0003-markdown-representation-and-pagination.md) and [MARKDOWN-POLICY](../../MARKDOWN-POLICY.md).
+- [ ] **07.1g** Compute the bounded plain-text projection at write time, store it with its projection version, and serve list previews, search text and notification bodies from it instead of re-deriving per request. Keep read paths from re-deriving text, and define the bounded backfill for a projection version change.
+- [ ] **07.1h** Make derivation byte-deterministic for a given body, representation kind and policy version: no request-, clock-, host- or environment-dependent output. Derive representation ETags from the item revision, kind and policy version, and keep cursors independent of rendering and policy version.
+- [ ] **07.1i** Enforce the pagination and derivation-cost contract: list rows exclude full body representations and carry at most the stored plain-text preview, timeline entries paginate under the existing cursor contract, per-request derivation is bounded by the page limit rather than discussion length, and the maximum accepted body renders within the endpoint deadline and the recorded derivation budget.
 
 ### Step 07.2 — Implement forms and templates
 
@@ -46,8 +50,11 @@ Complete safe public content submission and direct uploads across R2 and S3, wit
 - [ ] **07.V3** Run PUT/GET/HEAD/DELETE, presigned PUT/GET, metadata, multipart/abort, content type, checksums where used, and large streaming tests against R2 and the selected S3 test service.
 - [ ] **07.V4** Reject expired/replayed intents, wrong-project uploads, quota races, misleading MIME/size, and post-finalize overwrite attempts; verify cleanup can safely resume.
 - [ ] **07.V5** Confirm API responses/logs expose neither signing credentials nor reusable private download capabilities unnecessarily.
+- [ ] **07.V6** Verify the representation contract end to end: stored rows, outbox payloads and logs contain no rendered HTML, element tree or other derived artifact; identical Markdown and policy version produce byte-identical output across repeated requests, both profiles and concurrent derivation; and each response carries the representation the ADR assigns to that consumer.
+- [ ] **07.V7** Record derivation-cost and pagination evidence: maximum accepted body and full-page derivation cost on both runtimes with fixture size, versions, method and thresholds; no unbounded list derivation; and cursor traversal across a policy version change that produces no stale representation after revalidation.
 
 ## Source coverage
 
-PRODUCT §§17–22; TECH-STACK §§14–23, 49; SECURITY §§53–66, 99–109, 142–145, 152–153; PERFORMANCE §§35–38, 71–72.
+PRODUCT §§17–22; TECH-STACK §§14–23, 49; SECURITY §§53–66, 99–109, 142–145, 152–153; PERFORMANCE §§5, 19–21, 29–30, 35–38, 71–73, 76.
+See [ADR 0003](../../decisions/0003-markdown-representation-and-pagination.md) and [MARKDOWN-POLICY](../../MARKDOWN-POLICY.md).
 

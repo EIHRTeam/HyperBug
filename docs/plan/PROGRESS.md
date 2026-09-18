@@ -1,8 +1,8 @@
 # HyperBug master progress
 
-Last updated: 2026-09-18.
+Last updated: 2026-09-18 (Markdown representation/transport/pagination direction recorded).
 
-**Current state: module 00 is complete and G0 has passed; modules 01 and 02 are Complete with committed clean-checkout and hosted-CI evidence.**
+**Current state: module 00 is complete and G0 has passed; modules 01 and 02 are Complete with committed clean-checkout and hosted-CI evidence. Module 07 has an accepted content representation policy but no implementation.**
 
 **Phase 01/02 implementation is complete; subsequent work follows the next eligible backend module when authorized.** Use the registered development skill; SPA work still waits for G1.
 
@@ -38,6 +38,7 @@ All 16 module 00 guidance checklist items are complete. Module 01 has reproducib
 | G1 — Backend accepted | Module 10.G1–10.G5 on both profiles | Not passed; SPA development must wait |
 | G2 — MVP accepted | Module 13.G1–13.G5 including deployment/recovery evidence | Not passed |
 | Post-MVP backend gates | Backend acceptance before UI in 14, 15, and each provider in 16 | Not started |
+| Markdown representation policy | Module 07 policy specification and ADR; implementation, determinism and derivation-cost evidence not yet produced | Direction accepted ([ADR 0003](../decisions/0003-markdown-representation-and-pagination.md), [MARKDOWN-POLICY](../MARKDOWN-POLICY.md)); unproven |
 
 ## Current decisions and open implementation questions
 
@@ -46,6 +47,7 @@ All 16 module 00 guidance checklist items are complete. Module 01 has reproducib
 - English is the default for all new project documentation; historical initial-architecture inputs remain unchanged.
 - Exact dependency versions/adapter names, data model concurrency details, auth-library suitability, no-email account recovery, upload immutability, and measured performance budgets remain implementation tasks. See [SOURCES](SOURCES.md#decisions-to-close-during-execution).
 - No deployed service, tested cloud account, live provider compatibility, or performance result is claimed by this planning package.
+- Content representation is fixed as direction, not as proven implementation: raw Markdown is the only stored body form, the safe representation is derived per request, and the plain-text projection is the only persisted derivative. See [ADR 0003](../decisions/0003-markdown-representation-and-pagination.md) and [MARKDOWN-POLICY](../MARKDOWN-POLICY.md).
 
 ## Planning deliverables
 
@@ -83,9 +85,22 @@ These checkboxes track this documentation task only, not product implementation.
 - Next action: Begin 01.1a in the next backend implementation task.
 - Next-session cautions: G0 proves guidance readiness, not backend readiness. Preserve existing unrelated workspace changes; no package scripts or production resources exist from this task.
 
+### 2026-09-18 — Markdown representation, transport and pagination direction
+
+- Scope and checklist IDs: Cross-module design/policy session owned by module 07 (`07.1a`, `07.1f`–`07.1i`, `07.V6`–`07.V7`), with a downstream contract adjustment in module 12.2a/12.V5. No implementation checklist item was completed. Module 07 moved from `Not started` to `In progress (specification and policy only)`.
+- Progress: Resolved the requested content-design question. The server stores raw Markdown only and derives every rendered representation per request; sanitized HTML exists solely for non-browser consumers and is never transported to the SPA; the plain-text projection is the single persisted derivative because search, notifications, list previews and moderation views consume it; derivation stays bounded through the existing cursor pagination contract. Persisting derived HTML/tree and transporting HTML as the client's only body were evaluated and rejected with recorded reasons.
+- Change summary: Added the content policy specification (`docs/MARKDOWN-POLICY.md`) and the ADR that the security reference requires for pagination/derived-data architecture. Extended module 07 with four implementation items and two acceptance items, aligned module 12 to render the server-derived representation without client parsing or an HTML sink, added coverage rows, and recorded the direction in this file without changing any initial-architecture source.
+- Files/artifacts: `docs/MARKDOWN-POLICY.md` (new); `docs/decisions/0003-markdown-representation-and-pagination.md` (new); `docs/plan/modules/07-content-and-attachments.md`; `docs/plan/modules/12-web-product-workflows.md`; `docs/plan/COVERAGE.md`; `docs/plan/README.md` (specification index); `docs/plan/progress/07-content-and-attachments.md`; this file.
+- Verification: Documentation-only session. `python3 /tmp/hyperbug-validate-docs.py` (one-off, not committed) scanned 71 Markdown files and checked 390 relative links and anchors, 17/17 plan-progress pairs, 322 unique checklist IDs, checklist/status consistency for every module, presence of the policy and ADR artifacts, required session-entry fields, markdown-hard-break-aware whitespace, final newlines and dash usage in the new documents. Result: `RESULT: PASS`. No application test, build, runtime check or deployment ran because no application behavior changed.
+- Decisions and deviations: Adopted [ADR 0003](../decisions/0003-markdown-representation-and-pagination.md). It refines PRODUCT §17, SECURITY §§53–66 and PERFORMANCE §§20–21/76 without relaxing them; a measured failure of the derivation budget must return as an ADR amendment rather than an undocumented derived cache. No normative baseline text was modified.
+- Blockers/open questions: The derivation budget is unmeasured, so 07.1i and 07.V7 stay open until both profiles are benchmarked on real fixtures; per-request derivation is accepted direction but unproven. The Issue Form YAML scope question from the earlier 2026-09-18 review remains open and unaffected.
+- Next actions: Add the concrete allowlist and initial `content-policy` version identifier to `docs/MARKDOWN-POLICY.md`; implement 07.1b–07.1c; then implement and measure 07.1f–07.1i on both profiles. Module 01/02 work in progress is unchanged.
+- Next-session cautions: Do not introduce a persisted rendered body, a rendered-body cache or a client-side sanitizer while implementing 07.1. Representation validators must include the kind and policy version, stored cursors must survive a policy change, and the read path must not re-derive the plain-text projection.
+
 ## Update rule
 
 Update this file whenever module/gate status, scope, or major blockers change. Every affected session must also append its detailed handoff to the relevant per-module progress record, even if master status remains unchanged.
+
 
 ### 2026-09-18 — Phase 01/02 implementation and local acceptance evidence
 

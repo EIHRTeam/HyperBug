@@ -22,6 +22,8 @@ This map assigns implementation and verification ownership to the source require
 | Labels, assignees, types, milestones, close/reopen | 06 | 06, 10, 12 |
 | Unified timeline and immutable security audit | 02–03, 06 | 06, 10, 12 |
 | GFM, limited raw HTML, centralized sanitization | 07 | 07, 10, 12 |
+| Markdown representation/transport policy, plain-text projection, derivation cost | 07 | 07, 10, 12 |
+| Bounded content pagination and cursor stability across policy versions | 02, 07 | 07, 10, 12 |
 | Issue Templates and all structured Issue Form field types | 07 | 07, 10, 12 |
 | R2/S3 direct upload, multipart, quarantine, isolated media | 07 | 07, 09–10, 12–13 |
 | Search language/AST, filters, sort, FTS5/GIN, authorization | 08 | 08–10, 12 |
@@ -50,7 +52,7 @@ This map assigns implementation and verification ownership to the source require
 | 04 | Auth protocol, principals/assurance, role/permission APIs | 05–16 | Cross-site and object-level checks |
 | 05 | Manifest/SDK/hooks, capability and event contracts | 06–09, 11, 16 | Plugin compatibility tests |
 | 06 | Issue/comment/taxonomy services and events | 07–09, 12, 14–16 | API journey and timeline consistency |
-| 07 | Forms, sanitizer, BlobStore, upload/cleanup handlers | 09–12, 15 | Direct-upload, cleanup and corpus tests |
+| 07 | Forms, sanitizer, safe representation, plain-text projection, BlobStore, upload/cleanup handlers | 09–12, 15 | Direct-upload, cleanup, corpus, representation-determinism and derivation-cost tests |
 | 08 | AST/compiler and version-aware index handlers | 09–12, 14 | Search parity and stale-index checks |
 | 09 | Dispatch, retry/DLQ, workflow state, scheduled cleanup | 10, 13, 15–16 | Crash/replay/recovery tests |
 | 10 | Accepted backend, OpenAPI, public API client | 11–12 | G1 must pass before SPA work |

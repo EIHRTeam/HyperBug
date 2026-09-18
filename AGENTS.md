@@ -32,10 +32,6 @@ Use the skills' review and testing references for changes to security, persisten
 <!-- context7 -->
 Use Context7 MCP whenever the task asks about a library, framework, SDK, API, CLI tool, or cloud service, including syntax, configuration, migration, library-specific debugging, setup, and CLI usage. Do this even for familiar tools. Prefer it over general web search for library documentation.
 
-1. Start with `resolve-library-id` using the library name and the full question, unless the user supplies an exact `/org/project` library ID.
-2. Select the best match by name, relevance, snippet coverage, source reputation, and benchmark score. Use version-specific IDs when applicable; retry a poor match with a better name/query.
-3. Call `query-docs` with the selected ID and the full question, then base implementation/API decisions on the retrieved documentation.
-
 Do not trigger this solely for refactoring, scripts from scratch, business-logic debugging, code review, or general programming concepts. If those tasks introduce an actual library/API question, look up that question. Record lookup dates, references, and remaining gaps. If the tool or coverage is unavailable, document the limitation and consult official sources or a focused runtime experiment; do not invent documentation or claim an unperformed lookup.
 <!-- context7 -->
 
