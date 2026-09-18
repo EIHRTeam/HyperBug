@@ -1,22 +1,15 @@
 import { afterAll, beforeAll, it, expect } from 'vitest';
-import { build } from 'esbuild';
+import { execFileSync } from 'node:child_process';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
+import { workerModules } from '../fixtures/worker-modules.ts';
 let mf: Miniflare;
 beforeAll(async () => {
-  await build({
-    entryPoints: ['apps/api-cloudflare/src/index.ts'],
-    outfile: 'dist/worker-entry-test.mjs',
-    bundle: true,
-    platform: 'neutral',
-    mainFields: ['browser', 'module', 'main'],
-    format: 'esm',
-    target: 'es2023',
-    conditions: ['workerd', 'worker', 'browser'],
-    external: ['node:*', 'cloudflare:*'],
-  });
+  // This lane runs the deployed Cloudflare artifact, not a fixture, so it also
+  // proves that the production Worker starts from its chunked output.
+  execFileSync(process.execPath, ['tooling/build.ts', '--target=cloudflare']);
   mf = new Miniflare(
     convertV4MiniflareOptions({
-      modules: [{ type: 'ESModule', path: 'dist/worker-entry-test.mjs' }],
+      modules: workerModules('dist/cloudflare'),
       compatibilityDate: '2026-09-16',
       compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
       bindings: {

@@ -1,11 +1,19 @@
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
 import { createServer } from 'node:net';
 import { once } from 'node:events';
+import { readdirSync } from 'node:fs';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 let processUnderTest: ChildProcess;
 let base: string;
 beforeAll(async () => {
-  execFileSync(process.execPath, ['tooling/build.mjs']);
+  execFileSync(process.execPath, ['tooling/build.ts', '--target=node']);
+  // The Node entry must stay a single file: `package.json` points at
+  // `dist/node/index.mjs` for a real deployment. Rolldown only splits on
+  // dynamic imports, so more than one emitted module means the entry gained
+  // one and the start command would need a directory instead.
+  expect(
+    readdirSync('dist/node').filter((name) => name.endsWith('.mjs')),
+  ).toEqual(['index.mjs']);
   const reservation = createServer();
   reservation.listen(0, '127.0.0.1');
   await once(reservation, 'listening');

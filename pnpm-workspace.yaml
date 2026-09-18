@@ -4,6 +4,9 @@ packages:
   - packages/database/*
 
 allowBuilds:
+  # Still needed transitively: drizzle-kit (esbuild + @esbuild-kit), wrangler,
+  # wrangler's vite/esbuild path and tsx all build on esbuild. The direct
+  # build-time dependency is now tsdown/rolldown.
   esbuild: true
   workerd: true
   sharp: false
@@ -12,6 +15,11 @@ minimumReleaseAgeExclude:
   - '@cloudflare/workers-types@5.20260917.1'
   - miniflare@5.20260916.0-alpha
   - wrangler@4.133.0
+  # Pre-1.0 tooling adopted deliberately: tsdown 0.23.0 bundles the runtime
+  # entry points and oxfmt 0.68.0 is the formatter. Both are reviewed in
+  # docs/development/TOOLCHAIN.md and recorded in ADR 0004.
+  - tsdown@0.23.0
+  - oxfmt@0.68.0
 
 strictPeerDependencies: true
 

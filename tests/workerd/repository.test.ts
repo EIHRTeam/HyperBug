@@ -1,8 +1,9 @@
-import { build } from 'esbuild';
+import { execFileSync } from 'node:child_process';
 import type { IssueRepository } from '@hyperbug/application';
 import { mvpSchemaContract } from '../fixtures/mvp-schema-contract.ts';
 import { afterAll, beforeAll, it, expect } from 'vitest';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
+import { workerModules } from '../fixtures/worker-modules.ts';
 import { createD1Repository } from '@hyperbug/database-d1';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
@@ -20,19 +21,10 @@ let mf: Miniflare;
 let harness: RepositoryHarness;
 let measuredQueries: () => string[];
 beforeAll(async () => {
-  await build({
-    entryPoints: ['tests/fixtures/database-worker.ts'],
-    outfile: 'dist/database-worker.mjs',
-    bundle: true,
-    platform: 'neutral',
-    format: 'esm',
-    target: 'es2023',
-    conditions: ['workerd', 'worker', 'browser'],
-    external: ['cloudflare:*', 'node:*'],
-  });
+  execFileSync(process.execPath, ['tooling/build.ts', '--target=fixtures']);
   mf = new Miniflare(
     convertV4MiniflareOptions({
-      modules: [{ type: 'ESModule', path: 'dist/database-worker.mjs' }],
+      modules: workerModules('dist/database-worker'),
       compatibilityDate: '2026-09-16',
       d1Databases: ['DB', 'FRESH', 'INVALID'],
     }),
