@@ -23,8 +23,11 @@ on:
   pull_request:
     branches: [ "main" ]
     types: [opened, synchronize, reopened]
-  schedule:
-    - cron: '39 20 * * 4'
+  # No `schedule` trigger by choice: analysis runs only when a commit
+  # arrives. CodeQL ships new and updated queries over time, so a dormant
+  # branch or a newly disclosed vulnerability class will not surface until
+  # the next push or pull request. Re-add a cron here to restore periodic
+  # scanning.
 
 jobs:
   analyze:
