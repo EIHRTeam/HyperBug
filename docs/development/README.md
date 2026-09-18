@@ -1,6 +1,6 @@
 # Backend development
 
-Use Node 24.21.0 (`fnm exec --using=24.21.0 <command>` on this workstation) and pnpm 11.26.0. The existing `.node-version` selects major 24; `package.json` also rejects other majors. See [toolchain evidence](TOOLCHAIN.md) and [runtime decision](../decisions/0001-runtime-foundation.md).
+Use Node 24.21.0 (`fnm exec --using=24.21.0 <command>` on this workstation) and pnpm 11.26.0. The existing `.node-version` selects major 24; `package.json` also rejects other majors. See [toolchain evidence](TOOLCHAIN.md) and the [runtime decision](../decisions/0001-runtime-foundation.md) with the [toolchain migration decision](../decisions/0004-oxc-toolchain-migration.md).
 
 ```sh
 corepack enable
@@ -15,7 +15,9 @@ pnpm test:integration
 pnpm build
 ```
 
-Use `pnpm format` to format implementation files. Historical architecture documents are intentionally outside automatic formatting. Use `pnpm scan:secrets`, `pnpm scan:licenses` and `pnpm audit --audit-level high` for supply-chain checks. The repository signature scan is an initial known-pattern check, not a claim that every credential format can be detected; hosted secret scanning should remain enabled.
+Use `pnpm format` to format files (`oxfmt`). Historical architecture and planning documents under `docs/**` and the guidance skills under `.agents/**` are intentionally outside automatic formatting; `AGENTS.md`, the READMEs, the workspace configuration and `.github/**` are inside it. `pnpm lint` runs `oxlint` with `--deny-warnings` and then the import-boundary checker in `tooling/check-boundaries.mjs`; both must stay, because the linter matches import specifiers while the script resolves them to owning packages and reads package manifests. Type checking is `tsc` alone: `oxlint`'s type-aware mode is not adopted. Use `pnpm scan:secrets`, `pnpm scan:licenses` and `pnpm audit --audit-level high` for supply-chain checks. The repository signature scan is an initial known-pattern check, not a claim that every credential format can be detected; hosted secret scanning should remain enabled.
+
+`pnpm build` runs `tooling/build.ts`, which rebuilds `dist/` for the Node entry, the Cloudflare entry and the workerd test fixtures. Use `node tooling/build.ts --target=node|cloudflare|fixtures` to build one target. The Cloudflare output is a chunked bundle, so a lane that loads it in workerd must declare every emitted module rather than one entry file; `tests/fixtures/worker-modules.ts` does that. Test fixtures are emitted as single files, which is deliberate.
 
 ## Local servers
 
@@ -44,7 +46,7 @@ Packages export source TypeScript explicitly during development. Builds bundle w
 
 ## Verification boundaries
 
-Node tests open an actual HTTP listener. workerd tests bundle a fixture and dispatch through Miniflare. These are local runtime evidence, not a cloud deployment. No SPA, auth implementation or later feature module is started. Phase 10 still owns backend acceptance before SPA work.
+Node tests open an actual HTTP listener. workerd tests dispatch prebuilt bundles through Miniflare: the production Cloudflare artifact for the entry and HTTP proof fixtures, and a separate D1 fixture for the repository suite. These are local runtime evidence, not a cloud deployment. No SPA, auth implementation or later feature module is started. Phase 10 still owns backend acceptance before SPA work.
 
 The stable Elysia lane is required. A separate next lane remains optional and deferred; the currently published next is a different major (2.0 beta), so updating it in a required lane would violate the chosen baseline.
 

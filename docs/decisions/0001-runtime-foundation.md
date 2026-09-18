@@ -27,6 +27,8 @@ Node and workerd do not have identical cancellation transports. Test local signa
 
 The default framework and both production profiles are preserved. Compiler/lint tooling must support TypeScript 7; Biome avoids typescript-eslint's currently incompatible compiler peer range. The allowed-to-fail Elysia next lane may detect future changes but cannot replace stable required checks.
 
+The tooling named in this paragraph was superseded on 2026-09-18 by [ADR 0004](0004-oxc-toolchain-migration.md), which replaces Biome, Prettier and esbuild with `oxlint`, `oxfmt` and `tsdown`/`rolldown`. The TypeScript 7 constraint it records still holds and is now satisfied without a compiler peer dependency.
+
 ## Independent module 02 work
 
 Module 02.1 domain/API specifications and 02.2–02.3 persistence contracts, schema generation and database suites do not depend on transport disconnect notification or a hosted CI run. G0 is satisfied, the shared HTTP behavior/type/build foundation is proven, and PostgreSQL 18.6 is locally usable. This exception allowed those bounded items to proceed while the module 01 verification gap was still open. This follows the plan's documented dependency-analysis exception; it did not itself declare module 01 complete, open G1, or authorize product endpoints/SPA work. Module 01 subsequently completed its own runtime and hosted-CI acceptance, as recorded in the foundation evidence.

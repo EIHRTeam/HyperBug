@@ -1,6 +1,6 @@
 # Module 01 foundation validation
 
-Date: 2026-09-18. Environment: macOS arm64, Node 24.21.0, pnpm 11.26.0, TypeScript 7.0.2, Elysia 1.4.30 / `@elysia/node` 1.4.6, Vitest 5.0.1, Wrangler 4.133.0, Miniflare 5.20260916.0-alpha / workerd 1.20260916.1. Exact choices, lookup references and reviewed development dependencies are in [TOOLCHAIN](../../development/TOOLCHAIN.md).
+Date: 2026-09-18. Environment: macOS arm64, Node 24.21.0, pnpm 11.26.0, TypeScript 7.0.2, Elysia 1.4.30 / `@elysia/node` 1.4.6, Vitest 5.0.1, Wrangler 4.133.0, Miniflare 5.20260916.0-alpha / workerd 1.20260916.1. Bundling, linting and formatting moved to tsdown 0.23.0/rolldown 1.2.9, oxlint 1.83.0 and oxfmt 0.68.0 later the same day ([ADR 0004](../../decisions/0004-oxc-toolchain-migration.md)); the runs recorded below that predate the migration used esbuild/Biome/Prettier. Exact choices, lookup references and reviewed development dependencies are in [TOOLCHAIN](../../development/TOOLCHAIN.md).
 
 ## Verified local outcomes
 
@@ -12,6 +12,8 @@ Date: 2026-09-18. Environment: macOS arm64, Node 24.21.0, pnpm 11.26.0, TypeScri
 - The latest local suite has **80 passing tests and no expected failures**: unit/contract 10; Node 10; workerd 36; PostgreSQL 24. An earlier isolated source snapshot with no node_modules installed from the frozen lockfile/offline package cache and repeated typechecks, both builds and its then-current suite successfully (77 ordinary passes plus the formerly expected disconnect failure, before two database regressions were added). The exact committed revision `bcd417c9dc8b19a3476a4d7f0b4645d827ae742d` then passed an offline frozen install, both typechecks/builds and all 80 tests from a separate clean Git worktree. Its 15 foundation documents passed 98 local link/anchor checks without the unrelated uncommitted policy documents. These are local clean-checkout results; hosted results are recorded separately below.
 
 The dependency audit reports one moderate Drizzle Kit legacy esbuild-loader advisory. No high advisory remains, no audit exclusion was added, and the vulnerable development-server API is unused. License exceptions are limited to reviewed development-only package/version combinations. The signature scanner is bounded known-pattern evidence, not proof that arbitrary secrets cannot exist.
+
+After the Oxc toolchain migration the same local matrix was re-run on the current tree with **81 passing tests and no expected failures** (unit/contract 11 because the oxlint configuration gained a negative-fixture test; Node 10; workerd 36; PostgreSQL 24), plus `typecheck`, `lint`, `format:check`, `build`, `db:check`, `scan:secrets`, `scan:licenses` and the high-severity audit gate. Those are local results on this workstation; the hosted runs recorded below were produced with the replaced toolchain and are not evidence for the new one until CI re-runs.
 
 ## Disconnect verification
 

@@ -4,6 +4,7 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=flat-square)](LICENSE)
 <!-- [![Status: stable](https://img.shields.io/badge/status-stable-brightgreen.svg?style=flat-square)](docs/plan/PROGRESS.md) -->
+
 [![Node.js 24 LTS](https://img.shields.io/badge/node-24%20LTS-339933.svg?style=flat-square)](.node-version)
 <!-- [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md) -->
 
@@ -20,10 +21,10 @@
 
 #### 后端
 
-| Profile | 运行时 | 数据库 | 对象存储 | 队列与工作流 |
-| --- | --- | --- | --- | --- |
-| A — Cloudflare | Cloudflare Workers | D1 | R2 | Queues、Workflows |
-| B — 自托管 | Node.js 24 LTS | PostgreSQL 18.x | S3 兼容 | Graphile Worker |
+| Profile        | 运行时             | 数据库          | 对象存储 | 队列与工作流      |
+| -------------- | ------------------ | --------------- | -------- | ----------------- |
+| A — Cloudflare | Cloudflare Workers | D1              | R2       | Queues、Workflows |
+| B — 自托管     | Node.js 24 LTS     | PostgreSQL 18.x | S3 兼容  | Graphile Worker   |
 
 #### 前端
 

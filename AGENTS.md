@@ -30,6 +30,7 @@ Use the skills' review and testing references for changes to security, persisten
 ## Current documentation lookup
 
 <!-- context7 -->
+
 Use Context7 MCP whenever the task asks about a library, framework, SDK, API, CLI tool, or cloud service, including syntax, configuration, migration, library-specific debugging, setup, and CLI usage. Do this even for familiar tools. Prefer it over general web search for library documentation.
 
 Do not trigger this solely for refactoring, scripts from scratch, business-logic debugging, code review, or general programming concepts. If those tasks introduce an actual library/API question, look up that question. Record lookup dates, references, and remaining gaps. If the tool or coverage is unavailable, document the limitation and consult official sources or a focused runtime experiment; do not invent documentation or claim an unperformed lookup.

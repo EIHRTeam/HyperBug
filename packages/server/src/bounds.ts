@@ -59,6 +59,9 @@ export async function readBoundedJson(
         const chunks: Uint8Array[] = [];
         let length = 0;
         while (true) {
+          // A ReadableStreamDefaultReader must be read one chunk at a time; the
+          // bound is enforced per chunk as it arrives.
+          // eslint-disable-next-line no-await-in-loop
           const { done, value } = await reader.read();
           if (signal.aborted)
             throw new RequestFailure(

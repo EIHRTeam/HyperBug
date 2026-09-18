@@ -1,7 +1,11 @@
 export type PrincipalKind = 'user' | 'staff';
 export type IssueState = 'open' | 'closed';
 export type CloseReason =
-  'completed' | 'not_planned' | 'duplicate' | 'invalid' | 'cannot_reproduce';
+  | 'completed'
+  | 'not_planned'
+  | 'duplicate'
+  | 'invalid'
+  | 'cannot_reproduce';
 export interface Issue {
   id: string;
   projectId: string;
