@@ -25,3 +25,9 @@ strictPeerDependencies: true
 
 # Dependency installation is explicit; scripts never rewrite the frozen graph.
 verifyDepsBeforeRun: error
+
+# VitePress 1.6.4 still declares Vite 5. Scope its development-server security
+# fix to the documentation toolchain; plugin-vue 5.2.4 supports Vite 6.
+# See docs/development/DOCUMENTATION.md for the compatibility checks.
+overrides:
+  'vitepress@1.6.4>vite': 6.4.3

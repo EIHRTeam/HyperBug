@@ -32,7 +32,10 @@
     "db:check": "drizzle-kit check --config packages/database/d1/drizzle.config.ts && drizzle-kit check --config packages/database/postgres/drizzle.config.ts",
     "db:migrate:d1:local": "wrangler d1 migrations apply hyperbug-local --local --config apps/api-cloudflare/wrangler.jsonc",
     "db:migrate:postgres": "node tooling/migrate-postgres.ts",
-    "test:database": "vitest run --project workerd tests/workerd/repository.test.ts && corepack pnpm test:postgres"
+    "test:database": "vitest run --project workerd tests/workerd/repository.test.ts && corepack pnpm test:postgres",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260917.1",
@@ -57,6 +60,7 @@
     "tsdown": "0.23.0",
     "tsx": "4.23.13",
     "typescript": "7.0.2",
+    "vitepress": "1.6.4",
     "vitest": "5.0.1",
     "wrangler": "4.133.0"
   }

@@ -17,7 +17,7 @@ Every session must append a concise entry to each affected module's progress doc
 
 Create and validate guidance skills before application implementation (G0). Backend acceptance in module 10 (G1) precedes product SPA development. Each post-MVP increment also completes backend acceptance before its UI. Follow the current plan gates; a request for one module does not authorize implementing the rest of the roadmap.
 
-Write all new project documentation and substantive documentation updates in English, including skills, plans, progress logs, specifications, ADRs, and runbooks. Existing initial-architecture documents remain historical inputs unless translation is separately requested. Product localization is a separate concern.
+Maintain human-facing reader documentation under `docs/site/` in both English and Simplified Chinese, with matching page paths and synchronized content. Reader-facing repository entry points may also be bilingual. Write engineering documentation and substantive updates in English, including skills, plans, progress logs, specifications, ADRs, and internal runbooks. Existing initial-architecture documents remain historical inputs unless translation is separately requested. Product localization is a separate concern.
 
 ## Architecture and policy sources
 
@@ -44,7 +44,7 @@ Use commands actually defined by the repository and installed tooling. A command
 
 ## Commit messages
 
-Write every commit message in English using [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): description`, with the scope optional and the description in the imperative mood, lower case, and without a trailing period.
+Write every commit message in English using Conventional Commits: `type(scope): description`, with the scope optional and the description in the imperative mood, lower case, and without a trailing period.
 
 Choose the type that matches the change: `feat`, `fix`, `docs`, `test`, `ci`, `refactor`, `perf`, `build`, `chore`, or `revert`. Keep each commit to one coherent change, and use the message body to explain rationale and verification when the subject alone does not.
 
