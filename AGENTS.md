@@ -40,3 +40,13 @@ For HTML/CSS/client-side JavaScript work, use the available modern-web-guidance 
 ## Commands and evidence
 
 Use commands actually defined by the repository and installed tooling. A command proposed in a plan is not proof that it exists. Exact source version examples are snapshots; verify availability before installation. Record unavailable checks and keep dependent gates incomplete rather than replacing required evidence with mock-only results.
+
+## Commit messages
+
+Write every commit message in English using [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): description`, with the scope optional and the description in the imperative mood, lower case, and without a trailing period.
+
+Choose the type that matches the change: `feat`, `fix`, `docs`, `test`, `ci`, `refactor`, `perf`, `build`, `chore`, or `revert`. Keep each commit to one coherent change, and use the message body to explain rationale and verification when the subject alone does not.
+
+Record a breaking change with `!` after the type or scope and a `BREAKING CHANGE:` footer. Reference an issue in the footer as `Refs: #123`.
+
+No commit-msg hook enforces this convention yet, so it depends on author discipline during review.
