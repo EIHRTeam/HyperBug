@@ -38,7 +38,7 @@ Create a reproducible workspace and one shared HTTP application running in Worke
 
 ## Acceptance evidence
 
-[Local validation report](../evidence/01-foundation-validation.md). The local runtime suite passes without expected failures. The workspace and single lockfile are included in the scoped implementation commit; required hosted CI has not run, so the module remains In progress.
+[Local validation report](../evidence/01-foundation-validation.md). All checklist and verification items are complete. Commit `bcd417c` includes the workspace and single lockfile; its separate clean checkout and all four required hosted CI jobs pass, with 80 tests and no expected failures. See the linked report for immutable run evidence and the write-driven workerd disconnect constraint.
 
 A clean checkout installs reproducibly and serves the same validated sample contract on both runtimes. Required CI lanes pass; incompatible runtime APIs are detected. No application implementation depends on the frontend.
 

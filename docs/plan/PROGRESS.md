@@ -2,16 +2,16 @@
 
 Last updated: 2026-09-18.
 
-**Current state: module 00 is complete and G0 has passed; modules 01 and 02 have implemented and locally verified backend foundations; module 01 hosted-CI acceptance remains open.**
+**Current state: module 00 is complete and G0 has passed; modules 01 and 02 are Complete with committed clean-checkout and hosted-CI evidence.**
 
-**Current implementation action: close module 01 hosted-CI acceptance while retaining the completed module 02 acceptance evidence.** Use the registered development skill; SPA work still waits for G1.
+**Phase 01/02 implementation is complete; subsequent work follows the next eligible backend module when authorized.** Use the registered development skill; SPA work still waits for G1.
 
 ## Module status
 
 | ID | Module | Status | Evidence and handoff |
 | --- | --- | --- | --- |
 | 00 | [Project maintenance and development guidance skills](modules/00-project-guidance-skills.md) | Complete | [Session record](progress/00-project-guidance-skills.md) |
-| 01 | [Backend workspace and runtime foundation](modules/01-backend-foundation.md) | In progress | [Session record](progress/01-backend-foundation.md) |
+| 01 | [Backend workspace and runtime foundation](modules/01-backend-foundation.md) | Complete | [Session record](progress/01-backend-foundation.md) |
 | 02 | [Public contracts, domain model, and database foundations](modules/02-contracts-and-data.md) | Complete | [Session record](progress/02-contracts-and-data.md) |
 | 03 | [Core security, cryptography, audit, and abuse controls](modules/03-security-foundation.md) | Not started | [Session record](progress/03-security-foundation.md) |
 | 04 | [Authentication, identity, and project authorization](modules/04-identity-and-access.md) | Not started | [Session record](progress/04-identity-and-access.md) |
@@ -28,7 +28,7 @@ Last updated: 2026-09-18.
 | 15 | [Post-MVP subscriptions, notifications, bulk actions, and data jobs](modules/15-notifications-and-bulk-jobs.md) | Not started | [Session record](progress/15-notifications-and-bulk-jobs.md) |
 | 16 | [Post-MVP official plugins and isolated integration APIs](modules/16-official-integrations.md) | Not started | [Session record](progress/16-official-integrations.md) |
 
-All 16 module 00 guidance checklist items are complete. Module 01 has reproducible builds and runtime/local-service tests; module 02 has 25-table dual schemas, atomic repositories, upgrade tests and measured query plans. Evidence-backed checkboxes are tracked in each detailed plan. Remaining hosted-CI acceptance does not open G1; modules 03–16 have no completed implementation gate.
+All 16 module 00 guidance checklist items are complete. Module 01 has reproducible builds and runtime/local-service tests; module 02 has 25-table dual schemas, atomic repositories, upgrade tests and measured query plans. Evidence-backed checkboxes are tracked in each detailed plan. Foundation acceptance does not open G1; modules 03–16 have no completed implementation gate.
 
 ## Gate status
 
@@ -93,3 +93,10 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Verification: Frozen installs, both type configurations/builds, lint/format/boundaries, scans, migration histories and 77 ordinary tests passed in an earlier isolated source copy. The latest current-tree suite passes 80 tests without expected failures after the write-driven workerd disconnect diagnosis and two database regressions; one earlier intermittent Node connection reset remains recorded. See [01 evidence](evidence/01-foundation-validation.md) and [02 evidence](evidence/02-data-foundation-validation.md).
 - Decisions/blockers: No security baseline or delivery gate was relaxed. Hosted CI and live deployments are unverified. Preserve the independently authored module 07 content-policy direction; list queries now exclude full Markdown bodies.
 - Next action: Complete phase-specific checklist/documentation audit and resolve remaining module 01 acceptance gaps. Per-module records contain exact artifacts, commands and cautions.
+
+### 2026-09-18 — Phase 01/02 completion
+
+- Progress: Modules 01 and 02 are Complete. Workspace/lockfile and dual-runtime/data foundations are committed as `bcd417c` and published on `codex/phase-01-02`.
+- Verification: A separate clean committed checkout and [hosted run 35347249101](https://github.com/EIHRTeam/HyperBug/actions/runs/35347249101) passed the required quality, Node, workerd and PostgreSQL checks; 80 tests pass with no expected failures. Per-phase evidence maps every checklist ID to its implementation and verification.
+- Decisions/blockers: The idle-stream disconnect observation is explained by write-driven workerd detection; bounded heartbeats prove incoming abort/cleanup. No phase acceptance blockers remain. G1 stays closed; no later feature endpoints, SPA, merge or deployment occurred.
+- Next action: Hand off the completed phases. Subsequent authorized work follows the next eligible backend module and existing gates. Preserve unrelated root/content-policy/install-script work.

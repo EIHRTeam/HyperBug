@@ -1,7 +1,7 @@
 # 02 — Public contracts, domain model, and database foundations
 
 Phase: MVP backend  
-Prerequisites: 01 complete by default; independent persistence work proceeded under [ADR 0001](../../decisions/0001-runtime-foundation.md) while its acceptance was still open.
+Prerequisites: 01 complete. Independent persistence work initially proceeded under [ADR 0001](../../decisions/0001-runtime-foundation.md) while its acceptance was still open.
 Progress: [Session log and current status](../progress/02-contracts-and-data.md)  
 Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 

@@ -6,14 +6,14 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress
+- Status: Complete
 - Delivery scope: MVP backend
 - Prerequisites: 00 complete; G0 passed.
 - Implementation started: Yes.
 - Completed implementation checklist IDs: 01.1a–01.1e, 01.2a–01.2f, 01.3a–01.3e, 01.V1–01.V3.
-- Active/next checklist group: Hosted CI acceptance.
+- Active/next checklist group: Phase complete; later modules require their own authorized scope.
 - Last updated: 2026-09-18.
-- Blocking issues discovered: Hosted CI unverified; one earlier intermittent Node reset remains recorded.
+- Blocking issues discovered: None remaining for phase acceptance. An earlier intermittent Node reset remains recorded; later local, clean-checkout and hosted runs pass.
 - Evidence: [Local foundation validation](../evidence/01-foundation-validation.md).
 
 ## Step tracking
@@ -22,7 +22,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | --- | --- | --- | --- |
 | 01.1 | Resolve the toolchain and package boundaries | Complete | [Validation](../evidence/01-foundation-validation.md) |
 | 01.2 | Prove shared Elysia runtime behavior | Complete | [Validation](../evidence/01-foundation-validation.md) |
-| 01.3 | Make development and CI repeatable | In progress | [Validation](../evidence/01-foundation-validation.md) |
+| 01.3 | Make development and CI repeatable | Complete | [Validation](../evidence/01-foundation-validation.md) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
@@ -30,7 +30,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 1. Retain the scoped workspace/lockfile commit for 01.1c, preserving unrelated concurrent work.
 2. Retain the passing heartbeat/request-signal proof for 01.2f.
-3. Run required hosted CI on the coherent branch and retain its immutable run/commit evidence before accepting module 01.
+3. Retain the passing hosted run and extend these checks as later authorized backend modules are implemented.
 
 ## Next-session cautions
 
@@ -124,3 +124,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Required hosted CI and committed-lockfile evidence still pending at this checkpoint.
 - Next actions: Create the scoped implementation commit, verify it independently of unrelated changes, and run the required hosted CI lanes.
 - Next-session cautions: Preserve concurrent root documentation, install script and module 07/12 policy changes. G1 remains closed. Do not deploy proof routes or infer live provider compatibility from local tests.
+
+### 2026-09-18 — Committed clean-checkout and hosted acceptance
+
+- Scope and checklist IDs: Final completion audit of modules 01 and 02, including 01.1c and required CI acceptance.
+- Progress: Both phases are Complete. Implementation commit `bcd417c9dc8b19a3476a4d7f0b4645d827ae742d` is published on `codex/phase-01-02`; no merge or deployment was performed.
+- Change summary: Retained a scoped commit, independently validated its clean checkout, ran hosted quality/runtime/database jobs, and mapped every checklist ID to inspected evidence. Updated current status and handoff documentation; historical failed observations remain visible.
+- Files/artifacts: Module 01/02 plans, progress and evidence reports; development guides, ADR 0001 and public specifications. [Hosted run 35347249101](https://github.com/EIHRTeam/HyperBug/actions/runs/35347249101). Unrelated root and content-policy work is excluded from the commits.
+- Verification: Committed clean checkout passed offline frozen installation, both typechecks/builds and 80 tests; 15 foundation documents passed 98 local links/anchors. Hosted quality, Node, workerd and PostgreSQL jobs all passed with the same 80 tests and no expected failures. Hosted PostgreSQL 18.6 image/version was confirmed in the log. Quality passed migration histories, lint/format, scans and audit high gate; one reviewed moderate dev-tool advisory remains.
+- Decisions and deviations: No baseline/gate relaxation. Workerd disconnect proof includes heartbeats and explicitly observes Request.signal. The required matrix passes on macOS locally and Linux in CI. Optional Elysia next remains deferred. G1 stays closed.
+- Blockers/open questions: None remaining for these phases. Production/provider acceptance, feature authorization and SPA gates belong to later modules. Earlier Node reset has not recurred in the verified runs; no root-cause fix is claimed.
+- Next actions: Hand off the completed foundation; use the plan's next eligible backend module only when authorized. Preserve and extend the required checks.
+- Next-session cautions: Keep migrations immutable after shared application, use Node/Corepack pins and separate runtime processes, preserve unrelated uncommitted work, and never deploy fixture routes or treat repository integrity as authorization.

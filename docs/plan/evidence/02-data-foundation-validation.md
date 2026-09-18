@@ -23,7 +23,9 @@ Latest results: **25 D1 tests and 24 PostgreSQL tests pass**. The profile-specif
 - fresh 25-table databases; populated frozen-0000 upgrade through 0004; rejected 0001 upgrade preserves old schema/content, then succeeds after explicit fixture repair;
 - PostgreSQL migration-runner no-op reapplication and checksum mismatch rejection; Wrangler local D1 application of all five migrations and no-op reapplication.
 
-`pnpm db:check` passed for both histories. Reviewed SQLite corrections and restore/forward-fix procedures are in [MIGRATIONS](../../development/MIGRATIONS.md). No production data or live database was changed. The repository suite and builds also passed from an isolated source copy installed from the frozen lockfile and local package cache.
+`pnpm db:check` passed for both histories. Reviewed SQLite corrections and restore/forward-fix procedures are in [MIGRATIONS](../../development/MIGRATIONS.md). No production data or live database was changed. The exact committed revision `bcd417c9dc8b19a3476a4d7f0b4645d827ae742d` also passed both builds and all 80 tests (including these 49 database tests) from a separate clean Git worktree installed offline from the frozen lockfile.
+
+Hosted [run 35347249101](https://github.com/EIHRTeam/HyperBug/actions/runs/35347249101) then passed the same D1/workerd and PostgreSQL suites on Linux, including the actual PostgreSQL 18.6 service container. All four required foundation jobs passed for commit `bcd417c9dc8b19a3476a4d7f0b4645d827ae742d`.
 
 ## Query evidence
 
@@ -33,3 +35,27 @@ The repeatable fixture inserts 4,000 Issues in two projects (2,000 each), 25% op
 - [PostgreSQL query plans](02-postgres-query-plans.json): EXPLAIN ANALYZE/BUFFERS JSON, including actual rows and execution time.
 
 Tests regenerate `.local/evidence/*-query-plans.json`; the linked files are this session's recorded observations. These are repository query-shape measurements on warm local databases, without product authorization/rendering layers or network service load. They are not production latency budgets or SLA claims. Later modules must measure bounded relation hydration and full authorized endpoints before G1.
+
+## Requirement-to-evidence audit
+
+| Checklist IDs | Inspected evidence and result |
+| --- | --- |
+| 02.1a | DATA-MODEL and domain types define IDs, local numbers, UTC precision, enums/nullability, actors, revisions and retention. |
+| 02.1b | Both schemas/migration histories contain all 25 physical MVP mappings; shared schema cases exercise membership, identity, taxonomy, history, reactions, forms, uploads and plugin scope. |
+| 02.1c | DATA-MODEL reserves relations, subscriptions, views and jobs without speculative physical tables. |
+| 02.1d | API-CONVENTIONS assigns REST/OpenAPI ownership and records DTO/error/date/ID/concurrency/idempotency/deprecation rules. |
+| 02.1e | Application cursor validation and pagination tests prove bounded defaults/maxima, version/resource/filter/project binding and equal-time tie-breakers. |
+| 02.1f | API-OPERATIONS assigns every resource family, actor/role permissions, read/moderation and cross-project rules before routes exist. |
+| 02.2a | Application interfaces expose explicit complete create/edit intents and domain outcomes; infrastructure dependencies remain in dialect adapters and pass boundary checks. |
+| 02.2b | Separate Drizzle schemas, journals and migrations 0000–0004 pass history checks and fresh/populated-upgrade tests. |
+| 02.2c | Shared schema and repository tests exercise project/number uniqueness, principal/composite references, target uniqueness and state constraints in both dialects. |
+| 02.2d | Atomic outcome tests inspect aggregate, required audit/timeline, outbox and receipt; forced failures prove no partial commit or consumed number. |
+| 02.2e | Concurrent stale-write and duplicate-retry cases prove revisions, operation/scope/payload/expiry matching and original safe replay results. |
+| 02.2f | Both recorded 4,000-Issue query plans use intended indexes and one query per read; DATA-MODEL specifies bounded hydration and future FTS5/tsvector mappings. |
+| 02.2g | Shared write-then-read cases pass against writer bindings; D1 replication remains absent/disabled with future acceptance explicitly required. |
+| 02.3a | The same repository/schema fixtures execute adapter code in actual local workerd/D1 and PostgreSQL 18.6. |
+| 02.3b | Empty databases and frozen previous-schema fixtures migrate successfully; invalid upgrade rolls back, preserves old state and succeeds after explicit repair. |
+| 02.3c | Both suites include concurrent allocation, rollback, retries, stale edits and cursor boundaries with equal timestamps. |
+| 02.3d | Recorded dialect plans/query counts come from deterministic larger fixtures; MIGRATIONS documents recovery, forward fixes and non-reversible boundaries. |
+
+Acceptance review preserves feature authorization/state-machine/rendering work for its owning modules. It does not use repository integrity tests to claim those later behaviors are complete.

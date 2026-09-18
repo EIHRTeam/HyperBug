@@ -8,12 +8,12 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 - Status: Complete
 - Delivery scope: MVP backend
-- Prerequisites: G0 passed; independent persistence work accepted in ADR 0001 while module 01 runtime/hosted-CI gaps remain open.
+- Prerequisites: G0 passed and module 01 complete. Initial independent work followed ADR 0001 before module 01 acceptance finished.
 - Implementation started: Yes.
 - Completed implementation checklist IDs: 02.1a–02.1f, 02.2a–02.2g, 02.3a–02.3d.
-- Active/next checklist group: Phase complete; module 01 acceptance and G1 remain separate.
+- Active/next checklist group: Phase complete; G1 remains separate.
 - Last updated: 2026-09-18.
-- Blocking issues discovered: No unresolved module 02 local acceptance blocker; module 01 has separate recorded gaps.
+- Blocking issues discovered: None for module 02 acceptance.
 - Evidence: [Both-profile acceptance and query evidence](../evidence/02-data-foundation-validation.md).
 
 ## Step tracking
@@ -29,7 +29,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 ## Next actions
 
 1. Consume the completed contracts and migration workflow in later authorized modules; do not start them solely because this phase is complete.
-2. Keep module 01 acceptance and G1 closed until their own evidence passes.
+2. Keep G1 closed until module 10 completes its own evidence.
 3. Extend the same repository/schema suites when subsequent modules add validators, permissions or persistence behavior.
 
 ## Next-session cautions
@@ -112,3 +112,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: No new module 02 blocker; hosted CI is tracked by module 01.
 - Next actions: Commit the bounded foundation changes and verify hosted checks against that revision.
 - Next-session cautions: Preserve unrelated policy work and immutable migration histories. Repository integrity does not replace authorization; no later feature endpoints or SPA are authorized by this completion.
+
+### 2026-09-18 — Committed clean-checkout and hosted acceptance
+
+- Scope and checklist IDs: Final completion audit of modules 01 and 02, including 01.1c and required CI acceptance.
+- Progress: Both phases are Complete. Implementation commit `bcd417c9dc8b19a3476a4d7f0b4645d827ae742d` is published on `codex/phase-01-02`; no merge or deployment was performed.
+- Change summary: Retained a scoped commit, independently validated its clean checkout, ran hosted quality/runtime/database jobs, and mapped every checklist ID to inspected evidence. Updated current status and handoff documentation; historical failed observations remain visible.
+- Files/artifacts: Module 01/02 plans, progress and evidence reports; development guides, ADR 0001 and public specifications. [Hosted run 35347249101](https://github.com/EIHRTeam/HyperBug/actions/runs/35347249101). Unrelated root and content-policy work is excluded from the commits.
+- Verification: Committed clean checkout passed offline frozen installation, both typechecks/builds and 80 tests; 15 foundation documents passed 98 local links/anchors. Hosted quality, Node, workerd and PostgreSQL jobs all passed with the same 80 tests and no expected failures. Hosted PostgreSQL 18.6 image/version was confirmed in the log. Quality passed migration histories, lint/format, scans and audit high gate; one reviewed moderate dev-tool advisory remains.
+- Decisions and deviations: No baseline/gate relaxation. Workerd disconnect proof includes heartbeats and explicitly observes Request.signal. The required matrix passes on macOS locally and Linux in CI. Optional Elysia next remains deferred. G1 stays closed.
+- Blockers/open questions: None remaining for these phases. Production/provider acceptance, feature authorization and SPA gates belong to later modules. Earlier Node reset has not recurred in the verified runs; no root-cause fix is claimed.
+- Next actions: Hand off the completed foundation; use the plan's next eligible backend module only when authorized. Preserve and extend the required checks.
+- Next-session cautions: Keep migrations immutable after shared application, use Node/Corepack pins and separate runtime processes, preserve unrelated uncommitted work, and never deploy fixture routes or treat repository integrity as authorization.
