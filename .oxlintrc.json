@@ -1,0 +1,217 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "ts": "always",
+        "tsx": "always",
+        "js": "always"
+      }
+    ],
+    "no-await-in-loop": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["packages/domain/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**"],
+                "message": "packages/domain is a leaf package: no imports outside itself and no external dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/contracts/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**", "!@sinclair/typebox"],
+                "message": "packages/contracts may depend only on @sinclair/typebox, so a client can read the contract without Elysia."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/security/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**"],
+                "message": "packages/security is a leaf package: no imports outside itself and no external dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/config/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**"],
+                "message": "packages/config is a leaf package: no imports outside itself and no external dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/observability/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**"],
+                "message": "packages/observability is a leaf package: no imports outside itself and no external dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/application/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@hyperbug/domain",
+                  "!@hyperbug/contracts"
+                ],
+                "message": "packages/application may import only @hyperbug/domain and @hyperbug/contracts."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/testing/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@hyperbug/contracts",
+                  "!@hyperbug/domain",
+                  "!@hyperbug/application"
+                ],
+                "message": "packages/testing may import only @hyperbug/contracts, @hyperbug/domain and @hyperbug/application."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/database/d1/**/*.ts",
+        "packages/database/postgres/**/*.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@hyperbug/domain",
+                  "!@hyperbug/application",
+                  "!drizzle-orm",
+                  "!drizzle-orm/**",
+                  "!drizzle-kit",
+                  "!pg",
+                  "!@cloudflare/workers-types"
+                ],
+                "message": "database adapters may import only @hyperbug/domain, @hyperbug/application and their own persistence libraries; persistence types stay out of the domain."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/server/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@hyperbug/application",
+                  "!@hyperbug/domain",
+                  "!@hyperbug/contracts",
+                  "!@hyperbug/security",
+                  "!@hyperbug/config",
+                  "!@hyperbug/observability",
+                  "!elysia",
+                  "!elysia/**"
+                ],
+                "message": "packages/server may import only the shared server-side packages and Elysia."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "tests/**/*.ts",
+        "tooling/**/*.ts",
+        "tooling/**/*.mjs",
+        "packages/database/**/migrations/**/*.ts"
+      ],
+      "rules": {
+        "no-await-in-loop": "off"
+      }
+    }
+  ]
+}

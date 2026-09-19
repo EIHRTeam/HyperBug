@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperBug Maintenance"
+  short_description: "Maintain HyperBug dependencies, data, and releases"
+  default_prompt: "Use $hyperbug-maintenance to perform the requested HyperBug maintenance change, verify its impact, and update progress."
