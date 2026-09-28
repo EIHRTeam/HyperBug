@@ -9,12 +9,12 @@
 <br>
 [![TypeScript 7](https://img.shields.io/badge/TypeScript-7-blue.svg?logo=typescript&style=flat-square&logoColor=white)](https://www.typescriptlang.org/)
 [![Elysia 1.4](docs/assets/Elysia-1.4-E34798.svg)](https://elysiajs.com/)
-[![Node.js 24 LTS](https://img.shields.io/badge/Node.js-24%20LTS-339933.svg?style=flat-square&logo=node.js&logoColor=white)](.node-version)
+[![Node.js 24](https://img.shields.io/badge/Node.js-24-339933.svg?style=flat-square&logo=node.js&logoColor=white)](.node-version)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-yellow.svg?style=flat-square&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
-[![PostgreSQL 18](https://img.shields.io/badge/PostgreSQL-18.x-blue.svg?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![PostgreSQL 18](https://img.shields.io/badge/PostgreSQL-18-blue.svg?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
 > [!IMPORTANT]
-> This project is still in early development stage and may contain major defects or breaking changes. Do not use it in production.
+> This project is still in early development stage and may contain major defects or breaking changes. DO NOT use in production.
 
 A modern, lightweight, cloud-native, serverless-first, GitHub Issues-style issue-tracking platform.
 
@@ -30,10 +30,10 @@ Read the [English documentation](docs/site/index.md) or [简体中文文档](doc
 
 #### Backend
 
-| Profile         | Runtime            | Database        | Object storage | Queue and workflow |
-| --------------- | ------------------ | --------------- | -------------- | ------------------ |
-| A — Cloudflare  | Cloudflare Workers | D1              | R2             | Queues, Workflows  |
-| B — Self-hosted | Node.js 24 LTS     | PostgreSQL 18.x | S3-compatible  | Graphile Worker    |
+| Profile         | Runtime            | Database      | Object storage | Queue and workflow |
+| --------------- | ------------------ | ------------- | -------------- | ------------------ |
+| A — Cloudflare  | Cloudflare Workers | D1            | R2             | Queues, Workflows  |
+| B — Self-hosted | Node.js 24         | PostgreSQL 18 | S3-compatible  | Graphile Worker    |
 
 #### Frontend
 
@@ -78,6 +78,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 ### Copyright
 
 Copyright © 2026 Endfield Industries Human Resource Team, licensed under the [Apache License Version 2.0](LICENSE).
+
+### Disclaimer
+
+Neither this project nor the Endfield Industries Human Resource Team (EIHRTeam) has any affiliation or relationship, financial or otherwise, with Shanghai Hypergryph Network Technology Co., Ltd., Gryph Frontier Pte. Ltd., or any of their respective affiliates or related entities.
 
 ### Other
 
