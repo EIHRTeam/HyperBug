@@ -8,6 +8,7 @@ import { checkSensitiveRateAdmission } from '../../packages/security/src/abuse-k
 import { configureNodeAbuseAdmission } from '../../apps/api-node/src/abuse-admission.ts';
 import { verifyAccountPassword } from '../../packages/server/src/account-password.ts';
 import { abuseKeyFixture } from '../fixtures/abuse-key-fixture.ts';
+import { postgresNodeBindings } from '../fixtures/postgres-node-bindings.ts';
 import {
   keyRegistryContract,
   keyRegistryBoundsContract,
@@ -235,19 +236,14 @@ it('replaces a verified User credential only at its current revision on PostgreS
   ).toBe(false);
 });
 
-it('uses the Node root private key and Unix-socket PostgreSQL counter together', async () => {
-  const socketDirectory = process.env.PGHOST;
-  const databaseName = process.env.PGDATABASE;
-  const databaseUser = process.env.PGUSER;
-  if (!socketDirectory || !databaseName || !databaseUser)
-    throw new Error('Isolated PostgreSQL test cluster is required');
+it('uses the Node root private key and PostgreSQL counter together', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'hyperbug-abuse-pg-'));
   const keyFile = join(directory, 'abuse.json');
   let configured: ReturnType<typeof configureNodeAbuseAdmission> | undefined;
   try {
     await writeFile(keyFile, abuseKeyFixture(), { mode: 0o600 });
     configured = configureNodeAbuseAdmission(
-      { socketDirectory, databaseName, databaseUser, keyFile },
+      { ...postgresNodeBindings(), keyFile },
       'local',
     );
     if (!configured.abuse) throw new Error('Abuse admission was not bound');
@@ -290,16 +286,9 @@ it('uses the Node root private key and Unix-socket PostgreSQL counter together',
 });
 
 it('keeps the Node key registry available without an abuse key', async () => {
-  const socketDirectory = process.env.PGHOST;
-  const databaseName = process.env.PGDATABASE;
-  const databaseUser = process.env.PGUSER;
-  if (!socketDirectory || !databaseName || !databaseUser)
-    throw new Error('Isolated PostgreSQL test cluster is required');
   const configured = configureNodeAbuseAdmission(
     {
-      socketDirectory,
-      databaseName,
-      databaseUser,
+      ...postgresNodeBindings(),
       keyProviderFile: '/private/keys.json',
     },
     'local',

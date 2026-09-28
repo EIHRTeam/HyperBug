@@ -23,6 +23,7 @@ import { createNodeOutboundFetcher } from '../../apps/api-node/src/outbound.ts';
 import { listenNode } from '../../apps/api-node/src/listen.ts';
 import { abuseKeyFixture } from '../fixtures/abuse-key-fixture.ts';
 import { migrationStatements } from '../fixtures/migrations.ts';
+import { postgresNodeBindings } from '../fixtures/postgres-node-bindings.ts';
 
 const databaseName = 'hyperbug_registration_route_test';
 let bootstrap: Pool;
@@ -88,9 +89,7 @@ beforeAll(async () => {
   );
   configured = configureNodeAbuseAdmission(
     {
-      socketDirectory,
-      databaseName,
-      databaseUser,
+      ...postgresNodeBindings(databaseName),
       keyFile,
       keyProviderFile: tokenKeyFile,
     },
@@ -136,7 +135,7 @@ afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 });
 
-it('registers a real User through Node socket, primary counters and PostgreSQL atomically', async () => {
+it('registers a real User through Node, primary counters and PostgreSQL atomically', async () => {
   const missingCredentials = await fetch(base + '/health/ready');
   expect(missingCredentials.status).toBe(503);
   const db = await pool.connect();
@@ -405,9 +404,7 @@ it('registers a real User through Node socket, primary counters and PostgreSQL a
       });
   const secondRoot = configureNodeAbuseAdmission(
     {
-      socketDirectory: process.env.PGHOST,
-      databaseName,
-      databaseUser: process.env.PGUSER,
+      ...postgresNodeBindings(databaseName),
       keyFile,
     },
     'local',
