@@ -7,9 +7,11 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@hyperbug/application": "workspace:*",
     "@hyperbug/contracts": "workspace:*",
     "@hyperbug/config": "workspace:*",
     "@hyperbug/observability": "workspace:*",
+    "@hyperbug/security": "workspace:*",
     "elysia": "1.4.30"
   }
 }
