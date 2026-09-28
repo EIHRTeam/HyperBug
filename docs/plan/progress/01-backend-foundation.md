@@ -292,3 +292,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Hosted acceptance for this consolidation was not rerun.
 - Next actions: Retain Node 24 and the committed package graph; resume roadmap work only after the hold is lifted.
 - Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-09-28 — Workerd runtime import diagnostic repair
+
+- Scope and checklist IDs: Maintain the 01.3a/01.3b shared build and CI contract; no checklist or gate closure.
+- Progress: [Workerd job 108947812797](https://github.com/EIHRTeam/HyperBug/actions/runs/36428342535/job/108947812797) passed but repeatedly logged `UNRESOLVED_IMPORT` for the workerd-provided `cloudflare:workers` module. The shared build had a `neverBundle` pattern but omitted that namespace from Rolldown's explicit `external` list.
+- Change summary: Applied the existing runtime namespace patterns and Wasm pattern to Rolldown external resolution for production Worker, ingress and fixture targets. ESM still imports `cloudflare:workers`; no runtime behavior, dependency, migration or public contract changed.
+- Files/artifacts: `tooling/{bundler-options,build-targets}.ts`, [toolchain record](../../development/TOOLCHAIN.md), this progress record; implementation commit `bb3b320`.
+- Verification: Node 24.21.0: `corepack pnpm build` emitted no `UNRESOLVED_IMPORT`; `corepack pnpm test:workerd` passed 103/103 without that diagnostic, including production Worker startup. `corepack pnpm typecheck`, `corepack pnpm lint`, `corepack pnpm format:check`, and `git diff --check` passed. Generated `.mjs` files retain `cloudflare:workers` imports. Commit `bb3b320` passed all four hosted jobs in both [PR run 36429420228](https://github.com/EIHRTeam/HyperBug/actions/runs/36429420228) and [push run 36429412599](https://github.com/EIHRTeam/HyperBug/actions/runs/36429412599); the PR Workerd job passed 103/103 with no `UNRESOLVED_IMPORT` or `Could not resolve` in its full log. Context7 resolve-then-query on 2026-09-28 selected [Rolldown external module guidance](https://github.com/rolldown/rolldown/blob/main/docs/in-depth/external-modules.md) and its [external option](https://github.com/rolldown/rolldown/blob/main/packages/rolldown/src/options/docs/external.md); the pinned local build verified the effect.
+- Decisions and deviations: Declare only workerd runtime namespaces and precompiled Wasm as external; do not suppress all resolver diagnostics or change the production Worker entry. The earlier log's `UNRESOLVED_IMPORT` was nonfatal but obscured real import failures.
+- Blockers/open questions: None for this diagnostic repair; existing unrelated 01.3f/01.V4 work remains open under the scope hold.
+- Next actions: Keep new feature work paused.
+- Next-session cautions: Preserve the shared build target/fixture resolution contract and Node 24 verification requirement; audit and Argon2id performance work remain paused, Free tier disabled, and no SPA started.
