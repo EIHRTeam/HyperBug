@@ -1,0 +1,138 @@
+# Core security foundation
+
+Owner: [module 03](plan/modules/03-security-foundation.md). Decision: [ADR 0005](decisions/0005-core-security-boundaries.md). This first increment implements policy/configuration, permission evaluation and HTTP boundaries. It is not complete backend security acceptance, a working authentication service, or a production deployment claim.
+
+## Trust boundaries and data classification
+
+| Boundary / attacker | Required enforcement | Implementation or handoff |
+| --- | --- | --- |
+| Browser, anonymous clients and compromised public accounts → public API | Treat URLs, headers, body and client identity assertions as untrusted; bounded parsing, schema validation, exact origins when present; no ambient business cookies | Shared server/config; authentication in 04, feature schemas/permissions in 06–08 |
+| Public User → Staff administration | Separate principal kinds; current project grant and exact object/action; no privilege through an email match or unvalidated SSO claims | Security evaluator; identity/grant resolver in 04 |
+| API → databases and object stores | Object authorization before access; parameterized persistence; database integrity does not grant permission | Repository foundations in 02; feature services consume security in 04/06–09 |
+| Core → trusted native plugins | Native code executes with application trust; permission declarations are policy controls, not process isolation | Fail-closed permission contract; runtime implementation in 05 |
+| Core → external plugins/providers | Validate responses/signatures, bound work and reauthorize; exceptions do not verify credentials | Authorization resolver deadline now; key/CAPTCHA/token/outbound providers in remaining 03/04/05 work |
+| Database/object-storage reader or stolen backup | Nonrecoverable credentials need keyed digests/password hashes; recoverable secrets need envelope encryption/Secret Store | Credential digests/envelopes and persistent key lifecycle are implemented; password/account acceptance remains pending |
+| Logs, errors, metrics and audit consumers | Minimize personal identifiers, drop secret/free-form data, separate diagnostic delivery from durable audit | Allowlisted diagnostics and catalogued HTTP errors now; authorized append-only audit service in 03.3a |
+| Compromised dependencies, deployment operator or network observer | Reviewed/frozen dependencies, secret bindings, TLS/provider verification, rotation and recovery evidence | Foundation controls plus remaining 03.2/13 acceptance; no custom PQ primitives |
+
+`packages/security` exposes immutable `dataProtection` classifications:
+
+| Class | Examples | Storage/access and output policy |
+| --- | --- | --- |
+| Public | Published Issue/comment/label | Plaintext canonical content permitted. Only explicit anonymous representations may later use shared caching; text is not copied into diagnostics. |
+| Personal | Email, private profile, IP-derived abuse metadata | Minimize by purpose; encrypt where needed; restrict access and independently expire. Diagnostic principal/project UUIDs only when necessary. No shared cache. |
+| Sensitive | Recovery metadata, private integration details, cached SSO claims | Controlled access; encrypt recoverable sensitive values according to purpose. No free-form diagnostic serialization or shared cache. |
+| Secret / credential | Password, opaque token, refresh token, OAuth/webhook/CAPTCHA/KMS secret | Password hash or keyed digest if nonrecoverable; envelope encryption or Secret Store if recoverable. Never runtime policy, frontend payload, URL, diagnostic, error or audit metadata. |
+
+Classification constants describe policy; they do not encrypt data. Future fields must record classification and approved storage before persistence. Native plugins and deployment operators remain trusted code boundaries, not sandboxed adversaries.
+
+## Configuration schema
+
+`loadConfig` validates deployment environment, exact origins, body/deadline bounds and the following security schema. `SecurityEnvironment` accepts only a bounded integer or canonical decimal string for numerical settings; missing settings use explicit defaults, while malformed supplied settings fail startup. Booleans, whitespace, hexadecimal, exponent notation, infinity and values outside the range are rejected. Returned nested configuration is frozen. No secret belongs in this object.
+
+`DEBUG` accepts only `true`/`false` strings, defaults to false, and can be true only with explicit `HYPERBUG_ENV=local`. It never changes the safe API error envelope. Staging and production reject debug. `ALLOWED_ORIGINS` contains at most 16 unique canonical origins, up to 4096 characters total; HTTPS is required outside local loopback development. Wildcards, credentials, paths, fragments and noncanonical origins are invalid.
+
+| Variable | Default | Inclusive range |
+| --- | --- | --- |
+| `MAX_BODY_BYTES` | 65536 | 1024–1048576 |
+| `REQUEST_TIMEOUT_MS` | 10000 | 50–30000 |
+| `MAX_JSON_DEPTH` | 16 | 1–32 |
+| `MAX_JSON_NODES` | 4096 | 1–16384 |
+| `MAX_JSON_OBJECT_KEYS` | 128 | 1–256 |
+| `MAX_JSON_ARRAY_ITEMS` | 256 | 1–1024 |
+| `MAX_JSON_STRING_LENGTH` | 32768 | 1–262144 |
+| `MAX_URL_LENGTH` | 8192 | 256–16384 |
+| `MAX_QUERY_PARAMETERS` | 64 | 1–128 |
+| `MAX_QUERY_VALUE_LENGTH` | 2048 | 1–4096 |
+| `ADMIN_RECENT_AUTH_SECONDS` | 300 | 1–900 |
+| `AUTHORIZATION_TIMEOUT_MS` | 1000 | 10–5000 |
+
+String and URL lengths count UTF-16 code units; body size counts actual UTF-8 bytes. Depth counts open JSON containers including the root, before parsing. Nodes count root and every value; per-object keys and per-array elements are independently bounded. Query parameters count duplicates and decoded values; names have a fixed 128-character ceiling. Forbidden prototype keys and nonfinite JSON numbers are rejected. These are outer limits; route schemas still enforce exact fields, types, formats, enums, ownership and operation-specific smaller bounds. Changing body-type or content limits requires the owning feature's contract and tests.
+
+## Permission and assurance contract
+
+`authorize(request, resolver, policy)` takes an exact actor ID (or null), permission and `{projectId, type, id}` resource reference. It obtains a fresh `AuthorizationFacts` snapshot through an abort-aware resolver and calls the pure evaluator. The resolver is a trusted server-side port: do not construct its grants from HTTP bodies, cookies, token claims or provider responses without verification. Module 04 owns credential validation, current revocation and grant loading; feature modules own ownership, moderation-lock and visibility predicates. No allow decision is cached.
+
+The evaluator checks the complete actor/action/resource binding, project identity/state, object existence, credential status/expiry, principal kind and status, membership scope and explicit object permission. A User cannot act as Staff even with an erroneous administrator membership. Private projects require active Staff membership. Archived projects allow reads but reject writes. Public visibility grants only explicitly public project/Issue/comment reads, never audit, hidden data or administration. Staff mutations require current membership even in public projects. An authenticated revoked/suspended credential cannot silently become anonymous. Unknown actions, malformed facts, mismatched targets and nonfinite/future authentication times deny access.
+
+The central permission registry expands minimum roles consistently: triage < maintainer < administrator. Sensitive project/plugin/SSO/role/secret/key/export administration requires administrator, verified assurance of at least 2 and authentication no older than `ADMIN_RECENT_AUTH_SECONDS` (inclusive). Assurance 1 is single factor; 2 represents verified multiple factors or an equivalent cryptographic user-verification policy; 3 represents a verified phishing-resistant policy. Module 04 must define ceremony-specific mappings; an SSO `amr`/`acr` string alone proves nothing. No setting can lower the required level. A long-lived token's issuance is not recent authentication.
+
+Provider exceptions, malformed outputs, timeouts and caller cancellation return `allowed: false, reason: unavailable`. Providers must honor abort for resource cleanup; the deadline prevents a late success from granting access but cannot forcibly stop arbitrary native code. Request references are copied and frozen before resolution. The decision clock is read after resolution, so an expired credential does not benefit from provider delay. Feature handlers must enforce the returned decision, map private existence to safe 404 where appropriate, and retain transaction/revision conditions against concurrent revocation or edits. This batch implements no product permission resolver or endpoint. Deployment-wide bootstrap and background service capabilities belong to modules 04/09 and are not inferred from project admin status.
+
+## HTTP, errors and diagnostics
+
+Any present Origin must exactly match `ALLOWED_ORIGINS`, including on errors and health endpoints; `null` is denied. Requests without Origin remain eligible for normal protocol/authentication checks. CORS is not authentication and does not accept a bearer value as valid. Business cookies are not enabled. Allowed preflight methods are GET, HEAD, POST, PUT, PATCH, DELETE and OPTIONS; request headers are authorization, content-type, if-match and idempotency-key. Unknown or duplicate requested headers and unsupported methods are rejected. Preflight age is 300 seconds and Vary includes Origin, Access-Control-Request-Method and Access-Control-Request-Headers. Actual responses vary on Origin and expose x-request-id, retry-after and etag. Preflight acceptance does not create or authorize a route.
+
+All current routes use `Cache-Control: no-store`, including errors and allowed preflights. The shared response hook reapplies the trusted request ID, exact CORS policy, `Vary`, `nosniff` and no-store headers after handlers, including handlers that return a native `Response`, replace `set.headers`, or return a response with immutable headers; the error hook repairs handler-modified headers too. A native `Response` previously overrode request-time policy and could emit an unapproved `Access-Control-Allow-Origin` as well as a public cache header in Elysia 1.4. The late guard removes handler-supplied `Access-Control-*` and controlled security headers before applying the server's request-specific snapshot. The fixed-destination outbound wrapper also requests `cache: 'no-store'` for provider subrequests and requires a profile-selected transport; its live Workers behavior remains unverified. Any future anonymous-public cache must explicitly separate credential-bearing, locale and origin variants and require a reviewed policy change before relaxing this global guard. Token/code/account/Staff/secret responses remain no-store. Key retrieval, token verification, authorization, required CAPTCHA and plugin permission failures must deny the dependent operation; their concrete providers remain future steps. An optional anti-abuse outage fallback needs explicit auditable policy and must never bypass these checks.
+
+The closed error catalog has `RATE_LIMITED` (429) with a validated 1–86400-second `Retry-After` hint and `RATE_LIMIT_UNAVAILABLE` (503) without one. Both remain no-store and expose no counter or provider details. The shared `requireSensitiveRateAdmission` route guard invokes authoritative key/counter admission under a required bounded deadline and throws these errors before a protected action on limited, unavailable, malformed, stalled or cancelled decisions. Node/workerd HTTP fixture routes verify that ordering and mapping with an in-memory counter; actual category route enforcement and deployed outage acceptance remain open under 03.3c–03.3d.
+
+The shared `requireAuthorizedAction` guard invokes `authorize` against current server-side facts and returns only on an allowed, still-active request. The resolver snapshots the policy, caller signal and clock source before its first await so caller mutation cannot widen recent-authentication or timeout bounds mid-check. Forbidden facts and insufficient/recent assurance map to safe 403 codes; resolver exception, timeout, malformed facts or cancellation map to `AUTHORIZATION_UNAVAILABLE` (503). The fixture checks that a protected action does not run after denial or provider failure in Node and workerd. Identity loading, token validity, object permissions and actual route wiring remain owned by module 04 and later feature modules; this guard cannot make a stale or untrusted resolver authoritative.
+
+`createCaptchaGate` lets a composition root omit CAPTCHA configuration entirely. An absent provider creates a disabled gate: routes can proceed without a challenge token while retaining independent rate admission, authorization and account controls. Supplying a provider automatically enables required verification; there is no separate enable switch. Construction binds the trusted hostname, freshness/score/deadline policy and verifier method so a route supplies only its expected action, token and cancellation signal. A partially configured provider fails construction rather than acting absent. Once enabled, a missing token is denied and provider outage, timeout or malformed evidence never disable the gate.
+
+The enabled gate uses `requireRequiredCaptcha` for server-side verification. It checks normalized evidence, exact hostname and action, challenge freshness at verification completion and an optional score floor. Invalid/failed evidence gives a closed 403; unavailable verification gives a closed 503. The token and provider payload never enter the error envelope. A shared Turnstile Siteverify candidate now normalizes the provider response. Public Cloudflare test site keys and secrets are accepted only in local development; staging and production reject them at startup because their predictable verification cannot protect an account route. Both production roots construct a CAPTCHA gate from optional runtime bindings and decorate the shared server context with it. They also pass only the selected public site key to the shared server, which rejects a key paired with a disabled gate. `GET /api/v1/accounts/register` publishes the public site key and action; `POST` consumes the configured gate after authoritative rate admission. Node/PostgreSQL and test-resolver workerd/D1 routes pass local functional checks, while deployed Siteverify and trusted Workers ingress remain open. 03.3f and 03.3h remain open.
+
+The app's `sensitiveAdmission` service binds that same gate and the root-selected abuse-key provider, optional approximate limiter and primary counter store to rate admission. Routes cannot replace those sources through their admission intent; an absent authoritative root source denies with `RATE_LIMIT_UNAVAILABLE`. The Cloudflare root binds its D1 rate store, Worker Secret source and location-scoped Rate Limiting binding only when D1 exists. The Node root binds its PostgreSQL store, separate private abuse-key file and bounded process-local limiter only with one complete TCP or Unix-socket configuration; no setup leaves the guard closed, while partial or mixed setup refuses startup. Node can also use that PostgreSQL transport for its cryptographic key registry without an abuse key file; this leaves sensitive admission and readiness closed. Both roots report readiness unavailable when abuse admission is absent, its key source fails, the current token-HMAC key cannot be loaded, or the counter/credential/session tables cannot be queried; the Workers root also checks for its approximate binding. These read-only probes do not prove counter write permission or deployed consistency. The bound guard replaces an IP check's route-supplied subject with the root's trusted client address. Node selects the native socket peer; the Cloudflare root verifies a configured signed gateway assertion or keeps an IP-required route closed. Local workerd exercises the private service-bound path, while the actual edge trust policy remains unverified. Other subjects still require route-owned canonicalization. One active key snapshot supplies HMAC digests to the approximate layer; an approximate allowance still consumes authoritative counters for every active key version. An approximate denial has no fabricated retry hint, and limiter outage or malformed output denies. The service consumes the trusted rate dimensions before making any configured CAPTCHA provider call, so rate denial cannot trigger Turnstile egress. An absent provider needs no token, while a configured provider's missing, failed or unavailable challenge denies the dependent action. The disabled gate and the combined admission reject cancellation, including cancellation between the rate and CAPTCHA steps, before a protected action. Node and local workerd fixtures exercise the route ordering with root-bound fixture sources, and focused unit cases exercise the configured path. Real route ownership, widget capability and deployed provider behavior remain open.
+
+For the disabled Free minimum tier, separate server guards wrap account-lockout admission, failed-password recording and verified-success clearing in bounded deadlines. They map a live lock to `RATE_LIMITED` (429) and unavailable state or a stalled/cancelled operation to `RATE_LIMIT_UNAVAILABLE` (503), without D1 detail. The guards do not issue credentials or infer account existence. No account route calls them, and a timeout cannot authorize a late result.
+
+The minimum-tier login admission service composes rate, lockout and optional CAPTCHA in that order and carries one HMAC key-ring snapshot through all account-digest work. It returns a one-use permit for a failed-password record or verified-success clear. The route-facing variant binds the provider and both stores at the application root, derives IP from a root-owned resolver, and stays closed when these dependencies are absent. A route must still supply trusted canonical account subjects, own credential verification and issuance, and deny completion if the transition fails. The service does not bypass the minimum-tier startup barrier.
+
+Turnstile setup uses three bindings: backend-only `TURNSTILE_SECRET`, public `TURNSTILE_SITE_KEY` and exact `TURNSTILE_HOSTNAME` expected in provider evidence. Omit all three for no CAPTCHA. If any is supplied, all must be valid; partial or malformed setup refuses startup rather than disabling CAPTCHA. A complete set enables verification automatically without a separate flag. Staging and production reject local-only hostnames and IP literals. The secret is read separately from ordinary policy configuration and is never part of the route-facing site-key value. Publishing that value through the public instance capability, rendering the widget and enforcing a route action remain module 04 work.
+
+`RequestFailure` accepts a closed error code instead of arbitrary status/message text. The boundary serializes a catalog entry, not an Error's mutable message, stack, cause, SQL or provider payload. Framework validation details never cross the boundary. Every response uses a fresh random request UUID and ignores a client-supplied ID. `jsonTelemetry` and `jsonSecurityTelemetry` serialize fixed enums/numbers/validated UUIDs only; unknown fields are dropped rather than matched with a secret-name denylist. Bodies, URLs, headers and raw errors have no logging field. Security diagnostics are not security audit, and diagnostic transport failure does not grant access.
+
+## Independent retention policy
+
+These values select lifecycle cutoffs, not automatic deletion. Module 09 supplies bounded cleanup; 03.3a owns privileged audit retention. Legal holds and required retained key versions must be honored before destructive cleanup.
+
+| Variable | Default seconds | Inclusive range | Cutoff anchor / cleanup requirement |
+| --- | --- | --- | --- |
+| `RETENTION_SECURITY_LOG_SECONDS` | 2592000 | 1–31536000 | Diagnostic event creation; transport/storage retention configured separately |
+| `RETENTION_AUDIT_SECONDS` | 31536000 | 86400–315360000 | Audit event creation; privileged reviewed batch, hold check, new audit event; never individual deletion API |
+| `RETENTION_ABUSE_SECONDS` | 86400 | 1–604800 | Bucket expiry; minimize IPs and rotate keyed identifiers independently of logs |
+| `RETENTION_EXPIRED_SESSION_SECONDS` | 86400 | 1–2592000 | Session expiry/revocation; expiry is enforced immediately, not after cleanup |
+| `RETENTION_DELETED_ACCOUNT_SECONDS` | 2592000 | 1–31536000 | Account deletion; purge personal fields, preserve tombstone authorship/audit references |
+| `RETENTION_TEMPORARY_UPLOAD_SECONDS` | 86400 | 1–604800 | Unfinalized intent expiry; recheck finalized/referenced objects before deletion |
+| `RETENTION_EXPORT_SECONDS` | 86400 | 1–604800 | Export completion; revoke download capability and remove unneeded output |
+
+These defaults are explicit engineering policy, not a claim of legal compliance. Operators choose purpose-appropriate values within reviewed bounds. A cutoff change cannot disable current authorization, expand credential validity or drop keys still needed by retained data/backups.
+
+## Verification and remaining work
+
+See [initial batch evidence](plan/evidence/03-security-foundation-validation.md) for both-runtime adversarial coverage and focused review. Credential digest/envelope mechanisms and local key-source adapters are now implemented; see [cryptography](CRYPTOGRAPHY.md). A fixed-destination, bounded [outbound request mechanism](OUTBOUND-SECURITY.md) is implemented and consumed by configured account CAPTCHA, with live provider egress acceptance still open. Primary [rate counter adapters](RATE-LIMITING.md) have local D1/PostgreSQL evidence and now protect registration and login routes on both profiles; other category routes and deployed multi-location acceptance remain open. Bounded counter cleanup has local runtime scheduling and one isolated deployed Cron event, but no sustained retention measurement. Remaining Phase 03 work includes password acceptance, suspended audit work, and the complete enforcement matrix. G1 remains closed.
+
+## Deployment-tier posture and enablement boundary
+
+[ADR 0007](decisions/0007-cloudflare-free-minimum-tier.md) defines the optional `cloudflare-free-minimum` tier beside the two first-class standard profiles. The tier changes declared capabilities and the explicitly listed assurance/durability properties; it cannot change the classification or protection of secret data, confer a role, authorize an object, or turn a failed provider check into success. A claimed Free plan, exhausted quota, missing binding or HTTP input is not authority to select a tier.
+
+`loadConfig(env, runtime)` requires the composition root to supply `node` or `cloudflare`; this identity is not read from environment variables or a request. Its frozen `deployment` member records the tier, acknowledgement, stable degradation IDs, invariants and **required** password algorithm. Required policy is not a claim that a password verifier is implemented or login is available.
+
+| Configuration | Behavior |
+| --- | --- |
+| `HYPERBUG_DEPLOYMENT_TIER` absent or exactly `standard` | Standard policy; no degradation IDs or acknowledgement |
+| Tier exactly `cloudflare-free-minimum` | Requires the Cloudflare root and exact `HYPERBUG_DEGRADATION_ACK=free-minimum-v1` |
+| Null/empty/unknown/mixed-case/whitespace tier or invalid acknowledgement | Reject configuration; no coercion, fallback or echo of supplied values |
+| Acknowledgement present without the minimum tier | Reject as stale or contradictory configuration; remove it when upgrading |
+| Minimum tier selected on Node | Reject configuration before listening |
+| Correct minimum configuration in this build | Reject application startup: audited activation, compensating controls and independent acceptance are incomplete |
+
+The shared application constructor enforces the last barrier. It has no environment override, including in local mode. Parsing a selected posture is available to internal implementation tests; no running minimum instance or public capability endpoint is enabled. `/health/ready` now reports the selected standard tier, an empty degradation-ID list and the required `argon2id` hash policy on both success and unavailable responses. This is policy metadata, not an assertion that password login or all product dependencies are ready. The eventual minimum-tier activation must audit enablement/change/acknowledgement, warn with the active IDs, and report its truthful PBKDF2 policy before the barrier can be removed. `03.3g`, `03.V6` and `13.G6` remain incomplete.
+
+The invariant list is fixed for **every** tier: object-level authorization and roles; append-only audit integrity and metadata redaction; Markdown/CSP/sanitization; keyed-digest credentials and AES-256-GCM envelope encryption; TLS/HSTS; memory-only browser tokens; bearer-only business APIs; fail-closed authorization; and no production debug or test/authorization bypass. They are policy constants, not operator or plugin switches. Existing input, origin, recent-authentication, provider-deadline and retention validation is identical for both selected postures.
+
+The frozen `minimumDegradations` catalog in `packages/config/src/deployment.ts` maps these stable IDs to the required compensating controls. The full normative disclosure and downstream owners remain in [FREE-TIER-PROFILE](FREE-TIER-PROFILE.md#degradation-catalog).
+
+| ID | Changed boundary/property | Mandatory compensation before enablement |
+| --- | --- | --- |
+| FREE-01 | Password database theft resistance: PBKDF2 instead of Argon2id | Versioned pepper, per-user salt, reviewed measured floor, upgrade rehash, passkeys/recovery codes; never verify an Argon2id record with PBKDF2 |
+| FREE-02 | Cross-location abuse consistency | D1 account lockout/progressive delay, account/route quotas, configured required CAPTCHA, alerts and explicit consistency model |
+| FREE-03 | Background execution durability | D1/Cron outbox, idempotency, crash reconciliation, D1 failed-job replay and visible backlog |
+| FREE-04 | Audit/diagnostic retention and export | Complete append-only audit, authorized browsing, bounded operator queries and quota/backlog alerts |
+| FREE-05 | Resource/quota availability | Measured instance ceiling, bounded batches, quota pre-checks and explicit capacity errors |
+| FREE-06 | Notification delivery | Authenticated TLS SMTP relay, encrypted credentials, bounded retries/deduplication and injection protection |
+| FREE-07 | Recovery window and objectives | Tier-specific measured recovery objectives and backup/restore rehearsal |
+| FREE-08 | Bulk/import/export/long-job availability | Server/client capability gates, explanatory states and bounded administrator alternatives |
+
+Minimum-tier evidence never substitutes for the standard profiles or opens G1/G2. Standard Workers deployment uses the paid-capable runtime envelope for its Argon2id policy; the user stopped further Argon2id performance exploration on 2026-09-20. Under [ADR 0009](decisions/0009-standard-password-login.md), audit does not gate standard-profile password login after its functional account flow and provider implementation are complete. Further Argon2id performance testing remains stopped. Those implementation tasks remain incomplete; the Free minimum tier stays separately gated.
