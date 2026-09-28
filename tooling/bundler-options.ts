@@ -16,6 +16,9 @@ export const workerdWasmExternal = [/\.wasm$/];
 /** Modules workerd supplies itself. Bundling either namespace is an error. */
 export const workerdNeverBundle = [/^node:/, /^cloudflare:/];
 
+/** Preserve runtime modules and precompiled Wasm without resolution warnings. */
+export const workerdExternal = [...workerdNeverBundle, ...workerdWasmExternal];
+
 /**
  * Emit `.mjs` for every file in a target, chunks included. The repository
  * treats `dist/**` as explicit ESM artifacts and both runtime tests name
@@ -44,7 +47,7 @@ export const workerdFixtureOptions = {
   dts: false,
   clean: false,
   deps: { neverBundle: workerdNeverBundle },
-  inputOptions: { resolve: workerdResolve, external: workerdWasmExternal },
+  inputOptions: { resolve: workerdResolve, external: workerdExternal },
   outExtensions: mjsExtension,
   outputOptions: { codeSplitting: false },
 } satisfies UserConfig;

@@ -4,9 +4,9 @@
 import type { UserConfig } from 'tsdown';
 import {
   mjsExtension,
+  workerdExternal,
   workerdNeverBundle,
   workerdResolve,
-  workerdWasmExternal,
 } from './bundler-options.ts';
 
 /**
@@ -53,7 +53,7 @@ export const appTargets = [
       dts: false,
       clean: false,
       deps: { neverBundle: workerdNeverBundle },
-      inputOptions: { resolve: workerdResolve, external: workerdWasmExternal },
+      inputOptions: { resolve: workerdResolve, external: workerdExternal },
       outExtensions: mjsExtension,
     },
   },
@@ -69,7 +69,7 @@ export const appTargets = [
       dts: false,
       clean: false,
       deps: { neverBundle: workerdNeverBundle },
-      inputOptions: { resolve: workerdResolve },
+      inputOptions: { resolve: workerdResolve, external: workerdExternal },
       outExtensions: mjsExtension,
     },
   },
