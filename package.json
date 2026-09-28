@@ -1,9 +1,27 @@
 {
   "name": "hyperbug",
   "version": "0.0.0",
+  "description": "A modern, lightweight, cloud-native, serverless-first, GitHub Issues-style issue-tracking platform.",
+  "license": "Apache-2.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.26.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EIHRTeam/HyperBug.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EIHRTeam/HyperBug/issues"
+  },
+  "homepage": "https://github.com/EIHRTeam/HyperBug#readme",
+  "keywords": [
+    "hyperbug",
+    "issue-tracking",
+    "serverless",
+    "typescript",
+    "cloudflare-workers",
+    "postgresql"
+  ],
   "engines": {
     "node": ">=24.21.0 <25",
     "pnpm": ">=11.26.0 <12"
