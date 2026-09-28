@@ -57,3 +57,36 @@ it('enforces import boundaries and extensions through the oxlint configuration',
     );
   }
 });
+
+it('allows database security ports without allowing reverse or server dependencies', () => {
+  const boundaryCases = [
+    {
+      file: 'packages/database/d1/src/boundary-lint-fixture.ts',
+      content: "export type { KeyRegistry } from '@hyperbug/security';",
+      failed: false,
+    },
+    {
+      file: 'packages/database/postgres/src/boundary-lint-fixture.ts',
+      content: "export type { KeyRegistry } from '@hyperbug/security';",
+      failed: false,
+    },
+    {
+      file: 'packages/security/src/boundary-lint-fixture.ts',
+      content: "export * from '@hyperbug/database-d1';",
+      failed: true,
+    },
+    {
+      file: 'packages/database/postgres/src/boundary-lint-fixture.ts',
+      content: "export * from '@hyperbug/server';",
+      failed: true,
+    },
+  ];
+  for (const item of boundaryCases) {
+    try {
+      writeFileSync(item.file, item.content);
+      expect(lint(item.file).failed).toBe(item.failed);
+    } finally {
+      unlinkSync(item.file);
+    }
+  }
+});

@@ -18,10 +18,15 @@
   },
   "include": [
     "apps/**/*.ts",
+    "apps/api-cloudflare/src/vendor.d.ts",
     "packages/**/*.ts",
     "tests/**/*.ts",
     "vitest.config.ts",
     "tooling/**/*.ts"
   ],
-  "exclude": ["apps/api-cloudflare", "tests/fixtures/worker.ts"]
+  "exclude": [
+    "apps/api-cloudflare",
+    "tests/fixtures/worker.ts",
+    "tests/fixtures/account-worker.ts"
+  ]
 }

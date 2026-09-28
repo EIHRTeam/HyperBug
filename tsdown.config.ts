@@ -10,4 +10,8 @@ import { appTargets } from './tooling/build-targets.ts';
 // discovers every emitted module instead of naming one file. The Node entry has
 // no dynamic import, so it stays a single file and `tests/node/entry.test.ts`
 // asserts that.
+//
+// `minify` and `sourcemap` are not restated here: they belong to the shared app
+// targets in `tooling/build-targets.ts`, which both this CLI config and
+// `tooling/build.ts` consume, so the two build paths cannot drift.
 export default defineConfig(appTargets.map((target) => target.options));

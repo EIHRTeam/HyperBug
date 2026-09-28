@@ -26,3 +26,46 @@ it('rejects forbidden package, relative and client imports in the real checker',
     }),
   ).not.toThrow();
 });
+
+it('permits security ports in persistence while keeping security independent of adapters', () => {
+  const cases = [
+    {
+      file: 'packages/database/d1/src/boundary-fixture.ts',
+      content: "export type { KeyRegistry } from '@hyperbug/security';",
+      allowed: true,
+    },
+    {
+      file: 'packages/database/postgres/src/boundary-fixture.ts',
+      content: "export type { KeyRegistry } from '@hyperbug/security';",
+      allowed: true,
+    },
+    {
+      file: 'packages/security/src/boundary-fixture.ts',
+      content: "import { createD1KeyRegistry } from '@hyperbug/database-d1';",
+      allowed: false,
+    },
+    {
+      file: 'packages/database/d1/src/boundary-fixture.ts',
+      content: "import { createApp } from '@hyperbug/server';",
+      allowed: false,
+    },
+    {
+      file: 'packages/database/d1/src/boundary-fixture.ts',
+      content: "export * from '../../../security/src/index.ts';",
+      allowed: false,
+    },
+  ];
+  for (const item of cases) {
+    try {
+      writeFileSync(item.file, item.content);
+      const run = () =>
+        execFileSync(process.execPath, ['tooling/check-boundaries.mjs'], {
+          stdio: 'pipe',
+        });
+      if (item.allowed) expect(run).not.toThrow();
+      else expect(run).toThrow();
+    } finally {
+      unlinkSync(item.file);
+    }
+  }
+});

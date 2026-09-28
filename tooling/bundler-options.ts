@@ -10,6 +10,9 @@ export const workerdResolve = {
   conditionNames: ['workerd', 'worker', 'browser'],
 };
 
+/** Wrangler/workerd load precompiled Wasm as a separate module. */
+export const workerdWasmExternal = [/\.wasm$/];
+
 /** Modules workerd supplies itself. Bundling either namespace is an error. */
 export const workerdNeverBundle = [/^node:/, /^cloudflare:/];
 
@@ -41,7 +44,7 @@ export const workerdFixtureOptions = {
   dts: false,
   clean: false,
   deps: { neverBundle: workerdNeverBundle },
-  inputOptions: { resolve: workerdResolve },
+  inputOptions: { resolve: workerdResolve, external: workerdWasmExternal },
   outExtensions: mjsExtension,
   outputOptions: { codeSplitting: false },
 } satisfies UserConfig;

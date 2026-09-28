@@ -161,13 +161,14 @@
                   "../**",
                   "!@hyperbug/domain",
                   "!@hyperbug/application",
+                  "!@hyperbug/security",
                   "!drizzle-orm",
                   "!drizzle-orm/**",
                   "!drizzle-kit",
                   "!pg",
                   "!@cloudflare/workers-types"
                 ],
-                "message": "database adapters may import only @hyperbug/domain, @hyperbug/application and their own persistence libraries; persistence types stay out of the domain."
+                "message": "database adapters may import only @hyperbug/domain, @hyperbug/application, @hyperbug/security and their own persistence libraries; persistence types stay out of the domain."
               }
             ]
           }

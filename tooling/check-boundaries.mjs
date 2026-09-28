@@ -19,8 +19,8 @@ const allowed = {
     'config',
     'observability',
   ],
-  'database-d1': ['domain', 'application'],
-  'database-postgres': ['domain', 'application'],
+  'database-d1': ['domain', 'application', 'security'],
+  'database-postgres': ['domain', 'application', 'security'],
 };
 const pure = new Set([
   'domain',
