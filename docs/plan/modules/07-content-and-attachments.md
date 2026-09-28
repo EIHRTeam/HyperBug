@@ -9,6 +9,8 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Complete safe public content submission and direct uploads across R2 and S3, with shared server validation and rendering policy ready for the SPA.
 
+**Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
+
 ## Ordered checklist
 
 ### Step 07.1 — Implement the canonical Markdown pipeline
@@ -29,7 +31,7 @@ Complete safe public content submission and direct uploads across R2 and S3, wit
 - [ ] **07.2b** Support Text, Textarea, Select, Multi-select, Checkbox, Boolean, Attachment, and Markdown Notice with stable field IDs and bounded options/nesting.
 - [ ] **07.2c** Validate required fields, lengths, cardinality, allowed values, attachment ownership, and active schema version on the server.
 - [ ] **07.2d** Generate deterministic Markdown while retaining necessary structured answers and form-version identity; define how drafts/submissions behave when a form changes.
-- [ ] **07.2e** Add staff management APIs, audit, schema compatibility rules, and malformed/adversarial schema fixtures.
+- [ ] **07.2e** **Audit portion suspended — no audit for now.** Add staff management APIs, audit, schema compatibility rules, and malformed/adversarial schema fixtures.
 
 ### Step 07.3 — Implement portable attachment storage
 

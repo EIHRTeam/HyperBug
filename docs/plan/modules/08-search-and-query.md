@@ -28,6 +28,7 @@ Provide one bounded search language and AST with separate optimized D1 and Postg
 - [ ] **08.2e** Implement version-aware search update handlers that ignore stale events and handle deletions/redactions; connect dispatch in 09.
 - [ ] **08.2f** Define acceptable index delay, retry, reconciliation, and bounded rebuild behavior. Provide a safe temporary initial indexing path for integration tests before dispatch is wired.
 - [ ] **08.2g** Define timeout/degraded behavior that leaves direct Issue access usable and never expands authorization.
+- [ ] **08.2h** Define and implement tier-scoped search budgets: bounded result windows and scan limits for the Cloudflare Free minimum tier, quota-aware degradation with documented safe errors, an explicit distinction between an unfinished index and an unauthorized result, and a bounded administrator-triggered reindex that respects the free row-read and row-write budgets. Follow [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md).
 
 ## Verification and acceptance
 
@@ -36,8 +37,10 @@ Provide one bounded search language and AST with separate optimized D1 and Postg
 - [ ] **08.V3** Verify hidden/deleted/unauthorized data is absent from results and counts even with a deliberately stale index.
 - [ ] **08.V4** Record query plans, index usage, rows read, query counts, and latency with representative larger datasets; investigate full scans and N+1.
 - [ ] **08.V5** Replay updates out of order and rebuild an index from canonical data; complete queue/retry verification in module 09.
+- [ ] **08.V6** Verify minimum-tier search behavior when a quota is exhausted: bounded documented errors, no scan of unauthorized rows, no authorization expansion through a stale or partial index, and a reindex that stays inside the recorded row budgets.
 
 ## Source coverage
 
 PRODUCT §§20–21; TECH-STACK §24; SECURITY §§64–66, 141, 153; PERFORMANCE §§8–19, 63–66.
+See [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md) for the minimum-tier row-read budgets in 08.2h and 08.V6.
 

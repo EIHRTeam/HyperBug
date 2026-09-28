@@ -9,6 +9,8 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Add user-visible asynchronous features using the existing reliable processing foundations.
 
+**Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
+
 ## Ordered checklist
 
 ### Step 15.1 — Define notification and job contracts
@@ -16,7 +18,7 @@ Add user-visible asynchronous features using the existing reliable processing fo
 - [ ] **15.1a** Specify subscriptions/unsubscribe, mentions, notification preferences/read state, recipient rules, deduplication, and per-event/project/user fan-out bounds.
 - [ ] **15.1b** Specify bulk operation selection snapshots, per-item authorization, progress, cancellation, retry, partial failure, and idempotency.
 - [ ] **15.1c** Specify portable import/export job contracts and a bounded canonical format/conformance fixture; external service-specific formats belong to plugins.
-- [ ] **15.1d** Define retained data, export encryption/TTL, temporary download authorization, job ownership, and sensitive export assurance/audit requirements.
+- [ ] **15.1d** **Audit portion suspended — no audit for now.** Define retained data, export encryption/TTL, temporary download authorization, job ownership, and sensitive export assurance/audit requirements.
 - [ ] **15.1e** Add paired migrations, repository contracts, versioned event payloads, OpenAPI, and client methods.
 
 ### Step 15.2 — Implement and accept backend behavior

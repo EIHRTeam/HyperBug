@@ -9,11 +9,13 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Produce a tested, documented backend that another client can use before building `apps/web`.
 
+G1 covers the two first-class profiles only. The optional Cloudflare Free minimum tier is accepted by its own checklist in 13.G6, its evidence is labelled and kept separate, and it never substitutes for a gate item here.
+
 ## Ordered checklist
 
 ### Step 10.1 — Complete public contracts and client
 
-- [ ] **10.1a** Consolidate OpenAPI from the public schema source and verify every MVP route's request, response, error, pagination, auth, and rate-limit contract.
+- [ ] **10.1a** Consolidate OpenAPI from the public schema source and verify every MVP route's request, response, error, pagination, auth, and rate-limit contract, including the unauthenticated instance capability document from 04.2g with its tier, degradation and password-hash fields.
 - [ ] **10.1b** Build `packages/api-client` against public contracts/OpenAPI, without importing Elysia implementation types or `apps/api-*`.
 - [ ] **10.1c** Implement configurable API URL, bearer token injection, business-request `credentials: "omit"`, cancellation/timeouts, stable headers, safe errors, and bounded retry behavior.
 - [ ] **10.1d** Retry unsafe mutations only with the documented idempotency mechanism; never blindly replay a submitted Issue after an ambiguous network failure.
@@ -26,6 +28,7 @@ Produce a tested, documented backend that another client can use before building
 - [ ] **10.2c** Run security regression coverage for BOLA, identity confusion, token expiry/revocation, OAuth/PKCE, CORS/CSRF, XSS, unsafe URLs, upload handling, rate limits, and plugin boundaries.
 - [ ] **10.2d** Verify separate registrable domains, exact allowlists, third-party-cookie blocking, and no frontend-host proxy dependency with a minimal auth fixture.
 - [ ] **10.2e** Record which checks ran in local emulation, real self-host services, and actual Cloudflare staging. Provision only within the authorized environment; missing access remains an explicit gate blocker.
+- [ ] **10.2f** Record the deployment tier and the remaining quota headroom for every acceptance environment, and keep any minimum-tier run out of the G1 evidence set.
 
 ### Step 10.3 — Establish measurable performance and operational readiness
 
@@ -35,6 +38,7 @@ Produce a tested, documented backend that another client can use before building
 - [ ] **10.3d** Set initial regression thresholds and measured environment-specific budgets; do not invent SLA/SLO promises from unmeasured assumptions.
 - [ ] **10.3e** Verify readiness, structured telemetry/redaction, basic backup/restore, migration failure recovery, and isolated staging configuration.
 - [ ] **10.3f** Write a backend acceptance report with exact commands, versions, fixtures, results, unresolved issues, and links to evidence.
+- [ ] **10.3g** Measure the minimum tier's quota-aware behavior separately: quota exhaustion, degraded search and auth paths, dispatch backpressure and instance capacity ceiling, recorded as its own evidence set with the tier and quota headroom, never merged into the standard-profile performance baselines.
 
 ## Backend gate checklist
 
@@ -47,4 +51,5 @@ Produce a tested, documented backend that another client can use before building
 ## Source coverage
 
 PRODUCT §29; TECH-STACK §§38–40, 47–51; ARCHITECTURE §§25–27, 44; SECURITY §§151–159; PERFORMANCE §§62–77.
+See [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md) for the tier and quota evidence required by 10.2f and 10.3g.
 

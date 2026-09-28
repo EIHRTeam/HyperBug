@@ -9,6 +9,8 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Deliver the whole public feedback and staff triage journey through the accepted public API.
 
+**Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
+
 ## Ordered checklist
 
 ### Step 12.1 — Implement discovery and navigation
@@ -31,10 +33,11 @@ Deliver the whole public feedback and staff triage journey through the accepted 
 ### Step 12.3 — Implement triage and administration
 
 - [ ] **12.3a** Build label/assignee/type/milestone management and close/reopen/reason interactions using actual permission-aware APIs.
-- [ ] **12.3b** Build project settings, Issue Form/template management, role management, audit browsing, plugin configuration/enable/disable, and account session controls.
+- [ ] **12.3b** **Audit portion suspended — no audit for now.** Build project settings, Issue Form/template management, role management, audit browsing, plugin configuration/enable/disable, and account session controls.
 - [ ] **12.3c** Require visible confirmation and recent authentication where policy requires it; safely handle permission loss and concurrent edits with clear conflict recovery.
 - [ ] **12.3d** Redact secret settings, prevent accidental secret reads, and display plugin trust/CSP requirements accurately.
 - [ ] **12.3e** Keep optional providers and admin tooling in separate lazy chunks; do not add deferred relations/notifications/bulk screens before their backend increments.
+- [ ] **12.3f** Render the minimum tier's mandatory degradation notice: an accessible, persistent status or footer entry with per-session dismissal that links to the operator documentation, plus explained non-actionable states for capabilities the instance reports as unavailable. The notice must never imply Argon2id protection or any capability the instance lacks.
 
 ## Verification and acceptance
 
@@ -44,9 +47,10 @@ Deliver the whole public feedback and staff triage journey through the accepted 
 - [ ] **12.V4** Check WCAG 2.2 AA targets with automated checks plus manual keyboard/screen-reader, touch, 200% zoom, contrast, and reduced-motion testing.
 - [ ] **12.V5** Re-run the Markdown corpus through actual browser rendering of the transported representation and test isolated dangerous-file downloads and CSP; confirm the SPA performs no Markdown parsing, sanitization or HTML-sink rendering of user content.
 - [ ] **12.V6** Record list/detail/create/admin bundles, LCP/INP/CLS, long tasks, request counts, and large timeline behavior; investigate regressions without weakening functionality.
+- [ ] **12.V7** Verify the minimum-tier disclosure in a browser: the notice renders accessibly on public and staff surfaces, survives dismissal within the session and reappears appropriately, capability-gated controls are explained instead of failing, and no surface claims a security property the capability document reports as downgraded or unavailable.
 
 ## Source coverage
 
 PRODUCT §§6–24, 29; ARCHITECTURE §§12–21, 39; SECURITY §§46–66, 99–105, 132–141; PERFORMANCE §§25–32, 62–77.
-See [Modern web research and adaptations](../SOURCES.md#modern-web-guidance), [MARKDOWN-POLICY](../../MARKDOWN-POLICY.md), and [ADR 0003](../../decisions/0003-markdown-representation-and-pagination.md).
+See [Modern web research and adaptations](../SOURCES.md#modern-web-guidance), [MARKDOWN-POLICY](../../MARKDOWN-POLICY.md), and [ADR 0003](../../decisions/0003-markdown-representation-and-pagination.md). See [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md) for the minimum-tier notice required by 12.3f and 12.V7.
 

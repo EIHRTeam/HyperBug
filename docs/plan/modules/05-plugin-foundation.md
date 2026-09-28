@@ -9,6 +9,8 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Make plugin boundaries a real, versioned part of the backend before building feature-specific integrations. Prove them with local conformance fixtures, not production third-party dependencies.
 
+**Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
+
 ## Ordered checklist
 
 ### Step 05.1 — Define the plugin specification
@@ -21,7 +23,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 
 ### Step 05.2 — Implement Core integration
 
-- [ ] **05.2a** Implement registry/lifecycle validation and authorized, audited plugin-management endpoints.
+- [ ] **05.2a** **Audit portion suspended — no audit for now.** Implement registry/lifecycle validation and authorized, audited plugin-management endpoints.
 - [ ] **05.2b** Implement scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, and namespace ownership.
 - [ ] **05.2c** Define authentication/SSO, CAPTCHA, notifications, issue actions/metadata, search, import/export, and settings extension contracts with their Core policy boundaries.
 - [ ] **05.2d** Connect hook/event envelopes to the outbox model; complete actual async dispatch in module 09 before enabling side-effect consumers.
@@ -33,7 +35,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 - [ ] **05.3a** Test incompatible versions, malformed manifests, unknown capabilities, missing secrets, invalid configuration, and disabled-plugin behavior.
 - [ ] **05.3b** Test permissions and object authorization at every plugin-facing API boundary, including cross-project access and unauthorized secret reads.
 - [ ] **05.3c** Verify timeout/error behavior and bounded hook invocation. Document that in-process CPU-bound native code cannot be securely preempted by a promise timeout.
-- [ ] **05.3d** Test upgrade/data-retention handling, namespaced migrations, configuration audits, and contract compatibility across both runtimes.
+- [ ] **05.3d** **Audit portion suspended — no audit for now.** Test upgrade/data-retention handling, namespaced migrations, configuration audits, and contract compatibility across both runtimes.
 - [ ] **05.3e** Publish an English extension-author quickstart stating that installing native code means trusting it.
 
 ## Acceptance evidence

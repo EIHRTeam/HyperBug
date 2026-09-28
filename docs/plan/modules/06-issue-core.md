@@ -9,19 +9,21 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Deliver the complete MVP issue-tracking API on both profiles. Public APIs, database contracts, and auditable mutations come before frontend screens.
 
+**Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
+
 ## Ordered checklist
 
 ### Step 06.1 — Implement project and taxonomy services
 
 - [ ] **06.1a** Implement project create/read/configure/archive or delete behavior according to the data-retention decision, with no Git repository dependency.
 - [ ] **06.1b** Implement labels, configurable Issue Types, assignee eligibility, and milestones with state/due date and bounded progress counts.
-- [ ] **06.1c** Enforce per-project name/slug uniqueness, reference ownership, disabled/removed taxonomy behavior, permissions, and staff configuration audits.
+- [ ] **06.1c** **Audit portion suspended — no audit for now.** Enforce per-project name/slug uniqueness, reference ownership, disabled/removed taxonomy behavior, permissions, and staff configuration audits.
 
 ### Step 06.2 — Implement the Issue lifecycle
 
 - [ ] **06.2a** Implement create/list/detail/edit Issue with project-local number allocation, raw Markdown, author, type, labels, assignees, milestone, timestamps, and revision checks.
 - [ ] **06.2b** Implement Open/Closed, close reasons, reopen, ownership rules, and triage actions without adding arbitrary workflow states.
-- [ ] **06.2c** Keep mutations, required timeline/audit records, and outbox events atomically consistent. Validate idempotency and return stable conflict errors.
+- [ ] **06.2c** **Audit portion suspended — no audit for now.** Keep mutations, required timeline/audit records, and outbox events atomically consistent. Validate idempotency and return stable conflict errors.
 - [ ] **06.2d** Implement batched relation loading and explicit projections so list/detail endpoints avoid N+1 and unnecessary private data.
 - [ ] **06.2e** Specify cache eligibility and invalidation/version changes for public representations; keep personalized and permission-sensitive responses out of shared caches.
 

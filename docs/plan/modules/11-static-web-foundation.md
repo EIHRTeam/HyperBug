@@ -19,6 +19,7 @@ Create a portable static application that consumes the accepted backend, with ac
 - [ ] **11.1d** Load a validated public `config.json` before initializing API access. Support API/application-name changes without recompilation, safe failure UI, and fresh config/index versus immutable asset caching.
 - [ ] **11.1e** Define state ownership: Router for shareable query state, Query for server state, Form for forms, React for local UI, and minimal ephemeral global state only when justified.
 - [ ] **11.1f** Establish deployment-generated CSP/security headers consistent with runtime API/auth/media origins and reviewed plugin declarations.
+- [ ] **11.1g** Consume the instance capability document (04.2g) in the static application before enabling dependent surfaces: deployment tier, degradation identifiers, available authentication capabilities and documented limits. No runtime code injection, no client-side downgrade, and no UI that implies an unavailable security capability.
 
 ### Step 11.2 — Implement the browser auth boundary
 
@@ -42,6 +43,7 @@ Create a portable static application that consumes the accepted backend, with ac
 - [ ] **11.V2** Test cross-site login/refresh/logout with third-party cookies blocked and inspect browser storage, URLs, logs, and caches for credential leaks.
 - [ ] **11.V3** Run keyboard, screen-reader, touch, zoom, reduced-motion, and baseline-browser checks on navigation, forms, and dialogs.
 - [ ] **11.V4** Inspect CSP violations and bundle splitting; record initial bundle/CWV measurements as baselines rather than unsupported promises.
+- [ ] **11.V5** Verify capability-driven application states: a minimum-tier instance loads with the capability document applied, unavailable flows are explained rather than failing, and no surface requests a capability the document reports as unavailable.
 
 ## Source coverage
 
