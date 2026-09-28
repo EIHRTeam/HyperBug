@@ -51,8 +51,15 @@ afterAll(async () => {
 });
 it('serves the production Node bundle without fixture routes', async () => {
   const response = await fetch(`${base}/health/ready`);
-  expect(response.status).toBe(200);
-  await response.text();
+  expect(response.status).toBe(503);
+  expect(await response.json()).toEqual({
+    status: 'unavailable',
+    deployment: {
+      tier: 'standard',
+      degradationIds: [],
+      passwordHashPolicy: 'argon2id',
+    },
+  });
   const proof = await fetch(`${base}/_proof/echo`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -60,4 +67,16 @@ it('serves the production Node bundle without fixture routes', async () => {
   });
   expect(proof.status).toBe(404);
   await proof.text();
+  const registration = await fetch(`${base}/api/v1/accounts/register`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      handle: 'closednode',
+      password: 'long-test-password',
+    }),
+  });
+  expect(registration.status).toBe(503);
+  expect(await registration.json()).toMatchObject({
+    error: { code: 'RATE_LIMIT_UNAVAILABLE' },
+  });
 });
