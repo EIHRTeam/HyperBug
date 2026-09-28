@@ -1,12 +1,16 @@
 # Execution and session handoff protocol
 
-This protocol applies to every planning, implementation, testing, review, debugging, and maintenance session for HyperBug. Every session must briefly record what happened, summarize changes, and state what subsequent sessions need to know.
+This protocol applies to every planning, implementation, testing, review, debugging, and maintenance session for HyperBug. Every session must briefly record what happened, summarize changes, and state what subsequent sessions need to know. Exception: when the user only asks a question and no repository state changes (a read-only check, comparison, measurement, or explanation), do not create or update progress records unless the user asks for them.
 
 ## Language and source rules
 
-Write all new project documentation in English, including skills, plans, progress records, ADRs, specifications, runbooks, and release notes. Existing initial-architecture inputs remain historical sources until explicitly migrated. This default does not require changing user-facing product localization.
+Write engineering documentation in English, including skills, plans, progress records, ADRs, specifications, and internal runbooks. Per the explicit reader-documentation requirement, maintain `docs/site/` guides (including reader-facing runbooks and release notes) in English and Simplified Chinese, with matching paths and synchronized content. Reader-facing repository entry points may be bilingual. Existing initial-architecture inputs remain historical sources until explicitly migrated. This default does not require changing user-facing product localization.
 
 Follow the user's current instructions, applicable repository guidance, and the source-baseline responsibilities in [SOURCES](SOURCES.md). Refresh library documentation with Context7 resolve-then-query when the question concerns a library/framework/SDK/API/CLI/cloud service. Search and retrieve modern-web-guidance for relevant web work and record applicable guides/fallbacks.
+
+## Current user-directed suspension
+
+As of 2026-09-21, [all audit work is Suspended — no audit for now](AUDIT-SUSPENSION.md). Mixed checklist items keep their other scope; suspended parts remain unchecked and require an explicit user instruction to resume. As of 2026-09-28, the user has also paused new features and scope expansion for worktree consolidation; preserve that hold until a later user instruction. These overrides apply to earlier next-action logs that otherwise schedule development or audit work.
 
 ## Session start checklist
 
@@ -22,7 +26,7 @@ Update the progress document at meaningful checkpoints: a completed batch, a new
 
 Keep changes coherent with their owning plan. If work spans several modules, update each affected progress document and cross-link the relevant entries. A shared finding may have one detailed entry, but every affected record must summarize its impact.
 
-For work with no obvious owner, use the responsible maintenance/module record or create a new plan/progress pair before starting an unplanned feature. Planning-only/no-code sessions still need a concise entry.
+For work with no obvious owner, use the responsible maintenance/module record or create a new plan/progress pair before starting an unplanned feature. Planning-only/no-code sessions still need a concise entry, except for the question-answering case in the scope statement above.
 
 ## Checklist and status rules
 
@@ -38,7 +42,7 @@ For work with no obvious owner, use the responsible maintenance/module record or
 
 - [ ] Update canonical checklist items with evidence-backed completion and leave partial items unchecked.
 - [ ] Update the current status, active/next checklist IDs, blockers, decisions, and next-session cautions in every affected progress file.
-- [ ] Append a session entry using the required fields below, even if work was limited to investigation, review, documentation, or a failed attempt.
+- [ ] Append a session entry using the required fields below, even if work was limited to investigation, review, documentation, or a failed attempt. A session that only answers a user question and changes no repository state is exempt unless the user asks for a record.
 - [ ] Record exact verification commands/checks and outcomes; distinguish passed, failed, not run, mocked, emulated, and actual deployment results.
 - [ ] Record modified/created paths and a concise explanation of behavior or documentation changes. Include a commit/PR link only if one actually exists.
 - [ ] Record the next executable action and any prerequisites, unfinished migrations, version assumptions, environment requirements, or hazards the next session must know.
@@ -90,4 +94,3 @@ The next session should be able to answer from repository files alone:
 3. What remains blocked or uncertain?
 4. Which exact checklist item comes next?
 5. What must not be forgotten or accidentally undone?
-

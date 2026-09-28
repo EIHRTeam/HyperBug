@@ -1,27 +1,37 @@
 # HyperBug implementation plan
 
-This directory turns the [initial architecture](../initial-architecture/) into an executable, module-based plan. All plans, progress records, project guidance skills, and new project documentation are written in English.
+This directory turns the [initial architecture](../initial-architecture/) into an executable, module-based plan. Plans, progress records, project guidance skills, and engineering documentation are written in English. Human-facing guides are maintained in English and Simplified Chinese at the [documentation entry point](../README.md).
 
 **The first implementation step is module 00: create project maintenance and development guidance skills. Backend work follows. SPA development starts only after the backend acceptance gate in module 10 passes.**
 
 Module 00 has now created and validated the [development](../../.agents/skills/hyperbug-development/SKILL.md) and [maintenance](../../.agents/skills/hyperbug-maintenance/SKILL.md) skills. Consult master progress for current implementation status; the remaining checklists describe future work.
+
+**Audit instruction (2026-09-21): [All audit work is suspended — no audit for now](AUDIT-SUSPENSION.md).** Skip suspended audit work when selecting a future batch.
+
+**Current worktree hold (2026-09-28):** Pause new features and scope expansion while the existing changes are consolidated. See the [consolidation record](evidence/2026-09-28-worktree-consolidation.md). Do not expand Modules 04/09, start the SPA, enable the Free tier, or resume audit or Argon2id performance work. Resume the ordered checklist only after a later user instruction.
 
 ## Start here
 
 1. Read [Master progress](PROGRESS.md), [Execution protocol](EXECUTION.md), and the latest progress entry for the next eligible module.
 2. Read [Source decisions and research](SOURCES.md) and the applicable module's source sections.
 3. Execute the earliest unfinished eligible checklist item. Read the applicable registered repository guidance skill.
-4. Record progress, changed files, verification, and next-session cautions in every affected module's progress document during and at the end of every session.
+4. Record progress, changed files, verification, and next-session cautions in every affected module's progress document during and at the end of every session. A session that only answers a user question and changes no repository state is exempt unless the user asks for a record.
 
 ## Specification index
 
-Module 07 policies and their implementation items live in these English specifications rather than in this plan:
+Module 07 policies and the optional deployment-tier specification live in these English specifications rather than in this plan:
 
 | Specification | Scope | Owner |
 | --- | --- | --- |
 | [MARKDOWN-POLICY](../MARKDOWN-POLICY.md) | Canonical Markdown storage, representation/transport kinds, determinism, derivation and pagination contract | 07.1 |
 | [ADR 0003](../decisions/0003-markdown-representation-and-pagination.md) | Accepted direction for Markdown representation, transport and pagination | 07 |
 | [DATA-MODEL](../DATA-MODEL.md), [API-CONVENTIONS](../API-CONVENTIONS.md), [API-OPERATIONS](../API-OPERATIONS.md) | Records, public contract, cursor rules and permission matrix | 02, 06–10 |
+| [FREE-TIER-PROFILE](../FREE-TIER-PROFILE.md) | Opt-in Cloudflare Free minimum tier: enablement contract, degradation catalog, compensating controls, capacity ceilings, SMTP delivery and disclosure | 03.1e/03.2g/03.3g–03.3h, 04.1e/04.2g, 09.1f/09.2e/09.3g, 13.1f–13.1g |
+| [ADR 0007](../decisions/0007-cloudflare-free-minimum-tier.md) | Accepted direction for the opt-in minimum tier and its recorded deviations | 03, 04, 09, 13 |
+| [TRANSPORT-SECURITY](../TRANSPORT-SECURITY.md) | Platform TLS/PQ capability, deployment verification, and versioned crypto-agility evidence | 03.2f |
+| [OUTBOUND-SECURITY](../OUTBOUND-SECURITY.md) | Fixed HTTPS destination catalog, bounded fetch mechanism and pending runtime egress checks | 03.3e |
+| [RATE-LIMITING](../RATE-LIMITING.md), [ADR 0008](../decisions/0008-rate-limit-consistency.md) | Sensitive primary counters, approximate volumetric limits and privacy/retention boundaries | 03.3c–03.3d |
+| [ADR 0009](../decisions/0009-standard-password-login.md) | Standard-profile password login may open after functional account/provider implementation; independent audit and further performance characterization do not gate enablement | 03.2e/03.V5, 04.1d |
 
 ## Module index
 
@@ -74,6 +84,8 @@ The module checklist is the source of truth for implementation completion. Its p
 
 Follow the default sequence unless a documented dependency analysis permits independent work after G0. This is not an instruction to delegate or spawn agents. Never bypass G1 or build a later feature's UI before its backend acceptance.
 
+The optional Cloudflare Free minimum tier runs beside this sequence with its own independent acceptance in 13.G6. It never opens, closes or substitutes for G1 or G2, and no later module may treat it as the profile its backend acceptance was written against.
+
 Modules 07 and 08 implement handlers against the event contracts defined in 02/05; module 09 supplies production dispatch and scheduling. These are explicit integration handoffs, not circular prerequisites. They are fully tested together before G1.
 
 Backend-owned authorization interaction pages and minimal browser test fixtures in 04/10 are part of proving the backend protocol. They do not authorize starting the product SPA early.
@@ -84,6 +96,7 @@ Backend-owned authorization interaction pages and minimal browser test fixtures 
 - **Post-MVP:** structured relations/sub-issues, saved views, subscriptions/notifications, bulk operations, import/export, and named official provider plugins. The async/event/security seams required for these exist in the MVP.
 - **Deferred:** AI, vector search, realtime collaborative editing, full boards/roadmaps, SLA/knowledge-base products, SCIM, arbitrary workflow designers, and hosting untrusted runtime plugin code. They must not block MVP.
 - **Two first-class backend profiles:** Workers + D1 + R2 + Queues + Workflows, and Node 24 + PostgreSQL 18.x + S3-compatible storage + Graphile Worker with durable PostgreSQL workflow state.
+- **Optional minimum tier:** an opt-in, explicitly acknowledged `cloudflare-free-minimum` variant of Profile A for the Cloudflare Free plan, carrying the documented FREE-01–FREE-08 degradations and their compensating controls. It stays outside G1/G2, is accepted only by 13.G6, and never weakens the first-class profiles.
 - **Shared semantics:** domain/application services, Elysia routes, public contracts, plugin protocol, security and performance policy. Database SQL, migrations, FTS, blob/queue/workflow adapters, and runtime startup may differ.
 - **Static frontend:** independent hosting and registrable domains; public runtime configuration, versioned REST/OpenAPI, memory-only opaque bearer tokens, and top-level PKCE authentication recovery.
 - **Modern web:** Baseline Widely Available, WCAG 2.2 AA, native capabilities where suitable, measured performance, and explicit progressive enhancement.
@@ -104,4 +117,3 @@ No calendar estimates or fabricated service-level commitments are assigned. Sequ
 - [Session and checklist protocol](EXECUTION.md)
 - [Architecture sources and current research](SOURCES.md)
 - [Requirement coverage and cross-module handoffs](COVERAGE.md)
-
