@@ -54,3 +54,39 @@ Every session affecting this module MUST append an entry following the [required
 - Next actions: Complete prerequisites, then begin 16.1.
 - Next-session cautions: Select and validate provider versions when implementation starts. External APIs and trust requirements change; this plan does not assert live provider compatibility.
 
+### 2026-09-20 — Self-contained SMTP transport planned
+
+- Scope and checklist IDs: Planning only. Added 16.1d, 16.2i and 16.3f, and clarified in 16.2d/16.2h that delivery is an adapter behind the notification pipeline. No implementation item was completed or checked.
+- Progress: Recorded the SMTP transport constraints: implicit TLS on 465 or STARTTLS on 587 only because outbound port 25 is prohibited, a publicly reachable relay with mandatory certificate validation and SASL authentication for the Worker, a shared protocol layer for the Node runtime over `node:net`/`node:tls`, bounded parsing and timeouts, injection protection, credentials through the KeyProvider, optional DKIM signing, and the free-tier limitation to verified destination addresses for the Cloudflare adapter.
+- Change summary: Extended the module plan and its source-coverage pointer; Core remains usable with no email channel.
+- Files/artifacts: `docs/plan/modules/16-official-integrations.md`; [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md); this record.
+- Verification: Documentation-only session; the package-wide validator result is in the master session entry. No SMTP client, relay test or provider acceptance ran.
+- Decisions and deviations: Deliverability is the operator's relay responsibility; direct-to-MX delivery is not supported and no third-party email SDK is required.
+- Blockers/open questions: Relay interoperability and the deliverability statement need 16.1d/16.2i evidence; the local fixture must work without a container runtime.
+- Next actions: Implement the conformance fixture first, then the Worker and Node transports behind the notification API.
+- Next-session cautions: Never log credentials or message bodies, always validate TLS, and reject CRLF injection in headers and recipients.
+
+
+### 2026-09-21 — Audit work suspended by user instruction
+
+- Scope and checklist IDs: Audit-related portions of this module's canonical checklist; see the [suspension register](../AUDIT-SUSPENSION.md).
+- Progress: Marked planned audit work Suspended with the explicit instruction “no audit for now”; unrelated development remains eligible.
+- Change summary: Added visible suspension labels and an execution override, preserving unchecked states and earlier history.
+- Files/artifacts: This module's plan and progress record; the shared suspension register.
+- Verification: Documentation consistency is checked with the suspension batch; no audit implementation or audit acceptance run.
+- Decisions and deviations: Explicit user-directed scheduling suspension, not completion, automatic resumption, or deletion of existing audit behavior.
+- Blockers/open questions: Audit evidence remains deferred; it does not block unrelated development or count as a passed release gate.
+- Next actions: Execute the next eligible non-audit work within the authorized scope; Phase 03 proceeds with transport security.
+- Next-session cautions: Do not restart audit tasks through mixed feature checklists or earlier next-action entries; resume only when the user explicitly requests it. Preserve existing history and protections.
+
+### 2026-09-28 — Worktree consolidation and scope hold
+
+- Scope and checklist IDs: Post-MVP plan-only alignment; no implementation item.
+- Progress: Existing uncommitted work was inventoried and committed by dependency; no new checklist or gate was closed.
+- Change summary: Retained prior integration planning text; no plugin/integration implementation was added.
+- Files/artifacts: This progress record, its paired plan where changed, and the [consolidation record](../evidence/2026-09-28-worktree-consolidation.md); commit details are in Git history.
+- Verification: Node 24.21.0 frozen offline install, typecheck, lint, Drizzle history, formatting, build, docs build, secret/license scans, and 301 local tests passed; a clean committed-source retry also passed 301. This is repository/local evidence only; see the linked record for the first clean-run timeout and exact limits.
+- Decisions and deviations: Respect the user-directed hold on new features; audits and Argon2id performance work remain suspended, Free tier disabled, Module 04/09 scope bounded, and SPA unstarted.
+- Blockers/open questions: Post-MVP prerequisites remain open.
+- Next actions: Keep Module 16 untouched during the feature hold.
+- Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.

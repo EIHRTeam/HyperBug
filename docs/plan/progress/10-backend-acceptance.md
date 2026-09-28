@@ -54,3 +54,27 @@ Every session affecting this module MUST append an entry following the [required
 - Next actions: Complete prerequisites, then begin 10.1.
 - Next-session cautions: A passing mocked API test is not evidence of Workers/D1/R2 or Node/PostgreSQL/S3 compatibility. Keep unavailable deployment checks explicitly blocked.
 
+### 2026-09-20 — Minimum-tier acceptance separation planned
+
+- Scope and checklist IDs: Planning only. Added 10.2f and 10.3g, and extended 10.1a to cover the instance capability document. G1's scope is unchanged and no checklist item was checked.
+- Progress: Recorded that every acceptance environment states its deployment tier and quota headroom, that minimum-tier runs are labelled and excluded from the G1 evidence set, and that quota-aware measurements form their own evidence set.
+- Change summary: Extended the module plan with the tier items, the OpenAPI amendment and a source-coverage pointer.
+- Files/artifacts: `docs/plan/modules/10-backend-acceptance.md`; [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md); this record.
+- Verification: Documentation-only session; the package-wide validator result is in the master session entry. No acceptance run occurred and G1 remains closed.
+- Decisions and deviations: The minimum tier is accepted by 13.G6 only and never substitutes for a gate item in this module.
+- Blockers/open questions: Free-plan measurement access is required for 10.3g; without it the evidence stays explicitly missing.
+- Next actions: Keep G1 scoped to the two first-class profiles; add the instance capability document during the OpenAPI consolidation in 10.1a.
+- Next-session cautions: Never merge minimum-tier measurements into standard-profile baselines or cite them as G1 evidence.
+
+
+### 2026-09-28 — Worktree consolidation and scope hold
+
+- Scope and checklist IDs: G1 planning only; no acceptance item.
+- Progress: Existing uncommitted work was inventoried and committed by dependency; no new checklist or gate was closed.
+- Change summary: Retained prior backend acceptance planning and verified that G1 was not marked passed by local tests.
+- Files/artifacts: This progress record, its paired plan where changed, and the [consolidation record](../evidence/2026-09-28-worktree-consolidation.md); commit details are in Git history.
+- Verification: Node 24.21.0 frozen offline install, typecheck, lint, Drizzle history, formatting, build, docs build, secret/license scans, and 301 local tests passed; a clean committed-source retry also passed 301. This is repository/local evidence only; see the linked record for the first clean-run timeout and exact limits.
+- Decisions and deviations: Respect the user-directed hold on new features; audits and Argon2id performance work remain suspended, Free tier disabled, Module 04/09 scope bounded, and SPA unstarted.
+- Blockers/open questions: The defined deployed two-profile acceptance matrix remains incomplete.
+- Next actions: Do not start the SPA; resume Module 10 only after its backend prerequisites and user direction.
+- Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
