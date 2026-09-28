@@ -1,0 +1,65 @@
+# Phase 03 deployment posture and startup validation
+
+Date: 2026-09-20. Scope: completed 03.1e; configuration/startup portion of 03.3g. The complete 03.3g, 03.V6, 03.V7 and 13.G6 remain unchecked. No minimum-tier runtime is offered and no Free-account measurement is claimed.
+
+## Implementation
+
+- [Deployment configuration](../../../packages/config/src/deployment.ts) defines exact tier/acknowledgement parsing, immutable invariant/degradation catalogs and the required password algorithm. Runtime identity is a mandatory trusted composition-root argument to `loadConfig`; it is not an environment setting.
+- Only an absent tier defaults to standard. Unknown, null, empty, whitespace, mixed-case and coercible values reject; orphaned/stale acknowledgement rejects. Minimum is Cloudflare-only. Errors point to the specification and never include supplied values.
+- The [shared server](../../../packages/server/src/index.ts) refuses all minimum-tier startup in this build, including correctly acknowledged local selections, until its mechanisms and independent acceptance exist. No environment/test override can expose partial capabilities. Standard roots retain their existing health-only behavior.
+- [The threat-boundary map](../../SECURITY-FOUNDATION.md#deployment-tier-posture-and-enablement-boundary) connects every FREE-01–FREE-08 property to its compensation and preserves unconditional security invariants. English/Chinese reader pages disclose current unavailability and the intended tier differences.
+- Password performance exploration stopped at the user's explicit instruction. [Archived password research](03-password-research.md) now records the successful prior static-Wasm probes and remaining provenance/implementation limits; no password probe ran in this batch.
+
+## Verification
+
+Runtime/tool versions remain Node 24.21.0 and Miniflare 5.20260916.0-alpha with compatibility date 2026-09-16. No dependency, binding declaration, migration or lockfile was changed by this batch.
+
+| Command or check | Result and scope |
+| --- | --- |
+| `pnpm typecheck` | Both Node/shared and Worker type lanes pass |
+| `pnpm lint` | Lint and workspace boundaries pass |
+| `pnpm exec vitest run --project unit --project contract` | 25 passed; five new tier/configuration tests cover invalid coercions, unknown runtime, immutability, secret-free errors, no inference, unchanged security settings and no partial-enable switch |
+| `pnpm test:node` | 20 passed; real bundled Node child processes reject invalid/minimum selections before listening; existing HTTP/crypto and transport regressions pass |
+| `pnpm test:workerd` | 59 passed; real bundled Worker startup rejects invalid/partial minimum selections; standard startup remains unchanged with plan/quota-like bindings; existing workerd/D1 and HTTP/crypto suites pass |
+| Scoped `pnpm exec oxfmt --check` | All 13 touched TypeScript files pass |
+| `pnpm build` | Both production roots and test fixtures build |
+| `pnpm scan:secrets` | Known credential signature scan passes |
+| `pnpm docs:build` | Passed; VitePress rendered the synchronized reader guides |
+
+A scoped documentation validator passed 12 files / 133 local links and anchors, reader-setting parity and the relevant checklist states. Scoped diff whitespace checks passed.
+
+This batch ran **104 tests**. The PostgreSQL lane was not rerun because no persistence behavior/schema changed; its previous 37-test pass remains historical evidence, not a new 141-test full-suite claim. No hosted CI, production deployment or live provider test ran. All runtime checks above are local, including workerd startup checks; they do not establish Free-plan feasibility.
+
+The first negative workerd startup test correctly rejected configuration but its cleanup also rethrew the same startup error. Context7 lookup on 2026-09-20 initially found no Miniflare library; resolving Cloudflare Workers SDK selected `/cloudflare/workers-sdk`. The query documented `dispose()` cleanup but did not specify failed-startup behavior. Inspection of the installed 5.20260916.0-alpha `dispose` implementation confirmed cleanup runs before rethrowing the original readiness error, with independent cleanup failures taking priority. The test now captures the original error, disposes, and suppresses **only that identical error object**; distinct cleanup errors still fail. The error must reference the tier specification, so an unrelated runtime failure cannot pass the negative test. An initial lint finding against throwing inside `finally` was corrected without disabling the rule. Both checks then passed.
+
+## 2026-09-25 partial password mechanism checkpoint
+
+The optional tier now has a strict versioned PBKDF2-HMAC-SHA256 record, 16-byte random salt, context-bound keyed HMAC verifier and separate `password-pepper` KeyProvider purpose. Native Web Crypto runs the derivation in both Node 24.21.0 and local Miniflare/workerd. Wrong password/context, malformed records, Argon2id records, unavailable/revoked pepper and disallowed key purpose fail closed. Successful verification can return a replacement record for a higher iteration count or a new pepper; account ownership and expected-revision persistence remain the caller's responsibility. The 1,000/1,200-iteration fixture values are functional test inputs, not proposed production policy.
+
+Migration `0008_password_pepper` extends both durable registries without changing 0000–0007. A populated 0007→0008 fixture retains a protected record and backup reference, then verifies the purpose constraint, foreign-key integrity and lifecycle guards. The D1 rebuild restores all three lifecycle triggers. The integrated pepper proof uses real D1/PostgreSQL adapters, protected-record revisions, retained-backup release after expiry, rotation and revocation. Initial repository runs failed because the fixture tried to release a still-retained backup at the original timestamp; advancing the trusted test clock after expiry corrected that fixture without relaxing production guards. Final repository runs passed D1/workerd 45/45 and isolated PostgreSQL 18.6 43/43. Local D1 applied 0008 and its second migration invocation was a no-op. No remote database was migrated.
+
+The final `corepack pnpm test` run passed **193 tests**: unit/contract 49, Node 29, workerd 72 and PostgreSQL 43. `typecheck`, `lint`/boundaries, `db:check`, both profile/fixture builds, docs build and secret scan passed. Scoped formatting was applied after the test run; it changed layout only, and the 14-file formatter check passed. A final docs build, nine-document/207-link consistency check and scoped `git diff --check` passed. Full-tree `git diff --check` still reports unrelated existing edits in `README.md` (extra EOF blank) and `docs/.vitepress/config.ts:83` (trailing space); this batch did not rewrite them. The 2026-09-25 Context7 resolve-then-query lookup confirmed PBKDF2 `importKey`/`deriveBits` in [Node 24 Web Crypto](https://nodejs.org/docs/latest-v24.x/api/webcrypto.html) and [Workers Web Crypto](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/). These local tests do not measure a Cloudflare Free account or establish a reviewed parameter floor.
+
+03.2g, 03.V7 and 13.G6 stay unchecked. The shared startup barrier still refuses the tier; no production iteration count, startup pepper provisioning check, account login/recovery integration or independent tier acceptance exists. No Argon2id performance probe or audit-specific work ran. [Audit suspension](../AUDIT-SUSPENSION.md) remains in force.
+
+## Focused security review and remaining scope
+
+Reviewed configuration sources, both composition roots and shared application construction. The only selection authority is exact startup configuration; the runtime comes from code. Retention, origin, input and authorization settings are still validated independently. The tier catalog grants no authority and selects no verifier. No user-controlled secret enters error text, public metadata or telemetry. Frozen shared constants cannot be changed by the caller's original configuration object. Native application code remains trusted; these constants are not a sandbox.
+
+03.1e is satisfied by the threat map, stable catalog, invariant list and scope rules. Parser/startup tests do **not** complete 03.3g or 03.V6: audited enablement/change, the startup warning, truthful readiness policy, compensating controls, full invariant integration and the independent tier evidence remain to be implemented/verified. The release barrier is intentionally retained. The older proposal to develop the permission-aware audit service (03.3a) was superseded by the user's audit suspension; continue eligible non-audit controls. Do not resume Argon2id performance troubleshooting or treat this checkpoint as Phase 03 completion.
+
+## 2026-09-26 readiness-policy checkpoint
+
+The independent `ReadinessSchema` now extends `/health/ready` with a closed `deployment` object containing the selected tier, degradation IDs and required password-hash policy. Both 200 and 503 responses from the running standard profile return `standard`, `[]` and `argon2id`; `/health/live` keeps its original status-only contract. The server snapshots the posture at construction and makes a fresh response value per request. This metadata does not assert password-login capability or complete product dependency readiness. The minimum-tier startup barrier remains in place, including with a correct acknowledgement, so no minimum readiness response is reachable.
+
+Focused contract 1/1, Node HTTP/entry 25/25 and local workerd HTTP/entry/deployment 29/29 checks passed. The full local suite passed 207/207 (unit/contract 53, Node 33, workerd/D1 78, isolated PostgreSQL 18.6 43). Both TypeScript configurations, lint/boundaries, production/fixture builds, VitePress build and the known-secret signature scan passed. The new response is locally tested in the production Node bundle and production Worker bundle under Miniflare; no hosted deployment or Free-account behavior was verified. The current user instruction keeps audit work suspended and Argon2id performance testing stopped. 03.3g, 03.V6 and 13.G6 remain unchecked: startup warning, audit-dependent enablement, minimum-tier compensations, real Free-plan evidence and independent acceptance are still missing.
+
+Scoped source formatting, 218 relative links across ten changed documents, document whitespace, reader-topic parity and scoped diff whitespace passed. A repository-wide diff whitespace check still has the two pre-existing out-of-scope findings in `README.md` and `docs/.vitepress/config.ts`; neither was altered by this batch.
+
+## 2026-09-26 stored PBKDF2 cost bound
+
+The minimum-tier password service now requires a caller-selected `MinimumPasswordPolicy` with both `currentIterations` and `maximumIterations`. It snapshots and validates both values before accessing a key. A stored record above the maximum is rejected after strict parsing and before pepper lookup or PBKDF2 derivation. The parser's one-million-iteration ceiling remains only a format bound, never a selected Free-plan cost. A stronger stored record within the maximum still verifies when the current target is lower, and pepper rotation or rehash never reduces that stored cost.
+
+The functional Node and local workerd HTTP scenarios each cover over-maximum and invalid/reversed policy denial before a sentinel provider is touched, plus the existing stronger-record no-downgrade case. The D1/workerd and PostgreSQL 18.6 protected-record proof now passes explicit policies through initial hashing, rotation, replacement and revoked-pepper denial. Focused Node HTTP 24/24 and workerd HTTP 26/26 passed. The full local suite passed 207/207 (unit/contract 53, Node 33, workerd/D1 78, PostgreSQL 43); both TypeScript configurations, lint/boundaries, full builds, VitePress build, secret scan and scoped source formatting passed. No performance run, Free-account measurement, independent audit or production parameter selection occurred. The tier still fails startup; 03.2g, 03.V7 and 13.G6 remain open. Existing 1,000/1,200-iteration fixtures are functional inputs only.
+
+Five affected documents passed 204 relative links, whitespace and scoped diff checks. This implementation changed no migration or public account route. No new library/API question arose; the earlier 2026-09-25 Web Crypto Context7 lookup remains the relevant documentation reference.
