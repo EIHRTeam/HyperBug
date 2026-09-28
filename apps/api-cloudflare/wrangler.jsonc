@@ -3,8 +3,14 @@
   "name": "hyperbug-api-local",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-16",
-  "compatibility_flags": ["nodejs_compat", "enable_request_signal"],
+  "compatibility_flags": [
+    "nodejs_compat",
+    "enable_request_signal",
+    "cache_option_enabled",
+  ],
   "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "secrets": { "required": ["HYPERBUG_KEY_RING", "HYPERBUG_ABUSE_KEY_RING"] },
   "vars": {
     "HYPERBUG_ENV": "local",
     "ALLOWED_ORIGINS": "http://localhost:5173",
@@ -17,14 +23,87 @@
       "migrations_dir": "../../packages/database/d1/migrations",
     },
   ],
+  "ratelimits": [
+    {
+      "name": "ABUSE_VOLUMETRIC",
+      "namespace_id": "703301",
+      "simple": { "limit": 1000, "period": 60 },
+    },
+  ],
   "env": {
+    "local-turnstile": {
+      "name": "hyperbug-api-local-turnstile",
+      "triggers": { "crons": ["*/5 * * * *"] },
+      "secrets": {
+        "required": [
+          "HYPERBUG_KEY_RING",
+          "HYPERBUG_ABUSE_KEY_RING",
+          "TURNSTILE_SECRET",
+          "TURNSTILE_SITE_KEY",
+          "TURNSTILE_HOSTNAME",
+        ],
+      },
+      "vars": {
+        "HYPERBUG_ENV": "local",
+        "ALLOWED_ORIGINS": "http://localhost:5173",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "hyperbug-local",
+          "database_id": "00000000-0000-4000-8000-000000000001",
+          "migrations_dir": "../../packages/database/d1/migrations",
+        },
+      ],
+      "ratelimits": [
+        {
+          "name": "ABUSE_VOLUMETRIC",
+          "namespace_id": "703304",
+          "simple": { "limit": 1000, "period": 60 },
+        },
+      ],
+    },
     "staging": {
       "name": "hyperbug-api-staging",
+      "triggers": { "crons": ["*/5 * * * *"] },
+      "workers_dev": false,
+      "preview_urls": false,
+      "secrets": {
+        "required": [
+          "HYPERBUG_KEY_RING",
+          "HYPERBUG_ABUSE_KEY_RING",
+          "HYPERBUG_INGRESS_KEY",
+        ],
+      },
       "vars": { "HYPERBUG_ENV": "staging" },
+      "ratelimits": [
+        {
+          "name": "ABUSE_VOLUMETRIC",
+          "namespace_id": "703302",
+          "simple": { "limit": 1000, "period": 60 },
+        },
+      ],
     },
     "production": {
       "name": "hyperbug-api",
+      "triggers": { "crons": ["*/5 * * * *"] },
+      "workers_dev": false,
+      "preview_urls": false,
+      "secrets": {
+        "required": [
+          "HYPERBUG_KEY_RING",
+          "HYPERBUG_ABUSE_KEY_RING",
+          "HYPERBUG_INGRESS_KEY",
+        ],
+      },
       "vars": { "HYPERBUG_ENV": "production" },
+      "ratelimits": [
+        {
+          "name": "ABUSE_VOLUMETRIC",
+          "namespace_id": "703303",
+          "simple": { "limit": 1000, "period": 60 },
+        },
+      ],
     },
   },
 }
