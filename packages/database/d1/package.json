@@ -9,6 +9,7 @@
   "dependencies": {
     "@hyperbug/domain": "workspace:*",
     "@hyperbug/application": "workspace:*",
+    "@hyperbug/security": "workspace:*",
     "drizzle-orm": "0.45.2"
   }
 }
