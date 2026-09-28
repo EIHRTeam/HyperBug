@@ -7,6 +7,7 @@ import {
   bigint,
   jsonb,
   unique,
+  uniqueIndex,
   index,
   check,
   foreignKey,
@@ -362,6 +363,29 @@ export const identities = table(
     check(
       'identity_subject_bound',
       sql`length(${t.subject}) BETWEEN 1 AND 1024`,
+    ),
+  ],
+);
+
+export const passwordCredentials = table(
+  'password_credentials',
+  {
+    identityId: id('identity_id')
+      .primaryKey()
+      .references(() => identities.id),
+    record: json('record').notNull(),
+    revision: integer('revision').notNull().default(1),
+    createdAt: instant('created_at').notNull(),
+    updatedAt: instant('updated_at').notNull(),
+  },
+  (t) => [
+    validJson('password_credential_record', t.record),
+    revisionCheck('password_credential_revision', t.revision),
+    validTime('password_credential_created', t.createdAt),
+    validTime('password_credential_updated', t.updatedAt),
+    check(
+      'password_credential_time_order',
+      sql`${t.updatedAt} >= ${t.createdAt}`,
     ),
   ],
 );
@@ -929,5 +953,210 @@ export const pluginMetadata = table(
     revisionCheck('plugin_metadata_schema_version', t.schemaVersion),
     revisionCheck('plugin_metadata_revision', t.revision),
     validJson('plugin_metadata_value', t.value),
+  ],
+);
+
+// Authoritative security metadata. Raw key material is never stored here.
+export const keyRegistryControl = table(
+  'key_registry_control',
+  {
+    singleton: integer('singleton').primaryKey(),
+    generation: integer('generation').notNull(),
+  },
+  (t) => [
+    check('key_registry_singleton', sql`${t.singleton} = 1`),
+    revisionCheck('key_registry_generation', t.generation),
+  ],
+);
+
+export const keyVersions = table(
+  'key_versions',
+  {
+    purpose: text('purpose').notNull(),
+    keyId: text('key_id').notNull(),
+    version: integer('version').notNull(),
+    state: text('state').notNull(),
+    createdAt: instant('created_at').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.purpose, t.keyId, t.version] }),
+    check(
+      'key_purpose',
+      sql`${t.purpose} IN ('token-hmac','blind-index','envelope-kek','password-pepper')`,
+    ),
+    check('key_id_length', sql`length(${t.keyId}) BETWEEN 1 AND 64`),
+    revisionCheck('key_version', t.version),
+    check(
+      'key_state',
+      sql`${t.state} IN ('current','previous','revoked','removed')`,
+    ),
+    uniqueIndex('key_one_current')
+      .on(t.purpose)
+      .where(sql`${t.state} = 'current'`),
+    index('key_state_purpose').on(t.state, t.purpose),
+    index('key_active_versions')
+      .on(t.purpose, t.keyId, t.version)
+      .where(sql`${t.state} != 'removed'`),
+    validTime('key_created', t.createdAt),
+  ],
+);
+
+export const protectedRecords = table(
+  'protected_records',
+  {
+    id: id('id').primaryKey(),
+    revision: integer('revision').notNull(),
+    purpose: text('purpose').notNull(),
+    keyId: text('key_id').notNull(),
+    keyVersion: integer('key_version').notNull(),
+    record: json('record').notNull(),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.purpose, t.keyId, t.keyVersion],
+      foreignColumns: [
+        keyVersions.purpose,
+        keyVersions.keyId,
+        keyVersions.version,
+      ],
+      name: 'protected_record_key_fk',
+    }),
+    index('protected_record_key').on(t.purpose, t.keyId, t.keyVersion, t.id),
+    validId('protected_record_id', t.id),
+    revisionCheck('protected_record_revision', t.revision),
+    validJson('protected_record_json', t.record),
+    check(
+      'protected_record_reference',
+      sql`coalesce(${t.record}->'key'->>'purpose' = ${t.purpose} AND ${t.record}->'key'->>'id' = ${t.keyId} AND ${t.record}->'key'->>'version' = cast(${t.keyVersion} as text), false)`,
+    ),
+  ],
+);
+
+export const keyBackups = table(
+  'key_backups',
+  {
+    id: id('id').primaryKey(),
+    state: text('state').notNull(),
+    retainUntil: instant('retain_until').notNull(),
+    createdAt: instant('created_at').notNull(),
+  },
+  (t) => [
+    validId('key_backup_id', t.id),
+    check(
+      'key_backup_state',
+      sql`${t.state} IN ('capturing','retained','released')`,
+    ),
+    check('key_backup_retention', sql`${t.retainUntil} > ${t.createdAt}`),
+    validTime('key_backup_created', t.createdAt),
+    validTime('key_backup_until', t.retainUntil),
+    index('key_backup_state_index').on(t.state),
+  ],
+);
+
+export const keyBackupReferences = table(
+  'key_backup_references',
+  {
+    backupId: id('backup_id')
+      .notNull()
+      .references(() => keyBackups.id),
+    purpose: text('purpose').notNull(),
+    keyId: text('key_id').notNull(),
+    keyVersion: integer('key_version').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.backupId, t.purpose, t.keyId, t.keyVersion] }),
+    foreignKey({
+      columns: [t.purpose, t.keyId, t.keyVersion],
+      foreignColumns: [
+        keyVersions.purpose,
+        keyVersions.keyId,
+        keyVersions.version,
+      ],
+      name: 'key_backup_reference_fk',
+    }),
+    index('key_backup_reference_key').on(
+      t.purpose,
+      t.keyId,
+      t.keyVersion,
+      t.backupId,
+    ),
+  ],
+);
+
+export const rateLimitCounters = table(
+  'rate_limit_counters',
+  {
+    category: text('category').notNull(),
+    dimension: text('dimension').notNull(),
+    keyVersion: integer('key_version').notNull(),
+    subjectDigest: text('subject_digest').notNull(),
+    windowStart: instant('window_start').notNull(),
+    hits: integer('hits').notNull(),
+    expiresAt: instant('expires_at').notNull(),
+  },
+  (t) => [
+    primaryKey({
+      columns: [
+        t.category,
+        t.dimension,
+        t.keyVersion,
+        t.subjectDigest,
+        t.windowStart,
+      ],
+    }),
+    index('rate_limit_expiry').on(t.expiresAt),
+    check(
+      'rate_limit_category',
+      sql`${t.category} IN ('login','password-reset','registration','issue-create','comment-create','reaction','search','attachment-upload','api-token-create','webhook-configure')`,
+    ),
+    check(
+      'rate_limit_dimension',
+      sql`${t.dimension} IN ('ip','account','principal','project','token','route')`,
+    ),
+    check(
+      'rate_limit_key_version',
+      sql`${t.keyVersion} BETWEEN 1 AND 2147483647`,
+    ),
+    check('rate_limit_digest', sql`${t.subjectDigest} ~ '^[0-9a-f]{64}$'`),
+    check('rate_limit_hits', sql`${t.hits} BETWEEN 1 AND 2147483647`),
+    check('rate_limit_expiry_order', sql`${t.expiresAt} > ${t.windowStart}`),
+    validTime('rate_limit_window_start', t.windowStart),
+    validTime('rate_limit_expires_at', t.expiresAt),
+  ],
+);
+
+/** First-party authorization sessions; no plaintext cookie credential. */
+export const authorizationSessions = table(
+  'authorization_sessions',
+  {
+    id: id('id').primaryKey(),
+    principalId: id('principal_id')
+      .notNull()
+      .references(() => principals.id),
+    identityId: id('identity_id')
+      .notNull()
+      .references(() => identities.id),
+    credentialRevision: integer('credential_revision').notNull(),
+    digest: json('digest').notNull(),
+    createdAt: instant('created_at').notNull(),
+    idleExpiresAt: instant('idle_expires_at').notNull(),
+    absoluteExpiresAt: instant('absolute_expires_at').notNull(),
+    revokedAt: instant('revoked_at'),
+  },
+  (t) => [
+    index('authorization_session_principal').on(t.principalId, t.id),
+    index('authorization_session_expiry').on(t.absoluteExpiresAt),
+    validId('authorization_session_id', t.id),
+    validTime('authorization_session_created', t.createdAt),
+    validTime('authorization_session_idle', t.idleExpiresAt),
+    validTime('authorization_session_absolute', t.absoluteExpiresAt),
+    check(
+      'authorization_session_revision',
+      sql`${t.credentialRevision} BETWEEN 1 AND 2147483647`,
+    ),
+    check(
+      'authorization_session_time_order',
+      sql`${t.idleExpiresAt} > ${t.createdAt} AND ${t.absoluteExpiresAt} >= ${t.idleExpiresAt} AND (${t.revokedAt} IS NULL OR ${t.revokedAt} >= ${t.createdAt})`,
+    ),
   ],
 );

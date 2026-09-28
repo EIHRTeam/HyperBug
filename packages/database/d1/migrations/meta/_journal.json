@@ -36,6 +36,55 @@
       "when": 1789733891896,
       "tag": "0004_immutable_definitions",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1789822351727,
+      "tag": "0005_key_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1789823126848,
+      "tag": "0006_key_lookup_bounds",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1790282473121,
+      "tag": "0007_rate_limits",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1790310767191,
+      "tag": "0008_password_pepper",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1790412284239,
+      "tag": "0009_account_lockouts",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1790477445607,
+      "tag": "0010_password_credentials",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1790515424822,
+      "tag": "0011_authorization_sessions",
+      "breakpoints": true
     }
   ]
 }
