@@ -10,6 +10,9 @@ import {
   type MutationResult,
 } from '@hyperbug/domain';
 
+export * from './account-registration.ts';
+export * from './account-session.ts';
+
 export interface MutationIdentity {
   mutationId: string;
   principalId: string;
