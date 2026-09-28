@@ -21,7 +21,7 @@ Append a concise English entry with the [required template](../../../../docs/pla
 - Decisions/deviations and blockers with concrete resolution steps.
 - Ordered next actions and next-session cautions: unfinished migrations, version uncertainty, uncommitted work, missing environment access, or invariants that must not be lost.
 
-This applies even to planning, investigation, review, failed attempts, and no-code work. Mark plan items complete only when their stated outcome and verification are complete. Update master/gate status when it changes; an initialized log or proposed procedure is not implementation evidence.
+This applies even to planning, investigation, review, failed attempts, and no-code work. A session that only answers a user question and changes no repository state is exempt unless the user asks for a record. Mark plan items complete only when their stated outcome and verification are complete. Update master/gate status when it changes; an initialized log or proposed procedure is not implementation evidence.
 
 Never put secrets, private payloads, live credentials, or signed capabilities into handoffs. Link long reports instead of copying them. Keep records usable without chat history; do not claim commits, tests, deployments, or compatibility that did not happen.
 

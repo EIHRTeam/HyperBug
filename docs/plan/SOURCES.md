@@ -34,6 +34,8 @@ Module source sections use these shorthand names and the numbered sections insid
 | Optional email/SSO versus functional accounts | Choose and test usable Core account/bootstrap/recovery flows without mandatory email/SSO; provider-specific implementations stay optional | 04, 16 |
 | Source security/performance docs are primarily Cloudflare-oriented | Enforce the same security, bounds, and recovery semantics in Node/PostgreSQL/S3 | 03–10, 13 |
 | Existing architecture files are not English | All new plans/progress/specifications/skills/runbooks use English; existing inputs remain historical unless separately translated | 00 and every module |
+| Cloudflare Free CPU/quota/retention limits versus the two first-class profiles | Add one opt-in, explicitly acknowledged minimum tier that removes capabilities and records each deviation; the first-class profiles, their adapters and their gates are unchanged | 03, 09, 13 |
+| Cloudflare Email Service sending requires Workers Paid and outbound port 25 is prohibited | Implement a self-contained SMTP transport over the Workers socket API plus a shared Node protocol layer; keep the Cloudflare adapter optional and, on Free, limited to verified destination addresses | 16 |
 
 Workers + PostgreSQL through Hyperdrive is architecturally possible but is not a guaranteed profile in this plan. Do not generalize source-time support claims or advertise PostgreSQL 18 compatibility without current provider and integration evidence.
 
@@ -59,6 +61,21 @@ Primary references returned by Context7:
 - [Cloudflare Workflows guide](https://github.com/cloudflare/cloudflare-docs/blob/production/src/content/docs/workflows/get-started/guide.mdx): durable steps, retries, and serializable step results.
 
 No current implementation proof was performed during this planning session. Better Auth, Graphile Worker, AWS SDK, frontend libraries, and external integration providers require focused Context7/official-doc verification when their modules begin.
+
+### Deployment-tier lookup — 2026-09-20
+
+`context7-mcp` resolve-then-query selected `/llmstxt/developers_cloudflare_workers_llms-full_txt` (official Cloudflare Workers documentation, high reputation). Queries covered plan-tier limits and CPU accounting, `node:crypto` algorithm availability, the Durable Objects CPU FAQ and the TCP socket API; the exact tables were then read from the official pages listed in [ADR 0007](../decisions/0007-cloudflare-free-minimum-tier.md).
+
+| Topic | Finding used by ADR 0007 and [FREE-TIER-PROFILE](../FREE-TIER-PROFILE.md) | Limitation or follow-up |
+| --- | --- | --- |
+| Workers Free envelope | 10 ms CPU per invocation, 100,000 requests/day shared with Durable Object requests and Workflow executions, 50 subrequests, 5 Cron Triggers; `limits.cpu_ms` is paid-only | Dated provider facts; re-verify when the tier is implemented |
+| D1, Queues, Workflows, Durable Objects, R2, Pages, Logs, Turnstile, Email | Free ceilings recorded in the specification's capacity table | Queues became free on 2026-02-04; any earlier paid-only assumption is obsolete |
+| Web Crypto and `node:crypto` | PBKDF2 is available through Web Crypto; Argon2 is absent; scrypt exists in `node:crypto` | Native-crypto accounting against the Free CPU budget is unmeasured |
+| Durable Object CPU | The limits table states 30 s per invocation without a plan split while the FAQ states Workers plan parity | Contradiction recorded; Durable Objects are not used as a compute escape hatch |
+| TCP sockets and SMTP | TLS through `secureTransport`, outbound port 25 prohibited, Cloudflare/private/loopback destinations blocked, egress prefix outside published ranges | Relay interoperability must be verified by 16.1d/16.2i |
+| Rate Limiting binding, Workers Traces, OTLP export | No plan restriction is documented for the binding; traces remain beta | Plan tier for each remains unverified and must be recorded before reliance |
+
+A third-party Workers password-hashing benchmark could not be retrieved (repeated fetch timeouts) and is not used as evidence; no decision depends on it.
 
 ## Modern web guidance
 
@@ -106,4 +123,7 @@ No frontend code was created, so this session verified planning coverage and com
 | Search language and indexing delay | Shared documented semantics, limits, language/ranking choices, and rebuild | 08 |
 | Queue/workflow semantic differences | Crash/replay/idempotency and bounded scheduling evidence | 09 |
 | Performance budgets and support claims | Measured results with environment, fixture, versions, and required checks | 10, 13 |
+| Minimum-tier password parameters and floor | Measured Free-plan PBKDF2 cost curve, reviewed iteration floor and the recorded algorithm/parameter decision; password login on the tier stays closed until then | 03, 13 |
+| Minimum-tier capacity ceiling and quota alerting | Instance ceiling measured from Free-plan fixtures, with quota budgets and alerting recorded for the tier | 10, 13 |
+| SMTP relay interoperability | Verified relay matrix (implicit TLS and STARTTLS), deliverability statement and provider-independent conformance evidence | 16 |
 

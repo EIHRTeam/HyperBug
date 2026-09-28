@@ -24,7 +24,7 @@ Establish repository-owned, English guidance that every later development or mai
 - [x] **00.2c** Require Context7 resolve-then-query for library/framework/SDK/API/CLI/cloud-service questions. Record lookup dates and references; if documentation is incomplete, identify the gap and verify against official sources or a focused runtime experiment.
 - [x] **00.2d** Require modern-web-guidance search then retrieval before relevant web work; record guide IDs, compatibility status, and chosen fallbacks. Preserve Baseline Widely Available, WCAG 2.2 AA, static hosting, and memory-only access tokens.
 - [x] **00.2e** Define security/performance review and ADR triggers from the source baselines. State that plugins supply mechanisms and cannot relax Core policy.
-- [x] **00.2f** Require English for all new project documentation, plans, progress logs, skills, ADRs, and substantive documentation updates. Treat existing initial-architecture documents as historical inputs; translate them only in a separately scoped documentation change.
+- [x] **00.2f** Require English for engineering documentation, plans, progress logs, skills, ADRs, and substantive engineering documentation updates; maintain reader guides in English and Simplified Chinese as specified in root guidance. Treat existing initial-architecture documents as historical inputs; translate them only in a separately scoped documentation change.
 
 ### Step 00.3 — Encode maintenance and session continuity
 

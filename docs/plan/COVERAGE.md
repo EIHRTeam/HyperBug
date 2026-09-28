@@ -6,7 +6,7 @@ This map assigns implementation and verification ownership to the source require
 
 | Requirement | Implementation owner | Acceptance/evidence owner |
 | --- | --- | --- |
-| English guidance skills first; English documentation default | 00 | 00; all session logs |
+| English guidance skills first; English engineering documentation and bilingual reader guides | 00 | 00; all session logs |
 | Every-session progress, change summaries, and next-session cautions | EXECUTION protocol; every module | Per-module progress; master status |
 | Reproducible pnpm/Node/TypeScript workspace and dependency policy | 01 | 01, 13 |
 | Shared Elysia server with two independent runtime entries | 01 | 01, 10 |
@@ -39,6 +39,9 @@ This map assigns implementation and verification ownership to the source require
 | Subscriptions, notifications, bulk actions, import/export | 15 | 15 backend gate, then UI acceptance |
 | Plugin API/SDK/runtime/registry and build-time UI extension | 05, 11 | 05, 09–10, 16 |
 | Internal SSO, three CAPTCHA providers, email/webhook/GitHub | 16 | Per-provider acceptance and release checks |
+| Opt-in Cloudflare Free minimum tier: posture model, degradation catalog, compensating controls | 03, 09, 13 | 03.V6–03.V7, 09.V6, 13.G6 |
+| Minimum-tier capability document and client/end-user disclosure | 04, 11, 12 | 04.V6, 11.V5, 12.V7 |
+| Self-contained SMTP email transport with an optional Cloudflare adapter | 16 | 16.1d, 16.2i, per-provider acceptance |
 | Deferred AI/boards/realtime/SCIM/untrusted runtime execution | Explicit exclusions in README and 16 | Must not block MVP |
 
 ## Cross-module contracts and handoffs
@@ -59,6 +62,14 @@ This map assigns implementation and verification ownership to the source require
 | 11 | Static shell, browser auth, accessible primitives | 12, 14–16 | Browser/cross-site/CSP tests |
 | 13 | Deploy/upgrade/restore/release procedures | 14–16 and maintenance | Repeat for each later increment |
 
+Minimum-tier handoffs:
+
+| Producer | Deliverable | Consumer | Integration check |
+| --- | --- | --- | --- |
+| 03 | Deployment-tier gate, degradation identifiers, password-hash policy | 04, 09, 11–13 | Tier-gate and capability-contract tests |
+| 09 | Minimum-tier outbox, failed-job store and job runner | 10, 13, 15 | Crash, quota and Cron-budget tests |
+| 16 | SMTP transport and email channel adapter | 13, 15 | Relay conformance fixtures and deliverability documentation |
+
 ## MVP integration checkpoints
 
 - [x] **C1** G0: guidance skills exist and are discoverable before any product implementation.
@@ -69,4 +80,6 @@ This map assigns implementation and verification ownership to the source require
 - [ ] **C6** Each post-MVP module accepts its backend before exposing its frontend.
 
 These integration checkboxes summarize evidence owned by module plans. Update them only when the owning acceptance items pass; they do not replace module checklists or session records.
+
+The optional Cloudflare Free minimum tier is outside C4 and C5. It is accepted by 13.G6 alone, its evidence is labelled as minimum-tier evidence, and it must never be cited as MVP acceptance or as evidence for a first-class profile.
 
