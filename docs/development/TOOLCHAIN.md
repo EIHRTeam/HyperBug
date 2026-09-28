@@ -217,3 +217,39 @@ Code splitting stays enabled for `apps/api-cloudflare`, which is what the approv
 `pnpm install --frozen-lockfile`, `typecheck`, `lint`, `format:check` (twice, and second run clean), `db:check`, `build`, `test:unit` (11), `test:contract` (1), `test:node` (10), `test:workerd` (36), `test:postgres` (24) = 81 ordinary tests, `scan:secrets` and `scan:licenses` passed. `pnpm audit --audit-level high` still reports only the reviewed moderate `drizzle-kit` advisory. One workerd run failed with `EADDRNOTAVAIL` while a debug Miniflare process from this session was still listening; it passed on rerun and is a harness artifact, not a product failure.
 
 Not verified: hosted CI has not run against these tools, and the previous hosted acceptance evidence was produced with esbuild/Biome/Prettier, so the quality, Node, workerd and PostgreSQL jobs must be re-confirmed on a push or pull request.
+
+## 2026-09-27 — Minified production bundles with external source maps
+
+Requested directly: enable tsdown `minify: true` and `sourcemap: true` for the runtime entry points. Recorded here because it refines the bundling half of [ADR 0004](../decisions/0004-oxc-toolchain-migration.md).
+
+### Where the options live
+
+`minify: true` and `sourcemap: true` are declared once as `productionArtifacts` in `tooling/build-targets.ts` and spread into both `appTargets` entries instead of being written in `tsdown.config.ts`. `pnpm build` runs `tooling/build.ts`, which builds each target through tsdown's programmatic `build({ ...target.options, config: false })`; an option added only to the CLI config would silently not reach the artifacts the Node start command and the workerd lanes consume. That was the pre-change state: `dist/` carried no `.map` file and `dist/node/index.mjs` was 387,911 unminified bytes. `tsdown.config.ts` keeps re-exporting the same targets, so the CLI and the build script still cannot drift.
+
+`fixtureTargets` and `tooling/bundler-options.ts` are deliberately unchanged: the workerd test fixtures stay unminified so a failing fixture assertion stays readable, and the production Worker bundle they are compared against is the minified `dist/cloudflare` artifact that `tests/workerd/entry.test.ts` and `tests/workerd/deployment.test.ts` start.
+
+### Measured on this tree (Node 24.21.0)
+
+- `dist/node/index.mjs` 387,911 → 190,616 bytes (−50.9%), plus `index.mjs.map` 838,399 bytes.
+- `dist/cloudflare/`: entry 1,101,626 → 762,625; `source-*.mjs` 124,295 → 62,990; `rolldown-runtime-*.mjs` 1,961 → 1,122; emitted JavaScript total 1,227,882 → 826,737 (−32.7%). Source maps add `index.mjs.map` 1,829,085 and `source-*.mjs.map` 251,969 bytes.
+- Fixture bundles are byte-identical to before: `worker.mjs` 829,828, `standard-password-worker.mjs` 437,731, `database-worker.mjs` 61,220.
+- The maps are external, version 3, and carry `sourcesContent`; `index.mjs` ends with `//# sourceMappingURL=index.mjs.map`. The Node map lists 193 sources, the Worker map 199.
+- Emitted size trade-off: the maps are several times the minified code, so total `dist/` bytes grow (Node 387,911 → 1,029,015; Worker JavaScript + maps 1,227,882 → 2,907,791). Minification shrinks what is executed and shipped to a runtime; the maps are the debugging cost.
+
+### CLI parity
+
+`pnpm exec tsdown` (the `tsdown.config.ts` path) emits the same byte counts as `node tooling/build.ts` and the same content-addressed chunk name (`source-CeyO_bhh.mjs`), so both paths now honour the shared options. The pre-existing `cloudflare:workers` `UNRESOLVED_IMPORT` warning is unchanged.
+
+### Node start command requires `--enable-source-maps`
+
+Node does not apply an external source map unless asked. Measured for the same Turnstile startup refusal:
+
+- Unminified entry: 1,401 bytes of stderr with the message intact.
+- Minified entry, no flag: the stack trace echoes the whole minified line (120,892 bytes to a file), and through a pipe the capture ends at 65,536 bytes before the message is written, so the reason for the failure is lost.
+- Minified entry with `--enable-source-maps`: 579 bytes, and frames resolve to `packages/server/src/turnstile.ts:66:15` and `apps/api-node/src/index.ts:14:17`.
+
+The Node start command is therefore `node --enable-source-maps dist/node/index.mjs` (`NODE_OPTIONS=--enable-source-maps` is equivalent). `tests/node/deployment.test.ts` starts the entry with that flag for the same reason; its assertions are unchanged. The Worker needs no equivalent: `apps/api-cloudflare/wrangler.jsonc` still bundles from source, and workerd reports frames without echoing source lines.
+
+### Verification
+
+Node 24.21.0: `typecheck`, `lint` (0 warnings, 0 errors, boundaries passed), scoped `oxfmt --check`, `node tooling/build.ts` and `pnpm exec tsdown`; test lanes `unit`+`contract` 82/82, `node` 44/44, `workerd` 86/86, `postgres` 46/46. Not run: hosted CI, deployment, and any measurement on Cloudflare's platform.

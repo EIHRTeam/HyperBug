@@ -53,3 +53,13 @@ Because oxlint does not validate rule options at runtime (a misspelled key repor
 ## Verification required
 
 `pnpm install --frozen-lockfile`, `typecheck`, `lint`, `format:check`, `db:check`, `build`, `test:unit`, `test:contract`, `test:node`, `test:workerd`, `test:postgres`, `scan:secrets`, `scan:licenses` and `audit --audit-level high`. Hosted CI must re-run the same matrix, because the previous hosted acceptance evidence was produced with the replaced toolchain.
+
+## Amendment: minified artifacts with external source maps
+
+Date: 2026-09-27. Requested directly by the user; locally verified, not yet re-confirmed on hosted CI.
+
+Both runtime targets now bundle with `minify: true` and `sourcemap: true`. The options are declared once in `tooling/build-targets.ts` and inherited by `tsdown.config.ts`, because `pnpm build` reaches tsdown through `tooling/build.ts`, not through the CLI config; declaring them only in the CLI config left the emitted artifacts unminified and without maps. Workerd test fixtures stay unminified so fixture failures remain readable.
+
+This changes one operational detail of the Node entry documented above. Node applies an external source map only with `--enable-source-maps`, and without it a startup failure echoes the minified bundle's single long line: the same Turnstile refusal produced 120,892 bytes of stderr whose trailing message was already lost at a 65,536-byte pipe capture, against 579 bytes and frames resolving to `packages/server/src/turnstile.ts:66:15` with the flag. Operators therefore start the Node profile with `node --enable-source-maps dist/node/index.mjs`. The Cloudflare profile is unaffected: Wrangler still bundles from source, and `dist/cloudflare` remains a CI-checked artifact.
+
+Minification roughly halves the Node entry and removes a third of the emitted Worker JavaScript, while the external maps are several times larger than the code they describe, so total `dist/` bytes grow. Exact measurements, CLI parity and the `tests/node/deployment.test.ts` start-flag adaptation are recorded in [TOOLCHAIN](../development/TOOLCHAIN.md).
