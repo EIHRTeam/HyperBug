@@ -557,3 +557,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Full identity/authorization acceptance, recovery, deployed ingress, and provider evidence remain open.
 - Next actions: Do not expand Module 04 during the hold; later resume only from its existing checklist.
 - Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-09-28 — PostgreSQL CI account-route fixture repair
+
+- Scope and checklist IDs: Maintain the existing narrow 04.1d/04.2c Phase 03 route coverage; no Module 04 checklist or acceptance item closes.
+- Progress: The account-route suite in [Backend Tests run 36427041598](https://github.com/EIHRTeam/HyperBug/actions/runs/36427041598/job/108943448711) could not initialize its Node root because CI supplies a loopback TCP `PGHOST`, while the fixture passed it as a Unix-socket directory.
+- Change summary: The existing first and second Node roots now use the shared test-only PostgreSQL binding selector; route behavior, production code, and migrations are unchanged.
+- Files/artifacts: `tests/postgres/account-route.test.ts`, `tests/fixtures/postgres-node-bindings.ts`, this record and the Module 03 progress record.
+- Verification: Node 24.21.0/PostgreSQL 18.6: complete postgres Vitest project passed 49/49 on both private Unix socket and isolated loopback TCP; typecheck, lint, formatting, and diff whitespace checks passed. Commit `f8f9298` passed all four hosted jobs in both [PR run 36428342535](https://github.com/EIHRTeam/HyperBug/actions/runs/36428342535) and [push run 36428335118](https://github.com/EIHRTeam/HyperBug/actions/runs/36428335118).
+- Decisions and deviations: Accept only private socket paths or local loopback for this isolated test fixture. Keep Module 04 scope frozen beyond existing Phase 03 dependencies.
+- Blockers/open questions: None for this CI repair; full Module 04 acceptance and deployed provider/ingress evidence remain open.
+- Next actions: Preserve the existing Module 04 scope hold.
+- Next-session cautions: Do not infer deployed account-route acceptance from these local tests. Audits and Argon2id performance work remain suspended; Free tier stays disabled.
