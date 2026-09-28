@@ -183,3 +183,112 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for the local migration. Hosted CI re-verification is outstanding, and the unexplained chunked-fixture 500 in Miniflare remains unexplained; it is avoided rather than diagnosed and is recorded in ADR 0004.
 - Next actions: Push or open a pull request to re-run the quality, Node, workerd and PostgreSQL hosted jobs with the new toolchain, then update the module 01 evidence note. When a real deployment is attempted, confirm the chunked Cloudflare artifact is not needed by Wrangler, which bundles from `src/index.ts`.
 - Next-session cautions: `pnpm lint` fails on warnings now, so a new warning is a gate failure rather than noise; intentional sequential awaits belong in `tests/**` or `tooling/**`, where the rule is already off. The oxlint configuration fails open if a rule option is misspelled, so keep `tests/unit/oxlint-config.test.ts`'s negative fixtures passing. `oxfmt` must keep `sortPackageJson: false`, or every `package.json` is reordered. Chunk filenames are content-addressed: never assert them, and never declare only the entry when loading `dist/cloudflare` in workerd. `docs/**` is deliberately excluded from formatting.
+
+### 2026-09-19 — Documentation build dependency and CI increment
+
+- Scope and checklist IDs: Maintenance adjacent to 01.1c and 01.3a, supporting reader documentation under 13.3d; no foundation checklist or gate changed.
+- Progress: Added pinned VitePress 1.6.4 and a documentation-only Vite 6.4.3 override, with the shared frozen lockfile and existing install-script controls. Added local docs scripts and a GitHub Pages workflow that builds PRs but deploys only main.
+- Change summary: Default-theme bilingual documentation builds independently of API artifacts and the future product SPA. Root quality commands remain unchanged.
+- Files/artifacts: `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.github/workflows/docs.yml`, `docs/.vitepress/config.ts`, and [site maintenance notes](../../development/DOCUMENTATION.md).
+- Verification: Frozen install, documentation build/config type check, workspace typecheck/lint/format/build, license scan, and high-threshold audit passed. The initial Vite 5 high advisory was removed by the scoped override; only the existing moderate drizzle-kit/esbuild advisory remains. Full outcomes and lookup limitations are in the [module 13 record](13-mvp-release-and-operations.md). No backend behavior changed, and no database/runtime suites or hosted workflow ran for this increment.
+- Decisions and deviations: Vue-plugin peer metadata permits Vite 6; VitePress's own Vite 5 range is overridden with explicit local verification and no upstream certification claim. No production frontend stack decision or new lifecycle-script allowlist exception.
+- Blockers/open questions: Hosted Pages setup/run is pending; previous module 01 hosted/SAST follow-ups remain unchanged.
+- Next actions: Review the shared lockfile and hosted docs build on the next PR; remove the narrow override when upstream supplies a patched supported range.
+- Next-session cautions: Keep this documentation toolchain separate from backend and future SPA dependencies. Preserve concurrent module 03 work and previous foundation follow-ups.
+
+### 2026-09-19 — Node rejected-body connection regression found during Phase 03
+
+- Scope and checklist IDs: Reverification of runtime HTTP behavior under 01.2/01.V while implementing 03.1c; existing module 01 hosted/SAST follow-ups are unchanged.
+- Progress: Reproduced a six-second ECONNRESET after returning 413 with an incomplete incoming body and reusing the HTTP/1 connection. Added Node-specific rejection cleanup through the shared server's runtime-neutral callback.
+- Change summary: Set Connection: close and disable keep-alive only for denied incomplete requests, allowing the safe error to finish before closure. Do not drain unbounded input, add test sleeps/retries or disable all keep-alive.
+- Files/artifacts: `apps/api-node/src/{index,rejected-request}.ts`, shared server callback and `tests/node/http.test.ts`; [Phase 03 evidence](../evidence/03-security-foundation-validation.md).
+- Verification: Both typechecks, lint/format, complete 99-test matrix and both builds pass. Node's 17 tests include deliberately unfinished Content-Length/chunked bodies using one keep-alive agent and successful subsequent requests. Earlier failure and installed srvx source/doc limitations are recorded in Phase 03 evidence. Hosted CI was not run.
+- Decisions and deviations: Preserve the shared Web API/domain boundary; transport primitives remain in the Node composition root. No dependency or baseline change.
+- Blockers/open questions: No remaining blocker for this reproduced path; no claim to explain every historical connection reset. Existing hosted/SAST follow-ups remain.
+- Next actions: Keep the callback wired as later routes are added; proceed with Phase 03's remaining security scope.
+- Next-session cautions: Preserve concurrent documentation/guidance work. Diagnostic tracing was removed; this is an actual cleanup correction, not a timing workaround.
+
+### 2026-09-19 — Security workspace links and generated secret binding types
+
+- Scope and checklist IDs: Maintenance of 01.1/01.2 runtime composition supporting 03.2c; no module 01 acceptance status change.
+- Progress: Added `@hyperbug/security` workspace dependencies to both runtime apps and declared `HYPERBUG_KEY_RING` under required secrets for all Wrangler environments. Regenerated binding types using the installed tool.
+- Change summary: Secret material remains outside vars/RuntimeConfig. Lockfile changes are exactly two workspace links; external dependency versions and lifecycle policy are unchanged.
+- Files/artifacts: Runtime manifests, Wrangler config/generated types, six lockfile lines; [crypto evidence](../evidence/03-security-foundation-validation.md).
+- Verification: Lockfile-only update followed by frozen install, generated types, both typechecks/builds, lint/format and 105 tests pass. Latest Workers type definitions were inspected read-only, not installed. No remote secret write, hosted CI or deploy.
+- Decisions and deviations: Runtime factories remain separate from core policy and require a lifecycle adapter. No beta-only secret product or dependency upgrade.
+- Blockers/open questions: Durable lifecycle composition is pending under 03.2d; module 01 hosted/SAST follow-ups remain unchanged.
+- Next actions: Preserve generated binding consistency when the real lifecycle store is connected.
+- Next-session cautions: Required secret declarations name bindings only; never put key JSON in vars or logs. Preserve unrelated guidance/docs work.
+
+
+### 2026-09-19 — Security lifecycle persistence and operations handoff
+
+- Scope and checklist IDs: Runtime/package-boundary support for 03.2d; foundation status unchanged.
+- Progress: Both database adapters depend on infrastructure-free security ports without reversing the dependency direction.
+- Change summary: Added two workspace links, updated both import policies and negative/positive boundary tests; no external package resolution changed.
+- Files/artifacts: Database manifests, pnpm lockfile, `.oxlintrc.json`, `tooling/check-boundaries.mjs`, boundary tests and workerd database fixture.
+- Verification: Frozen offline install, both typechecks/builds, lint, secret scan and full 133-test matrix pass. Initial positive lint fixture used an unused import; exporting the type corrected the fixture. Scoped formatting passes; concurrently added `.vscode/settings.json` prevents a clean full-tree format claim.
+- Decisions and deviations: Security remains a leaf package; database adapters may implement its ports, while reverse/server imports remain forbidden. No package pin or runtime compatibility flag changed.
+- Blockers/open questions: Existing SAST/hosted follow-ups remain separate; no hosted CI was run here.
+- Next actions: Continue 03.2e; review any crypto dependency through maintenance guidance before adding it.
+- Next-session cautions: Preserve concurrent editor/docs changes and existing runtime transport fixes; database fixture RPCs must never enter production entry points.
+
+### 2026-09-19 — Password dependency investigation support
+
+- Scope and checklist IDs: Module 03.2e candidate/provenance research; no foundation checklist change.
+- Progress: Verified current npm metadata for libsodium sumo 0.8.4, hash-wasm 4.12.0 and argon2-browser 1.18.0; no dependency was installed.
+- Change summary: Read maintenance dependency policy and recorded audit/static-Wasm/benchmark gaps in [password research](../evidence/03-password-research.md).
+- Files/artifacts: Ignored research metadata/README snapshots and module 03 evidence/progress.
+- Verification: Context7 and normal TLS-verified registry/source reads; no benchmark/build containing a new package.
+- Decisions and deviations: No algorithm selection or package pin change; provenance and safe runtime behavior precede production dependency use.
+- Blockers/open questions: Exact independent audit coverage and precompiled Workers loading remain to be established.
+- Next actions: Inspect integrity-verified artifacts, then run the bounded both-runtime benchmark.
+- Next-session cautions: Keep package pins unchanged until selection is justified; do not run candidate install scripts or weaken crypto parameters as a shortcut.
+
+### 2026-09-20 — Explicit runtime configuration and startup rejection
+
+- Scope and checklist IDs: Runtime-composition support for 03.1e/03.3g; no module 01 checklist or acceptance change.
+- Progress: Both production roots and all fixtures explicitly identify their runtime to configuration. Node rejects the Cloudflare-only minimum tier, and shared startup refuses the unfinished tier on either runtime.
+- Change summary: Added real bundled startup regressions and adapted loader call sites; no external dependency, lockfile, compatibility flag or binding declaration changed. Archived password research now includes the prior successful static-Wasm probes; further performance exploration was stopped by the user and no probe was rerun.
+- Files/artifacts: `apps/{api-node,api-cloudflare}/src/index.ts`, config/server, deployment tests and [tier evidence](../evidence/03-deployment-tier-validation.md); [password archive](../evidence/03-password-research.md).
+- Verification: Both typechecks/builds, lint, scoped format, secret scan and affected 104-test matrix pass. Miniflare 5 disposal rethrows failed readiness after cleanup; installed-source verification closed the documentation gap and the regression accepts only the identical startup error during cleanup. No hosted CI, PostgreSQL rerun or deployment.
+- Decisions and deviations: Runtime identity is trusted code input, not a provider/env inference. Unaccepted minimum mechanisms remain unavailable behind a shared no-override barrier.
+- Blockers/open questions: None for this foundation change; module 01's existing SAST/hosted follow-ups remain separate. Password provenance/implementation is not accepted by successful static loading.
+- Next actions: Continue 03.3a audit and remaining tier activation; preserve explicit runtime arguments in future fixture/composition changes.
+- Next-session cautions: Preserve unrelated editor/docs/planning work and existing request-rejection transport cleanup. Do not resume stopped password performance probes or count local workerd as a real Free-plan result.
+
+### 2026-09-21 — Audit implementation parked; transport work continues
+
+- Scope and checklist IDs: Support for 03.3a suspension and 03.2f local transport verification; no module 01 acceptance change.
+- Progress: Removed only the unfinished audit integrations from active package exports and fixtures; prior accepted foundation behavior remains. Added a bounded loopback Node TLS capability tool.
+- Change summary: Preserved the unfinished sources in an ignored local snapshot and kept existing atomic audit writers intact. The transport tool uses installed platform TLS, validates peers and deletes temporary keys.
+- Files/artifacts: `.local/phase03-suspended-audit/2026-09-21/` manifest/snapshots; `tooling/transport-probe.mjs`; [transport procedure](../../TRANSPORT-SECURITY.md).
+- Verification: After parking audit work, `corepack pnpm typecheck`, `corepack pnpm lint` and `corepack pnpm build` passed. Final transport/document checks are recorded in the module 03 completion entry. No password performance or suspended audit test reran.
+- Decisions and deviations: User-directed suspension supersedes earlier audit next actions. Platform TLS capability does not certify an actual deployment or PQ authentication.
+- Blockers/open questions: Hosted/deployed transport verification remains open; unrelated module 01 follow-ups are unchanged.
+- Next actions: Continue eligible non-audit Phase 03 work and record transport evidence.
+- Next-session cautions: Do not restore integrated snapshot files wholesale; they also contain earlier accepted changes. Preserve existing pins and concurrent editor/docs changes.
+
+### 2026-09-27 — Minified production bundles with external source maps
+
+- Scope and checklist IDs: Build-output refinement of the 01.3a toolchain contract. No canonical checklist or verification item describes artifact minification or source maps, so none is checked and no module 01 acceptance status changes.
+- Progress: Both `appTargets` now bundle with `minify: true` and `sourcemap: true`, declared once as `productionArtifacts` in `tooling/build-targets.ts`. `tsdown.config.ts` keeps re-exporting those targets rather than restating the options, because `pnpm build` reaches tsdown through `tooling/build.ts`; the pre-change state had no `.map` in `dist/` and a 387,911-byte unminified Node entry, so a CLI-config-only edit would not have produced the requested artifacts. Workerd fixture bundles are deliberately left unminified.
+- Change summary: Minification halves the Node entry (387,911 → 190,616 bytes) and removes a third of the emitted Worker JavaScript (1,227,882 → 826,737 bytes across entry, chunk and runtime), with external version-3 source maps that carry `sourcesContent`. `tests/node/deployment.test.ts` now starts the entry with `--enable-source-maps` through a named argument constant; its assertions are unchanged. No dependency, lockfile, script, migration or runtime source file changed.
+- Files/artifacts: `tooling/build-targets.ts`; `tsdown.config.ts`; `tests/node/deployment.test.ts`; [toolchain record](../../development/TOOLCHAIN.md); [ADR 0004 amendment](../../decisions/0004-oxc-toolchain-migration.md). Emitted `dist/**` is not committed.
+- Verification: Node 24.21.0 on this machine. `node tooling/build.ts` and `pnpm exec tsdown` both emit the same byte counts and the same content-addressed chunk, so the CLI and script paths agree; `typecheck`, `lint` (0 warnings/0 errors, boundaries passed) and scoped `oxfmt --check` pass; test lanes `unit`+`contract` 82/82, `node` 44/44, `workerd` 86/86 and isolated PostgreSQL 18.6 `postgres` 46/46 pass. The minified Node entry was started through the workerd and Node production lanes; no deployment, hosted CI or Cloudflare-platform measurement was performed.
+- Decisions and deviations: The options live in the shared target list, not the CLI config, so the two build paths cannot drift. Fixture bundles stay unminified to keep test failures readable; the minified production Worker artifact is still what the workerd entry/deployment lanes start. The Node start command gains `--enable-source-maps`, because without it a startup failure loses its message at a 65,536-byte stderr capture (measured 120,892 bytes, message truncated) while the flag yields 579 bytes with frames mapped to `packages/server/src/turnstile.ts` and `apps/api-node/src/index.ts`. External maps are several times larger than the minified code, so total `dist/` bytes grow even though the executed JavaScript shrinks.
+- Blockers/open questions: None for the build contract. Hosted CI has not run against the minified artifacts, and no deployment or real Cloudflare measurement was made; operators must remember the source-map flag on the Node profile.
+- Next actions: Re-run the hosted quality/Node/workerd/PostgreSQL jobs when a push or pull request happens, so the minified artifact contract has CI evidence rather than only local evidence. Continue the next authorized backend module.
+- Next-session cautions: Do not restate `minify`/`sourcemap` in `tsdown.config.ts`; that reintroduces the drift this entry removed. Keep fixture targets unminified unless a test failure diagnosis story replaces it. If the Node start command is ever committed, it must carry `--enable-source-maps` or startup diagnostics regress. Preserve unrelated concurrent editor/docs/planning changes in the working tree.
+
+### 2026-09-28 — Worktree consolidation and scope hold
+
+- Scope and checklist IDs: 01.1/01.3 toolchain follow-up.
+- Progress: Existing uncommitted work was inventoried and committed by dependency; no new checklist or gate was closed.
+- Change summary: Retained the pinned dual-profile build, ingress typecheck, lockfile, and local developer commands in scoped commits.
+- Files/artifacts: This progress record, its paired plan where changed, and the [consolidation record](../evidence/2026-09-28-worktree-consolidation.md); commit details are in Git history.
+- Verification: Node 24.21.0 frozen offline install, typecheck, lint, Drizzle history, formatting, build, docs build, secret/license scans, and 301 local tests passed; a clean committed-source retry also passed 301. This is repository/local evidence only; see the linked record for the first clean-run timeout and exact limits.
+- Decisions and deviations: Respect the user-directed hold on new features; audits and Argon2id performance work remain suspended, Free tier disabled, Module 04/09 scope bounded, and SPA unstarted.
+- Blockers/open questions: Hosted acceptance for this consolidation was not rerun.
+- Next actions: Retain Node 24 and the committed package graph; resume roadmap work only after the hold is lifted.
+- Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.

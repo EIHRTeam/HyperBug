@@ -12,7 +12,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Implementation started: Yes.
 - Completed implementation checklist IDs: 02.1a–02.1f, 02.2a–02.2g, 02.3a–02.3d.
 - Active/next checklist group: Phase complete; G1 remains separate.
-- Last updated: 2026-09-18.
+- Last updated: 2026-09-25 (03.3c additive rate-counter persistence follow-up).
 - Blocking issues discovered: None for module 02 acceptance.
 - Evidence: [Both-profile acceptance and query evidence](../evidence/02-data-foundation-validation.md).
 
@@ -124,3 +124,76 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None remaining for these phases. Production/provider acceptance, feature authorization and SPA gates belong to later modules. Earlier Node reset has not recurred in the verified runs; no root-cause fix is claimed.
 - Next actions: Hand off the completed foundation; use the plan's next eligible backend module only when authorized. Preserve and extend the required checks.
 - Next-session cautions: Keep migrations immutable after shared application, use Node/Corepack pins and separate runtime processes, preserve unrelated uncommitted work, and never deploy fixture routes or treat repository integrity as authorization.
+
+
+### 2026-09-19 — Security lifecycle persistence and operations handoff
+
+- Scope and checklist IDs: Module 03.2d persistence follow-up; module 02 remains Complete.
+- Progress: Added five security lifecycle tables and immutable 0005–0006 histories to both dialects (30 tables total).
+- Change summary: Protected payload/reference ownership, permanent key identities/transition guards, backup pins and generation transactions; covering/partial indexes correct an observed retained-row scan.
+- Files/artifacts: Both database schemas, adapters, migrations/snapshots/journals; shared registry/migration tests; DATA-MODEL, ADR 0006 and [03 evidence](../evidence/03-security-foundation-validation.md).
+- Verification: Full suite 133 passed; D1 repository 38 and PostgreSQL 37 tests include fresh/previous-schema migrations, rollback, concurrent lifecycle state and runtime envelope proofs. `db:check` passes; Wrangler local migrations applied and no-op verified. One-statement indexed snapshot measured with 4,000 records, 500 backups and 4,000 extra tombstones.
+- Decisions and deviations: Additive schema supports retaining tables during application rollback; dropping lifecycle metadata is unsafe. Primary reads and reference/audit atomicity remain mandatory. No external deployment or production restore.
+- Blockers/open questions: Actual backup/restore orchestration and current revocation reconciliation remain module 13 work.
+- Next actions: Consume these internal storage contracts in identity/plugin owners; continue module 03 password and enforcement work.
+- Next-session cautions: Preserve 0000–0006 history, including the newly locally applied migrations; do not bypass protected-record accounting for recoverable secrets or delete referenced key material.
+
+### 2026-09-21 — Audit implementation parked; transport work continues
+
+- Scope and checklist IDs: Suspend the unfinished 03.3a adapter/test additions; module 02 remains Complete.
+- Progress: Parked new audit adapters, shared fixtures and selective database-test integrations. Existing tables, append-only protections and atomic Issue/key-registry audit writes remain intact.
+- Change summary: No schema or migration change. Local snapshots retain incomplete work and a manifest for an explicitly authorized future resumption.
+- Files/artifacts: `.local/phase03-suspended-audit/2026-09-21/`; database indexes and test fixtures; [suspension register](../AUDIT-SUSPENSION.md).
+- Verification: Before suspension, workerd had 44 passes and one new audit fixture failure (450 SQL parameters exceeded D1's limit); PostgreSQL additions did not run. After parking, both typechecks/builds and lint passed. No audit-specific rerun was performed.
+- Decisions and deviations: Suspension is not acceptance or deletion of existing audit behavior. The failed seed and unfinished adapter-query-plan check remain parked.
+- Blockers/open questions: Suspended audit evidence is deferred and does not block unrelated development.
+- Next actions: Support non-audit security adapters only when selected under their owning checklist.
+- Next-session cautions: Preserve locally applied immutable 0000–0006 migration history; do not fix or rerun parked audit work or overwrite integrated files from the snapshot without explicit resumption.
+
+### 2026-09-25 — Additive rate-counter persistence handoff
+
+- Scope and checklist IDs: Module 03.3c/03.3d storage follow-up; module 02 remains Complete and 03.V3 is open.
+- Progress: Added `rate_limit_counters` through separate additive `0007_rate_limits` histories and atomic increment/bounded-purge adapters in D1 and PostgreSQL. No existing table or audit behavior changed.
+- Change summary: Composite category/dimension/key-version/digest/window primary keys and expiry indexes support privacy-minimized primary-write enforcement; each upsert returns a saturated count. Purge is capped at 1,000 rows per call.
+- Files/artifacts: Both database schemas, rate-limit adapters, 0007 SQL/snapshots/journals, shared counter fixture, [rate specification](../../RATE-LIMITING.md) and [03 evidence](../evidence/03-rate-limits-validation.md).
+- Verification: Workerd/D1 repository suite 42 passed; isolated PostgreSQL 18.6 suite 40 passed, including fresh eight-migration install and populated upgrade. Twenty concurrent increments per dialect passed; Drizzle history and local D1 apply/no-op passed. Local D1 expiry lookup used the covering index. No remote migration or production restore.
+- Decisions and deviations: [ADR 0008](../../decisions/0008-rate-limit-consistency.md) selects authoritative writes for sensitive counters. No change to accepted module 02 invariants or the suspended audit plan.
+- Blockers/open questions: Physical retention requires a scheduled bounded cleanup in module 09; route/key/proxy and multi-instance acceptance remain module 03 work.
+- Next actions: Keep both histories immutable and consume the storage port from authorized route owners; schedule purge under module 09 when that module starts.
+- Next-session cautions: 0007 has run only against the local D1 store and isolated PostgreSQL test clusters. Preserve 0000–0006 and existing audit tables/triggers/atomic writes; do not deploy or roll back schema by dropping counters without a separate migration plan.
+
+### 2026-09-25 — Password-pepper key-purpose migration started
+
+- Scope and checklist IDs: Module 03.2g storage follow-up; module 02 foundation remains Complete. Extend key-purpose storage only, without starting module 04 account persistence or suspended audit work.
+- Progress: The minimum-tier password mechanism needs an independent `password-pepper` key purpose. Existing 0005–0007 histories restrict `key_versions.purpose` to the original three values, so a new migration is required before real adapters can manage it.
+- Change summary: Generate and inspect separate 0008 histories that widen only the key-purpose constraint while preserving existing identities, references, triggers and indexes. Verification and final artifacts follow in the checkpoint.
+- Files/artifacts: This record; both schemas, 0008 migrations/snapshots and shared lifecycle tests to follow.
+- Verification: Inspected current schema and migration journals. No SQL generated or applied at this checkpoint.
+- Decisions and deviations: Preserve 0000–0007 immutably; the new purpose must retain the same permanent identity, backup pin and protected-record reference behavior. No audit-specific implementation or Argon2id performance work.
+- Blockers/open questions: D1 requires a reviewed table rebuild for its CHECK constraint; fresh and populated upgrade behavior must pass before acceptance.
+- Next actions: Generate 0008 in both dialects, inspect SQL, then run migration and repository suites.
+- Next-session cautions: Never drop key/backup references or relax transition triggers to make the D1 rebuild pass.
+
+### 2026-09-25 — Password-pepper key-purpose migration checkpoint
+
+- Scope and checklist IDs: Module 03.2g persistence follow-up; module 02 remains Complete with its existing 02.2/02.3 outcomes unchanged.
+- Progress: Added `password-pepper` to the durable key-purpose constraint in separate D1 and PostgreSQL `0008_password_pepper` histories, preserving protected-record and retained-backup references.
+- Change summary: D1 rebuilds `key_versions` under deferred foreign keys, restores all three lifecycle triggers and checks the foreign-key graph; PostgreSQL replaces only the purpose CHECK. A populated 0007→0008 fixture verifies existing rows, legal new purpose, rejection of unknown purpose, protected removal and permanent identity.
+- Files/artifacts: Both database `src/schema.ts` files, `0008` SQL/snapshots/journals, `tests/fixtures/key-purpose-migration.ts`, shared registry proof and both repository suites, [data model](../../DATA-MODEL.md), [migration guide](../../development/MIGRATIONS.md) and [tier evidence](../evidence/03-deployment-tier-validation.md).
+- Verification: After correcting a test-clock release before backup expiry, D1/workerd repository 45/45 and isolated PostgreSQL 18.6 repository 43/43 passed; full `corepack pnpm test` passed 193. `db:check`, both typechecks, lint/boundaries, profile/fixture builds, docs build, secret scan, scoped formatting, nine-document/207-link check and scoped diff whitespace check passed. Local D1 applied 0008 and a second apply found no migrations; no remote migration or restore ran. Full-tree diff whitespace still reports unrelated existing README/VitePress edits.
+- Decisions and deviations: Keep 0000–0007 immutable and use the existing key lifecycle/backup rules for pepper material. The fixture clock advanced past retention; no production guard was relaxed. No audit-specific work or Argon2id performance testing.
+- Blockers/open questions: Production minimum-tier iteration policy, startup pepper provisioning and account integration belong to module 03/04; real Free-plan and independent tier acceptance are absent.
+- Next actions: Consume the storage purpose only after the tier policy and owning account service are ready; continue the remaining non-audit module 03 work.
+- Next-session cautions: 0008 is locally applied; preserve all 0000–0008 SQL/snapshots/journals and backup pins. Do not infer deployed migration, password-login readiness or an audit-plan resumption from repository tests.
+
+### 2026-09-28 — Worktree consolidation and scope hold
+
+- Scope and checklist IDs: 02.2b/02.3b security migration handoff.
+- Progress: Existing uncommitted work was inventoried and committed by dependency; no new checklist or gate was closed.
+- Change summary: Committed the ordered D1/PostgreSQL security histories and adapters without rewriting applied SQL.
+- Files/artifacts: This progress record, its paired plan where changed, and the [consolidation record](../evidence/2026-09-28-worktree-consolidation.md); commit details are in Git history.
+- Verification: Node 24.21.0 frozen offline install, typecheck, lint, Drizzle history, formatting, build, docs build, secret/license scans, and 301 local tests passed; a clean committed-source retry also passed 301. This is repository/local evidence only; see the linked record for the first clean-run timeout and exact limits.
+- Decisions and deviations: Respect the user-directed hold on new features; audits and Argon2id performance work remain suspended, Free tier disabled, Module 04/09 scope bounded, and SPA unstarted.
+- Blockers/open questions: Remote test D1 is at 0011; local D1 has 0009–0011 pending; no persistent PostgreSQL migration URL was available.
+- Next actions: Leave databases unchanged during the hold; inspect exact target state before any future migration.
+- Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.

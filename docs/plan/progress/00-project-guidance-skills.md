@@ -12,7 +12,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Implementation started: Yes; guidance artifacts only.
 - Completed implementation checklist IDs: 00.1a–00.1c, 00.2a–00.2f, 00.3a–00.3d, 00.4a–00.4c (all 16 items).
 - Active/next checklist group: None in module 00; module 01.1 is next.
-- Last updated: 2026-09-17.
+- Last updated: 2026-09-19.
 - Blocking issues discovered: None.
 - Evidence: [Validation and requirement audit](../evidence/00-guidance-validation.md).
 
@@ -66,3 +66,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for module 00. Version availability, adapter naming, and runtime compatibility remain module 01 work.
 - Next actions: Start 01.1a, verify required versions with current documentation/registry evidence, then scaffold the backend only within that task's scope.
 - Next-session cautions: Skills and root AGENTS are complete. Module 01 is eligible but unimplemented; G1 and all later gates remain incomplete. Preserve existing unrelated work and do not run planned commands as though package scripts already exist.
+
+### 2026-09-19 — Bilingual reader-documentation policy
+
+- Scope and checklist IDs: Maintenance of 00.2f/00.3d under the user's explicit bilingual documentation requirement; G0 remains passed.
+- Progress: Recorded English and Simplified Chinese as the paired reader-documentation languages while keeping engineering specifications, skills, plans, and records in English.
+- Change summary: Aligned root guidance, EXECUTION, plan navigation/coverage, and the owning documentation checklist; historical source documents and session entries remain unchanged.
+- Files/artifacts: `AGENTS.md`, `docs/plan/EXECUTION.md`, plan README/PROGRESS/COVERAGE, module 00/13 plans, and the reader documentation entry points.
+- Verification: Reviewed policy consistency and paired guide structure; repository formatting and documentation build/link checks passed. Details are recorded in the [module 13 session](13-mvp-release-and-operations.md). No skill metadata or runtime behavior changed.
+- Decisions and deviations: The user's explicit bilingual requirement supersedes the older blanket English rule for reader guides only. The default-theme documentation site is not the gated product SPA.
+- Blockers/open questions: None for the language-policy update.
+- Next actions: Update each reader page and its translation together; retain English engineering handoffs.
+- Next-session cautions: Do not translate historical architecture or relax product implementation gates as a consequence of this documentation exception.
+
+### 2026-09-28 — Worktree consolidation and scope hold
+
+- Scope and checklist IDs: G0; guidance and session protocol only.
+- Progress: Existing uncommitted work was inventoried and committed by dependency; no new checklist or gate was closed.
+- Change summary: Reconciled existing guidance and suspension wording; G0 remains passed.
+- Files/artifacts: This progress record, its paired plan where changed, and the [consolidation record](../evidence/2026-09-28-worktree-consolidation.md); commit details are in Git history.
+- Verification: Node 24.21.0 frozen offline install, typecheck, lint, Drizzle history, formatting, build, docs build, secret/license scans, and 301 local tests passed; a clean committed-source retry also passed 301. This is repository/local evidence only; see the linked record for the first clean-run timeout and exact limits.
+- Decisions and deviations: Respect the user-directed hold on new features; audits and Argon2id performance work remain suspended, Free tier disabled, Module 04/09 scope bounded, and SPA unstarted.
+- Blockers/open questions: None for consolidation.
+- Next actions: Keep guidance stable while the user-directed feature hold remains active.
+- Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
