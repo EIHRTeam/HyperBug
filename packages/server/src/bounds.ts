@@ -1,12 +1,8 @@
-export class RequestFailure extends Error {
-  readonly status: number;
-  readonly code: string;
-  constructor(status: number, code: string, message: string) {
-    super(message);
-    this.status = status;
-    this.code = code;
-  }
-}
+import type { InputLimits } from '@hyperbug/config';
+import { RequestFailure } from './errors.ts';
+import { assertJsonDepth, assertJsonShape } from './input.ts';
+
+export { RequestFailure } from './errors.ts';
 
 export async function withDeadline<T>(
   signal: AbortSignal,
@@ -19,14 +15,7 @@ export async function withDeadline<T>(
   const aborted = new Promise<never>((_, reject) => {
     rejectAbort = reject;
   });
-  const onAbort = () =>
-    rejectAbort(
-      new RequestFailure(
-        408,
-        'REQUEST_TIMEOUT',
-        'Request timed out or was cancelled.',
-      ),
-    );
+  const onAbort = () => rejectAbort(new RequestFailure('REQUEST_TIMEOUT'));
   combined.addEventListener('abort', onAbort, { once: true });
   const timer = setTimeout(() => deadline.abort(), timeoutMs);
   try {
@@ -45,9 +34,9 @@ export async function readBoundedJson(
   request: Request,
   maxBytes: number,
   timeoutMs: number,
+  limits: InputLimits,
 ): Promise<unknown> {
-  if (!request.body)
-    throw new RequestFailure(400, 'INVALID_JSON', 'A JSON body is required.');
+  if (!request.body) throw new RequestFailure('INVALID_JSON');
   const reader = request.body.getReader();
   try {
     return await withDeadline(request.signal, timeoutMs, async (signal) => {
@@ -63,20 +52,10 @@ export async function readBoundedJson(
           // bound is enforced per chunk as it arrives.
           // eslint-disable-next-line no-await-in-loop
           const { done, value } = await reader.read();
-          if (signal.aborted)
-            throw new RequestFailure(
-              408,
-              'REQUEST_TIMEOUT',
-              'Request timed out or was cancelled.',
-            );
+          if (signal.aborted) throw new RequestFailure('REQUEST_TIMEOUT');
           if (done) break;
           length += value.byteLength;
-          if (length > maxBytes)
-            throw new RequestFailure(
-              413,
-              'BODY_TOO_LARGE',
-              'Request body exceeds the limit.',
-            );
+          if (length > maxBytes) throw new RequestFailure('BODY_TOO_LARGE');
           chunks.push(value);
         }
         const bytes = new Uint8Array(length);
@@ -86,13 +65,17 @@ export async function readBoundedJson(
           offset += chunk.byteLength;
         }
         try {
-          return JSON.parse(
-            new TextDecoder('utf-8', { fatal: true, ignoreBOM: false }).decode(
-              bytes,
-            ),
-          );
-        } catch {
-          throw new RequestFailure(400, 'INVALID_JSON', 'Invalid JSON body.');
+          const text = new TextDecoder('utf-8', {
+            fatal: true,
+            ignoreBOM: false,
+          }).decode(bytes);
+          assertJsonDepth(text, limits.maxJsonDepth);
+          const value: unknown = JSON.parse(text);
+          assertJsonShape(value, limits);
+          return value;
+        } catch (error) {
+          if (error instanceof RequestFailure) throw error;
+          throw new RequestFailure('INVALID_JSON');
         }
       } finally {
         signal.removeEventListener('abort', cancel);
