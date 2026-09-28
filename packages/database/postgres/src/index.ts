@@ -1,4 +1,6 @@
 import type { Pool, PoolClient } from 'pg';
+export { createPostgresRateCounterStore } from './rate-limit.ts';
+export { createPostgresAccountRegistrationStore } from './account-registration.ts';
 import {
   DomainError,
   assertId,
@@ -251,3 +253,6 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
     },
   };
 }
+
+export * from './key-registry.ts';
+export { createPostgresAccountSessionStore } from './account-session.ts';

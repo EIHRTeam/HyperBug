@@ -1,4 +1,8 @@
 import type { D1Database } from '@cloudflare/workers-types';
+export { createD1RateCounterStore } from './rate-limit.ts';
+export { createD1AccountLockoutStore } from './account-lockout.ts';
+export { createD1AccountRegistrationStore } from './account-registration.ts';
+export { createD1AccountSessionStore } from './account-session.ts';
 import {
   DomainError,
   assertId,
@@ -275,3 +279,5 @@ export function createD1Repository(db: D1Database): IssueRepository {
     },
   };
 }
+
+export * from './key-registry.ts';
