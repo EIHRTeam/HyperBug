@@ -37,6 +37,7 @@ The pre-existing changes were separated into Conventional Commits for shared pol
 | Workers/D1 profile | `8942a9d`–`dce9007` |
 | Build wiring | `5e16a49` |
 | Security, migration, toolchain, and bilingual documentation | `e16747e`–`e497403` |
+| Plan, guidance, and module handoffs | `be48923`–`cf7bbb2` |
 
 ## Remaining boundaries
 
