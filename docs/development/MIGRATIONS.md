@@ -41,10 +41,25 @@ Status is the read-only default. Apply requires PostgreSQL 18, serializes migrat
 | 0002 append_only | Immutable audit/timeline DML; SQLite replacement and PostgreSQL truncation protection |
 | 0003 mvp_records | Remaining MVP mappings (25 total tables), Staff membership constraints, project-scoped references, moderation/tombstone metadata, integer parity and named system actors |
 | 0004 immutable_definitions | Immutable comment history and form versions |
+| 0005 key_lifecycle | Durable key registry, protected-record references and retained-backup pins |
+| 0006 key_lookup_bounds | Covering/partial indexes for bounded lifecycle queries |
+| 0007 rate_limits | Additive privacy-minimized fixed-window counters and expiry index; no existing table rebuild |
+| 0008 password_pepper | Widen key purpose to `password-pepper`; D1 rebuilds `key_versions` with deferred foreign keys and restored lifecycle triggers, while PostgreSQL replaces its CHECK constraint |
+| 0009 account_lockouts | D1-only additive Free-tier account lockout state and expiry index; PostgreSQL history is unchanged |
+| D1 0010 / PostgreSQL 0009 password_credentials | Additive standard-profile versioned Argon2id User credential table |
+| D1 0011 / PostgreSQL 0010 authorization_sessions | Additive first-party session table with principal and expiry indexes; no existing table rebuild |
 
 Reviewed Drizzle Kit 0.31.10 SQLite output needed corrections before execution: `foreign_keys=OFF` cannot disable enforcement inside D1's implicit transaction; table rebuilds must use `defer_foreign_keys`. Generated copies also selected newly introduced columns from old tables, so 0003 explicitly backfills null/visible values. Rebuilds drop triggers; 0003 restores the timeline triggers. Both rebuild migrations verify `pragma_foreign_key_check` through a checked temporary guard before clearing deferred DROP bookkeeping and committing. No foreign-key cascade is used to erase history.
 
 Tests apply every history from empty databases and upgrade a populated 0000 fixture containing aggregate, counter, timeline, audit, outbox and receipt rows. The frozen old-writer fixture does not depend on current repository columns. Invalid prior close-state data deliberately rejects 0001; tests prove rollback preserves the old rows, then explicitly repair the fixture and successfully retry. PostgreSQL fresh-install tests create a separate database, because generated foreign keys explicitly target `public`; changing only `search_path` would give false confidence.
+
+Migration 0007 was generated and inspected on 2026-09-25. It creates only `rate_limit_counters` and its expiry index in each dialect. Local D1 applied it after the previously applied 0000–0006 history and the second apply was a no-op. Fresh and populated-upgrade D1/workerd and isolated PostgreSQL 18.6 tests pass; no shared or remote database was migrated. See [rate-limiting evidence](../plan/evidence/03-rate-limits-validation.md).
+
+Migration 0008 was generated and reviewed on 2026-09-25 without changing 0000–0007. The D1 table rebuild uses `defer_foreign_keys`, restores all three `key_versions` lifecycle triggers and checks the resulting foreign-key graph. The populated 0007→0008 fixture retains a protected record and backup reference, then verifies key-transition and deletion guards. Fresh and populated-upgrade repository suites passed on D1/workerd (45/45) and isolated PostgreSQL 18.6 (43/43). Local D1 applied 0008 and a second invocation found no migrations. No remote/shared migration or production restore was performed; keep this locally applied history immutable.
+
+Migration 0009 was generated on 2026-09-26 and inspected as an additive D1-only table and expiry index. The local workerd repository suite applies it from empty and populated prior history and exercises the lockout store. On 2026-09-27, the complete 0000–0009 D1 history was also applied to the empty, temporary `hyperbug-test-1` remote database through an ignored test-only Wrangler config; a subsequent remote migration listing showed no pending files. This is test-database migration evidence only. Staging and production bindings remain unset, and no PostgreSQL analogue is needed for the Cloudflare-only minimum tier. Keep 0000–0008 unchanged.
+
+The standard-profile credential and authorization-session migrations are additive and dialect-specific. The new session SQL contains only `authorization_sessions`, two indexes, and its foreign-key/check constraints; Drizzle history checks pass. Focused account-route fixtures apply these after the prior schema in isolated PostgreSQL 18.6 and local workerd/D1. The test-only remote D1 has both migrations through `0011`; staging and production have not been migrated. Keep already applied migration files immutable; a needed correction must be a forward migration.
 
 ## Recovery and forward fixes
 
@@ -52,6 +67,8 @@ Do not edit a migration already applied to any shared environment. Prepare a new
 
 An application rollback does not reverse schema/data changes. If failure occurs before the migration commits, inspect its rolled-back state and history before repairing/retrying. After a committed incompatible change, choose a reviewed forward fix or restore the complete coordinated backup (database, blobs and required key versions), accepting and reconciling writes since the recovery point. Never restore only selected side records independently of their aggregate. History/form/audit retention needs a deliberate migration-owner procedure because ordinary DML is append-only.
 
-No deployed migration, production backup/restore, or live provider recovery is claimed. Module 13 owns that evidence. Query and repository evidence is recorded in the module 02 progress file.
+No staging/production migration, production backup/restore, or live provider recovery is claimed; the remote session migration below was test-only. Module 13 owns that evidence. Query and repository evidence is recorded in the module 02 progress file.
 
 Documentation lookup: Context7 on 2026-09-18 confirmed [D1 foreign-key deferral](https://developers.cloudflare.com/d1/sql-api/foreign-keys/) and [Wrangler migration configuration](https://developers.cloudflare.com/d1/reference/migrations/). Installed generator output and actual local runtime experiments resolve gaps in generic ORM examples.
+
+On 2026-09-28, only D1 `0011_authorization_sessions.sql` was pending on the explicitly selected `hyperbug-test-1` UUID `5081af9c-7740-42b7-bc91-10010a0b8323`. Wrangler 4.141.0 applied it remotely in that test database; a subsequent migration list was empty, and primary D1 reads found the latest history row and an empty `authorization_sessions` table. This is test-schema evidence, not staging/production rollout or deployed HTTP acceptance. Context7 Cloudflare D1 migration commands were resolved/queried the same day, then checked against installed Wrangler output.
