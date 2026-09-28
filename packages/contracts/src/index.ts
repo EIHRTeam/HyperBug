@@ -18,6 +18,76 @@ export const HealthSchema = Type.Object(
   { status: Type.Union([Type.Literal('ok'), Type.Literal('unavailable')]) },
   { additionalProperties: false },
 );
+export const ReadinessSchema = Type.Object(
+  {
+    status: Type.Union([Type.Literal('ok'), Type.Literal('unavailable')]),
+    deployment: Type.Object(
+      {
+        tier: Type.Union([
+          Type.Literal('standard'),
+          Type.Literal('cloudflare-free-minimum'),
+        ]),
+        degradationIds: Type.Array(Type.String({ pattern: '^FREE-0[1-8]$' }), {
+          maxItems: 8,
+          uniqueItems: true,
+        }),
+        passwordHashPolicy: Type.Union([
+          Type.Literal('argon2id'),
+          Type.Literal('pbkdf2-hmac-sha256'),
+        ]),
+      },
+      { additionalProperties: false },
+    ),
+  },
+  { additionalProperties: false },
+);
+export type ReadinessResponse = Static<typeof ReadinessSchema>;
+export const RegistrationRequestSchema = Type.Object(
+  {
+    handle: Type.String({ pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]{2,31}$' }),
+    password: Type.String({ minLength: 12, maxLength: 128 }),
+    captchaToken: Type.Optional(Type.String({ minLength: 1, maxLength: 4096 })),
+  },
+  { additionalProperties: false },
+);
+export type RegistrationRequest = Static<typeof RegistrationRequestSchema>;
+export const RegistrationAcceptedSchema = Type.Object(
+  { accepted: Type.Literal(true) },
+  { additionalProperties: false },
+);
+export type RegistrationAccepted = Static<typeof RegistrationAcceptedSchema>;
+export const RegistrationChallengeSchema = Type.Object(
+  {
+    captchaRequired: Type.Boolean(),
+    captchaSiteKey: Type.Union([Type.String(), Type.Null()]),
+    captchaAction: Type.Literal('register'),
+  },
+  { additionalProperties: false },
+);
+export type RegistrationChallenge = Static<typeof RegistrationChallengeSchema>;
+export const LoginRequestSchema = Type.Object(
+  {
+    handle: Type.String({ pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]{2,31}$' }),
+    password: Type.String({ minLength: 12, maxLength: 128 }),
+    captchaToken: Type.Optional(Type.String({ minLength: 1, maxLength: 4096 })),
+  },
+  { additionalProperties: false },
+);
+export type LoginRequest = Static<typeof LoginRequestSchema>;
+export const LoginChallengeSchema = Type.Object(
+  {
+    captchaRequired: Type.Boolean(),
+    captchaSiteKey: Type.Union([Type.String(), Type.Null()]),
+    captchaAction: Type.Literal('login'),
+  },
+  { additionalProperties: false },
+);
+export type LoginChallenge = Static<typeof LoginChallengeSchema>;
+export const AccountSessionSchema = Type.Object(
+  { authenticated: Type.Literal(true) },
+  { additionalProperties: false },
+);
+export type AccountSession = Static<typeof AccountSessionSchema>;
 export const EchoSchema = Type.Object(
   { message: Type.String({ minLength: 1, maxLength: 100 }) },
   { additionalProperties: false },

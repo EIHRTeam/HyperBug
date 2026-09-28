@@ -19,12 +19,15 @@ describe('runtime security foundation', () => {
         MAX_BODY_BYTES: 'Infinity',
       },
     ])
-      expect(() => loadConfig(env)).toThrow();
+      expect(() => loadConfig(env, 'node')).toThrow();
     expect(
-      loadConfig({
-        HYPERBUG_ENV: 'production',
-        ALLOWED_ORIGINS: 'https://example.com',
-      }).environment,
+      loadConfig(
+        {
+          HYPERBUG_ENV: 'production',
+          ALLOWED_ORIGINS: 'https://example.com',
+        },
+        'node',
+      ).environment,
     ).toBe('production');
   });
   it('serializes only safe telemetry fields and bounded dimensions', () => {

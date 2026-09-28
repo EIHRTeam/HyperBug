@@ -1,29 +1,54 @@
+import {
+  boundedInteger,
+  loadSecurityConfig,
+  type SecurityConfig,
+  type SecurityEnvironment,
+} from './security.ts';
+import {
+  loadDeploymentConfig,
+  type DeploymentConfig,
+  type DeploymentEnvironment,
+  type DeploymentRuntime,
+} from './deployment.ts';
+
+export {
+  assertDeploymentAvailable,
+  deploymentInvariants,
+  minimumDegradations,
+  type DeploymentConfig,
+  type DeploymentEnvironment,
+  type DeploymentRuntime,
+  type DeploymentTier,
+  type DegradationId,
+} from './deployment.ts';
+
+export type {
+  SecurityConfig,
+  SecurityEnvironment,
+  InputLimits,
+} from './security.ts';
+
 export interface RuntimeConfig {
+  readonly runtime: DeploymentRuntime;
+  readonly deployment: DeploymentConfig;
   environment: 'local' | 'staging' | 'production';
   allowedOrigins: readonly string[];
   maxBodyBytes: number;
   requestTimeoutMs: number;
+  security: SecurityConfig;
 }
 
-function integer(
-  value: unknown,
-  fallback: number,
-  min: number,
-  max: number,
-): number {
-  const result = value === undefined ? fallback : Number(value);
-  if (!Number.isSafeInteger(result) || result < min || result > max) {
-    throw new Error('Invalid bounded runtime setting');
-  }
-  return result;
-}
-
-export function loadConfig(env: {
-  HYPERBUG_ENV?: unknown;
-  ALLOWED_ORIGINS?: unknown;
-  MAX_BODY_BYTES?: unknown;
-  REQUEST_TIMEOUT_MS?: unknown;
-}): RuntimeConfig {
+export function loadConfig(
+  env: SecurityEnvironment &
+    DeploymentEnvironment & {
+      HYPERBUG_ENV?: unknown;
+      ALLOWED_ORIGINS?: unknown;
+      MAX_BODY_BYTES?: unknown;
+      REQUEST_TIMEOUT_MS?: unknown;
+    },
+  runtime: DeploymentRuntime,
+): RuntimeConfig {
+  const deployment = loadDeploymentConfig(env, runtime);
   const environment = env.HYPERBUG_ENV;
   if (
     environment !== 'local' &&
@@ -45,6 +70,7 @@ export function loadConfig(env: {
       url.origin !== value ||
       url.username ||
       url.password ||
+      url.hostname.includes('*') ||
       (url.protocol !== 'https:' &&
         !(
           environment === 'local' &&
@@ -63,9 +89,12 @@ export function loadConfig(env: {
     throw new Error('Invalid allowed origin count');
   }
   return Object.freeze({
+    runtime,
+    deployment,
     environment,
     allowedOrigins: Object.freeze(allowedOrigins),
-    maxBodyBytes: integer(env.MAX_BODY_BYTES, 65536, 1024, 1048576),
-    requestTimeoutMs: integer(env.REQUEST_TIMEOUT_MS, 10000, 50, 30000),
+    maxBodyBytes: boundedInteger(env.MAX_BODY_BYTES, 65536, 1024, 1048576),
+    requestTimeoutMs: boundedInteger(env.REQUEST_TIMEOUT_MS, 10000, 50, 30000),
+    security: loadSecurityConfig(env, environment),
   });
 }
