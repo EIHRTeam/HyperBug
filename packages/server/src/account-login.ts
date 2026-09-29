@@ -29,6 +29,7 @@ export async function loginAccount(input: {
   readonly passwordService: StandardPasswordService | null;
   readonly passwordStore: AccountPasswordStore | null;
   readonly keyProvider: KeyProvider | null;
+  readonly requestId?: string | null;
   readonly sessionStore: AccountSessionStore | null;
 }): Promise<string> {
   const {
@@ -55,6 +56,9 @@ export async function loginAccount(input: {
     signal: request.signal,
     timeoutMs: 1000,
     captchaAction: 'login',
+    ...(input.requestId === undefined || input.requestId === null
+      ? {}
+      : { requestId: input.requestId }),
     ...(body.captchaToken === undefined
       ? {}
       : { captchaToken: body.captchaToken }),

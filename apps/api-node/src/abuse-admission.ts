@@ -4,6 +4,7 @@ import type { RuntimeConfig } from '@hyperbug/config';
 import {
   createPostgresAccountRegistrationStore,
   createPostgresAccountSessionStore,
+  createPostgresAuditRepository,
   createPostgresKeyRegistry,
   createPostgresRateCounterStore,
 } from '@hyperbug/database-postgres';
@@ -173,6 +174,7 @@ export function configureNodeAbuseAdmission(
             maxKeys: 10000,
           }),
           clientAddress: nodeSocketClientAddress,
+          auditAppend: createPostgresAuditRepository(pool).append,
         })
       : null,
     keyRegistry,

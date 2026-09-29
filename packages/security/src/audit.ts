@@ -78,12 +78,17 @@ const registryActions = [
 export type AuditAction =
   | (typeof projectActions)[number]
   | `key-registry.${(typeof registryActions)[number]}`
-  | 'authorization.checked';
+  | 'authorization.checked'
+  | 'provider.outage';
 export interface AuditEvent {
   readonly id: string;
   readonly projectId: string | null;
   readonly actorId: string | null;
-  readonly systemActor: 'core.key-registry' | 'core.authorization' | null;
+  readonly systemActor:
+    | 'core.key-registry'
+    | 'core.authorization'
+    | 'core.admission'
+    | null;
   readonly action: AuditAction;
   readonly targetId: string;
   readonly result: 'success' | 'failure';
@@ -160,6 +165,30 @@ export function auditEvent(input: unknown): AuditEvent {
         resourceType: m.resourceType as string,
         decision: m.decision as string,
       });
+    } else if (r.action === 'provider.outage') {
+      if (
+        r.projectId !== null ||
+        r.actorId !== null ||
+        r.systemActor !== 'core.admission' ||
+        r.result !== 'failure'
+      )
+        throw invalid();
+      if (typeof r.targetId !== 'string' || r.targetId.length > 192)
+        throw invalid();
+      const outage: unknown = JSON.parse(r.targetId);
+      if (
+        !Array.isArray(outage) ||
+        outage.length !== 2 ||
+        outage[0] !== 'turnstile' ||
+        typeof outage[1] !== 'string' ||
+        !/^[a-z][a-z0-9:_-]{0,63}$/.test(outage[1]) ||
+        JSON.stringify([outage[0], outage[1]]) !== r.targetId
+      )
+        throw invalid();
+      const outageMetadata = record(r.metadata, ['v', 'outcome']);
+      if (outageMetadata.v !== 1 || outageMetadata.outcome !== 'unavailable')
+        throw invalid();
+      metadata = Object.freeze({ v: 1, outcome: 'unavailable' });
     } else if (
       typeof r.action === 'string' &&
       registryActions.some((action) => r.action === `key-registry.${action}`)

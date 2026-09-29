@@ -50,6 +50,34 @@ it('rejects secrets, arbitrary metadata, forged actor/scope, malformed values an
   expect(Object.isFrozen(event)).toBe(true);
   expect(Object.isFrozen(event.metadata)).toBe(true);
 });
+it('validates provider-outage audit events with a closed catalog', () => {
+  const event = auditFixture();
+  const outage = {
+    ...event,
+    projectId: null,
+    actorId: null,
+    systemActor: 'core.admission',
+    action: 'provider.outage',
+    targetId: JSON.stringify(['turnstile', 'register']),
+    result: 'failure',
+    metadata: { v: 1, outcome: 'unavailable' },
+  };
+  expect(auditEvent(outage)).toEqual(outage);
+  for (const changes of [
+    { targetId: JSON.stringify(['SEEDED_SECRET', 'register']) },
+    { targetId: JSON.stringify(['turnstile', 'register', 'extra']) },
+    { targetId: 'SEEDED_SECRET' },
+    { metadata: { v: 1, outcome: 'allowed' } },
+    { metadata: { v: 1, outcome: 'SEEDED_SECRET' } },
+    { systemActor: 'core.authorization' },
+    { result: 'success' },
+    { actorId: crypto.randomUUID() },
+  ])
+    expect(() => auditEvent({ ...outage, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+});
+
 it('validates existing key-registry audit identities without exposing key material', () => {
   const event = auditFixture();
   const keyEvent = {

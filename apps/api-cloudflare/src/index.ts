@@ -10,6 +10,7 @@ import { createWorkerAbuseKeyProvider } from './abuse-keys.ts';
 import {
   createD1AccountRegistrationStore,
   createD1AccountSessionStore,
+  createD1AuditRepository,
   createD1KeyRegistry,
   createD1RateCounterStore,
 } from '@hyperbug/database-d1';
@@ -41,6 +42,7 @@ const abuse = env.DB
       provider: createWorkerAbuseKeyProvider(env.HYPERBUG_ABUSE_KEY_RING),
       store: createD1RateCounterStore(env.DB),
       limiter: createCloudflareVolumetricLimiter(env.ABUSE_VOLUMETRIC),
+      auditAppend: createD1AuditRepository(env.DB).append,
     }
   : null;
 const keyProvider = env.DB

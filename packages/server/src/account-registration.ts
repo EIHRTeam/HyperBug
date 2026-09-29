@@ -30,6 +30,7 @@ export async function registerAccount(input: {
   readonly body: RegistrationRequest;
   readonly admission: Pick<BoundSensitiveActionAdmission, 'require'>;
   readonly password: StandardPasswordService | null;
+  readonly requestId?: string | null;
   readonly store: AccountRegistrationStore | null;
 }): Promise<{ accepted: true }> {
   const { request, body, admission, password, store } = input;
@@ -47,6 +48,9 @@ export async function registerAccount(input: {
     signal: request.signal,
     timeoutMs: 1000,
     captchaAction: 'register',
+    ...(input.requestId === undefined || input.requestId === null
+      ? {}
+      : { requestId: input.requestId }),
     ...(body.captchaToken === undefined
       ? {}
       : { captchaToken: body.captchaToken }),

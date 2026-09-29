@@ -1,10 +1,12 @@
 import type {
   AbuseKeyProvider,
+  AuditEvent,
   CanonicalRateCheck,
   RateCategory,
   RateCounterStore,
   VolumetricLimiter,
 } from '@hyperbug/security';
+import { auditEvent } from '@hyperbug/security';
 import { activeAbuseSubjects, canonicalIpAddress } from '@hyperbug/security';
 import type { CaptchaGate } from './captcha.ts';
 import {
@@ -17,6 +19,8 @@ import { withDeadline } from './bounds.ts';
 export interface SensitiveActionIntent extends SensitiveAdmissionIntent {
   readonly captchaAction: string;
   readonly captchaToken?: string | null;
+  /** Correlates an audited provider outage with the denied request. */
+  readonly requestId?: string | null;
 }
 
 export interface SensitiveActionAdmission {
@@ -29,6 +33,10 @@ export interface SensitiveAdmissionDependencies {
   readonly limiter?: VolumetricLimiter;
   /** Root-owned trusted client address; omit when provenance is unavailable. */
   readonly clientAddress?: (request: Request) => string | Promise<string>;
+  /** Append-only audit sink for the audited provider-outage policy. */
+  readonly auditAppend?:
+    | ((event: AuditEvent, signal: AbortSignal) => Promise<void>)
+    | null;
 }
 
 export type BoundRateCheck =
@@ -58,9 +66,13 @@ export interface BoundSensitiveActionAdmission {
   preparseLogout(request: Request): Promise<void>;
 }
 
+const requestIdPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
 /** Rate admission is always authoritative; a configured CAPTCHA follows it. */
 export function createSensitiveActionAdmission(
   captcha: CaptchaGate,
+  auditAppend?: SensitiveAdmissionDependencies['auditAppend'],
 ): SensitiveActionAdmission {
   if (
     !captcha ||
@@ -68,6 +80,12 @@ export function createSensitiveActionAdmission(
     typeof captcha.require !== 'function'
   )
     throw new Error('Invalid CAPTCHA admission gate');
+  if (
+    auditAppend !== undefined &&
+    auditAppend !== null &&
+    typeof auditAppend !== 'function'
+  )
+    throw new Error('Invalid audit admission sink');
   const requireCaptcha = captcha.require.bind(captcha);
   return Object.freeze({
     async require(intent: SensitiveActionIntent): Promise<void> {
@@ -75,11 +93,54 @@ export function createSensitiveActionAdmission(
       const captchaToken = intent?.captchaToken ?? null;
       const captchaAction = intent?.captchaAction;
       await requireSensitiveRateAdmission(intent);
-      await requireCaptcha({
-        token: captchaToken,
-        expectedAction: captchaAction,
-        signal,
-      });
+      try {
+        await requireCaptcha({
+          token: captchaToken,
+          expectedAction: captchaAction,
+          signal,
+        });
+      } catch (error) {
+        // Audited provider-outage policy: a configured provider that cannot
+        // be verified is recorded; the denial itself never depends on the
+        // audit write succeeding.
+        if (
+          captcha.enabled &&
+          error instanceof RequestFailure &&
+          error.code === 'CAPTCHA_UNAVAILABLE' &&
+          auditAppend
+        ) {
+          const requestId =
+            typeof intent?.requestId === 'string' &&
+            requestIdPattern.test(intent.requestId)
+              ? intent.requestId
+              : crypto.randomUUID();
+          try {
+            await withDeadline(
+              signal ?? new AbortController().signal,
+              1000,
+              (bound) =>
+                auditAppend(
+                  auditEvent({
+                    id: crypto.randomUUID(),
+                    projectId: null,
+                    actorId: null,
+                    systemActor: 'core.admission',
+                    action: 'provider.outage',
+                    targetId: JSON.stringify(['turnstile', captchaAction]),
+                    result: 'failure',
+                    requestId,
+                    createdAt: Date.now(),
+                    metadata: { v: 1, outcome: 'unavailable' },
+                  }),
+                  bound,
+                ),
+            );
+          } catch {
+            /* An audit failure cannot soften a fail-closed denial. */
+          }
+        }
+        throw error;
+      }
       if (!signal || signal.aborted)
         throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
     },
@@ -91,7 +152,10 @@ export function createBoundSensitiveActionAdmission(
   captcha: CaptchaGate,
   dependencies: SensitiveAdmissionDependencies | null,
 ): BoundSensitiveActionAdmission {
-  const admission = createSensitiveActionAdmission(captcha);
+  const admission = createSensitiveActionAdmission(
+    captcha,
+    dependencies?.auditAppend,
+  );
   if (dependencies === null)
     return Object.freeze({
       require: async () => {

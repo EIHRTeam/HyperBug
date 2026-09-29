@@ -347,3 +347,44 @@ it('keeps a configured provider outage closed after rate admission', async () =>
     }),
   ).rejects.toMatchObject({ code: 'CAPTCHA_UNAVAILABLE' });
 });
+
+it('audits a configured provider outage without letting the audit write soften the denial', async () => {
+  const gate = createCaptchaGate({
+    verifier: {
+      async verify() {
+        throw new Error('private provider detail');
+      },
+    },
+    expectedHostname: 'issues.example.org',
+    maxAgeMs: 300000,
+    minimumScore: null,
+    timeoutMs: 1000,
+  });
+  const events: unknown[] = [];
+  await expect(
+    createSensitiveActionAdmission(gate, async (event) => {
+      events.push(event);
+    }).require({
+      ...admission().intent,
+      captchaToken: 'client-token',
+      requestId: crypto.randomUUID(),
+    }),
+  ).rejects.toMatchObject({ code: 'CAPTCHA_UNAVAILABLE' });
+  expect(events).toHaveLength(1);
+  expect(events[0]).toMatchObject({
+    action: 'provider.outage',
+    systemActor: 'core.admission',
+    targetId: '["turnstile","login"]',
+    result: 'failure',
+    metadata: { v: 1, outcome: 'unavailable' },
+  });
+  expect(JSON.stringify(events)).not.toContain('private provider detail');
+  await expect(
+    createSensitiveActionAdmission(gate, async () => {
+      throw new Error('audit outage');
+    }).require({
+      ...admission().intent,
+      captchaToken: 'client-token',
+    }),
+  ).rejects.toMatchObject({ code: 'CAPTCHA_UNAVAILABLE' });
+});

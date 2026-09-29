@@ -961,6 +961,17 @@ it('requires configured login CAPTCHA through signed ingress and denies provider
     });
     expect(
       await db
+        .prepare(
+          "SELECT action, system_actor, target_id FROM audit_events WHERE system_actor = 'core.admission'",
+        )
+        .first<{ action: string; system_actor: string; target_id: string }>(),
+    ).toMatchObject({
+      action: 'provider.outage',
+      system_actor: 'core.admission',
+      target_id: '["turnstile","login"]',
+    });
+    expect(
+      await db
         .prepare('SELECT COUNT(*) AS n FROM authorization_sessions')
         .first<{ n: number }>(),
     ).toEqual({ n: 0 });

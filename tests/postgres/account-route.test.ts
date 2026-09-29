@@ -521,6 +521,15 @@ it('registers a real User through Node, primary counters and PostgreSQL atomical
     expect(await unavailableCaptcha.json()).toMatchObject({
       error: { code: 'CAPTCHA_UNAVAILABLE' },
     });
+    const outageAudit = await pool.query(
+      "SELECT action, system_actor, target_id FROM audit_events WHERE system_actor = 'core.admission'",
+    );
+    expect(outageAudit.rowCount).toBe(1);
+    expect(outageAudit.rows[0]).toMatchObject({
+      action: 'provider.outage',
+      system_actor: 'core.admission',
+      target_id: '["turnstile","register"]',
+    });
     const unstored = await pool.query(
       "SELECT 1 FROM identities WHERE subject IN ('missingnodecaptcha', 'outagenodecaptcha')",
     );

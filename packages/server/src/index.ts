@@ -410,6 +410,7 @@ export function createApp({
           body,
           admission: sensitiveAdmission,
           password: passwordService,
+          requestId: boundaryFor(request).requestId,
           store: registrationStore ?? null,
         });
         set.status = 202;
@@ -438,6 +439,7 @@ export function createApp({
           request,
           body,
           admission: sensitiveAdmission,
+          requestId: boundaryFor(request).requestId,
           passwordService: standardPassword ?? null,
           passwordStore: passwordStore ?? null,
           keyProvider: keyProvider ?? null,
