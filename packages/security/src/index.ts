@@ -1,3 +1,4 @@
+export * from './audit.ts';
 export * from './authorization.ts';
 export * from './classification.ts';
 export * from './crypto.ts';

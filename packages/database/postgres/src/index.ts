@@ -256,3 +256,4 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
 
 export * from './key-registry.ts';
 export { createPostgresAccountSessionStore } from './account-session.ts';
+export { createPostgresAuditRepository } from './audit.ts';

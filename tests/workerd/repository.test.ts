@@ -44,7 +44,13 @@ import {
   seedPreviousSchema,
   verifyRejectedUpgrade,
 } from '../fixtures/migration-contract.ts';
+import {
+  auditRepositoryContract,
+  measureAuditQueries,
+} from '../fixtures/audit-contract.ts';
+import type { AuditRepository } from '../../packages/security/src/index.ts';
 let registry: KeyRegistry;
+let audit: AuditRepository;
 let rateCounters: RateCounterStore;
 let accountLockouts: AccountLockoutStore;
 let runtimeDigest: () => Promise<unknown>;
@@ -70,6 +76,8 @@ beforeAll(async () => {
   async function call<T>(
     method:
       | keyof IssueRepository
+      | 'auditAppend'
+      | 'auditList'
       | 'registryInspect'
       | 'registryLoad'
       | 'registryMutate'
@@ -126,6 +134,16 @@ beforeAll(async () => {
     clear: (subject) => call('lockoutClear', subject),
     purgeExpired: (nowMs, limit) => call('lockoutPurge', { nowMs, limit }),
   };
+  audit = {
+    async append(input, signal) {
+      signal.throwIfAborted();
+      await call('auditAppend', input);
+    },
+    async list(input, signal) {
+      signal.throwIfAborted();
+      return call('auditList', input);
+    },
+  };
   runtimeDigest = () => call('rateDigestProof', null);
   const repository: IssueRepository = {
     createIssue: (input) => call('createIssue', input),
@@ -156,6 +174,22 @@ afterAll(async () => {
 });
 repositoryContract(() => harness);
 rateCounterContract(() => rateCounters);
+auditRepositoryContract(() => ({ repository: audit, query: harness.query }));
+
+it('runs audit authorization/failure/redaction/admission checks inside workerd', async () => {
+  const response = await fetch(await mf.ready, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ method: 'auditScenarios' }),
+  });
+  const result = (await response.json()) as { value: Record<string, boolean> };
+  expect(Object.keys(result.value).length).toBeGreaterThan(20);
+  for (const [name, passed] of Object.entries(result.value))
+    expect(passed, name).toBe(true);
+});
+it('uses indexed bounded audit pages against 4000 events', async () => {
+  await measureAuditQueries({ repository: audit, query: harness.query }, 'd1');
+}, 30000);
 
 it('registers a User and credential atomically and leaves duplicate handles untouched on D1', async () => {
   const store = createD1AccountRegistrationStore(registrationDb);

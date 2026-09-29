@@ -91,6 +91,9 @@ const rules = {
 } as const satisfies Record<string, Rule>;
 
 export type Permission = keyof typeof rules;
+export function isPermission(value: unknown): value is Permission {
+  return typeof value === 'string' && Object.hasOwn(rules, value);
+}
 export interface ResourceRef {
   readonly projectId: string;
   readonly type: ResourceType;

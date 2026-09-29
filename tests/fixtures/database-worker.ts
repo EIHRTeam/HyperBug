@@ -2,12 +2,19 @@ import {
   keyRegistryRuntimeProof,
   minimumPasswordRegistryProof,
 } from './key-registry-runtime.ts';
+import { auditScenarios } from './audit-scenarios.ts';
 import type {
   RegistryMutation,
   KeyPurpose,
+  AuditEvent,
+  AuditListOptions,
 } from '../../packages/security/src/index.ts';
 import type { D1Database } from '@cloudflare/workers-types';
-import { createD1Repository, createD1KeyRegistry } from '@hyperbug/database-d1';
+import {
+  createD1Repository,
+  createD1KeyRegistry,
+  createD1AuditRepository,
+} from '@hyperbug/database-d1';
 import { createD1RateCounterStore } from '@hyperbug/database-d1';
 import { createD1AccountLockoutStore } from '@hyperbug/database-d1';
 import type { AccountLockoutPolicy } from '../../packages/security/src/account-lockout.ts';
@@ -24,6 +31,9 @@ import type {
 } from '@hyperbug/application';
 
 type Message =
+  | { method: 'auditAppend'; input: AuditEvent }
+  | { method: 'auditList'; input: AuditListOptions }
+  | { method: 'auditScenarios' }
   | { method: 'rateDigestProof' }
   | { method: 'registryRuntimeProof' }
   | { method: 'minimumPasswordRegistryProof' }
@@ -72,6 +82,7 @@ export default {
     };
     const repository = createD1Repository(measured as unknown as D1Database);
     const registry = createD1KeyRegistry(measured as unknown as D1Database);
+    const audit = createD1AuditRepository(measured as unknown as D1Database);
     const rateCounters = createD1RateCounterStore(
       measured as unknown as D1Database,
     );
@@ -83,6 +94,16 @@ export default {
     try {
       let value: unknown;
       switch (message.method) {
+        case 'auditAppend':
+          await audit.append(message.input, signal);
+          value = null;
+          break;
+        case 'auditList':
+          value = await audit.list(message.input, signal);
+          break;
+        case 'auditScenarios':
+          value = await auditScenarios();
+          break;
         case 'rateDigestProof': {
           const key = await crypto.subtle.importKey(
             'raw',

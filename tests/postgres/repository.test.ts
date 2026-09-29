@@ -34,6 +34,7 @@ import {
   createPostgresKeyRegistry,
   createPostgresRateCounterStore,
   createPostgresAccountRegistrationStore,
+  createPostgresAuditRepository,
 } from '@hyperbug/database-postgres';
 import {
   repositoryContract,
@@ -49,6 +50,10 @@ import {
   seedPreviousSchema,
   verifyRejectedUpgrade,
 } from '../fixtures/migration-contract.ts';
+import {
+  auditRepositoryContract,
+  measureAuditQueries,
+} from '../fixtures/audit-contract.ts';
 let verifyUpgrade: () => Promise<void>;
 let pool: Pool;
 let harness: RepositoryHarness;
@@ -549,6 +554,17 @@ it('persists and rotates minimum-tier pepper records inside Node', async () => {
     await minimumPasswordRegistryProof(createPostgresKeyRegistry(pool)),
   ).toBe(9);
 });
+
+auditRepositoryContract(() => ({
+  repository: createPostgresAuditRepository(pool),
+  query: harness.query,
+}));
+it('uses indexed bounded audit pages against 4000 events', async () => {
+  await measureAuditQueries(
+    { repository: createPostgresAuditRepository(pool), query: harness.query },
+    'postgres',
+  );
+}, 30000);
 
 keyRegistryBoundsContract(() => ({
   registry: createPostgresKeyRegistry(pool),
