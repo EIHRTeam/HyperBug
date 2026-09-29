@@ -25,6 +25,49 @@ export interface MinimumPasswordPolicy {
   readonly maximumIterations: number;
 }
 
+/**
+ * Reviewed security floor for PBKDF2-HMAC-SHA256 on the minimum tier
+ * (OWASP Password Storage Cheat Sheet recommendation, 2026-09-29 review).
+ * A plan measurement can never lower this floor; an unmet floor disables
+ * password login on the tier instead.
+ */
+export const minimumTierPasswordFloorIterations = 600_000;
+
+/**
+ * Deployment policy measured on a real Cloudflare Free plan on 2026-09-29
+ * (docs/plan/evidence/03-free-pbkdf2-measurement.json): 100,000 iterations
+ * complete deterministically within one invocation's CPU budget and 100,500
+ * fail, so the stored-record maximum is the measured fit and the new-record
+ * target keeps about half the budget for the rest of a login invocation.
+ */
+export const minimumTierPasswordPolicy: MinimumPasswordPolicy = Object.freeze({
+  currentIterations: 50_000,
+  maximumIterations: 100_000,
+});
+
+/** The floor rule: an unmet reviewed floor disables tier password login. */
+export function minimumPasswordLoginAvailable(
+  policy: MinimumPasswordPolicy,
+  floorIterations: number,
+): boolean {
+  try {
+    const snapshot = policySnapshot(policy);
+    return (
+      Number.isSafeInteger(floorIterations) &&
+      floorIterations >= 1 &&
+      snapshot.currentIterations >= floorIterations
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Measured outcome of the floor rule for the deployment policy above. */
+export const minimumTierPasswordLoginEnabled = minimumPasswordLoginAvailable(
+  minimumTierPasswordPolicy,
+  minimumTierPasswordFloorIterations,
+);
+
 function cost(iterations: number): void {
   if (
     !Number.isSafeInteger(iterations) ||

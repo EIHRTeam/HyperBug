@@ -1,5 +1,31 @@
 import { expect, it } from 'vitest';
 import { SecretAbuseKeyProvider } from '../../packages/security/src/abuse-keys.ts';
+import {
+  CryptoFailure,
+  minimumPasswordLoginAvailable,
+  minimumTierPasswordFloorIterations,
+  minimumTierPasswordLoginEnabled,
+  minimumTierPasswordPolicy,
+  type KeyProvider,
+} from '../../packages/security/src/index.ts';
+import { loadDeploymentConfig } from '../../packages/config/src/deployment.ts';
+import { createCloudflareMinimumPasswordService } from '../../apps/api-cloudflare/src/minimum-password.ts';
+
+const pepperProvider = {
+  current: async () => ({
+    ref: { purpose: 'password-pepper', id: 'unit-pepper', version: 1 },
+    key: await crypto.subtle.importKey(
+      'raw',
+      crypto.getRandomValues(new Uint8Array(32)),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign', 'verify'],
+    ),
+  }),
+  get: async () => {
+    throw new Error('unused');
+  },
+} as unknown as KeyProvider;
 import type { AccountLockoutStore } from '../../packages/security/src/account-lockout.ts';
 import type { RateCounterStore } from '../../packages/security/src/rate-limit.ts';
 import { createCaptchaGate } from '../../packages/server/src/captcha.ts';
@@ -252,4 +278,53 @@ it('binds login stores and client IP at the root, and stays closed without them'
       signal: intent.signal,
     }),
   ).rejects.toMatchObject({ code: 'RATE_LIMIT_UNAVAILABLE' });
+});
+
+it('fixes the measured tier policy and enforces the floor rule', async () => {
+  expect(minimumTierPasswordPolicy).toEqual({
+    currentIterations: 50_000,
+    maximumIterations: 100_000,
+  });
+  expect(Object.isFrozen(minimumTierPasswordPolicy)).toBe(true);
+  expect(minimumTierPasswordFloorIterations).toBe(600_000);
+  // The measured plan ceiling is six times below the reviewed floor.
+  expect(minimumTierPasswordLoginEnabled).toBe(false);
+  expect(
+    minimumPasswordLoginAvailable(minimumTierPasswordPolicy, 600_000),
+  ).toBe(false);
+  expect(
+    minimumPasswordLoginAvailable(
+      { currentIterations: 600_000, maximumIterations: 600_000 },
+      600_000,
+    ),
+  ).toBe(true);
+  expect(
+    minimumPasswordLoginAvailable(
+      { currentIterations: 5, maximumIterations: 1 },
+      1,
+    ),
+  ).toBe(false);
+});
+
+it('refuses tier service policies above the measured plan fit', async () => {
+  const deployment = loadDeploymentConfig(
+    {
+      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
+      HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
+    },
+    'cloudflare',
+  );
+  await expect(
+    createCloudflareMinimumPasswordService(deployment, pepperProvider, {
+      currentIterations: 50_000,
+      maximumIterations: 150_000,
+    }),
+  ).rejects.toBeInstanceOf(CryptoFailure);
+  await expect(
+    createCloudflareMinimumPasswordService(
+      deployment,
+      pepperProvider,
+      minimumTierPasswordPolicy,
+    ),
+  ).resolves.toBeTypeOf('object');
 });

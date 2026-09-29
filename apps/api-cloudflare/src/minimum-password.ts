@@ -2,6 +2,7 @@ import type { DeploymentConfig } from '@hyperbug/config';
 import {
   createMinimumPasswordService,
   CryptoFailure,
+  minimumTierPasswordPolicy,
   type KeyProvider,
   type MinimumPasswordPolicy,
   type MinimumPasswordService,
@@ -14,5 +15,12 @@ export async function createCloudflareMinimumPasswordService(
   policy: MinimumPasswordPolicy,
 ): Promise<MinimumPasswordService> {
   if (deployment?.tier !== 'cloudflare-free-minimum') throw new CryptoFailure();
+  // The measured plan fit is a hard ceiling: a configured policy above it
+  // would exceed the Free per-invocation CPU budget on every verification.
+  if (
+    policy.maximumIterations > minimumTierPasswordPolicy.maximumIterations ||
+    policy.currentIterations > minimumTierPasswordPolicy.maximumIterations
+  )
+    throw new CryptoFailure();
   return createMinimumPasswordService(provider, policy);
 }
