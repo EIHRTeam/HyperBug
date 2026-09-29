@@ -24,7 +24,7 @@ Classification keys (updated 2026-09-29 after the Module 03 audit resume; class 
 | 03.V3 | Multi-instance rate consistency; outages deny | 2 | Cross-location/multi-instance deployed consistency and deployed outage observation are unavailable. |
 | 03.V4 | Seeded-secret inspection; unauthorized audit access | 1 | **Closed 2026-09-29** on consolidated evidence; see [audit validation](03-audit-validation.md). |
 | 03.V5 | Password-hash CPU/memory/concurrency/overload record | 3 | Argon2id performance exploration stopped by user instruction; ADR 0009 makes it non-gating and "when available". |
-| 03.V6 | Tier gate verification on both runtimes | 1 | Verification clauses are all locally/deployed provable without an enabled tier: without-ack refusal, Node rejection, no plan/quota inference (existing suites) and the invariant-integrity check (assess against the frozen catalogs). |
+| 03.V6 | Tier gate verification on both runtimes | 1 | **Closed 2026-09-30** on the clause-by-clause evidence mapping including the deployed 10021 refusal; see [tier validation](03-deployment-tier-validation.md). |
 | 03.V7 | Real Free-plan PBKDF2 cost curve and floor | 1 | **Closed 2026-09-29**: real-plan measurement, 600k floor decision, fixed policy constants and the deployed audit-append observation recorded; sustained retention measurements remain downstream (09.V6, 10.3g, 13.G6). |
 
 ## External prerequisites in detail

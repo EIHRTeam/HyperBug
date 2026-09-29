@@ -83,4 +83,17 @@ Under the Module 03 audit/tier resume with the user-asserted Cloudflare Free acc
 
 **03.3g completion and deployed refusal evidence (2026-09-30):** the gate's remaining pieces are implemented in commit `4ec3a22`: a `deployment.enablement` audit event (closed catalog, `core.deployment` system actor, refused/enabled outcomes with result consistency) and a composition-root hook that warns with the active degradation IDs and the disabled password-login state before the barrier refuses. Deployed evidence on the authorized account: uploading the production root with a correctly acknowledged minimum-tier environment and the `hyperbug-test-1` D1 binding is rejected by Cloudflare's upload-time module validation with **error 10021** carrying the exact barrier message ("The minimum tier is not available in this build; its implementation and independent acceptance remain incomplete. See docs/FREE-TIER-PROFILE.md (ADR 0007).") — a refused deployment never creates a Worker. Consequently the refusal audit write is best-effort and cannot land in a refused context by platform design; the observable refusal trail is the deployment/startup failure itself, and the `enabled` outcome is reserved for activation accepted under 13.G6. Locally, workerd startup of the same configuration fails with the identical message after the warning.
 
+
+**03.V6 acceptance (2026-09-30):** every verification clause is demonstrated on existing suites, without an enabled tier:
+
+| Clause | Evidence |
+| --- | --- |
+| Enabling without the exact acknowledgement fails startup | Unit configuration suite rejects unknown, null, empty, mixed-case, coercible and stale acknowledgement values; Node and workerd deployment suites prove real startup refusal. |
+| The tier is rejected on Node | Node deployment suite: real bundled Node child processes reject minimum selections before listening. |
+| The tier is never inferred from the provider plan or a quota error | Workerd deployment suite: `WORKERS_PLAN=free` and `QUOTA_EXHAUSTED` bindings leave the standard tier unchanged. |
+| No tier configuration can disable an invariant | Both tiers share the identical frozen `deploymentInvariants` reference; mutation of invariants or degradation IDs throws; the configuration's exact shape is pinned by an equality assertion, so no capability switch can appear unnoticed. |
+| No tier configuration can weaken audit integrity | The audit service, catalog and adapters accept no deployment input (tier-blind by construction); append-only enforcement lives in the schema triggers of both dialects and is verified by the shared audit contract. |
+| No tier configuration can bypass authorization | Tier selection cannot alter security settings — `selected.security` equals `standard.security` including authorization timeouts, and production debug is rejected on either tier; the minimum PBKDF2 path refuses Argon2id records, so no cross-tier verifier weakening exists. |
+| The gate holds on the real platform | Deployed upload of a correctly acknowledged minimum selection is refused with the exact barrier message (Cloudflare error 10021). |
+
 Scope: this is real Free-account plan-tier evidence for the measurement and decision components of 03.V7; sustained multi-day retention/quota measurements remain the tier path's own downstream items (09.V6/10.3g/13.G6), and the standard profiles are untouched.
