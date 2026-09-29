@@ -78,6 +78,6 @@ For every class-2 component, the exact missing prerequisite, the environment or 
 
 ## Module-completion and G1 governance
 
-After the 2026-09-29 resume, Module 03's audit items are active again and 03.3a is closed; the remaining Module 03 blockers are the external-environment items (03.3c–03.3f, 03.V2, 03.V3), the independent minimum-tier items (03.2g, 03.3h, 03.V6, 03.V7) and the resumed-but-unassessed audit portions (03.3d/03.3g/03.V4/03.V6/03.V7). Module 10 G1 still requires Modules 00–09 complete, and the suspension still blocks audit portions of 04.3a/04.3c/04.V5, 05.2a/05.3d, 06.1c/06.2c, 07.2e and 09.3e.
+As of 2026-09-30, every Module 03 audit and tier item is closed (03.3a, 03.V4, 03.2g, 03.3g, 03.3h, 03.V6, 03.V7); Module 03's only remaining blockers are the external-environment items 03.3c–03.3f, 03.V2 and 03.V3. Module 10 G1 still requires Modules 00–09 complete, and the audit suspension still blocks the audit portions of 04.3a/04.3c/04.V5, 05.2a/05.3d, 06.1c/06.2c, 07.2e and 09.3e — the G1 audit conflict is now confined to those later modules and no longer involves Module 03.
 
 Smallest actionable resolution (requires an explicit user instruction; none is taken here): either resume audit work at one defined milestone before module 10 G1, or record a formal deferral decision (plan amendment plus ADR) that moves the suspended audit scope out of the MVP G1 prerequisite set. Until then, keep suspended items unchecked and do not treat them as failed.
