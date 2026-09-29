@@ -1546,3 +1546,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for 03.V4.
 - Next actions: Implement the audited provider-outage policy (03.3d's audit portion): extend the closed audit catalog with an owning admission action and wire it into the configured-provider outage denial on both standard profiles, then re-verify.
 - Next-session cautions: The audit event catalog stays closed; only an owning feature may extend it. Keep audit distinct from telemetry.
+
+### 2026-09-29 — Audited provider-outage policy implemented
+
+- Scope and checklist IDs: 03.3d's resumed audit portion implemented; 03.3d stays unchecked for its remaining external/owning-route scope; no other item changed.
+- Progress: The closed audit catalog gained a `provider.outage` action under the `core.admission` system actor (canonical provider/category target tuple, bounded unavailable-outcome metadata, no principal attribution). The CAPTCHA admission path appends it when a configured provider fails with `CAPTCHA_UNAVAILABLE`; the denial stands regardless of the audit outcome, provider error detail never enters the event, and registration/login forward the request correlation ID. Both production roots supply the append-only audit repository within their root-selected admission dependencies.
+- Change summary: Catalog extension, admission wrapper, requestId plumbing through the two account routes, both roots' dependency wiring, and unit plus route-level assertions on both profiles.
+- Files/artifacts: `packages/security/src/audit.ts`, `packages/server/src/{sensitive-admission,index,account-registration,account-login}.ts`, `apps/api-node/src/abuse-admission.ts`, `apps/api-cloudflare/src/index.ts`, `tests/unit/{audit,sensitive-admission}.test.ts`, `tests/postgres/account-route.test.ts`, `tests/workerd/ingress.test.ts`, refreshed traversal samples, [audit validation](../evidence/03-audit-validation.md), [closure matrix](../evidence/03-closure-matrix.md), the module note and this record. Commits `b0e1fea` and the sample refresh.
+- Verification: Node 24.21.0 — unit+contract 105/105, node 50/50, workerd 111/111, isolated PostgreSQL 18.6 56/56; both typechecks, lint/boundaries, formatting and diff check passed. Route assertions prove exactly one `provider.outage` row per outage denial on each profile.
+- Decisions and deviations: The audit catalog stays closed — the extension belongs to 03.3d's audit portion as its owning feature. Audit-write failure can never soften a fail-closed denial.
+- Blockers/open questions: None for this increment; 03.3d's non-audit remainder stays external/owning-route bound.
+- Next actions: Module 03's remaining resumed audit portions (03.3g/03.V6/03.V7) are all gated by the disabled minimum tier; reassess the module's residual blockers against the closure matrix and report.
+- Next-session cautions: Keep the provider tuple enum closed (`turnstile` today); extending it to another provider is a new owning-feature decision.
