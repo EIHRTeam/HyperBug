@@ -1,6 +1,6 @@
 # Phase 03 password implementation research
 
-Owner: [03.2e and 03.V5](../modules/03-security-foundation.md). Status: partial standard-profile record service and production-root provider construction; **no account password flow, paid Workers acceptance or benchmark accepted**. Research dates: 2026-09-19–26. **Further Argon2id performance exploration stopped on 2026-09-20 at the user’s direction.** Standard Workers uses the paid-capable envelope; the optional Free tier follows [ADR 0007](../../decisions/0007-cloudflare-free-minimum-tier.md) and has no Argon2id path. This note preserves prior observations; it does not schedule more probes.
+Owner: [03.2e and 03.V5](../modules/03-security-foundation.md). Status: **03.2e accepted on 2026-09-29** — standard-profile Argon2id records and login-time rehash are implemented and verified with both real profile providers on their real primary stores; 03.V5 remains open and non-gating under the stopped Argon2id performance instruction. Research dates: 2026-09-19–29. **Further Argon2id performance exploration stopped on 2026-09-20 at the user’s direction.** Standard Workers uses the paid-capable envelope; the optional Free tier follows [ADR 0007](../../decisions/0007-cloudflare-free-minimum-tier.md) and has no Argon2id path. This note preserves prior observations; it does not schedule more probes.
 
 SECURITY §§28–31 prefer Argon2id, cite at least 19 MiB / two iterations / parallelism one, and permit the memory-hard scrypt fallback for the constrained Workers runtime with recorded evidence. PERFORMANCE §34 calls for actual memory, CPU, concurrency, timeout and abuse/overload characterization; [ADR 0009](../../decisions/0009-standard-password-login.md) makes that characterization non-gating for standard-profile login and stops further Argon2id performance testing under the current user instruction. Parameter reduction to meet ordinary API latency is prohibited. Persist algorithm, memory/time/parallelism, salt and format versions and support verified rehash-on-login. Standard-profile login still requires the functional account/provider implementation; the optional Free tier has separate evidence and acceptance gates.
 
@@ -54,7 +54,23 @@ For provenance/reproduction of the archived setup, the npm tarball URL and SHA-5
 
 ## Development continuation
 
-Continue the immutable deployment posture and fail-closed tier gate (03.1e/03.3g), then the remaining Phase 03 security services. Do not resume Argon2id performance troubleshooting or search for a Free-plan Argon2id workaround. The standard-profile record and both provider candidates remain partial: accepted parameter policy and account persistence/rehash integration remain implementation work. Per [ADR 0009](../../decisions/0009-standard-password-login.md), provider audit does not gate standard-profile password login; further performance testing remains stopped. Keep 03.2e/03.V5 unchecked until their evidence exists, without making those items prerequisites for standard-profile password login. The Free tier's PBKDF2 policy and real-plan floor evidence are independent 03.2g/03.V7 work, remain unavailable, and cannot verify Argon2id records.
+Continue the immutable deployment posture and fail-closed tier gate (03.1e/03.3g), then the remaining Phase 03 security services. Do not resume Argon2id performance troubleshooting or search for a Free-plan Argon2id workaround. 03.2e is accepted (see the 2026-09-29 section below); 03.V5 stays open and non-gating per [ADR 0009](../../decisions/0009-standard-password-login.md), which also keeps the deferred provider audit off the standard-profile login path. The Free tier's PBKDF2 policy and real-plan floor evidence are independent 03.2g/03.V7 work, remain unavailable, and cannot verify Argon2id records.
+
+## Login-time rehash acceptance (2026-09-29)
+
+03.2e's stated outcome — standard-profile Argon2id password records and login-time rehash using versioned parameters — is fully implemented and verified on both standard profiles. The last missing evidence was a real-provider parameter-supersession rehash through the actual login operation: production roots pin the initial source-floor policy, so their route fixtures can never observe a rehash, and the earlier store-level rehash tests used a stub password service.
+
+A shared conformance fixture, `tests/fixtures/standard-password-rehash-contract.ts`, registers a credential hashed under the initial 19 MiB/two-pass/one-lane policy and then performs logins through the real `verifyAccountPassword` operation while the bound real-provider service selects a superseding 20 MiB current/maximum policy. The required observation: the initial login issues without replacement at revision 1; the superseded login verifies the stored 19 MiB record and transparently persists a rehashed 20 MiB record with a fresh salt and verifier at revision 2; the repeated login issues without further replacement; a wrong password denies and leaves the rehashed record unchanged.
+
+- Node/PostgreSQL: the real Node 24 asynchronous Argon2id provider is bound through `createNodeStandardPasswordService` and runs against a real isolated PostgreSQL 18.6 store.
+- Workers/D1: the real static-Wasm libsodium provider is bound through `createCloudflareStandardPasswordService` inside local workerd and runs against a real D1 store carrying the full applied migration history.
+
+| Profile and focused command | Result |
+| --- | --- |
+| `node tooling/postgres-test-cluster.mjs node node_modules/vitest/vitest.mjs run --project postgres tests/postgres/repository.test.ts` | 49/49 passed, including the new real-provider rehash case |
+| `corepack pnpm exec vitest run --project workerd tests/workerd/standard-password.test.ts` | 5/5 passed, including the new in-worker D1 rehash case |
+
+Scope and limits: this closes the implementation outcome of 03.2e with the two real profile providers on their real primary stores, including the earlier known-answer, interop, packaging and route integration evidence above. It does not perform the suspended Argon2id performance characterization (03.V5 stays open, non-gating), does not resume the deferred independent provider audit, and adds no claim beyond the recorded test-only synthetic-address deployments for deployed Workers execution. Parameter values remain the explicit source-floor initial policy; a later deployment policy change rehashes stored records transparently, as verified here.
 
 ### Workers provider candidate checkpoint (2026-09-25)
 

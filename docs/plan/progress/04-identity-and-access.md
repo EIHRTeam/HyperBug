@@ -569,3 +569,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for this CI repair; full Module 04 acceptance and deployed provider/ingress evidence remain open.
 - Next actions: Preserve the existing Module 04 scope hold.
 - Next-session cautions: Do not infer deployed account-route acceptance from these local tests. Audits and Argon2id performance work remain suspended; Free tier stays disabled.
+
+### 2026-09-29 — Shared account-store rehash conformance evidence
+
+- Scope and checklist IDs: Narrow Phase 03 dependency only (03.2e acceptance); no Module 04 checklist item or code changed.
+- Progress: Module 03's 03.2e closure added a shared rehash conformance fixture that registers a credential and performs login-time supersession rehash through the real `verifyAccountPassword` operation against the real PostgreSQL and D1 account stores. Both profile cases passed inside the owning suites.
+- Change summary: Test fixtures and documentation only; see the [module 03 record](03-security-foundation.md) and [password research](../evidence/03-password-research.md).
+- Files/artifacts: `tests/fixtures/standard-password-rehash-contract.ts`, `tests/postgres/repository.test.ts`, `tests/workerd/standard-password.test.ts`.
+- Verification: Isolated PostgreSQL 18.6 repository suite 49/49 and workerd password suite 5/5 passed as part of the full 303-test matrix recorded in module 03.
+- Decisions and deviations: None; the narrow dependency boundary is unchanged.
+- Blockers/open questions: None from this batch; the module's own acceptance remains pending its prerequisite.
+- Next actions: Unchanged — resume the ordered 04.1/04.2 account journey when the prerequisite gate and authorization allow.
+- Next-session cautions: The rehash fixture intentionally binds a superseding policy through the same constructors the production roots call; production roots still pin the initial source-floor policy.
