@@ -79,7 +79,8 @@ export type AuditAction =
   | (typeof projectActions)[number]
   | `key-registry.${(typeof registryActions)[number]}`
   | 'authorization.checked'
-  | 'provider.outage';
+  | 'provider.outage'
+  | 'deployment.enablement';
 export interface AuditEvent {
   readonly id: string;
   readonly projectId: string | null;
@@ -88,6 +89,7 @@ export interface AuditEvent {
     | 'core.key-registry'
     | 'core.authorization'
     | 'core.admission'
+    | 'core.deployment'
     | null;
   readonly action: AuditAction;
   readonly targetId: string;
@@ -164,6 +166,32 @@ export function auditEvent(input: unknown): AuditEvent {
         permission: m.permission,
         resourceType: m.resourceType as string,
         decision: m.decision as string,
+      });
+    } else if (r.action === 'deployment.enablement') {
+      if (
+        r.projectId !== null ||
+        r.actorId !== null ||
+        r.systemActor !== 'core.deployment' ||
+        r.targetId !== 'cloudflare-free-minimum'
+      )
+        throw invalid();
+      const enablement = record(r.metadata, [
+        'v',
+        'acknowledgement',
+        'outcome',
+      ]);
+      if (
+        enablement.v !== 1 ||
+        enablement.acknowledgement !== 'free-minimum-v1' ||
+        (enablement.outcome !== 'refused' &&
+          enablement.outcome !== 'enabled') ||
+        (r.result === 'success') !== (enablement.outcome === 'enabled')
+      )
+        throw invalid();
+      metadata = Object.freeze({
+        v: 1,
+        acknowledgement: enablement.acknowledgement,
+        outcome: enablement.outcome,
       });
     } else if (r.action === 'provider.outage') {
       if (
@@ -382,6 +410,25 @@ function snapshotRequest(input: PermissionRequest): PermissionRequest {
       type: t.type as ResourceType,
       id: t.id,
     }),
+  });
+}
+
+/** Canonical startup event for a minimum-tier enablement attempt or change. */
+export function deploymentEnablementAuditEvent(
+  outcome: 'refused' | 'enabled',
+  nowMs: number,
+): AuditEvent {
+  return auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: null,
+    systemActor: 'core.deployment',
+    action: 'deployment.enablement',
+    targetId: 'cloudflare-free-minimum',
+    result: outcome === 'enabled' ? 'success' : 'failure',
+    requestId: crypto.randomUUID(),
+    createdAt: nowMs,
+    metadata: { v: 1, acknowledgement: 'free-minimum-v1', outcome },
   });
 }
 

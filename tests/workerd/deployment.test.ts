@@ -59,6 +59,33 @@ it('rejects invalid tier settings and partial minimum enablement during real Wor
   }
 });
 
+it('refuses a correctly acknowledged minimum-tier selection after its audited warning', async () => {
+  // A runtime-scoped D1 binding would turn the module-init refusal into a
+  // whole-runtime failure, so the local case stays binding-free; the audited
+  // refusal's persistence is verified on the real test D1 deployment.
+  const mf = worker({
+    HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
+    HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
+  });
+  let startupError: unknown;
+  let cleanupError: unknown;
+  try {
+    await mf.ready;
+  } catch (error) {
+    startupError = error;
+  } finally {
+    try {
+      await mf.dispose();
+    } catch (error) {
+      cleanupError = error;
+    }
+  }
+  if (cleanupError !== undefined && cleanupError !== startupError)
+    throw cleanupError;
+  expect(startupError).toBeInstanceOf(Error);
+  expect(String(startupError)).toContain('docs/FREE-TIER-PROFILE.md');
+});
+
 it('keeps standard tier selection unchanged when provider-plan or quota-like bindings are present', async () => {
   const mf = worker({ WORKERS_PLAN: 'free', QUOTA_EXHAUSTED: 'true' });
   try {

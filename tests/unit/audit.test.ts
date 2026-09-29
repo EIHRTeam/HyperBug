@@ -3,6 +3,7 @@ import {
   auditEvent,
   auditRetentionProposal,
   createAuditService,
+  deploymentEnablementAuditEvent,
 } from '../../packages/security/src/index.ts';
 import {
   auditScenarios,
@@ -74,6 +75,50 @@ it('validates provider-outage audit events with a closed catalog', () => {
     { actorId: crypto.randomUUID() },
   ])
     expect(() => auditEvent({ ...outage, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+});
+
+it('validates deployment-enablement audit events with a closed catalog', () => {
+  const event = auditFixture();
+  const enablement = {
+    ...event,
+    projectId: null,
+    actorId: null,
+    systemActor: 'core.deployment',
+    action: 'deployment.enablement',
+    targetId: 'cloudflare-free-minimum',
+    result: 'failure',
+    metadata: { v: 1, acknowledgement: 'free-minimum-v1', outcome: 'refused' },
+  };
+  expect(auditEvent(enablement)).toEqual(enablement);
+  const enabled = deploymentEnablementAuditEvent('enabled', 1800000000000);
+  expect(auditEvent(enabled)).toEqual(enabled);
+  expect(deploymentEnablementAuditEvent('refused', 1800000000001).result).toBe(
+    'failure',
+  );
+  for (const changes of [
+    { targetId: 'SEEDED_SECRET' },
+    { targetId: 'standard' },
+    {
+      metadata: {
+        v: 1,
+        acknowledgement: 'free-minimum-v0',
+        outcome: 'refused',
+      },
+    },
+    {
+      metadata: {
+        v: 1,
+        acknowledgement: 'free-minimum-v1',
+        outcome: 'SEEDED_SECRET',
+      },
+    },
+    { result: 'success' },
+    { systemActor: 'core.admission' },
+    { actorId: crypto.randomUUID() },
+  ])
+    expect(() => auditEvent({ ...enablement, ...changes })).toThrow(
       'AUDIT_INVALID',
     );
 });

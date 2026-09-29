@@ -1,10 +1,13 @@
 import { env } from 'cloudflare:workers';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
 import { configureOptionalTurnstile, createApp } from '@hyperbug/server';
-import { loadConfig } from '@hyperbug/config';
+import { assertDeploymentAvailable, loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
 import { createCloudflareTurnstileVerifier } from './turnstile.ts';
-import { initialStandardPasswordPolicy } from '@hyperbug/security';
+import {
+  deploymentEnablementAuditEvent,
+  initialStandardPasswordPolicy,
+} from '@hyperbug/security';
 import { createCloudflareStandardPasswordService } from './standard-password.ts';
 import { createWorkerAbuseKeyProvider } from './abuse-keys.ts';
 import {
@@ -52,6 +55,33 @@ const ingress = env.HYPERBUG_INGRESS_KEY
   ? createIngressAttestation(env.HYPERBUG_INGRESS_KEY)
   : null;
 const accountStore = env.DB ? createD1AccountRegistrationStore(env.DB) : null;
+// A correctly acknowledged minimum-tier selection is warned about and its
+// enablement attempt audited before the fail-closed barrier refuses startup.
+// The refusal audit write is best-effort by design: a refused deployment
+// never runs far enough for a D1 write to land, so the observable refusal
+// trail is the deployment/startup failure itself. When activation is later
+// accepted under 13.G6, this branch is replaced by the enabled outcome.
+if (config.deployment.tier === 'cloudflare-free-minimum') {
+  console.warn(
+    `HyperBug minimum tier selected (acknowledged): degradations ${config.deployment.degradationIds.join(',')} active; tier password login is disabled (reviewed floor unmet); startup is refused until activation is accepted.`,
+  );
+  if (env.DB) {
+    try {
+      await Promise.race([
+        createD1AuditRepository(env.DB).append(
+          deploymentEnablementAuditEvent('refused', Date.now()),
+          new AbortController().signal,
+        ),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('deadline')), 1000),
+        ),
+      ]);
+    } catch {
+      /* The audited-refusal write is best-effort; the barrier still throws. */
+    }
+  }
+  assertDeploymentAvailable(config.deployment);
+}
 const app = createApp({
   adapter: CloudflareAdapter,
   config,
