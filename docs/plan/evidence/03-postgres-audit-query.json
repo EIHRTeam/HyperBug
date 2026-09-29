@@ -4,7 +4,7 @@
   "events": 4000,
   "pages": 39,
   "pageSize": 100,
-  "traversalWallMs": 30.760084000000006,
+  "traversalWallMs": 31.861291000000165,
   "plan": [
     {
       "QUERY PLAN": [
@@ -43,7 +43,7 @@
                 "Plan Rows": 5,
                 "Plan Width": 232,
                 "Actual Startup Time": 0.014,
-                "Actual Total Time": 0.015,
+                "Actual Total Time": 0.016,
                 "Actual Rows": 100,
                 "Actual Loops": 1,
                 "Disabled": false,
@@ -81,7 +81,7 @@
                     "Actual Rows": 100,
                     "Actual Loops": 1,
                     "Disabled": false,
-                    "Recheck Cond": "((project_id = '14e4dcf3-b32c-490d-b9aa-aba655ac6e50'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, '7d7cb322-8789-4b89-a3ab-ac4486bac560'::uuid)))",
+                    "Recheck Cond": "((project_id = '1213c615-2d7f-4b31-a417-3894d795ba60'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, '5f202932-2b68-4a5c-bd66-f778c547f926'::uuid)))",
                     "Rows Removed by Index Recheck": 0,
                     "Exact Heap Blocks": 3,
                     "Lossy Heap Blocks": 0,
@@ -111,7 +111,7 @@
                         "Actual Rows": 100,
                         "Actual Loops": 1,
                         "Disabled": false,
-                        "Index Cond": "((project_id = '14e4dcf3-b32c-490d-b9aa-aba655ac6e50'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, '7d7cb322-8789-4b89-a3ab-ac4486bac560'::uuid)))",
+                        "Index Cond": "((project_id = '1213c615-2d7f-4b31-a417-3894d795ba60'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, '5f202932-2b68-4a5c-bd66-f778c547f926'::uuid)))",
                         "Index Searches": 1,
                         "Shared Hit Blocks": 3,
                         "Shared Read Blocks": 0,
@@ -142,9 +142,9 @@
             "Temp Read Blocks": 0,
             "Temp Written Blocks": 0
           },
-          "Planning Time": 0.014,
+          "Planning Time": 0.013,
           "Triggers": [],
-          "Execution Time": 0.024
+          "Execution Time": 0.025
         }
       ]
     }
