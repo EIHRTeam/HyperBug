@@ -18,13 +18,13 @@ Classification keys (updated 2026-09-29 after the Module 03 audit resume; class 
 | 03.3d | Bounded activity, abuse metadata, retry hints | 2 | Audit portion implemented 2026-09-29 (audited provider-outage policy; see [audit validation](03-audit-validation.md)); remaining scope (token/project categories, deployed budgets) is external/owning-route bound. |
 | 03.3e | Centralized outbound policy; DNS/egress validation | 2 | No eligible direct-egress Node environment (this host's resolver returns `198.18.0.0/15`); no live Turnstile credential for deployed Siteverify egress. |
 | 03.3f | Cache policy; fail-closed key/token/authorization/CAPTCHA/plugin failures | 2 + cross-module | Plugin-permission failure handling requires the Module 05 plugin runtime (not started); deployed key/provider outage behavior is external. |
-| 03.3g | Deployment-tier gate | 4 | Audit portion resumed 2026-09-29; the non-audit mechanism is verified locally and remaining activation work belongs to the disabled minimum tier. |
+| 03.3g | Deployment-tier gate | 1 | **Closed 2026-09-30**: audited enablement/change, startup warning and the deployed upload-refusal evidence (error 10021) complete the gate; activation itself remains 13.G6 scope. |
 | 03.3h | Minimum-tier compensating abuse controls | 1 | **Closed 2026-09-30**: chosen lockout parameters, digest-only bounded administrator alerting and the declared consistency model are fixed in code; see [tier validation](03-deployment-tier-validation.md). Runtime activation and alert delivery remain later-module/13.G6 scope. |
 | 03.V2 | Rejection acceptance (origins, input, rates, destinations, redirects, oversize) | 2 | All six rejection behaviors have local route evidence; full acceptance has been held to live-egress validation on both profiles, which is unavailable. |
 | 03.V3 | Multi-instance rate consistency; outages deny | 2 | Cross-location/multi-instance deployed consistency and deployed outage observation are unavailable. |
 | 03.V4 | Seeded-secret inspection; unauthorized audit access | 1 | **Closed 2026-09-29** on consolidated evidence; see [audit validation](03-audit-validation.md). |
 | 03.V5 | Password-hash CPU/memory/concurrency/overload record | 3 | Argon2id performance exploration stopped by user instruction; ADR 0009 makes it non-gating and "when available". |
-| 03.V6 | Tier gate verification on both runtimes | 4 | Audit portion resumed 2026-09-29; full verification still requires the enabled minimum tier. |
+| 03.V6 | Tier gate verification on both runtimes | 1 | Verification clauses are all locally/deployed provable without an enabled tier: without-ack refusal, Node rejection, no plan/quota inference (existing suites) and the invariant-integrity check (assess against the frozen catalogs). |
 | 03.V7 | Real Free-plan PBKDF2 cost curve and floor | 1 | **Closed 2026-09-29**: real-plan measurement, 600k floor decision, fixed policy constants and the deployed audit-append observation recorded; sustained retention measurements remain downstream (09.V6, 10.3g, 13.G6). |
 
 ## External prerequisites in detail

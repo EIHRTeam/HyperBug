@@ -1594,3 +1594,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for 03.3h; alert delivery (FREE-06) and tier activation remain later-module/13.G6 scope.
 - Next actions: Implement 03.3g's audited enablement/change and startup warning for the still-refused activation path, then the 03.V6 verification matrix.
 - Next-session cautions: The alert emitter is per-isolate approximate by declaration; do not present it as globally consistent. The tier still refuses startup.
+
+### 2026-09-30 — 03.3g accepted: audited and warned tier-gate refusal
+
+- Scope and checklist IDs: **03.3g accepted**; 03.V6 assessment remains; 03.3c–03.3f and 03.V2/03.V3 stay external.
+- Progress: The gate's remaining pieces are implemented — a closed-catalog `deployment.enablement` audit event with a canonical constructor, and a Cloudflare root hook that warns with the active degradation IDs and the disabled password-login state, attempts the bounded refusal audit write, and then lets the barrier refuse. Deployed evidence: uploading the production root with a correctly acknowledged minimum environment is rejected by Cloudflare's upload-time validation with error 10021 carrying the exact barrier message, so a refused deployment never creates a Worker; the refusal write is best-effort by design and the `enabled` outcome awaits 13.G6.
+- Change summary: Catalog extension, root hook, unit catalog cases and the workerd binding-free refusal case. An attempted persisted-D1 local case was removed after proving the runtime never creates the D1 file in a refused startup — the boundary is documented instead.
+- Files/artifacts: `packages/security/src/audit.ts`, `apps/api-cloudflare/src/index.ts`, `tests/unit/audit.test.ts`, `tests/workerd/deployment.test.ts`, [tier validation](../evidence/03-deployment-tier-validation.md), [closure matrix](../evidence/03-closure-matrix.md), the module checklist and this record. Commits `4ec3a22`/`ae57663`.
+- Verification: unit+contract 111/111, node 50/50, workerd 112/112, isolated PostgreSQL 18.6 56/56; both typechecks, lint/boundaries, formatting and diff check; the deployed upload attempt and its 10021 rejection on the authorized account.
+- Decisions and deviations: The refused-enablement audit write cannot land by platform design; the observable refusal trail is the deployment failure itself. The `enabled` outcome is reserved for accepted activation.
+- Blockers/open questions: None for 03.3g.
+- Next actions: Close 03.V6 by verifying the invariant-integrity clause against the frozen catalogs (both runtimes' remaining clauses already have suites), then reassess the module's residual blockers.
+- Next-session cautions: Do not flip the refusal hook's outcome to `enabled` without the 13.G6 acceptance; the wrong-hash typo in the first evidence draft was corrected in-tree before this record.
