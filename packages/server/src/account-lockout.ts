@@ -4,6 +4,7 @@ import {
   recordAccountFailure,
   type AccountLockoutDecision,
   type AccountLockoutPolicy,
+  type AccountLockoutState,
   type AccountLockoutStore,
   type RateSubject,
 } from '@hyperbug/security';
@@ -81,9 +82,9 @@ export async function requireAccountLockoutAdmission(
 /** Record an invalid password before responding; failure prevents completion. */
 export async function requireAccountLockoutFailureRecorded(
   intent: AccountLockoutFailureIntent,
-): Promise<void> {
+): Promise<AccountLockoutState> {
   if (!intent) throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
-  await requireAvailable(intent.signal, intent.timeoutMs, () =>
+  return requireAvailable(intent.signal, intent.timeoutMs, () =>
     recordAccountFailure(
       intent.store,
       intent.subjects,

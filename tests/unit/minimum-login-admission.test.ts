@@ -1,8 +1,12 @@
 import { expect, it } from 'vitest';
 import { SecretAbuseKeyProvider } from '../../packages/security/src/abuse-keys.ts';
 import {
+  createLockoutAlertEmitter,
   CryptoFailure,
   minimumPasswordLoginAvailable,
+  minimumTierAccountLockoutPolicy,
+  minimumTierLimitConsistency,
+  type AdministratorAbuseAlert,
   minimumTierPasswordFloorIterations,
   minimumTierPasswordLoginEnabled,
   minimumTierPasswordPolicy,
@@ -327,4 +331,87 @@ it('refuses tier service policies above the measured plan fit', async () => {
       minimumTierPasswordPolicy,
     ),
   ).resolves.toBeTypeOf('object');
+});
+
+it('fixes the tier lockout policy and declared limit-consistency model', () => {
+  expect(minimumTierAccountLockoutPolicy).toEqual({
+    initialMs: 500,
+    maximumMs: 900_000,
+    failuresPerStep: 2,
+    resetAfterMs: 900_000,
+  });
+  expect(Object.isFrozen(minimumTierAccountLockoutPolicy)).toBe(true);
+  const consistent = minimumTierLimitConsistency.consistent.map(
+    (entry) => entry.limit,
+  );
+  const approximate = minimumTierLimitConsistency.approximate.map(
+    (entry) => entry.limit,
+  );
+  expect(consistent).toContain('account lockout and progressive delay');
+  expect(consistent).toContain(
+    'authoritative account and trusted-IP admission counters',
+  );
+  expect(approximate).toContain('volumetric per-route and per-IP shedding');
+  expect(approximate).toContain('administrator lockout alerts');
+  for (const group of ['consistent', 'approximate'] as const)
+    for (const entry of minimumTierLimitConsistency[group]) {
+      expect(entry.mechanism.length).toBeGreaterThan(5);
+      expect(entry.rationale.length).toBeGreaterThan(10);
+    }
+});
+
+it('emits one administrator lockout alert per suppression window', async () => {
+  const alerts: AdministratorAbuseAlert[] = [];
+  const emitter = createLockoutAlertEmitter(async (alert) => {
+    alerts.push(alert);
+  });
+  const engaged = {
+    failedAttempts: 2,
+    notBeforeMs: nowMs + 1000,
+    expiresAtMs: nowMs + 900_000,
+  };
+  emitter(engaged, 'digest-a', nowMs);
+  emitter(engaged, 'digest-a', nowMs + 1000);
+  emitter({ ...engaged, notBeforeMs: nowMs + 500 }, 'digest-b', nowMs + 1000);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  expect(alerts).toHaveLength(1);
+  expect(alerts[0]).toMatchObject({
+    kind: 'account-lockout',
+    subjectDigest: 'digest-a',
+    failedAttempts: 2,
+  });
+  emitter(
+    {
+      ...engaged,
+      notBeforeMs: nowMs + 600_001 + 1000,
+      expiresAtMs: nowMs + 600_001 + 900_000,
+    },
+    'digest-a',
+    nowMs + 600_001,
+  );
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  expect(alerts).toHaveLength(2);
+  const failing = createLockoutAlertEmitter(async () => {
+    throw new Error('sink outage');
+  });
+  expect(() => failing(engaged, 'digest-c', nowMs)).not.toThrow();
+});
+
+it('alerts admission-recorded lockout engagements through the permit', async () => {
+  const { intent } = harness();
+  const alerts: AdministratorAbuseAlert[] = [];
+  const service = createMinimumLoginAdmission(createCaptchaGate(), {
+    ...policy,
+    lockoutAlerts: createLockoutAlertEmitter(async (alert) => {
+      alerts.push(alert);
+    }),
+  });
+  const permit = await service.require(intent);
+  await permit.recordFailure(nowMs);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  expect(alerts).toHaveLength(1);
+  expect(alerts[0]).toMatchObject({
+    kind: 'account-lockout',
+    failedAttempts: 1,
+  });
 });

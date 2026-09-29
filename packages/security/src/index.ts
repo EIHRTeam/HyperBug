@@ -22,6 +22,7 @@ export async function idempotencyDigest(
 }
 
 export * from './key-registry.ts';
+export * from './minimum-abuse.ts';
 export * from './minimum-password.ts';
 export * from './standard-password.ts';
 export * from './account-delay.ts';

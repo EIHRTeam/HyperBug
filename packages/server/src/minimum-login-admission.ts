@@ -1,12 +1,13 @@
 import {
   checkSensitiveRateAdmissionWithSubjects,
-  validAccountLockoutPolicy,
   type AbuseKeyProvider,
   type AccountLockoutPolicy,
   type AccountLockoutStore,
   type CanonicalRateCheck,
+  type LockoutAlertEmitter,
   type RateCounterStore,
   type RateSubject,
+  validAccountLockoutPolicy,
 } from '@hyperbug/security';
 import type { CaptchaGate } from './captcha.ts';
 import { withDeadline } from './bounds.ts';
@@ -19,6 +20,8 @@ import {
 } from './account-lockout.ts';
 
 export interface MinimumLoginAdmissionPolicy {
+  /** Optional FREE-02 administrator alerting for engaged account lockouts. */
+  readonly lockoutAlerts?: LockoutAlertEmitter;
   readonly lockout: AccountLockoutPolicy;
   readonly rateTimeoutMs: number;
   readonly lockoutTimeoutMs: number;
@@ -92,13 +95,16 @@ export function createMinimumLoginAdmission(
     typeof captcha.require !== 'function' ||
     !validDeadline(policy?.rateTimeoutMs) ||
     !validDeadline(policy.lockoutTimeoutMs) ||
-    !validAccountLockoutPolicy(policy.lockout, 0)
+    !validAccountLockoutPolicy(policy.lockout, 0) ||
+    (policy.lockoutAlerts !== undefined &&
+      typeof policy.lockoutAlerts !== 'function')
   )
     throw new Error('Invalid minimum login admission policy');
   const selected = Object.freeze({
     lockout: Object.freeze({ ...policy.lockout }),
     rateTimeoutMs: policy.rateTimeoutMs,
     lockoutTimeoutMs: policy.lockoutTimeoutMs,
+    lockoutAlerts: policy.lockoutAlerts,
   });
   const requireCaptcha = captcha.require.bind(captcha);
   return Object.freeze({
@@ -186,7 +192,7 @@ export function createMinimumLoginAdmission(
           settled = true;
           if (!Number.isSafeInteger(failedAtMs) || failedAtMs < nowMs)
             throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
-          await requireAccountLockoutFailureRecorded({
+          const recorded = await requireAccountLockoutFailureRecorded({
             store: lockoutStore,
             subjects: captured,
             nowMs: failedAtMs,
@@ -194,6 +200,8 @@ export function createMinimumLoginAdmission(
             signal,
             timeoutMs: selected.lockoutTimeoutMs,
           });
+          if (selected.lockoutAlerts && captured[0])
+            selected.lockoutAlerts(recorded, captured[0].digest, failedAtMs);
         },
         async clearAfterSuccess(): Promise<void> {
           if (settled) throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
