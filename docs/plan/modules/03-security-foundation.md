@@ -11,7 +11,7 @@ Implement reusable Core security services before exposing business writes or acc
 
 The optional Cloudflare Free minimum tier adds a documented, opt-in degradation surface (03.1e, 03.2g, 03.3g–03.3h, 03.V6–03.V7) defined by [ADR 0007](../../decisions/0007-cloudflare-free-minimum-tier.md) and [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md). Those items never widen or substitute for the standard-profile acceptance in 03.V1–03.V5.
 
-**Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
+**Execution override (2026-09-21, Module 03 portion lifted 2026-09-29): [audit work in this module was resumed by explicit instruction](../AUDIT-SUSPENSION.md#resume-2026-09-29--module-03-audit-only); audit portions of later modules remain suspended and unchecked.**
 
 **Password-login direction (2026-09-25, [ADR 0009](../../decisions/0009-standard-password-login.md)): Standard-profile password login is approved to be opened once the account flow and provider implementation are complete. Independent audit may be deferred or run in parallel and never blocks development or standard-profile password-login enablement. Further Argon2id performance testing remains stopped and is not a prerequisite. 03.2e's evidence has existed since 2026-09-29; keep 03.V5 unchecked until its evidence exists. The optional Free minimum tier remains separately governed by its PBKDF2 floor and 13.G6 acceptance.**
 
@@ -37,13 +37,13 @@ The optional Cloudflare Free minimum tier adds a documented, opt-in degradation 
 
 ### Step 03.3 — Implement Core enforcement services
 
-- [ ] **03.3a** **Suspended — no audit for now.** Implement permission-aware, append-only audit writes and bounded authorized reads; distinguish audit from diagnostic logs and define controlled retention cleanup.
+- [x] **03.3a** Implement permission-aware, append-only audit writes and bounded authorized reads; distinguish audit from diagnostic logs and define controlled retention cleanup. Accepted 2026-09-29 after the audit resume; see [audit validation](../evidence/03-audit-validation.md).
 - [x] **03.3b** Implement explicit CORS origin/method/header rules, safe preflight caching, origin validation when present, and authenticated no-Origin clients. Do not require cookies for business APIs.
 - [ ] **03.3c** Define rate-limit/anti-abuse ports and implement both deployment adapters. Separate approximate volumetric protection from sufficiently consistent login/recovery/privileged-operation limits.
-- [ ] **03.3d** **Audit portion suspended — no audit for now.** Bound per-IP, principal, account, token, project, and route activity as appropriate; use privacy-minimized abuse metadata, retry hints, and audited provider-outage policy.
+- [ ] **03.3d** **Audit portion resumed 2026-09-29; remaining scope is external/owning-route bound.** Bound per-IP, principal, account, token, project, and route activity as appropriate; use privacy-minimized abuse metadata, retry hints, and audited provider-outage policy.
 - [ ] **03.3e** Implement a centralized outbound-fetch policy for schemes, destination classes, redirects, timeouts, response sizes, and concurrency. Validate runtime-specific DNS/egress protections before allowing arbitrary destinations.
 - [ ] **03.3f** Define public/private cache policy and fail-closed handling for key, token, authorization, required CAPTCHA, and plugin-permission failures. CAPTCHA setup is optional; a configured provider enables required verification by default, while an absent provider does not require a token. Malformed configuration or failure of a configured provider must not silently disable verification.
-- [ ] **03.3g** **Audit portion suspended — no audit for now.** Implement the fail-closed deployment-tier gate in the typed configuration: exact tier value, required acknowledgement value, startup refusal on mismatch or on the Node runtime, no inference from provider plan or quota errors, audited enablement/change, startup warning, and readiness reporting of the tier, degradation identifiers and password-hash policy.
+- [ ] **03.3g** **Audit portion resumed 2026-09-29.** Implement the fail-closed deployment-tier gate in the typed configuration: exact tier value, required acknowledgement value, startup refusal on mismatch or on the Node runtime, no inference from provider plan or quota errors, audited enablement/change, startup warning, and readiness reporting of the tier, degradation identifiers and password-hash policy.
 - [ ] **03.3h** Implement the minimum tier's compensating abuse controls and declare its limit-consistency model: D1-backed account lockout and progressive delay, per-account and per-route quotas, required Turnstile when a provider is configured, administrator alerting, and explicit classification of which limits are approximate and which are consistent.
 
 ## Verification and acceptance
@@ -51,10 +51,10 @@ The optional Cloudflare Free minimum tier adds a documented, opt-in degradation 
 - [x] **03.V1** Run known-answer/tamper/wrong-AAD/key-rotation tests across both runtimes without implementing crypto primitives in tests.
 - [ ] **03.V2** Demonstrate that forbidden origins, malformed input, excessive requests, private/metadata destinations, redirect escapes, and oversized outbound bodies are rejected.
 - [ ] **03.V3** Confirm multi-instance rate-limit behavior meets the declared security consistency model and provider outages do not grant access.
-- [ ] **03.V4** **Audit portion suspended — no audit for now.** Inspect logs/audit/errors for seeded secrets and verify unauthorized audit access fails.
+- [ ] **03.V4** **Audit portion resumed 2026-09-29.** Inspect logs/audit/errors for seeded secrets and verify unauthorized audit access fails.
 - [ ] **03.V5** Record password-hash CPU, memory, concurrency, and overload results for the standard profiles when available. This characterization is not a prerequisite for standard-profile password-login enablement; address any observed correctness or availability defect as a normal implementation defect. Minimum-tier PBKDF2 parameters are recorded as a documented degradation and never as standard-profile evidence.
-- [ ] **03.V6** **Audit portion suspended — no audit for now.** Verify the tier gate on both runtimes: enabling without the exact acknowledgement fails startup, the tier is rejected on Node, the tier is never inferred from the provider plan or a quota error, and no tier configuration can disable an invariant, weaken audit integrity or bypass authorization.
-- [ ] **03.V7** **Audit portion suspended — no audit for now.** Measure, on a real Cloudflare Free account, the PBKDF2-HMAC-SHA256 cost curve for this tier and fix the iteration count within the per-invocation CPU budget with recorded margin, together with the security-review floor decision and the applicable audit/log retention measurements. Local probes may prepare the matrix but cannot substitute for plan-tier evidence.
+- [ ] **03.V6** **Audit portion resumed 2026-09-29.** Verify the tier gate on both runtimes: enabling without the exact acknowledgement fails startup, the tier is rejected on Node, the tier is never inferred from the provider plan or a quota error, and no tier configuration can disable an invariant, weaken audit integrity or bypass authorization.
+- [ ] **03.V7** **Audit portion resumed 2026-09-29.** Measure, on a real Cloudflare Free account, the PBKDF2-HMAC-SHA256 cost curve for this tier and fix the iteration count within the per-invocation CPU budget with recorded margin, together with the security-review floor decision and the applicable audit/log retention measurements. Local probes may prepare the matrix but cannot substitute for plan-tier evidence.
 
 ## Source coverage
 
