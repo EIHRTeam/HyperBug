@@ -22,7 +22,7 @@ Classification keys (updated 2026-09-29 after the Module 03 audit resume; class 
 | 03.3h | Minimum-tier compensating abuse controls | 4 + 2 | Independent minimum-tier path; needs the enabled tier and a real Free deployment for its consistency model. |
 | 03.V2 | Rejection acceptance (origins, input, rates, destinations, redirects, oversize) | 2 | All six rejection behaviors have local route evidence; full acceptance has been held to live-egress validation on both profiles, which is unavailable. |
 | 03.V3 | Multi-instance rate consistency; outages deny | 2 | Cross-location/multi-instance deployed consistency and deployed outage observation are unavailable. |
-| 03.V4 | Seeded-secret inspection; unauthorized audit access | 1 | Audit portion resumed 2026-09-29; assess against [audit validation](03-audit-validation.md) evidence. |
+| 03.V4 | Seeded-secret inspection; unauthorized audit access | 1 | **Closed 2026-09-29** on consolidated evidence; see [audit validation](03-audit-validation.md). |
 | 03.V5 | Password-hash CPU/memory/concurrency/overload record | 3 | Argon2id performance exploration stopped by user instruction; ADR 0009 makes it non-gating and "when available". |
 | 03.V6 | Tier gate verification on both runtimes | 4 | Audit portion resumed 2026-09-29; full verification still requires the enabled minimum tier. |
 | 03.V7 | Real Free-plan PBKDF2 cost curve and floor | 2 | Audit portion resumed 2026-09-29; the logged-in account is Free-tier, so measurement is environment-authorized but requires the tier's own implementation decisions (parameter floor, alerting) before it can run. |
