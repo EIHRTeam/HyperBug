@@ -4,7 +4,7 @@
   "events": 4000,
   "pages": 39,
   "pageSize": 100,
-  "traversalWallMs": 213.99879200000032,
+  "traversalWallMs": 30.109707999999955,
   "plan": [
     {
       "QUERY PLAN": [
@@ -17,8 +17,8 @@
             "Total Cost": 21.01,
             "Plan Rows": 5,
             "Plan Width": 232,
-            "Actual Startup Time": 0.044,
-            "Actual Total Time": 0.054,
+            "Actual Startup Time": 0.013,
+            "Actual Total Time": 0.019,
             "Actual Rows": 100,
             "Actual Loops": 1,
             "Disabled": false,
@@ -42,8 +42,8 @@
                 "Total Cost": 21.01,
                 "Plan Rows": 5,
                 "Plan Width": 232,
-                "Actual Startup Time": 0.043,
-                "Actual Total Time": 0.047,
+                "Actual Startup Time": 0.013,
+                "Actual Total Time": 0.015,
                 "Actual Rows": 100,
                 "Actual Loops": 1,
                 "Disabled": false,
@@ -76,12 +76,12 @@
                     "Total Cost": 20.94,
                     "Plan Rows": 5,
                     "Plan Width": 232,
-                    "Actual Startup Time": 0.019,
-                    "Actual Total Time": 0.028,
+                    "Actual Startup Time": 0.004,
+                    "Actual Total Time": 0.007,
                     "Actual Rows": 100,
                     "Actual Loops": 1,
                     "Disabled": false,
-                    "Recheck Cond": "((project_id = 'cfa84a8f-31a3-43b6-8029-969f04ad0054'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, '077da27d-5033-46f6-993d-5edf6cb75bd7'::uuid)))",
+                    "Recheck Cond": "((project_id = 'e37acc53-2fc2-41f5-a260-a7dd6f05ddc4'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, 'c95d0e9c-06a6-4f94-b267-c72db4d25af4'::uuid)))",
                     "Rows Removed by Index Recheck": 0,
                     "Exact Heap Blocks": 3,
                     "Lossy Heap Blocks": 0,
@@ -106,12 +106,12 @@
                         "Total Cost": 4.33,
                         "Plan Rows": 5,
                         "Plan Width": 0,
-                        "Actual Startup Time": 0.012,
-                        "Actual Total Time": 0.012,
+                        "Actual Startup Time": 0.003,
+                        "Actual Total Time": 0.003,
                         "Actual Rows": 100,
                         "Actual Loops": 1,
                         "Disabled": false,
-                        "Index Cond": "((project_id = 'cfa84a8f-31a3-43b6-8029-969f04ad0054'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, '077da27d-5033-46f6-993d-5edf6cb75bd7'::uuid)))",
+                        "Index Cond": "((project_id = 'e37acc53-2fc2-41f5-a260-a7dd6f05ddc4'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, 'c95d0e9c-06a6-4f94-b267-c72db4d25af4'::uuid)))",
                         "Index Searches": 1,
                         "Shared Hit Blocks": 3,
                         "Shared Read Blocks": 0,
@@ -142,9 +142,9 @@
             "Temp Read Blocks": 0,
             "Temp Written Blocks": 0
           },
-          "Planning Time": 0.065,
+          "Planning Time": 0.011,
           "Triggers": [],
-          "Execution Time": 0.073
+          "Execution Time": 0.025
         }
       ]
     }
