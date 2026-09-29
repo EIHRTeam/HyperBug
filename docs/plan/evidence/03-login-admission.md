@@ -1,5 +1,7 @@
 # Standard-profile login admission and session evidence
 
+Later status: 03.2e was accepted on 2026-09-29 ([password research](03-password-research.md)); every "keep open" statement below reflects its own checkpoint date.
+
 ## Local behavior verified on 2026-09-28
 
 The narrow account-owned `POST /auth/login` route now consumes the root-selected pre-parse approximate login bucket, authoritative account and trusted-IP counters, optional configured Turnstile gate, existing password verifier, and a revision-bound first-party authorization-session store. `GET /auth/session` reads active sessions from the primary and `POST /auth/logout` revokes them. Node uses the native socket peer; the local Workers fixture enters through the signed ingress service. Approximate allowance never substitutes for a primary counter allowance.

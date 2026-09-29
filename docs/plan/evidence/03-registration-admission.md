@@ -1,6 +1,6 @@
 # Phase 03 registration admission checkpoint
 
-Date: 2026-09-27. Scope: partial non-audit 03.2e and 03.3c–03.3f, with narrow 04.1c/04.1d registration support. This is implementation evidence, not a completed module or acceptance gate.
+Date: 2026-09-27. Scope: partial non-audit 03.2e and 03.3c–03.3f, with narrow 04.1c/04.1d registration support. This is implementation evidence, not a completed module or acceptance gate. Later status: 03.2e was accepted on 2026-09-29 ([password research](03-password-research.md)); the 03.3/03.V statements below reflect their own checkpoint dates.
 
 ## Pre-parse registration shedding (2026-09-27)
 
