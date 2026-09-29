@@ -12,7 +12,7 @@ Classification keys (updated 2026-09-29 after the Module 03 audit resume; class 
 | Item | Title (short) | Class | Blocking fact |
 | --- | --- | --- | --- |
 | 03.2e | Standard-profile Argon2id records + login-time rehash | 1 | **Closed 2026-09-29**: the final missing evidence — real-provider login-time rehash on parameter supersession through the actual login operation — was produced on both standard profiles; see [password research](03-password-research.md). |
-| 03.2g | Tier-scoped credential policy (PBKDF2 + pepper) | 4 + 2 | Mechanism and migration 0008 exist; completion requires the reviewed Free-plan parameter floor (03.V7) on a real Free account. Tier stays disabled. |
+| 03.2g | Tier-scoped credential policy (PBKDF2 + pepper) | 1 | **Closed 2026-09-29**: measured policy (50k/100k) and the 600k floor rule with its disabling outcome are fixed in code; see [tier validation](03-deployment-tier-validation.md). The tier itself stays startup-disabled pending 13.G6. |
 | 03.3a | Permission-aware audit writes/reads | 1 | **Closed 2026-09-29** after the [audit resume](../AUDIT-SUSPENSION.md#resume-2026-09-29--module-03-audit-only); see [audit validation](03-audit-validation.md). |
 | 03.3c | Rate-limit ports and both adapters | 2 | Genuine deployed ingress provenance, measured route budgets, cross-location/outage evidence, and recovery/privileged-operation categories whose owning routes do not exist yet. |
 | 03.3d | Bounded activity, abuse metadata, retry hints | 2 | Audit portion implemented 2026-09-29 (audited provider-outage policy; see [audit validation](03-audit-validation.md)); remaining scope (token/project categories, deployed budgets) is external/owning-route bound. |
@@ -25,7 +25,7 @@ Classification keys (updated 2026-09-29 after the Module 03 audit resume; class 
 | 03.V4 | Seeded-secret inspection; unauthorized audit access | 1 | **Closed 2026-09-29** on consolidated evidence; see [audit validation](03-audit-validation.md). |
 | 03.V5 | Password-hash CPU/memory/concurrency/overload record | 3 | Argon2id performance exploration stopped by user instruction; ADR 0009 makes it non-gating and "when available". |
 | 03.V6 | Tier gate verification on both runtimes | 4 | Audit portion resumed 2026-09-29; full verification still requires the enabled minimum tier. |
-| 03.V7 | Real Free-plan PBKDF2 cost curve and floor | 2 | Audit portion resumed 2026-09-29; the logged-in account is Free-tier, so measurement is environment-authorized but requires the tier's own implementation decisions (parameter floor, alerting) before it can run. |
+| 03.V7 | Real Free-plan PBKDF2 cost curve and floor | 1 | **Closed 2026-09-29**: real-plan measurement, 600k floor decision, fixed policy constants and the deployed audit-append observation recorded; sustained retention measurements remain downstream (09.V6, 10.3g, 13.G6). |
 
 ## External prerequisites in detail
 
