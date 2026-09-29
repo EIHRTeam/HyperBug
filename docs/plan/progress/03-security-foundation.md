@@ -1666,3 +1666,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Module 03's remaining open items are 03.3c/03.3d (measured route budgets under real load; recovery/privileged-operation/token/project categories whose owning routes exist only in later modules) and 03.3f's plugin-permission failure handling (suspended Module 05 runtime).
 - Next actions: None available in the current environment — Module 03 is at its environment-maximal closure; the remainders need either later-module routes, real production load, or the resumed plugin runtime.
 - Next-session cautions: Do not reintroduce unconditional `x-real-ip` rejection; keep the widget credentials out of the repository; the permanent audit rows (`provider.outage` plus the five earlier test rows) must not be touched; keep the Free tier disabled.
+
+### 2026-09-30 — Deployed approximate-budget burst observation
+
+- Scope and checklist IDs: 03.3c's approximate-budget component; the item stays open for the real-load production budget table and owning-route categories.
+- Progress: Under the standing goal's wrangler/ssh authorizations, a no-provider custom-domain pair absorbed a controlled synthetic burst of unauthenticated session reads from oci: 1,300 requests in 2.3 s (~560 rps) returned 1,023×401 and 277×429 — the deployed approximate shedding boundary enforcing the configured 1,000/60 s budget at the edge for the first time. A ~12 rps control burst never tripped it; a 65-second window pause restored admission; the bursts wrote zero primary counter rows.
+- Change summary: Evidence, matrix and this record only; no code changed.
+- Files/artifacts: [rate-limit validation](../evidence/03-rate-limits-validation.md) (new dated section), [closure matrix](../evidence/03-closure-matrix.md), this record.
+- Verification: Burst counts and recovery as recorded; post-cleanup 10007/zero-row/unreachable checks passed; `docs:build`, formatting and link checks for this batch.
+- Decisions and deviations: The observation is labelled a synthetic single-client measurement of the approximate layer — it does not substitute for the real-load production budget prerequisite.
+- Blockers/open questions: Module 03's remaining items all need later-module routes, real production load, the resumed Module 05 runtime, or the lifted Argon2id stop; none is obtainable under the current authorizations.
+- Next actions: None executable in this environment; Module 03 is at its environment-maximal closure.
+- Next-session cautions: Keep synthetic-load measurements labelled as such; do not wire them into the frozen category policy as production budgets.
