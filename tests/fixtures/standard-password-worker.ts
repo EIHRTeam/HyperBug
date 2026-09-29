@@ -6,6 +6,13 @@ import {
   loadDeploymentConfig,
   type DeploymentConfig,
 } from '../../packages/config/src/deployment.ts';
+import { createD1AccountRegistrationStore } from '@hyperbug/database-d1';
+import type { D1Database } from '@cloudflare/workers-types';
+import {
+  observeStandardPasswordRehash,
+  rehashInitialParameters,
+  rehashSupersededParameters,
+} from './standard-password-rehash-contract.ts';
 
 const provider = createCloudflareArgon2idProvider(19456);
 const deployment = loadDeploymentConfig({}, 'cloudflare');
@@ -45,7 +52,7 @@ function rejectsPolicy(
 export default {
   async fetch(
     request: Request,
-    env: { NODE_RECORD?: string },
+    env: { NODE_RECORD?: string; REHASH_DB?: D1Database },
   ): Promise<Response> {
     if (new URL(request.url).pathname === '/policy')
       return Response.json({
@@ -53,6 +60,33 @@ export default {
         deniedParallelism: rejectsPolicy({ ...policy.maximum, parallelism: 2 }),
         deniedMinimumTier: rejectsPolicy(policy.maximum, minimum),
       });
+    if (new URL(request.url).pathname === '/rehash') {
+      // 03.2e conformance: the real Workers provider rehashes a superseded
+      // record through the actual login operation against a primary D1 store.
+      if (!env.REHASH_DB) return Response.json({}, { status: 500 });
+      const observation = await observeStandardPasswordRehash({
+        store: createD1AccountRegistrationStore(env.REHASH_DB),
+        initialService: createCloudflareStandardPasswordService(
+          deployment,
+          {
+            current: rehashInitialParameters,
+            maximum: rehashInitialParameters,
+          },
+          rehashInitialParameters.memoryKiB,
+        ),
+        supersededService: createCloudflareStandardPasswordService(
+          deployment,
+          {
+            current: rehashSupersededParameters,
+            maximum: rehashSupersededParameters,
+          },
+          rehashSupersededParameters.memoryKiB,
+        ),
+        password: 'test password',
+        nowMs: 1789900800000,
+      });
+      return Response.json(observation);
+    }
     if (new URL(request.url).pathname === '/exchange') {
       const fromNode = await service.verify(
         'test password',

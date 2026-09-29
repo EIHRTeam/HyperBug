@@ -7,6 +7,14 @@ import { checkSensitiveRateLimit } from '../../packages/security/src/rate-limit.
 import { checkSensitiveRateAdmission } from '../../packages/security/src/abuse-keys.ts';
 import { configureNodeAbuseAdmission } from '../../apps/api-node/src/abuse-admission.ts';
 import { verifyAccountPassword } from '../../packages/server/src/account-password.ts';
+import { createNodeStandardPasswordService } from '../../apps/api-node/src/standard-password.ts';
+import { loadDeploymentConfig } from '../../packages/config/src/deployment.ts';
+import {
+  expectedStandardPasswordRehashObservation,
+  observeStandardPasswordRehash,
+  rehashInitialParameters,
+  rehashSupersededParameters,
+} from '../fixtures/standard-password-rehash-contract.ts';
 import { abuseKeyFixture } from '../fixtures/abuse-key-fixture.ts';
 import { postgresNodeBindings } from '../fixtures/postgres-node-bindings.ts';
 import {
@@ -235,6 +243,34 @@ it('replaces a verified User credential only at its current revision on PostgreS
     await store.replaceCredential({ ...change, expectedRevision: 2 }),
   ).toBe(false);
 });
+
+it('rehashes a superseded credential at login with the real Node provider', async () => {
+  const deployment = loadDeploymentConfig({}, 'node');
+  const observation = await observeStandardPasswordRehash({
+    store: createPostgresAccountRegistrationStore(pool),
+    initialService: createNodeStandardPasswordService(
+      deployment,
+      {
+        current: rehashInitialParameters,
+        maximum: rehashInitialParameters,
+      },
+      1,
+      rehashInitialParameters.memoryKiB,
+    ),
+    supersededService: createNodeStandardPasswordService(
+      deployment,
+      {
+        current: rehashSupersededParameters,
+        maximum: rehashSupersededParameters,
+      },
+      1,
+      rehashSupersededParameters.memoryKiB,
+    ),
+    password: 'test password',
+    nowMs: 1789900800000,
+  });
+  expect(observation).toEqual(expectedStandardPasswordRehashObservation());
+}, 30000);
 
 it('uses the Node root private key and PostgreSQL counter together', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'hyperbug-abuse-pg-'));

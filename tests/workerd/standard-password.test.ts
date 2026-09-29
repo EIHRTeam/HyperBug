@@ -16,6 +16,8 @@ import {
   verifyStandardPassword,
 } from '../../packages/security/src/standard-password.ts';
 import { workerModules } from '../fixtures/worker-modules.ts';
+import { migrationStatements } from '../fixtures/migrations.ts';
+import { expectedStandardPasswordRehashObservation } from '../fixtures/standard-password-rehash-contract.ts';
 
 const wasmPath = 'apps/api-cloudflare/src/vendor/libsodium-sumo-0.8.4.wasm';
 const expectedWasmSha256 =
@@ -159,3 +161,27 @@ it('runs the Wrangler dry-run JS and unchanged Wasm module in local workerd', as
     rmSync(outdir, { recursive: true, force: true });
   }
 });
+
+it('rehashes a superseded credential at login with the real Workers provider on D1', async () => {
+  const mf = new Miniflare(
+    convertV4MiniflareOptions({
+      modules: workerModules('dist/standard-password-worker', [wasmPath]),
+      d1Databases: ['REHASH_DB'],
+      compatibilityDate: '2026-09-16',
+      compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
+    }),
+  );
+  try {
+    const db = await mf.getD1Database('REHASH_DB');
+    for (const migration of await migrationStatements('d1'))
+      await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+    const response = await fetch(new URL('/rehash', await mf.ready));
+    const body = await response.text();
+    expect(response.status, body).toBe(200);
+    expect(JSON.parse(body)).toEqual(
+      expectedStandardPasswordRehashObservation(),
+    );
+  } finally {
+    await mf.dispose();
+  }
+}, 30000);
