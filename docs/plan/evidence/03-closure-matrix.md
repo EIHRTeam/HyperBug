@@ -16,7 +16,7 @@ Classification keys (updated 2026-09-29 after the Module 03 audit resume; class 
 | 03.3a | Permission-aware audit writes/reads | 1 | **Closed 2026-09-29** after the [audit resume](../AUDIT-SUSPENSION.md#resume-2026-09-29--module-03-audit-only); see [audit validation](03-audit-validation.md). |
 | 03.3c | Rate-limit ports and both adapters | 2 | Genuine deployed ingress provenance, measured route budgets, cross-location/outage evidence, and recovery/privileged-operation categories whose owning routes do not exist yet. 2026-09-30: every local client path to the deployed real gateway arrives with an injected `x-real-ip` (system-proxy and fake-IP TUN paths both TLS-intercepted), and the authorized second-location host cannot reach workers.dev; see [workers ingress](03-workers-ingress.md). |
 | 03.3d | Bounded activity, abuse metadata, retry hints | 2 | Audit portion implemented 2026-09-29 (audited provider-outage policy; see [audit validation](03-audit-validation.md)); remaining scope (token/project categories, deployed budgets) is external/owning-route bound. |
-| 03.3e | Centralized outbound policy; DNS/egress validation | 2 | No eligible direct-egress Node environment (this host's resolver returns `198.18.0.0/15`); no live Turnstile credential for deployed Siteverify egress. |
+| 03.3e | Centralized outbound policy; DNS/egress validation | 2 | No live Turnstile credential for the real Siteverify egress call on either profile and no deployed Workers-side live-egress observation. 2026-09-30: the Node direct-egress prerequisite was satisfied on a clean host — public-address DNS confirmed and the exact GET probe returned 200 for both catalogued candidates through the real pinned adapter (see [outbound policy](../../OUTBOUND-SECURITY.md)). |
 | 03.3f | Cache policy; fail-closed key/token/authorization/CAPTCHA/plugin failures | 2 + cross-module | Plugin-permission failure handling requires the Module 05 plugin runtime (not started); deployed key/provider outage behavior is external. |
 | 03.3g | Deployment-tier gate | 1 | **Closed 2026-09-30**: audited enablement/change, startup warning and the deployed upload-refusal evidence (error 10021) complete the gate; activation itself remains 13.G6 scope. |
 | 03.3h | Minimum-tier compensating abuse controls | 1 | **Closed 2026-09-30**: chosen lockout parameters, digest-only bounded administrator alerting and the declared consistency model are fixed in code; see [tier validation](03-deployment-tier-validation.md). Runtime activation and alert delivery remain later-module/13.G6 scope. |
@@ -50,11 +50,11 @@ For every class-2 component, the exact missing prerequisite, the environment or 
 
 ### Node direct TLS egress (03.3e, 03.V2)
 
-- Missing prerequisite: a Node deployment host whose resolver returns public addresses for catalogued destinations (this development host returns benchmark-range `198.18.0.0/15`, which the adapter correctly denies).
+- Missing prerequisite: ~~a Node deployment host whose resolver returns public addresses for catalogued destinations~~ — satisfied 2026-09-30 by the authorized clean host `u202f@unpkg`; the remaining prerequisite is the live Turnstile credential for the real Siteverify call.
 - Required environment: the actual Node/PostgreSQL deployment environment or any host with unfiltered direct egress and TLS.
 - Procedure: run the existing pinned-adapter exact `GET` probe from that host; then exercise the configured Siteverify destination with the real credential.
 - Acceptance: a successful direct TLS handshake and a real provider response through the Node adapter.
-- Existing evidence proves: address/DNS policy rejection before TLS, including the correct denial on this host. It does not prove any successful outbound TLS from the Node profile.
+- Existing evidence proves: address/DNS policy rejection before TLS (including the correct denial on this host), and since 2026-09-30 the successful exact `GET` probe through the real pinned adapter on the clean host — public-address DNS for both catalogued candidates, 200 responses with bounded bodies, plus a local control reproducing the denial. Not yet proven: the real-credential Siteverify `POST` and any live provider response through the Node adapter.
 
 ### Cross-location and outage consistency (03.V3)
 

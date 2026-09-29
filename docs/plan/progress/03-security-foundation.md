@@ -1630,3 +1630,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Exact unblock for genuine trusted ingress: a client egress that does not TLS-rewrite requests to the gateway hostname (proxy-stack exemption for `*.workers.dev`, a clean client host that can reach workers.dev, or a zone/custom-domain deployment reachable from a clean client).
 - Next actions: Batch 3 (Node direct-egress probe on the clean host); batch 2 (live Turnstile) still awaits user-provided widget credentials; batch 4 cross-location observation shares the ingress unblock.
 - Next-session cautions: Do not treat the free-tier account or the MITM'd local paths as satisfying genuine-ingress prerequisites; keep the Free tier disabled; the permanent audit test rows in `hyperbug-test-1` must not be touched.
+
+### 2026-09-30 — External-evidence batch 3: Node direct egress on the clean host
+
+- Scope and checklist IDs: 03.3e/03.V2 external portions (Node direct TLS); no checklist item closed.
+- Progress: The authorized clean host `u202f@unpkg` resolved `example.com` and `challenges.cloudflare.com` to public addresses. A single-file probe bundling the unmodified `createNodeOutboundFetcher` (tsdown build) ran there on Node v24.16.0: both exact catalogued `GET` targets returned 200 with bounded bodies — the first successful Node-profile direct TLS egress. The same bundle on this development host reproduced the recorded `UNAVAILABLE` benchmark-range denial as a control. The remote probe file was deleted after the run.
+- Change summary: Evidence, outbound-policy checkpoint and matrix updates only; no production code changed.
+- Files/artifacts: [outbound policy](../../OUTBOUND-SECURITY.md) (new checkpoint), [closure matrix](../evidence/03-closure-matrix.md), this record. The secret-free probe source and bundle remain ignored under `.local/phase03-node-egress/`.
+- Verification: Local control (denial) and remote run (both 200) as recorded above; `docs:build`, formatting and link checks for this batch recorded in the commit.
+- Decisions and deviations: The probe used a test-only exact GET catalog including a GET entry for the Siteverify host; the production Siteverify operation remains `POST /turnstile/v0/siteverify` and is reserved for real credentials.
+- Blockers/open questions: The real-credential Siteverify call needs the same user-provided Turnstile widget secret as batch 2; deployed Workers-side live egress remains unobserved.
+- Next actions: Await Turnstile widget credentials for batches 2 and the Siteverify half of 3; cross-location batch 4 shares the genuine-ingress unblock from batch 1.
+- Next-session cautions: Re-verify the clean host's resolver behavior before relying on it again; keep the probe's GET catalog out of any production configuration.
