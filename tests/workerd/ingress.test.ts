@@ -154,6 +154,104 @@ it('admits registration only through a signed service-bound Workers ingress', as
   }
 });
 
+it('treats edge-added x-real-ip equal to the connecting address as direct ingress', async () => {
+  const secret = Buffer.alloc(32, 57).toString('base64url');
+  const mf = new Miniflare(
+    convertV4MiniflareOptions({
+      workers: [
+        {
+          name: 'api',
+          modules: workerModules('dist/cloudflare'),
+          compatibilityDate: '2026-09-16',
+          compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
+          d1Databases: { DB: 'ingress-edge-real-ip' },
+          ratelimits: {
+            ABUSE_VOLUMETRIC: {
+              namespace_id: '703397',
+              simple: { limit: 100, period: 60 },
+            },
+          },
+          bindings: {
+            HYPERBUG_ENV: 'production',
+            ALLOWED_ORIGINS: 'https://frontend.example',
+            HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
+            HYPERBUG_INGRESS_KEY: secret,
+          },
+        },
+        {
+          name: 'ingress',
+          modules: workerModules('dist/cloudflare-ingress'),
+          compatibilityDate: '2026-09-16',
+          compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
+          bindings: { HYPERBUG_INGRESS_KEY: secret },
+          serviceBindings: { API: 'api' },
+        },
+      ],
+    }),
+  );
+  try {
+    const db = await mf.getD1Database('DB', 'api');
+    for (const migration of await migrationStatements('d1'))
+      await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+    const ingress = await mf.getWorker('ingress');
+    const url = 'https://api.example/api/v1/accounts/register';
+    const body = JSON.stringify({
+      handle: 'Edgerealingressuser',
+      password: 'long-functional-password',
+    });
+    // The deployed edge force-sets x-real-ip to the connecting address, so
+    // the equal pair is the direct-client form and must be forwarded.
+    const edgeAdded = await ingress.fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'cf-connecting-ip': '192.0.2.61',
+        'x-real-ip': '192.0.2.61',
+      },
+      body,
+    });
+    expect(edgeAdded.status, await edgeAdded.clone().text()).toBe(202);
+    // A divergent value remains a same-zone subrequest tripwire.
+    const divergent = await ingress.fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'cf-connecting-ip': '192.0.2.61',
+        'x-real-ip': '192.0.2.62',
+      },
+      body,
+    });
+    expect(divergent.status).toBe(503);
+    expect(divergent.headers.get('cache-control')).toBe('no-store');
+    const malformed = await ingress.fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'cf-connecting-ip': '192.0.2.61',
+        'x-real-ip': 'not-an-ip',
+      },
+      body,
+    });
+    expect(malformed.status).toBe(503);
+    expect(malformed.headers.get('cache-control')).toBe('no-store');
+    const identity = await db
+      .prepare(
+        "SELECT subject FROM identities WHERE provider = 'local-password'",
+      )
+      .first<{ subject: string }>();
+    expect(identity?.subject).toBe('edgerealingressuser');
+    const counters = await db
+      .prepare(
+        "SELECT COUNT(*) AS n FROM rate_limit_counters WHERE category = 'registration'",
+      )
+      .first<{ n: number }>();
+    // Two abuse-key versions x account/ip dimensions from the fixture ring.
+    expect(counters?.n).toBe(4);
+  } finally {
+    await mf.dispose();
+  }
+});
+
 it('denies signed registration when the production Workers limiter binding is unavailable', async () => {
   const secret = Buffer.alloc(32, 56).toString('base64url');
   const mf = new Miniflare(
