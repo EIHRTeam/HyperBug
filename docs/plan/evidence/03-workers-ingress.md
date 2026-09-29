@@ -117,3 +117,7 @@ Three real client addresses hit the same deployed pair: the local browser (egres
 ### Cleanup
 
 Both temporary Workers were deleted with Worker-not-found 10007 post-checks and the custom domain stopped serving; the two test identities, credentials, sessions, all nine counter rows and the fixture key version (revoked→removed tombstone) were cleaned to zero rows in `hyperbug-test-1`; the temporary secret/config files and remote probe scripts were removed. One transient Wrangler D1 CLI failure during automated cleanup was completed manually and verified, matching the earlier precedent. The secret-free staged runner remains ignored under `.local/phase03-real-ingress/`. The five permanent audit test rows were untouched.
+
+### Two-colo service and Turnstile-configured reuse (2026-09-30)
+
+The provider-configured custom-domain deployment reused the fixed gateway code unchanged. Its tail recorded the pair serving genuine clients at two Cloudflare locations — KIX for oci and the local browser, LHR for unpkg — alongside five harmless scanner probes (certificate-transparency-log discovery) that received 404s with zero writes. Combined with the cross-location counter proof above, multi-location service with genuine provenance is observed; per-location authoritative-counter behavior is D1-global by design.
