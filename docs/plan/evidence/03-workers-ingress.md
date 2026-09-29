@@ -78,3 +78,42 @@ After all rejected traffic — polluted browser requests on both local paths and
 ### Exact remaining prerequisites
 
 Genuine trusted browser-ingress acceptance needs a client egress to the deployed gateway hostname that does not terminate or rewrite TLS: a proxy-stack exemption for `*.workers.dev` on this host, any clean client host that can reach workers.dev (the current second-location host cannot), or a Cloudflare zone with a custom domain for the gateway reachable from such a client. Until one exists, the genuine browser registration/login flow and every cross-location observation stay open; no synthetic or partial substitute is claimed. The chrome-devtools MCP drove the first browser attempt and the header diagnostics; the no-proxy variant was a separately launched CDP-driven Chrome instance, recorded here as a deliberate deviation with its reason.
+
+## Edge-added x-real-ip discovery, gateway fix and genuine browser ingress (2026-09-30, later session)
+
+### Platform discovery and correction of the earlier diagnosis
+
+A capability-guarded echo Worker (temporary, deleted after the checks) showed what the Cloudflare edge actually delivers to a Worker on this account: **`x-real-ip` force-set to the client's address on both workers.dev and a Workers custom domain**, alongside the documented `x-forwarded-proto`, an overwritten `connection: Keep-Alive`, and a rewritten `accept-encoding`. Client-supplied `x-real-ip` values are **overwritten** with the true address; a client-forged `cf-connecting-ip` is killed by the edge with error 1000 before the Worker; a client-set `cf-worker` is stripped; and a same-account Worker fetching the gateway's public workers.dev URL receives edge error 1042 (same-zone Worker-to-Worker through the public route is unsupported). Cloudflare's header reference documents `x-real-ip` as **stripped** for direct clients with no Worker subrequest — the deployed behavior on this account differs, and the discrepancy is recorded as a platform observation, not a documentation claim.
+
+This **corrects the same day's earlier diagnosis**: the "TLS-terminating interception" theory is disproven. The decisive facts: a direct `curl` from the authorized `ubuntu@oci` host (the exit of this machine's proxy chain) validated the genuine Google Trust Services certificate for the workers.dev hostname end-to-end, sent no `x-real-ip` itself, and still arrived with the edge-added pair; identical header sets appeared from oci, unpkg and this machine. No on-path MITM exists on any path; the earlier local observations were the same edge behavior. The `u202f@unpkg` host remains unable to reach `*.workers.dev` (non-Cloudflare DNS answer, timeouts) but **does reach Workers custom domains**.
+
+### Gateway fix
+
+Because the edge force-adds `x-real-ip`, the production gateway's unconditional `x-real-ip` rejection denied **every direct client** on this platform — the root cause of the 2026-09-27 unreachable signed gateway. Commit `f9a02e6` refines the check: `cf-worker` presence and the cross-zone sentinel address still reject unconditionally; a present `x-real-ip` now rejects only when its canonicalized value **diverges** from the canonical `cf-connecting-ip` (malformed values reject through canonicalization). Provenance itself was never derived from `x-real-ip` — it remains the canonical `cf-connecting-ip` bound inside the signed attestation, so the refinement adds no trust assumption while restoring direct-client availability. A new workerd ingress case covers the equal pair (forwarded, 202), a divergent value (503) and a malformed value (503); the full workerd ingress suite, focused unit suites, both typechecks, lint/boundaries, build, secret scan and formatting passed for the change.
+
+### Genuine browser flow through the fixed gateway (custom-domain deployment)
+
+Under the new authorization for `*.test.eihrteam.org` custom domains, the fixed gateway plus a private API root were deployed with a fresh random key material set and `hyperbug-test-1` (gateway `gw-cde77fae9.test.eihrteam.org`, API `workers_dev: false`; the account zone supplied the custom domain and its certificate). A **real Chrome driven through the Chrome DevTools MCP** — the same-origin page served by the gateway itself — then completed, with no synthetic addresses and no test-only gateway code:
+
+| Step | Result |
+| --- | --- |
+| Unauthenticated `GET /auth/session` | 401 `LOGIN_DENIED` JSON (the API's real response, not a gateway 503) |
+| `POST /api/v1/accounts/register` | 202 `{"accepted":true}`, no-store |
+| `POST /auth/login` | 200 `{"authenticated":true}` with `set-cookie: __Host-hb_session=…; Max-Age=604800; Path=/; Secure; HttpOnly; SameSite=Lax`, no-store, matching CORS echo of the gateway origin |
+| `GET /auth/session` (cookie) | 200 `{"authenticated":true}` — the browser's HttpOnly/SameSite cookie round-trips |
+| `POST /auth/logout` | 204 with a Max-Age=0 clearing cookie |
+| `GET /auth/session` after logout | 401 — revocation effective |
+
+`wrangler tail` on the gateway shows every browser request arriving as the equal pair `cf-connecting-ip` = `x-real-ip` = the browser's real egress address `2603:c023:12:c01::10` (KIX colo) and being forwarded; the API tail shows the route outcomes.
+
+### Genuine-address primary-counter proof
+
+With the versioned abuse ring known to the fixture, the expected `HMAC-SHA256` subject digests were computed locally for every category/dimension pair. The primary D1 read found exactly nine counter rows at the fresh key version and **all nine digests matched exactly**: registration `account`×2 (one per handle) and `ip` at the browser address and the unpkg address, each 1 hit; login `account` handleA = 2, `account` handleB = 7, `ip` at the three client addresses = 3/4/2. Zero unexplained rows; a validation-failed 400 wrote nothing. The recorded subjects are therefore the **genuine client addresses and handles as seen at the edge** — the provenance proof this item was missing.
+
+### Cross-location consistency on genuine provenance
+
+Three real client addresses hit the same deployed pair: the local browser (egress `2603:c023:12:c01::10`), forced-IPv4 curl on `ubuntu@oci` (`129.225.163.227`) and curl on `u202f@unpkg` (`1.14.226.195`, reachable through the custom domain). Wrong-password logins for one handle were admitted five times across unpkg and oci (401 each, counters 1..5), then the sixth attempt from the **browser** returned no-store **429 RATE_LIMITED with `retry-after: 2055`**, and a further attempt from **unpkg** again returned 429 (`retry-after: 2049`) — the authoritative account dimension is enforced consistently across locations through the shared primary. The per-IP dimensions stayed independent: a correct login for the other handle from the browser succeeded immediately after the cross-location denial. This demonstrates the declared consistency model (authoritative primary counters, approximate volumetric shedding) on genuine provenance across addresses; it does not by itself prove multi-colo routing diversity or deployed outage windows.
+
+### Cleanup
+
+Both temporary Workers were deleted with Worker-not-found 10007 post-checks and the custom domain stopped serving; the two test identities, credentials, sessions, all nine counter rows and the fixture key version (revoked→removed tombstone) were cleaned to zero rows in `hyperbug-test-1`; the temporary secret/config files and remote probe scripts were removed. One transient Wrangler D1 CLI failure during automated cleanup was completed manually and verified, matching the earlier precedent. The secret-free staged runner remains ignored under `.local/phase03-real-ingress/`. The five permanent audit test rows were untouched.
