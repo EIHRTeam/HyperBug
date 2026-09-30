@@ -766,3 +766,14 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None; OpenAPI consolidation is 10.1a, SPA consumption 11.1g.
 - Next actions: 04.2a/04.2b (Authorization Code + PKCE and opaque tokens) under way through a delegated implementation subagent; 04.2c rotation assessment recorded when it lands.
 - Next-session cautions: The instance document is a capability contract, never authorization.
+
+### 2026-09-30 — Module 04 batch: authorization-code flow and opaque tokens
+
+- Scope and checklist IDs: 04.2a and 04.2b accepted; 04.2d page wrappers and 04.2e bearer route owners remain.
+- Progress: The Authorization Code + PKCE S256 core and the opaque-token machinery are implemented on both profiles — exact-match client registry with all-or-nothing startup, 60-second single-use keyed-digest codes with consume-before-verify, double-hash constant-time S256, `at_` tokens (256-bit secret, keyed digest, 600-second bounded lifetime) and RFC 7009 revocation; both token endpoints rate-admit under the login category. Delegated implementation, independently reviewed and re-verified.
+- Change summary: Dual-dialect migration 0014/0013 with mirrored schemas, store ports with both adapters, server oauth module with a bounded form-parsing carve-out, contracts, labels, root wiring and two route suites. Commit `6487c49` (amended once to include the root wiring files missed in the first add).
+- Verification: Independently re-run full matrix 111/50/119/64; typechecks, lint/boundaries, build, both Drizzle histories, secret scan, docs build, format and diff checks.
+- Decisions and deviations: Consume-before-verify (stricter than RFC minimum); token endpoints exempt from the same-origin check because PKCE/code possession is the credential.
+- Blockers/open questions: None; the 04.2c rotation points beyond login/recovery arrive with 04.3c.
+- Next actions: 04.2d authorization-service HTML pages (guides pre-fetched); 04.2c stays open pending its remaining rotation triggers.
+- Next-session cautions: Codes and tokens are bearer secrets, never logged; client registry is exact-match only.
