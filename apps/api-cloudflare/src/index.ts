@@ -4,6 +4,7 @@ import {
   configureOptionalTurnstile,
   createApp,
   parseBootstrapEnrollmentCode,
+  parseOAuthClients,
 } from '@hyperbug/server';
 import { assertDeploymentAvailable, loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
@@ -20,6 +21,7 @@ import {
   createD1AccountSessionStore,
   createD1AuditRepository,
   createD1KeyRegistry,
+  createD1OAuthStores,
   createD1PasskeyStores,
   createD1RateCounterStore,
   createD1StaffEnrollmentStore,
@@ -80,6 +82,19 @@ if (bootstrapSecret !== undefined && bootstrapCode === null)
 const staffEnrollmentStore = env.DB
   ? createD1StaffEnrollmentStore(env.DB)
   : null;
+// Optional registered public clients: absent disarms the code flow; a present
+// but malformed registry refuses startup instead of running a broken flow.
+// Not declared required anywhere, so the binding is read through a narrowed
+// view of the generated environment.
+const oauthSecret = (
+  env as {
+    HYPERBUG_OAUTH_CLIENTS?: string;
+  }
+).HYPERBUG_OAUTH_CLIENTS;
+const oauthClients = parseOAuthClients(oauthSecret);
+if (oauthClients.length > 0 && (!env.DB || !keyProvider))
+  throw new Error('Invalid OAuth client configuration');
+const oauthCodeStore = env.DB ? createD1OAuthStores(env.DB) : null;
 // Public relying-party configuration: all three values or none. A complete
 // selection without the session/key prerequisites refuses startup instead of
 // silently disabling passkey authentication.
@@ -178,6 +193,8 @@ const app = createApp({
   sessionStore: env.DB ? createD1AccountSessionStore(env.DB) : null,
   recoveryStore: env.DB ? createD1AccountRecoveryStore(env.DB) : null,
   passkey,
+  oauthClients,
+  oauthCodeStore,
   bootstrapCode,
   staffEnrollmentStore,
   bootstrapState: staffEnrollmentStore

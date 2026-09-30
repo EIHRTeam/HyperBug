@@ -75,19 +75,22 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
   try {
     const db = await configured.getD1Database('DB');
     const migrations = await migrationStatements('d1');
-    const accountMigration = migrations.at(-4);
+    const accountMigration = migrations.at(-5);
     if (accountMigration?.name !== '0010_password_credentials')
       throw new Error('Registration migration missing');
-    const sessionMigration = migrations.at(-3);
+    const sessionMigration = migrations.at(-4);
     if (sessionMigration?.name !== '0011_authorization_sessions')
       throw new Error('Session migration missing');
-    const recoveryMigration = migrations.at(-2);
+    const recoveryMigration = migrations.at(-3);
     if (recoveryMigration?.name !== '0012_recovery_codes')
       throw new Error('Recovery migration missing');
-    const webauthnMigration = migrations.at(-1);
+    const webauthnMigration = migrations.at(-2);
     if (webauthnMigration?.name !== '0013_webauthn')
       throw new Error('WebAuthn migration missing');
-    for (const migration of migrations.slice(0, -4))
+    const oauthMigration = migrations.at(-1);
+    if (oauthMigration?.name !== '0014_oauth_codes')
+      throw new Error('OAuth migration missing');
+    for (const migration of migrations.slice(0, -5))
       await db.batch(migration.statements.map((sql) => db.prepare(sql)));
     const base = await configured.ready;
     const missingCredentials = await fetch(new URL('/health/ready', base));
@@ -96,6 +99,7 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
     await db.batch(sessionMigration.statements.map((sql) => db.prepare(sql)));
     await db.batch(recoveryMigration.statements.map((sql) => db.prepare(sql)));
     await db.batch(webauthnMigration.statements.map((sql) => db.prepare(sql)));
+    await db.batch(oauthMigration.statements.map((sql) => db.prepare(sql)));
     const missingTokenKey = await fetch(new URL('/health/ready', base));
     expect(missingTokenKey.status).toBe(503);
     expect(missingTokenKey.headers.get('cache-control')).toBe('no-store');

@@ -85,6 +85,10 @@ A third-party Workers password-hashing benchmark could not be retrieved (repeate
 
 `resolve-library-id` selected `/masterkale/simplewebauthn` (official, high reputation, benchmark 89.11). Two `query-docs` calls covered the registration ceremony (`generateRegistrationOptions`/`verifyRegistrationResponse`, credential persistence fields `id/publicKey/counter/deviceType/backedUp/transports`, `userID` must be a Buffer) and the authentication ceremony (`generateAuthenticationOptions`/`verifyAuthenticationResponse`, discoverable credentials by omitting `allowCredentials`, counter advancement). Documented runtimes: Node LTS 22+, Deno 2.4+, Cloudflare Workers, Bun — matching both HyperBug profiles. Remaining implementation-time checks: the exact published version pin, Workers bundling, and a server-side authenticator fixture for ceremony tests without a browser.
 
+### Elysia onParse lookup — 2026-09-30
+
+The 04.2a/b implementation consulted Context7 (`/elysiajs/documentation`) for the `onParse` hook context shape: it receives only `request` and `contentType`, so path-dependent form-versus-JSON parsing is derived from `request.url`. Applied in `readBoundedForm`'s carve-out for the token endpoints.
+
 ## Modern web guidance
 
 The explicitly requested modern-web-guidance skill was read and executed through `pnpx`, since pnpm was available. Search preceded retrieval. Skill version supplied: `2026_09_04-7de96777`.

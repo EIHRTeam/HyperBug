@@ -1,7 +1,11 @@
 import { listenNode } from './listen.ts';
 import { closeRejectedNodeRequest } from './rejected-request.ts';
 import { node } from '@elysia/node';
-import { configureOptionalTurnstile, createApp } from '@hyperbug/server';
+import {
+  configureOptionalTurnstile,
+  createApp,
+  parseOAuthClients,
+} from '@hyperbug/server';
 import { loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
 import { createNodeTurnstileVerifier } from './turnstile.ts';
@@ -72,6 +76,9 @@ const passkey =
 const port = Number(process.env.PORT ?? 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535)
   throw new Error('Invalid PORT');
+// Optional registered public clients: absent disarms the code flow; a present
+// but malformed registry refuses startup instead of running a broken flow.
+const oauthClients = parseOAuthClients(process.env.HYPERBUG_OAUTH_CLIENTS);
 const app = createApp({
   adapter: node(),
   config,
@@ -90,6 +97,8 @@ const app = createApp({
   staffEnrollmentStore: abuse.staffEnrollmentStore,
   recoveryStore: abuse.recoveryStore,
   passkey,
+  oauthClients,
+  oauthCodeStore: abuse.oauthCodeStore,
   bootstrapState: abuse.staffEnrollmentStore
     ? async () => (await abuse.staffEnrollmentStore?.countActiveStaff()) === 0
     : null,

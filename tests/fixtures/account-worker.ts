@@ -1,6 +1,10 @@
 import { env } from 'cloudflare:workers';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
-import { createApp, parseBootstrapEnrollmentCode } from '@hyperbug/server';
+import {
+  createApp,
+  parseBootstrapEnrollmentCode,
+  parseOAuthClients,
+} from '@hyperbug/server';
 import { loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
 import { initialStandardPasswordPolicy } from '../../packages/security/src/standard-password.ts';
@@ -9,6 +13,7 @@ import { createWorkerAbuseKeyProvider } from '../../apps/api-cloudflare/src/abus
 import { createCloudflareVolumetricLimiter } from '../../apps/api-cloudflare/src/rate-limit.ts';
 import {
   createD1AccountRecoveryStore,
+  createD1OAuthStores,
   createD1PasskeyStores,
   createD1AccountRegistrationStore,
   createD1AccountSessionStore,
@@ -63,6 +68,8 @@ export default createApp({
   sessionStore: createD1AccountSessionStore(env.DB),
   passwordStore: createD1AccountRegistrationStore(env.DB),
   recoveryStore: createD1AccountRecoveryStore(env.DB),
+  oauthClients: parseOAuthClients(env.HYPERBUG_TEST_OAUTH_CLIENTS),
+  oauthCodeStore: createD1OAuthStores(env.DB),
   keyProvider: env.HYPERBUG_KEY_RING
     ? createWorkerKeyProvider(
         env.HYPERBUG_KEY_RING,

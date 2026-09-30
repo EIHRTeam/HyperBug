@@ -4,6 +4,7 @@ export { createPostgresAccountRegistrationStore } from './account-registration.t
 export { createPostgresStaffEnrollmentStore } from './staff-enrollment.ts';
 export { createPostgresAccountRecoveryStore } from './account-recovery.ts';
 export { createPostgresPasskeyStores } from './passkey-store.ts';
+export { createPostgresOAuthStores } from './oauth-store.ts';
 import {
   DomainError,
   assertId,

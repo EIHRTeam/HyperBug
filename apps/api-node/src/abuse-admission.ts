@@ -7,6 +7,7 @@ import {
   createPostgresAuditRepository,
   createPostgresKeyRegistry,
   createPostgresAccountRecoveryStore,
+  createPostgresOAuthStores,
   createPostgresPasskeyStores,
   createPostgresRateCounterStore,
   createPostgresStaffEnrollmentStore,
@@ -18,6 +19,8 @@ import type {
   AccountRecoveryStore,
   AccountRegistrationStore,
   AccountSessionStore,
+  OAuthAccessTokenStore,
+  OAuthCodeStore,
   StaffEnrollmentStore,
 } from '@hyperbug/application';
 import { createNodeAbuseKeyProvider } from './abuse-keys.ts';
@@ -45,6 +48,7 @@ export interface NodeAbuseAdmission {
   readonly sessionStore: AccountSessionStore | null;
   readonly staffEnrollmentStore: StaffEnrollmentStore | null;
   readonly recoveryStore: AccountRecoveryStore | null;
+  readonly oauthCodeStore: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   readonly passkeyStores:
     | (import('@hyperbug/application').PasskeyStore &
         import('@hyperbug/application').WebauthnChallengeStore)
@@ -85,6 +89,7 @@ export function configureNodeAbuseAdmission(
       sessionStore: null,
       staffEnrollmentStore: null,
       recoveryStore: null,
+      oauthCodeStore: null,
       passkeyStores: null,
       purgeExpiredRateCounters: async () => {
         throw new Error('Rate counter cleanup unavailable');
@@ -198,6 +203,7 @@ export function configureNodeAbuseAdmission(
     sessionStore: createPostgresAccountSessionStore(pool),
     staffEnrollmentStore: createPostgresStaffEnrollmentStore(pool),
     recoveryStore: createPostgresAccountRecoveryStore(pool),
+    oauthCodeStore: createPostgresOAuthStores(pool),
     passkeyStores: createPostgresPasskeyStores(pool),
     purgeExpiredRateCounters: cleanup.run,
     async ready(signal: AbortSignal): Promise<boolean> {

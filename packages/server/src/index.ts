@@ -20,6 +20,9 @@ import {
   RecoveryCodesSchema,
   RecoveryRequestSchema,
   RecoveredSchema,
+  AuthorizeRequestSchema,
+  AuthorizeResponseSchema,
+  TokenResponseSchema,
   type RegistrationRequest,
   type RegistrationAccepted,
   type RegistrationChallenge,
@@ -33,15 +36,25 @@ import {
   type RecoveryCodes,
   type RecoveryRequest,
   type Recovered,
+  type AuthorizeRequest,
+  type AuthorizeResponse,
+  type TokenResponse,
 } from '@hyperbug/contracts';
 import type {
   AccountPasswordStore,
   AccountRecoveryStore,
   AccountRegistrationStore,
   AccountSessionStore,
+  OAuthAccessTokenStore,
+  OAuthCodeStore,
   StaffEnrollmentStore,
 } from '@hyperbug/application';
-import { readBoundedJson, RequestFailure, withDeadline } from './bounds.ts';
+import {
+  readBoundedForm,
+  readBoundedJson,
+  RequestFailure,
+  withDeadline,
+} from './bounds.ts';
 import { publicFailure } from './errors.ts';
 import { assertQueryBounds } from './input.ts';
 import { corsPolicy } from './cors.ts';
@@ -65,6 +78,12 @@ import {
   generateAccountRecoveryCodes,
   recoverAccount,
 } from './account-recovery.ts';
+import {
+  exchangeAuthorizationCode,
+  issueAuthorizationCode,
+  revokeAccessToken,
+  type OAuthClientRegistration,
+} from './oauth.ts';
 import {
   clearedSessionCookie,
   currentAccountSession,
@@ -99,6 +118,10 @@ export interface AppOptions {
   recoveryStore?: AccountRecoveryStore | null;
   /** Relying-party configuration; null disarms every passkey route. */
   passkey?: PasskeyRelyingParty | null;
+  /** Registered public clients; an empty list disarms the code flow. */
+  oauthClients?: readonly OAuthClientRegistration[] | null;
+  /** Authorization-code and access-token persistence for the code flow. */
+  oauthCodeStore?: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
   bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
@@ -201,6 +224,8 @@ export function createApp({
   staffEnrollmentStore = null,
   recoveryStore = null,
   passkey = null,
+  oauthClients = [],
+  oauthCodeStore = null,
   bootstrapState = null,
   minimumLoginAdmission,
 }: AppOptions) {
@@ -262,6 +287,11 @@ export function createApp({
       !/^[a-zA-Z0-9_-]{1,512}$/.test(captchaSiteKey))
   )
     throw new Error('Invalid public CAPTCHA configuration');
+  // Registered clients without their session/key prerequisites would arm a
+  // code flow that fails closed on every request; refuse startup instead.
+  const registeredClients = oauthClients ?? [];
+  if (registeredClients.length > 0 && (!oauthCodeStore || !keyProvider))
+    throw new Error('Invalid OAuth client configuration');
   const publicCaptchaSiteKey = captchaSiteKey ?? null;
   const boundaryFor = (request: Request): BoundaryHeaders => {
     const existing = boundaries.get(request);
@@ -297,13 +327,22 @@ export function createApp({
                       : path.startsWith('/auth/passkey/') &&
                           request.method === 'POST'
                         ? 'account.passkey'
-                        : path === '/health/live' && request.method === 'GET'
-                          ? 'health.live'
-                          : path === '/health/ready' && request.method === 'GET'
-                            ? 'health.ready'
-                            : path.startsWith('/_proof')
-                              ? 'proof'
-                              : 'unmatched';
+                        : path === '/auth/authorize' &&
+                            request.method === 'POST'
+                          ? 'account.authorize'
+                          : (path === '/auth/token' ||
+                                path === '/auth/token/revoke') &&
+                              request.method === 'POST'
+                            ? 'account.token'
+                            : path === '/health/live' &&
+                                request.method === 'GET'
+                              ? 'health.live'
+                              : path === '/health/ready' &&
+                                  request.method === 'GET'
+                                ? 'health.ready'
+                                : path.startsWith('/_proof')
+                                  ? 'proof'
+                                  : 'unmatched';
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -354,6 +393,7 @@ export function createApp({
           path === '/auth/bootstrap/enroll' ||
           path === '/auth/recovery-codes' ||
           path === '/auth/recover' ||
+          path === '/auth/authorize' ||
           path.startsWith('/auth/passkey/'))
       )
         requireAuthOrigin(request);
@@ -369,6 +409,20 @@ export function createApp({
         await boundSensitiveAdmission.preparseLogout(request);
     })
     .onParse(async ({ request, contentType }) => {
+      // The OAuth token endpoints are form-encoded per RFC 6749/7009; every
+      // other route keeps the JSON-only boundary.
+      if (
+        contentType?.startsWith('application/x-www-form-urlencoded') &&
+        request.method === 'POST'
+      ) {
+        const path = new URL(request.url).pathname;
+        if (path === '/auth/token' || path === '/auth/token/revoke')
+          return readBoundedForm(
+            request,
+            config.maxBodyBytes,
+            config.requestTimeoutMs,
+          );
+      }
       if (contentType !== 'application/json')
         throw new RequestFailure('UNSUPPORTED_MEDIA_TYPE');
       return readBoundedJson(
@@ -683,12 +737,64 @@ export function createApp({
         body: t.Object({ response: t.Any() }, { additionalProperties: false }),
         response: t.Unsafe<AccountSession>(AccountSessionSchema),
       },
+    )
+    .post(
+      '/auth/authorize',
+      async ({ request, body }) =>
+        issueAuthorizationCode({
+          request,
+          query: body,
+          keyProvider: keyProvider ?? null,
+          sessionStore: sessionStore ?? null,
+          codeStore: oauthCodeStore ?? null,
+          clients: registeredClients,
+          nowMs: Date.now(),
+        }),
+      {
+        body: t.Unsafe<AuthorizeRequest>(AuthorizeRequestSchema),
+        response: t.Unsafe<AuthorizeResponse>(AuthorizeResponseSchema),
+      },
+    )
+    .post(
+      '/auth/token',
+      async ({ request, body, sensitiveAdmission }) =>
+        exchangeAuthorizationCode({
+          request,
+          body: body as Record<string, unknown>,
+          admission: sensitiveAdmission,
+          keyProvider: keyProvider ?? null,
+          codeStore: oauthCodeStore ?? null,
+          tokenStore: oauthCodeStore ?? null,
+          requestId: boundaryFor(request).requestId,
+        }),
+      {
+        body: t.Any(),
+        response: t.Unsafe<TokenResponse>(TokenResponseSchema),
+      },
+    )
+    .post(
+      '/auth/token/revoke',
+      async ({ request, body, sensitiveAdmission, set }) => {
+        await revokeAccessToken({
+          request,
+          body: body as Record<string, unknown>,
+          admission: sensitiveAdmission,
+          keyProvider: keyProvider ?? null,
+          store: oauthCodeStore ?? null,
+          requestId: boundaryFor(request).requestId,
+        });
+        set.status = 204;
+        return null;
+      },
+      { body: t.Any() },
     );
 }
 
 export { RequestFailure, withDeadline } from './bounds.ts';
 export { verifyAccountPassword } from './account-password.ts';
 export { parseBootstrapEnrollmentCode } from './bootstrap-enrollment.ts';
+export { parseOAuthClients } from './oauth.ts';
+export type { OAuthClientRegistration } from './oauth.ts';
 export type { VerifiedAccountPassword } from './account-password.ts';
 export { requireSensitiveRateAdmission } from './rate-admission.ts';
 export {

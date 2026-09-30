@@ -1258,3 +1258,88 @@ export const webauthnChallenges = table(
     ),
   ],
 );
+
+/** Single-use authorization codes bound to client, redirect URI and PKCE. */
+export const oauthCodes = table(
+  'oauth_codes',
+  {
+    id: id('id').primaryKey(),
+    digest: json('digest').notNull(),
+    clientId: text('client_id').notNull(),
+    redirectUri: text('redirect_uri').notNull(),
+    scope: text('scope').notNull(),
+    codeChallenge: text('code_challenge').notNull(),
+    principalId: id('principal_id')
+      .notNull()
+      .references(() => principals.id),
+    identityId: id('identity_id')
+      .notNull()
+      .references(() => identities.id),
+    createdAt: instant('created_at').notNull(),
+    expiresAt: instant('expires_at').notNull(),
+    consumedAt: instant('consumed_at'),
+  },
+  (t) => [
+    index('oauth_code_expiry').on(t.expiresAt),
+    validId('oauth_code_id', t.id),
+    check(
+      'oauth_code_client_bound',
+      sql`length(${t.clientId}) BETWEEN 1 AND 128`,
+    ),
+    check(
+      'oauth_code_redirect_bound',
+      sql`length(${t.redirectUri}) BETWEEN 1 AND 2048`,
+    ),
+    check('oauth_code_scope_bound', sql`length(${t.scope}) BETWEEN 1 AND 256`),
+    check(
+      'oauth_code_challenge_bound',
+      sql`length(${t.codeChallenge}) BETWEEN 43 AND 128`,
+    ),
+    validJson('oauth_code_digest', t.digest),
+    validTime('oauth_code_created', t.createdAt),
+    validTime('oauth_code_expires', t.expiresAt),
+    validTime('oauth_code_consumed', t.consumedAt),
+    check(
+      'oauth_code_time_order',
+      sql`${t.expiresAt} > ${t.createdAt} AND ${t.expiresAt} <= ${t.createdAt} + 60000 AND (${t.consumedAt} IS NULL OR ${t.consumedAt} >= ${t.createdAt})`,
+    ),
+  ],
+);
+
+/** Opaque bearer access tokens; only keyed digests are stored. */
+export const oauthAccessTokens = table(
+  'oauth_access_tokens',
+  {
+    id: id('id').primaryKey(),
+    digest: json('digest').notNull(),
+    principalId: id('principal_id')
+      .notNull()
+      .references(() => principals.id),
+    identityId: id('identity_id')
+      .notNull()
+      .references(() => identities.id),
+    clientId: text('client_id').notNull(),
+    scope: text('scope').notNull(),
+    createdAt: instant('created_at').notNull(),
+    expiresAt: instant('expires_at').notNull(),
+    revokedAt: instant('revoked_at'),
+  },
+  (t) => [
+    index('oauth_access_token_principal').on(t.principalId, t.id),
+    index('oauth_access_token_expiry').on(t.expiresAt),
+    validId('oauth_token_id', t.id),
+    check(
+      'oauth_token_client_bound',
+      sql`length(${t.clientId}) BETWEEN 1 AND 128`,
+    ),
+    check('oauth_token_scope_bound', sql`length(${t.scope}) BETWEEN 1 AND 256`),
+    validJson('oauth_token_digest', t.digest),
+    validTime('oauth_token_created', t.createdAt),
+    validTime('oauth_token_expires', t.expiresAt),
+    validTime('oauth_token_revoked', t.revokedAt),
+    check(
+      'oauth_token_time_order',
+      sql`${t.expiresAt} > ${t.createdAt} AND ${t.expiresAt} - ${t.createdAt} BETWEEN 300000 AND 900000 AND (${t.revokedAt} IS NULL OR ${t.revokedAt} >= ${t.createdAt})`,
+    ),
+  ],
+);

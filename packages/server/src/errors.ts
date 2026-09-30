@@ -27,6 +27,8 @@ const failures = {
   RECOVERY_UNAVAILABLE: [503, 'Account recovery is unavailable.'],
   PASSKEY_DENIED: [403, 'Passkey verification is not permitted.'],
   PASSKEY_UNAVAILABLE: [503, 'Passkey authentication is unavailable.'],
+  OAUTH_DENIED: [400, 'The authorization request is not permitted.'],
+  OAUTH_UNAVAILABLE: [503, 'The authorization service is unavailable.'],
   INTERNAL_ERROR: [500, 'An internal error occurred.'],
 } as const;
 

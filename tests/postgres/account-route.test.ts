@@ -38,6 +38,7 @@ let registrationStatements: string[];
 let sessionStatements: string[];
 let recoveryStatements: string[];
 let webauthnStatements: string[];
+let oauthStatements: string[];
 const sessionKeys = cryptoFixture();
 const observations: string[] = [];
 
@@ -57,23 +58,27 @@ beforeAll(async () => {
     max: 2,
   });
   const migrations = await migrationStatements('postgres');
-  const registrationMigration = migrations.at(-4);
+  const registrationMigration = migrations.at(-5);
   if (registrationMigration?.name !== '0009_password_credentials')
     throw new Error('Registration migration missing');
   registrationStatements = registrationMigration.statements;
-  const sessionMigration = migrations.at(-3);
+  const sessionMigration = migrations.at(-4);
   if (sessionMigration?.name !== '0010_authorization_sessions')
     throw new Error('Authorization session migration missing');
   sessionStatements = sessionMigration.statements;
-  const recoveryMigration = migrations.at(-2);
+  const recoveryMigration = migrations.at(-3);
   if (recoveryMigration?.name !== '0011_recovery_codes')
     throw new Error('Recovery migration missing');
   recoveryStatements = recoveryMigration.statements;
-  const webauthnMigration = migrations.at(-1);
+  const webauthnMigration = migrations.at(-2);
   if (webauthnMigration?.name !== '0012_webauthn')
     throw new Error('WebAuthn migration missing');
   webauthnStatements = webauthnMigration.statements;
-  for (const migration of migrations.slice(0, -4)) {
+  const oauthMigration = migrations.at(-1);
+  if (oauthMigration?.name !== '0013_oauth_codes')
+    throw new Error('OAuth migration missing');
+  oauthStatements = oauthMigration.statements;
+  for (const migration of migrations.slice(0, -5)) {
     const db = await pool.connect();
     try {
       await db.query('BEGIN');
@@ -156,6 +161,7 @@ it('registers a real User through Node, primary counters and PostgreSQL atomical
       ...sessionStatements,
       ...recoveryStatements,
       ...webauthnStatements,
+      ...oauthStatements,
     ])
       await db.query(statement);
     await db.query('COMMIT');

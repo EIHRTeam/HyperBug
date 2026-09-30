@@ -167,6 +167,34 @@ export const RecoveredSchema = Type.Object(
   { additionalProperties: false },
 );
 export type Recovered = Static<typeof RecoveredSchema>;
+export const AuthorizeRequestSchema = Type.Object(
+  {
+    clientId: Type.String({ pattern: '^[A-Za-z0-9_-]{1,128}$' }),
+    redirectUri: Type.String({ minLength: 1, maxLength: 2048 }),
+    scope: Type.String({ minLength: 1, maxLength: 256 }),
+    state: Type.String({ minLength: 1, maxLength: 2048 }),
+    codeChallenge: Type.String({
+      pattern: '^[A-Za-z0-9_-]{43,128}$',
+    }),
+  },
+  { additionalProperties: false },
+);
+export type AuthorizeRequest = Static<typeof AuthorizeRequestSchema>;
+export const AuthorizeResponseSchema = Type.Object(
+  { redirectUri: Type.String({ minLength: 1, maxLength: 4096 }) },
+  { additionalProperties: false },
+);
+export type AuthorizeResponse = Static<typeof AuthorizeResponseSchema>;
+export const TokenResponseSchema = Type.Object(
+  {
+    tokenType: Type.Literal('Bearer'),
+    accessToken: Type.String({ minLength: 1, maxLength: 256 }),
+    expiresIn: Type.Integer(),
+    scope: Type.String({ minLength: 1, maxLength: 256 }),
+  },
+  { additionalProperties: false },
+);
+export type TokenResponse = Static<typeof TokenResponseSchema>;
 export const EchoSchema = Type.Object(
   { message: Type.String({ minLength: 1, maxLength: 100 }) },
   { additionalProperties: false },
