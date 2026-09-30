@@ -12,10 +12,14 @@ export interface PrincipalAccountFacts {
   readonly passkeyUsedAtMs: number | null;
 }
 
-/** Project state as the authorization evaluator needs it, never raw rows. */
+/**
+ * Project state as the authorization evaluator needs it, never raw rows.
+ * The schema's project_status CHECK allows only these two states; a deleted
+ * project is a missing row, not a third state.
+ */
 export interface ProjectVisibilityFacts {
   readonly visibility: 'public' | 'private';
-  readonly state: 'active' | 'archived' | 'deleted';
+  readonly state: 'active' | 'archived';
 }
 
 export interface AccountAdministrationStore {

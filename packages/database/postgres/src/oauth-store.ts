@@ -1,4 +1,5 @@
 import type { Pool } from 'pg';
+import { assertId, assertInstant } from '@hyperbug/domain';
 import {
   validateOAuthAccessTokenInsert,
   validateOAuthCodeInsert,
@@ -48,21 +49,6 @@ function exchanged(row: {
   });
 }
 
-function assertUuid(id: string): void {
-  if (
-    typeof id !== 'string' ||
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(
-      id,
-    )
-  )
-    throw new Error('Invalid OAuth identifier');
-}
-
-function assertInstant(nowMs: number): void {
-  if (!Number.isSafeInteger(nowMs) || nowMs < 0 || nowMs > 8640000000000000)
-    throw new Error('Invalid OAuth instant');
-}
-
 /**
  * The conditional UPDATE consumes the code and returns its row in one
  * statement, so a wrong verifier, wrong client or replay can only observe
@@ -93,7 +79,7 @@ export function createPostgresOAuthStores(
         throw new Error('Invalid authorization code insert');
     },
     async consume(id, nowMs) {
-      assertUuid(id);
+      assertId(id);
       assertInstant(nowMs);
       const result = await pool.query<{
         principal_id: string;
@@ -127,7 +113,7 @@ export function createPostgresOAuthStores(
       if (result.rowCount !== 1) throw new Error('Invalid access token insert');
     },
     async loadActive(id, nowMs) {
-      assertUuid(id);
+      assertId(id);
       assertInstant(nowMs);
       const result = await pool.query<{
         principal_id: string;
@@ -165,7 +151,7 @@ export function createPostgresOAuthStores(
       return record;
     },
     async revoke(id, nowMs) {
-      assertUuid(id);
+      assertId(id);
       assertInstant(nowMs);
       const result = await pool.query(
         'UPDATE oauth_access_tokens SET revoked_at = GREATEST(created_at, $2) WHERE id = $1::uuid AND revoked_at IS NULL',
@@ -174,7 +160,7 @@ export function createPostgresOAuthStores(
       return changed(result.rowCount);
     },
     async loadPrincipalKind(principalId) {
-      assertUuid(principalId);
+      assertId(principalId);
       const result = await pool.query<{ kind: string }>(
         "SELECT kind FROM principals WHERE id = $1::uuid AND status = 'active' LIMIT 1",
         [principalId],

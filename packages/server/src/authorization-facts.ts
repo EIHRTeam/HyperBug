@@ -5,7 +5,6 @@ import type {
   PermissionRequest,
   StaffRole,
 } from '@hyperbug/security';
-import { projectStaffRoles } from '@hyperbug/application';
 
 /**
  * Provisional recent-authentication bound from AUTH-FLOWS: 15 minutes, the
@@ -37,7 +36,7 @@ export interface DbAuthorizationDependencies {
   } | null>;
   loadProject(projectId: string): Promise<{
     visibility: 'public' | 'private';
-    state: 'active' | 'archived' | 'deleted';
+    state: 'active' | 'archived';
   } | null>;
   loadMembership(
     projectId: string,
@@ -106,40 +105,15 @@ export function createDbAuthorizationResolver(
           : deps.tokenIssuedAtMs(actorId),
       ]);
       if (signal.aborted) throw new Error('Aborted');
-      if (principalRow !== null) {
-        const { kind, status, credentialActive, passkeyUsedAtMs } =
-          principalRow;
-        if (
-          (kind !== 'user' && kind !== 'staff') ||
-          (status !== 'active' &&
-            status !== 'suspended' &&
-            status !== 'deleted') ||
-          typeof credentialActive !== 'boolean' ||
-          (passkeyUsedAtMs !== null && !Number.isSafeInteger(passkeyUsedAtMs))
-        )
-          throw new Error('Invalid principal facts');
-      }
-      if (
-        projectRow !== null &&
-        ((projectRow.visibility !== 'public' &&
-          projectRow.visibility !== 'private') ||
-          (projectRow.state !== 'active' &&
-            projectRow.state !== 'archived' &&
-            projectRow.state !== 'deleted'))
-      )
-        throw new Error('Invalid project facts');
-      if (
-        membershipRow !== null &&
-        !projectStaffRoles.includes(membershipRow.role)
-      )
-        throw new Error('Invalid membership facts');
+      // Row shapes come validated from the adapters and the database CHECKs
+      // (application validate*Insert/Input on writes, adapter mapping on
+      // reads); this resolver adds no third shape layer. Only the semantic
+      // guarantee below is enforced here.
       if (actorId !== null) {
         // A verified bearer credential implies an unrevoked issuance; a null
         // answer still fails closed rather than guessing an instant.
         if (issuedAtMs === null)
           throw new Error('No unrevoked token issuance for principal');
-        if (!Number.isSafeInteger(issuedAtMs) || issuedAtMs < 0)
-          throw new Error('Invalid token issuance');
       }
       const principal =
         principalRow !== null && actorId !== null

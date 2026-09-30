@@ -6,7 +6,7 @@
  * (guides: forms, accessible-error-announcement; 2026-09-30 retrieval).
  */
 
-const oauthFields = [
+export const oauthFields = [
   'response_type',
   'client_id',
   'redirect_uri',

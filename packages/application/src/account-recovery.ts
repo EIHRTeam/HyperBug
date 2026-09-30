@@ -29,11 +29,7 @@ export function validateRecoveryCodeReplacement(
 ): void {
   assertId(identityId);
   assertInstant(nowMs);
-  if (
-    !Number.isInteger(digests.length) ||
-    digests.length < 1 ||
-    digests.length > 20
-  )
+  if (digests.length < 1 || digests.length > 20)
     throw new Error('Invalid recovery code set');
   for (const digest of digests) {
     if (typeof digest !== 'string' || digest.length < 1 || digest.length > 1024)

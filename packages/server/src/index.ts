@@ -95,6 +95,7 @@ import {
   authorizeErrorPage,
   authorizeErrorRedirect,
   authorizeLoginPage,
+  oauthFields,
   type AuthorizeQuery,
 } from './authorize-pages.ts';
 import {
@@ -306,7 +307,7 @@ export function createApp({
   const authorizeQueryFrom = (
     fields: Record<string, unknown>,
   ): AuthorizeQuery | null => {
-    const value = (name: (typeof oauthQueryFields)[number]): string | null => {
+    const value = (name: (typeof oauthFields)[number]): string | null => {
       const raw = fields[name];
       return typeof raw === 'string' && raw.length >= 1 && raw.length <= 2048
         ? raw
@@ -326,15 +327,6 @@ export function createApp({
   };
   const starts = new WeakMap<Request, number>();
   const boundaries = new WeakMap<Request, BoundaryHeaders>();
-  const oauthQueryFields = [
-    'response_type',
-    'client_id',
-    'redirect_uri',
-    'scope',
-    'state',
-    'code_challenge',
-    'code_challenge_method',
-  ] as const;
   // Registry failures render on this origin; a protocol-shape rejection of
   // an already-verified client/redirect redirects back per RFC 6749
   // §4.2.2.1 / RFC 7636 §4.4.1.
@@ -363,11 +355,6 @@ export function createApp({
     captchaGate,
     abuse ?? null,
   );
-  if (
-    minimumLoginAdmission != null &&
-    typeof minimumLoginAdmission.require !== 'function'
-  )
-    throw new Error('Invalid minimum login admission');
   if (
     captchaSiteKey != null &&
     (!captchaGate.enabled ||
@@ -787,19 +774,12 @@ export function createApp({
           tokenStore: oauthCodeStore ?? null,
         });
         if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-        let kind: 'user' | 'staff' | null;
-        try {
-          kind = await withDeadline(request.signal, 1000, () =>
-            oauthCodeStore!.loadPrincipalKind(principal.principalId),
-          );
-        } catch (error) {
-          if (error instanceof RequestFailure) throw error;
-          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
-        }
         // A suspended or deleted principal denies like any other invalid
         // credential; no account state is disclosed.
-        if (kind !== 'user' && kind !== 'staff')
-          throw new RequestFailure('AUTHENTICATION_REQUIRED');
+        const kind = await requireActivePrincipalKind(
+          request,
+          principal.principalId,
+        );
         return {
           principalId: principal.principalId,
           identityId: principal.identityId,

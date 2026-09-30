@@ -111,11 +111,7 @@ export function parseOAuthClients(
   } catch {
     configurationFailure();
   }
-  if (
-    !Array.isArray(parsed) ||
-    parsed.length < 0 ||
-    parsed.length > registrationLimit
-  )
+  if (!Array.isArray(parsed) || parsed.length > registrationLimit)
     configurationFailure();
   return Object.freeze(parsed.map((entry) => parseClientEntry(entry)));
 }

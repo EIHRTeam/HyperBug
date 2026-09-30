@@ -1,4 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types';
+import { assertId, assertInstant } from '@hyperbug/domain';
 import {
   validateOAuthAccessTokenInsert,
   validateOAuthCodeInsert,
@@ -79,7 +80,7 @@ export function createD1OAuthStores(
         throw new Error('Invalid authorization code insert');
     },
     async consume(id, nowMs) {
-      assertUuid(id);
+      assertId(id);
       assertInstant(nowMs);
       const row = await db
         .prepare(
@@ -117,7 +118,7 @@ export function createD1OAuthStores(
         throw new Error('Invalid access token insert');
     },
     async loadActive(id, nowMs) {
-      assertUuid(id);
+      assertId(id);
       assertInstant(nowMs);
       const row = await db
         .prepare(
@@ -155,7 +156,7 @@ export function createD1OAuthStores(
       });
     },
     async revoke(id, nowMs) {
-      assertUuid(id);
+      assertId(id);
       assertInstant(nowMs);
       const result = await db
         .prepare(
@@ -166,7 +167,7 @@ export function createD1OAuthStores(
       return changed(result.meta.changes);
     },
     async loadPrincipalKind(principalId) {
-      assertUuid(principalId);
+      assertId(principalId);
       const row = await db
         .prepare(
           "SELECT kind FROM principals WHERE id = ? AND status = 'active' LIMIT 1",
@@ -179,19 +180,4 @@ export function createD1OAuthStores(
       return row.kind;
     },
   };
-}
-
-function assertUuid(id: string): void {
-  if (
-    typeof id !== 'string' ||
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(
-      id,
-    )
-  )
-    throw new Error('Invalid OAuth identifier');
-}
-
-function assertInstant(nowMs: number): void {
-  if (!Number.isSafeInteger(nowMs) || nowMs < 0 || nowMs > 8640000000000000)
-    throw new Error('Invalid OAuth instant');
 }
