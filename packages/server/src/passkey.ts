@@ -247,9 +247,6 @@ export async function passkeyLoginVerify(input: {
       : { requestId: input.requestId }),
   });
   const challenge = decodeClientDataChallenge(body.response);
-  const debugRows =
-    (await (relyingParty.store as unknown as { debug?: never })) && null;
-  void debugRows;
   const consumed = await withDeadline(request.signal, 1000, () =>
     relyingParty.store.consume('authentication', challenge, input.nowMs),
   );

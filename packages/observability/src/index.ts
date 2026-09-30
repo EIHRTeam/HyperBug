@@ -1,23 +1,34 @@
-export type RouteLabel =
-  | 'health.live'
-  | 'health.ready'
-  | 'account.register'
-  | 'account.login'
-  | 'account.session'
-  | 'account.logout'
-  | 'account.bootstrap'
-  | 'account.instance'
-  | 'account.account'
-  | 'account.recovery-codes'
-  | 'account.recover'
-  | 'account.passkey'
-  | 'account.authorize'
-  | 'account.token'
-  | 'account.sessions'
-  | 'admin.principal'
-  | 'project.members'
-  | 'unmatched'
-  | 'proof';
+/**
+ * Every route label the server can emit. This one frozen list is the single
+ * source for the RouteLabel type, the server's route matching and the
+ * jsonTelemetry serialization allowlist, so a new route can never appear in
+ * one place and fall out of another.
+ */
+export const ROUTE_LABELS = [
+  'health.live',
+  'health.ready',
+  'account.register',
+  'account.login',
+  'account.session',
+  'account.logout',
+  'account.bootstrap',
+  'account.instance',
+  'account.account',
+  'account.recovery-codes',
+  'account.recover',
+  'account.passkey',
+  'account.authorize',
+  'account.token',
+  'account.sessions',
+  'admin.principal',
+  'project.members',
+  'proof',
+] as const;
+
+/** The closed fallback for any observation outside the labeled routes. */
+export type RouteLabel = (typeof ROUTE_LABELS)[number] | 'unmatched';
+
+const serializableRoutes: ReadonlySet<string> = new Set(ROUTE_LABELS);
 export interface RequestObservation {
   requestId: string;
   route: RouteLabel;
@@ -34,25 +45,7 @@ export function jsonTelemetry(write: (line: string) => void): Telemetry {
   return {
     security: jsonSecurityTelemetry(write).event,
     request(observation) {
-      const route = [
-        'health.live',
-        'health.ready',
-        'account.register',
-        'account.login',
-        'account.session',
-        'account.logout',
-        'account.bootstrap',
-        'account.instance',
-        'account.recovery-codes',
-        'account.recover',
-        'account.passkey',
-        'account.authorize',
-        'account.token',
-        'account.sessions',
-        'admin.principal',
-        'project.members',
-        'proof',
-      ].includes(observation.route)
+      const route = serializableRoutes.has(observation.route)
         ? observation.route
         : 'unmatched';
       const status =

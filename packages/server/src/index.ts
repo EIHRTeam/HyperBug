@@ -472,62 +472,86 @@ export function createApp({
     boundaries.set(request, fallback);
     return fallback;
   };
-  const observeRequest = (request: Request, status: number): void => {
-    const path = new URL(request.url).pathname;
-    const label: RouteLabel =
-      path === '/api/v1/accounts/register' &&
-      (request.method === 'GET' || request.method === 'POST')
-        ? 'account.register'
-        : path === '/auth/login' &&
-            (request.method === 'GET' || request.method === 'POST')
-          ? 'account.login'
-          : path === '/auth/session' && request.method === 'GET'
-            ? 'account.session'
-            : path === '/auth/logout' && request.method === 'POST'
-              ? 'account.logout'
-              : path === '/auth/bootstrap/enroll' && request.method === 'POST'
-                ? 'account.bootstrap'
-                : path === '/api/v1/instance' && request.method === 'GET'
-                  ? 'account.instance'
-                  : path === '/api/v1/account' && request.method === 'GET'
-                    ? 'account.account'
-                    : path === '/api/v1/account/sessions' &&
-                        (request.method === 'GET' ||
-                          request.method === 'DELETE')
-                      ? 'account.sessions'
-                      : path.startsWith('/api/v1/admin/principals/') &&
-                          request.method === 'POST'
-                        ? 'admin.principal'
-                        : path.startsWith('/api/v1/projects/') &&
-                            path.includes('/members/') &&
-                            (request.method === 'PUT' ||
-                              request.method === 'DELETE')
-                          ? 'project.members'
-                          : path === '/auth/recovery-codes' &&
-                              request.method === 'POST'
-                            ? 'account.recovery-codes'
-                            : path === '/auth/recover' &&
-                                request.method === 'POST'
-                              ? 'account.recover'
-                              : path.startsWith('/auth/passkey/') &&
-                                  request.method === 'POST'
-                                ? 'account.passkey'
-                                : path === '/auth/authorize' ||
-                                    path.startsWith('/auth/authorize/')
-                                  ? 'account.authorize'
-                                  : (path === '/auth/token' ||
-                                        path === '/auth/token/revoke') &&
-                                      request.method === 'POST'
-                                    ? 'account.token'
-                                    : path === '/health/live' &&
-                                        request.method === 'GET'
-                                      ? 'health.live'
-                                      : path === '/health/ready' &&
-                                          request.method === 'GET'
-                                        ? 'health.ready'
-                                        : path.startsWith('/_proof')
-                                          ? 'proof'
-                                          : 'unmatched';
+// Ordered (method, path) matchers over the frozen ROUTE_LABELS universe in
+// @hyperbug/observability; the first hit wins and everything else falls back
+// to 'unmatched'. Derived from RouteLabel so a label outside the frozen list
+// cannot compile here.
+const routeLabelRules: readonly {
+  readonly label: RouteLabel;
+  /** null matches every method. */
+  readonly methods: readonly string[] | null;
+  readonly path?: string;
+  readonly prefix?: string;
+  readonly infix?: string;
+}[] = [
+  {
+    label: 'account.register',
+    methods: ['GET', 'POST'],
+    path: '/api/v1/accounts/register',
+  },
+  { label: 'account.login', methods: ['GET', 'POST'], path: '/auth/login' },
+  { label: 'account.session', methods: ['GET'], path: '/auth/session' },
+  { label: 'account.logout', methods: ['POST'], path: '/auth/logout' },
+  {
+    label: 'account.bootstrap',
+    methods: ['POST'],
+    path: '/auth/bootstrap/enroll',
+  },
+  { label: 'account.instance', methods: ['GET'], path: '/api/v1/instance' },
+  { label: 'account.account', methods: ['GET'], path: '/api/v1/account' },
+  {
+    label: 'account.sessions',
+    methods: ['GET', 'DELETE'],
+    path: '/api/v1/account/sessions',
+  },
+  {
+    label: 'admin.principal',
+    methods: ['POST'],
+    prefix: '/api/v1/admin/principals/',
+  },
+  {
+    label: 'project.members',
+    methods: ['PUT', 'DELETE'],
+    prefix: '/api/v1/projects/',
+    infix: '/members/',
+  },
+  {
+    label: 'account.recovery-codes',
+    methods: ['POST'],
+    path: '/auth/recovery-codes',
+  },
+  { label: 'account.recover', methods: ['POST'], path: '/auth/recover' },
+  {
+    label: 'account.passkey',
+    methods: ['POST'],
+    prefix: '/auth/passkey/',
+  },
+  { label: 'account.authorize', methods: null, path: '/auth/authorize' },
+  { label: 'account.authorize', methods: null, prefix: '/auth/authorize/' },
+  { label: 'account.token', methods: ['POST'], path: '/auth/token' },
+  {
+    label: 'account.token',
+    methods: ['POST'],
+    path: '/auth/token/revoke',
+  },
+  { label: 'health.live', methods: ['GET'], path: '/health/live' },
+  { label: 'health.ready', methods: ['GET'], path: '/health/ready' },
+  { label: 'proof', methods: null, prefix: '/_proof' },
+];
+
+function routeLabelFor(path: string, method: string): RouteLabel {
+  for (const rule of routeLabelRules) {
+    if (rule.methods !== null && !rule.methods.includes(method)) continue;
+    if (rule.path !== undefined && path !== rule.path) continue;
+    if (rule.prefix !== undefined && !path.startsWith(rule.prefix)) continue;
+    if (rule.infix !== undefined && !path.includes(rule.infix)) continue;
+    return rule.label;
+  }
+  return 'unmatched';
+}
+
+const observeRequest = (request: Request, status: number): void => {
+  const label = routeLabelFor(new URL(request.url).pathname, request.method);
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
