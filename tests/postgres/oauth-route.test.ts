@@ -372,6 +372,37 @@ it('runs the authorization-code + PKCE journey end to end', async () => {
     issued.accessToken.split('.')[1] ?? '',
   );
 
+  // Bearer-authenticated business read: no token, a malformed token and a
+  // session cookie alone all deny; a No-Origin caller stays eligible.
+  const accountDenied = await fetch(new URL('/api/v1/account', base));
+  expect(accountDenied.status).toBe(401);
+  expect(await accountDenied.json()).toMatchObject({
+    error: { code: 'AUTHENTICATION_REQUIRED' },
+  });
+  const accountGarbage = await fetch(new URL('/api/v1/account', base), {
+    headers: { authorization: 'Bearer at_garbage.hb1_short' },
+  });
+  expect(accountGarbage.status).toBe(401);
+  const accountCookieOnly = await fetch(new URL('/api/v1/account', base), {
+    headers: { cookie: pair },
+  });
+  expect(accountCookieOnly.status).toBe(401);
+
+  const account = await fetch(new URL('/api/v1/account', base), {
+    headers: { authorization: `Bearer ${issued.accessToken}` },
+  });
+  expect(account.status).toBe(200);
+  expect(account.headers.get('cache-control')).toBe('no-store');
+  const tokenRow = await pool.query<{
+    principal_id: string;
+    identity_id: string;
+  }>('SELECT principal_id, identity_id FROM oauth_access_tokens LIMIT 1');
+  expect(await account.json()).toEqual({
+    principalId: tokenRow.rows[0]?.principal_id,
+    identityId: tokenRow.rows[0]?.identity_id,
+    kind: 'user',
+  });
+
   const revoked = await revoke(issued.accessToken);
   expect(revoked.status).toBe(204);
   const revokedRow = await pool.query(
@@ -386,6 +417,14 @@ it('runs the authorization-code + PKCE journey end to end', async () => {
   expect(revokedUnknown.status).toBe(204);
   const revokedGarbage = await revoke('not-a-token');
   expect(revokedGarbage.status).toBe(204);
+
+  const accountRevoked = await fetch(new URL('/api/v1/account', base), {
+    headers: { authorization: `Bearer ${issued.accessToken}` },
+  });
+  expect(accountRevoked.status).toBe(401);
+  expect(await accountRevoked.json()).toMatchObject({
+    error: { code: 'AUTHENTICATION_REQUIRED' },
+  });
 });
 
 it('drives the browser flow through the backend-owned authorize pages', async () => {

@@ -15,6 +15,7 @@ import {
   LoginRequestSchema,
   LoginChallengeSchema,
   AccountSessionSchema,
+  AccountDocumentSchema,
   BootstrapEnrollRequestSchema,
   BootstrapEnrolledSchema,
   RecoveryCodesSchema,
@@ -30,6 +31,7 @@ import {
   type LoginRequest,
   type LoginChallenge,
   type AccountSession,
+  type AccountDocument,
   type InstanceDocument,
   type BootstrapEnrollRequest,
   type BootstrapEnrolled,
@@ -92,6 +94,7 @@ import {
   validateAuthorizeQuery,
   type OAuthClientRegistration,
 } from './oauth.ts';
+import { authenticateBearer } from './bearer-auth.ts';
 import {
   clearedSessionCookie,
   currentAccountSession,
@@ -128,7 +131,8 @@ export interface AppOptions {
   passkey?: PasskeyRelyingParty | null;
   /** Registered public clients; an empty list disarms the code flow. */
   oauthClients?: readonly OAuthClientRegistration[] | null;
-  /** Authorization-code and access-token persistence for the code flow. */
+  /** Authorization-code and access-token persistence for the code flow and
+   * bearer-authenticated business reads. */
   oauthCodeStore?: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
   bootstrapState?: (() => Promise<boolean>) | null;
@@ -358,29 +362,32 @@ export function createApp({
                 ? 'account.bootstrap'
                 : path === '/api/v1/instance' && request.method === 'GET'
                   ? 'account.instance'
-                  : path === '/auth/recovery-codes' && request.method === 'POST'
-                    ? 'account.recovery-codes'
-                    : path === '/auth/recover' && request.method === 'POST'
-                      ? 'account.recover'
-                      : path.startsWith('/auth/passkey/') &&
-                          request.method === 'POST'
-                        ? 'account.passkey'
-                        : path === '/auth/authorize' ||
-                            path.startsWith('/auth/authorize/')
-                          ? 'account.authorize'
-                          : (path === '/auth/token' ||
-                                path === '/auth/token/revoke') &&
-                              request.method === 'POST'
-                            ? 'account.token'
-                            : path === '/health/live' &&
-                                request.method === 'GET'
-                              ? 'health.live'
-                              : path === '/health/ready' &&
+                  : path === '/api/v1/account' && request.method === 'GET'
+                    ? 'account.account'
+                    : path === '/auth/recovery-codes' &&
+                        request.method === 'POST'
+                      ? 'account.recovery-codes'
+                      : path === '/auth/recover' && request.method === 'POST'
+                        ? 'account.recover'
+                        : path.startsWith('/auth/passkey/') &&
+                            request.method === 'POST'
+                          ? 'account.passkey'
+                          : path === '/auth/authorize' ||
+                              path.startsWith('/auth/authorize/')
+                            ? 'account.authorize'
+                            : (path === '/auth/token' ||
+                                  path === '/auth/token/revoke') &&
+                                request.method === 'POST'
+                              ? 'account.token'
+                              : path === '/health/live' &&
                                   request.method === 'GET'
-                                ? 'health.ready'
-                                : path.startsWith('/_proof')
-                                  ? 'proof'
-                                  : 'unmatched';
+                                ? 'health.live'
+                                : path === '/health/ready' &&
+                                    request.method === 'GET'
+                                  ? 'health.ready'
+                                  : path.startsWith('/_proof')
+                                    ? 'proof'
+                                    : 'unmatched';
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -578,6 +585,40 @@ export function createApp({
     .get('/api/v1/instance', () => instanceDocument, {
       response: t.Unsafe<InstanceDocument>(InstanceDocumentSchema),
     })
+    .get(
+      '/api/v1/account',
+      async ({ request }): Promise<AccountDocument> => {
+        // Bearer-only business read: cookies are never credentials here and
+        // no Origin is required (no-Origin API clients stay valid). Like
+        // /auth/session this authenticated read takes no rate admission.
+        // Recent authentication stays with the shared authorization guard
+        // for the route owners that need it; this route does not.
+        const principal = await authenticateBearer(request, {
+          keyProvider: keyProvider ?? null,
+          tokenStore: oauthCodeStore ?? null,
+        });
+        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+        let kind: 'user' | 'staff' | null;
+        try {
+          kind = await withDeadline(request.signal, 1000, () =>
+            oauthCodeStore!.loadPrincipalKind(principal.principalId),
+          );
+        } catch (error) {
+          if (error instanceof RequestFailure) throw error;
+          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
+        }
+        // A suspended or deleted principal denies like any other invalid
+        // credential; no account state is disclosed.
+        if (kind !== 'user' && kind !== 'staff')
+          throw new RequestFailure('AUTHENTICATION_REQUIRED');
+        return {
+          principalId: principal.principalId,
+          identityId: principal.identityId,
+          kind,
+        };
+      },
+      { response: t.Unsafe<AccountDocument>(AccountDocumentSchema) },
+    )
     .get(
       '/api/v1/accounts/register',
       (): RegistrationChallenge => ({
@@ -1021,6 +1062,8 @@ export type {
   MinimumLoginPermit,
 } from './minimum-login-admission.ts';
 export { requireAuthorizedAction } from './authorization.ts';
+export { authenticateBearer, bearerScope } from './bearer-auth.ts';
+export type { BearerPrincipal } from './bearer-auth.ts';
 export { createCaptchaGate, requireRequiredCaptcha } from './captcha.ts';
 export {
   configureOptionalTurnstile,

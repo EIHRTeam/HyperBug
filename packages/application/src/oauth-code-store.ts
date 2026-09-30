@@ -61,6 +61,11 @@ export interface OAuthAccessTokenStore {
   loadActive(id: string, nowMs: number): Promise<OAuthAccessTokenRecord | null>;
   /** Revoke the exact token after the secret has been verified. */
   revoke(id: string, nowMs: number): Promise<boolean>;
+  /**
+   * Active-principal kind for a token-bound principal; null when the
+   * principal is unknown, suspended or deleted.
+   */
+  loadPrincipalKind(principalId: string): Promise<'user' | 'staff' | null>;
 }
 
 const clientIdPattern = /^[A-Za-z0-9_-]{1,128}$/;

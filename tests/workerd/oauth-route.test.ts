@@ -252,6 +252,40 @@ it('runs the authorization-code + PKCE journey on workerd/D1', async () => {
     issued.accessToken.split('.')[1] ?? '',
   );
 
+  // Bearer-authenticated business read: no token, a malformed token and a
+  // session cookie alone all deny; a No-Origin caller stays eligible.
+  const accountDenied = await mf.dispatchFetch(`${authOrigin}/api/v1/account`);
+  expect(accountDenied.status).toBe(401);
+  expect(await accountDenied.json()).toMatchObject({
+    error: { code: 'AUTHENTICATION_REQUIRED' },
+  });
+  const accountGarbage = await mf.dispatchFetch(
+    `${authOrigin}/api/v1/account`,
+    { headers: { authorization: 'Bearer at_garbage.hb1_short' } },
+  );
+  expect(accountGarbage.status).toBe(401);
+  const accountCookieOnly = await mf.dispatchFetch(
+    `${authOrigin}/api/v1/account`,
+    { headers: { cookie: pair } },
+  );
+  expect(accountCookieOnly.status).toBe(401);
+
+  const account = await mf.dispatchFetch(`${authOrigin}/api/v1/account`, {
+    headers: { authorization: `Bearer ${issued.accessToken}` },
+  });
+  expect(account.status).toBe(200);
+  expect(account.headers.get('cache-control')).toBe('no-store');
+  const tokenRow = await db
+    .prepare(
+      'SELECT principal_id, identity_id FROM oauth_access_tokens LIMIT 1',
+    )
+    .first<{ principal_id: string; identity_id: string }>();
+  expect(await account.json()).toEqual({
+    principalId: tokenRow?.principal_id,
+    identityId: tokenRow?.identity_id,
+    kind: 'user',
+  });
+
   const revoked = await form('/auth/token/revoke', {
     token: issued.accessToken,
   });
@@ -264,6 +298,17 @@ it('runs the authorization-code + PKCE journey on workerd/D1', async () => {
     token: issued.accessToken,
   });
   expect(revokedAgain.status).toBe(204);
+
+  const accountRevoked = await mf.dispatchFetch(
+    `${authOrigin}/api/v1/account`,
+    {
+      headers: { authorization: `Bearer ${issued.accessToken}` },
+    },
+  );
+  expect(accountRevoked.status).toBe(401);
+  expect(await accountRevoked.json()).toMatchObject({
+    error: { code: 'AUTHENTICATION_REQUIRED' },
+  });
 });
 
 it('renders the backend-owned authorize pages and completes the browser flow', async () => {

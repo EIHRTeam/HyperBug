@@ -165,6 +165,19 @@ export function createD1OAuthStores(
         .run();
       return changed(result.meta.changes);
     },
+    async loadPrincipalKind(principalId) {
+      assertUuid(principalId);
+      const row = await db
+        .prepare(
+          "SELECT kind FROM principals WHERE id = ? AND status = 'active' LIMIT 1",
+        )
+        .bind(principalId)
+        .first<{ kind: string }>();
+      if (row === null) return null;
+      if (row.kind !== 'user' && row.kind !== 'staff')
+        throw new Error('Invalid principal kind');
+      return row.kind;
+    },
   };
 }
 

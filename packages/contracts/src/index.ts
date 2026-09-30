@@ -127,6 +127,15 @@ export const AccountSessionSchema = Type.Object(
   { additionalProperties: false },
 );
 export type AccountSession = Static<typeof AccountSessionSchema>;
+export const AccountDocumentSchema = Type.Object(
+  {
+    principalId: Type.String({ format: 'uuid' }),
+    identityId: Type.String({ format: 'uuid' }),
+    kind: Type.Union([Type.Literal('user'), Type.Literal('staff')]),
+  },
+  { additionalProperties: false },
+);
+export type AccountDocument = Static<typeof AccountDocumentSchema>;
 export const BootstrapEnrollRequestSchema = Type.Object(
   {
     enrollmentCode: Type.String({ minLength: 1, maxLength: 128 }),

@@ -11,8 +11,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 03 complete (2026-09-30 compliant completion with the recorded re-scope; the recovery/token/privileged category routes deferred from 03.3c/03.3d are owned here).
 - Implementation started: Narrow registration/login/session work exists as the Phase 03 dependency starting point; the full 04.1 ordered work begins now and must finish rather than rewrite that foundation.
 - Completed implementation checklist IDs: 04.1a, 04.1b, 04.1c.
-- Active/next checklist group: 04.2e (bearer-authenticated route owners) and 04.2f/04.2c assessment, then 04.3a–04.3d and acceptance 04.V1–04.V6 (non-suspended portions). 04.1 is complete; 04.2a/04.2b/04.2d/04.2g are accepted. The Better Auth candidate is recorded as not accepted (04.1b evidence); the Core-owned implementation proceeds. Standard-profile password login is approved under [ADR 0009](../../decisions/0009-standard-password-login.md); the optional Free tier stays startup-disabled on its separate path. Audit portions of 04.3a/04.3c/04.V5 remain suspended and unchecked.
-- Last updated: 2026-09-30 (04.1a–04.1e, 04.2a/04.2b/04.2d/04.2g accepted).
+- Active/next checklist group: 04.3b/04.3c (roles, object-level checks, account/role-management APIs) and the 04.2c/04.2f assessments, then acceptance 04.V1–04.V6 (non-suspended portions). 04.1 is complete; 04.2a/04.2b/04.2d/04.2e/04.2g and 04.3d are accepted. The Better Auth candidate is recorded as not accepted (04.1b evidence); the Core-owned implementation proceeds. Standard-profile password login is approved under [ADR 0009](../../decisions/0009-standard-password-login.md); the optional Free tier stays startup-disabled on its separate path. Audit portions of 04.3a/04.3c/04.V5 remain suspended and unchecked.
+- Last updated: 2026-09-30 (04.1a–04.1e, 04.2a/04.2b/04.2d/04.2e/04.2g, 04.3d accepted).
 - Blocking issues discovered: None structural. The existing registration/login/session routes are proven locally and on the authorized test deployments (genuine ingress, live challenge, cross-location consistency closed in module 03's evidence); the authorization-service flows, recovery, Staff enrollment and project authorization remain to be built in this module.
 - Evidence: [Registration admission](../evidence/03-registration-admission.md), [login/session admission](../evidence/03-login-admission.md) and [signed ingress](../evidence/03-workers-ingress.md) cover the existing narrow dependency; no Module 04 acceptance claim.
 
@@ -690,3 +690,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None; the consent page does not yet display the account handle (the session record carries ids, not the handle) — cosmetic, deferred.
 - Next actions: 04.2e bearer-authenticated route owners with recent-authentication enforcement; 04.2c/04.2f assessments.
 - Next-session cautions: Never widen the page CSP beyond the CAPTCHA origin; never redirect authorization failures to client-provided URIs.
+
+### 2026-09-30 — 04.3d accepted; 04.3a non-audit modeling assessed
+
+- Scope and checklist IDs: **04.3d accepted**; 04.3a's non-audit portion assessed complete (the audited linking portion stays suspended, so the item remains unchecked).
+- Progress: The provider-contract section in [AUTH-FLOWS](../../AUTH-FLOWS.md) records the implemented CAPTCHA contract and the specified SSO contract for module 16; Core's zero-plugin operation is proven on both profiles by every existing account route. 04.3a's modeling inventory: separate principal kinds, operator-channel Staff enrollment, identity uniqueness preventing email-based linking, staff-aware login/credential/session paths.
+- Change summary: Documentation and checklist notes only.
+- Files/artifacts: [AUTH-FLOWS](../../AUTH-FLOWS.md), the module checklist, this record.
+- Verification: Documentation-only increment; the docs build passed with the batch that follows it.
+- Decisions and deviations: None beyond the recorded suspension.
+- Blockers/open questions: The audited account-linking mechanism waits for the audit resume decision.
+- Next actions: 04.2e (delegated, in flight), then the 04.3b/04.3c role-and-account batch.
+- Next-session cautions: SSO claims never bypass local grants; provider absence never weakens a route.
+
+### 2026-09-30 — 04.2e accepted: bearer authentication for business APIs
+
+- Scope and checklist IDs: **04.2e accepted**; the remaining step-04.2 items are the 04.2c/04.2f assessments.
+- Progress: `authenticateBearer` implements bearer-only authentication — the opaque `at_` token locates its authoritative row, the secret is verified against the stored keyed digest under the exact issuing context, and every missing/malformed/unknown/revoked/expired/mismatched credential answers one generic 401 `AUTHENTICATION_REQUIRED` (closed 503 `AUTHENTICATION_UNAVAILABLE` only on dependency failure, following the catalog's DENIED/UNAVAILABLE pairing). `GET /api/v1/account` is the first business consumer: cookies are rejected as credentials (proven by a cookie-only 401 case), no Origin is required (the no-Origin client case of 04.V4), the principal kind is enforced against the active row, and the response is no-store `{principalId, identityId, kind}`. Implemented by a delegated subagent, reviewed in-tree; it also found and fixed a real regex-anchor concatenation defect in the bearer pattern.
+- Change summary: New `bearer-auth.ts`, the account route with its `account.account` label, `AUTHENTICATION_REQUIRED`/`AUTHENTICATION_UNAVAILABLE` error codes, `loadPrincipalKind` on the token store with both adapters, the `AccountDocument` contract, and five new assertions per oauth suite.
+- Files/artifacts: `packages/server/src/{bearer-auth.ts (new),index.ts,errors.ts}`, `packages/application/src/oauth-code-store.ts`, `packages/database/{d1,postgres}/src/oauth-store.ts`, `packages/contracts/src/index.ts`, `packages/observability/src/index.ts`, `tests/{postgres,workerd}/oauth-route.test.ts`, [API conventions](../../API-CONVENTIONS.md), [AUTH-FLOWS](../../AUTH-FLOWS.md), the module checklist and this record.
+- Verification: Independently re-run full matrix — unit/contract 111/111, node 50/50, workerd 120/120, isolated PostgreSQL 18.6 65/65; typechecks, lint/boundaries, build, secret scan, format and diff checks.
+- Decisions and deviations: The second error code (503 pairing) was the subagent's justified addition; `/api/v1/account` currently carries no admission (recorded asymmetry versus the session-read route's approximate bucket — a parity decision for the staging budget milestone); recent-authentication stays with the shared guard per AUTH-FLOWS.
+- Blockers/open questions: None.
+- Next actions: The 04.3b/04.3c role-and-account batch; then the 04.2c/04.2f assessments and the V acceptance items.
+- Next-session cautions: Never accept cookies as business-API credentials; keep the 401 envelope generic.

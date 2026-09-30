@@ -7,6 +7,7 @@ export type RouteLabel =
   | 'account.logout'
   | 'account.bootstrap'
   | 'account.instance'
+  | 'account.account'
   | 'account.recovery-codes'
   | 'account.recover'
   | 'account.passkey'

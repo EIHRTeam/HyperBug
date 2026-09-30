@@ -173,5 +173,17 @@ export function createPostgresOAuthStores(
       );
       return changed(result.rowCount);
     },
+    async loadPrincipalKind(principalId) {
+      assertUuid(principalId);
+      const result = await pool.query<{ kind: string }>(
+        "SELECT kind FROM principals WHERE id = $1::uuid AND status = 'active' LIMIT 1",
+        [principalId],
+      );
+      const row = result.rows[0];
+      if (row === undefined) return null;
+      if (row.kind !== 'user' && row.kind !== 'staff')
+        throw new Error('Invalid principal kind');
+      return row.kind;
+    },
   };
 }

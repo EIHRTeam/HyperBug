@@ -23,6 +23,8 @@ const failures = {
   BOOTSTRAP_UNAVAILABLE: [503, 'Initial enrollment is unavailable.'],
   BOOTSTRAP_FORBIDDEN: [403, 'Initial enrollment is not permitted.'],
   LOGIN_DENIED: [401, 'Invalid account credentials.'],
+  AUTHENTICATION_REQUIRED: [401, 'Authentication is required.'],
+  AUTHENTICATION_UNAVAILABLE: [503, 'Authentication is unavailable.'],
   RECOVERY_DENIED: [403, 'Account recovery is not permitted.'],
   RECOVERY_UNAVAILABLE: [503, 'Account recovery is unavailable.'],
   PASSKEY_DENIED: [403, 'Passkey verification is not permitted.'],

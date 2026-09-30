@@ -29,7 +29,7 @@ const scopeTokenPattern = /^[A-Za-z0-9_.:-]{1,64}$/;
 const verifierPattern = /^[A-Za-z0-9\-._~]{43,128}$/;
 const codePattern =
   /^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.(hb1_[A-Za-z0-9_-]{43})$/;
-const accessTokenPattern =
+export const accessTokenPattern =
   /^at_([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.(hb1_[A-Za-z0-9_-]{43})$/;
 const codeLifetimeMs = 60_000;
 const tokenLifetimeMs = 600_000;
@@ -157,7 +157,7 @@ function codeContext(id: string): SecretContext {
   } as const;
 }
 
-function tokenContext(id: string): SecretContext {
+export function tokenContext(id: string): SecretContext {
   return {
     resourceType: 'oauth-access-token',
     resourceId: id,
