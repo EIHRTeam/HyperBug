@@ -31,7 +31,11 @@ export async function loginAccount(input: {
   readonly keyProvider: KeyProvider | null;
   readonly requestId?: string | null;
   readonly sessionStore: AccountSessionStore | null;
-}): Promise<string> {
+}): Promise<{
+  cookie: string;
+  principalId: string;
+  identityId: string;
+}> {
   const {
     request,
     body,
@@ -72,11 +76,16 @@ export async function loginAccount(input: {
     nowMs,
   });
   if (!account) throw new RequestFailure('LOGIN_DENIED');
-  return issueAccountSession({
+  const cookie = await issueAccountSession({
     account,
     provider: keyProvider,
     store: sessionStore,
     signal: request.signal,
     nowMs,
   });
+  return {
+    cookie,
+    principalId: account.principalId,
+    identityId: account.identityId,
+  };
 }

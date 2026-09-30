@@ -52,6 +52,18 @@ const form = (path: string, fields: Record<string, string>) =>
     body: new URLSearchParams(fields),
   });
 
+const sameOriginForm = (path: string, fields: Record<string, string>) =>
+  mf.dispatchFetch(`${authOrigin}${path}`, {
+    redirect: 'manual',
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      origin: authOrigin,
+      'sec-fetch-site': 'same-origin',
+    },
+    body: new URLSearchParams(fields),
+  });
+
 beforeAll(async () => {
   execFileSync(process.execPath, ['tooling/build.ts', '--target=fixtures']);
   mf = new Miniflare(
@@ -74,6 +86,11 @@ beforeAll(async () => {
         HYPERBUG_TEST_OAUTH_CLIENTS: JSON.stringify([
           {
             clientId: 'spa-poc',
+            redirectUris: [redirectUri],
+            scopes: ['public-api'],
+          },
+          {
+            clientId: 'spa-pages',
             redirectUris: [redirectUri],
             scopes: ['public-api'],
           },
@@ -247,4 +264,99 @@ it('runs the authorization-code + PKCE journey on workerd/D1', async () => {
     token: issued.accessToken,
   });
   expect(revokedAgain.status).toBe(204);
+});
+
+it('renders the backend-owned authorize pages and completes the browser flow', async () => {
+  const registered = await post('/api/v1/accounts/register', {
+    handle: 'pageuser',
+    password: 'first-password-123',
+  });
+  expect(registered.status).toBe(202);
+  const journeyVerifier = verifier();
+  const challenge = await challengeOf(journeyVerifier);
+  const oauthQuery: Record<string, string> = {
+    response_type: 'code',
+    client_id: 'spa-pages',
+    redirect_uri: redirectUri,
+    scope: 'public-api',
+    state: 'page-state-42',
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+  };
+  const pageUrl = `${authOrigin}/auth/authorize?${new URLSearchParams(oauthQuery)}`;
+  const loginPage = await mf.dispatchFetch(pageUrl);
+  expect(loginPage.status).toBe(200);
+  expect(loginPage.headers.get('content-type')).toBe(
+    'text/html; charset=utf-8',
+  );
+  expect(loginPage.headers.get('content-security-policy')).toContain(
+    "form-action 'self'",
+  );
+  const html = await loginPage.text();
+  expect(html).toContain('lang="en"');
+  expect(html).toContain('<label for="handle">Handle</label>');
+  expect(html).toContain('aria-live');
+
+  const login = await sameOriginForm('/auth/authorize/login', {
+    ...oauthQuery,
+    handle: 'pageuser',
+    password: 'first-password-123',
+  });
+  expect(login.status).toBe(302);
+  const location = login.headers.get('location') ?? '';
+  expect(location).toContain('code=');
+  expect(location).toContain('state=page-state-42');
+  const cookie = (login.headers.getSetCookie?.() ?? [])[0] ?? '';
+
+  expect(cookie).toMatch(/^__Host-hb_session=/);
+  const pair = cookie.split(';')[0];
+  if (pair === undefined) throw new Error('Missing session cookie');
+
+  const code = new URL(location).searchParams.get('code') ?? '';
+  const exchange = await form('/auth/token', {
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: redirectUri,
+    client_id: 'spa-pages',
+    code_verifier: journeyVerifier,
+  });
+  expect(exchange.status).toBe(200);
+  const exchanged = (await exchange.json()) as { accessToken: string };
+  expect(exchanged.accessToken).toMatch(/^at_/);
+
+  const consentPage = await mf.dispatchFetch(pageUrl, {
+    headers: { cookie: pair },
+  });
+  expect(consentPage.status).toBe(200);
+  expect(await consentPage.text()).toContain('Authorize access');
+
+  const consent = await mf.dispatchFetch(
+    `${authOrigin}/auth/authorize/consent`,
+    {
+      redirect: 'manual',
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        origin: authOrigin,
+        'sec-fetch-site': 'same-origin',
+        cookie: pair,
+      },
+      body: new URLSearchParams(oauthQuery),
+    },
+  );
+  expect(consent.status).toBe(302);
+  const secondCode = new URL(
+    consent.headers.get('location') ?? '',
+  ).searchParams.get('code');
+  expect(secondCode).toBeTruthy();
+  const secondExchange = await form('/auth/token', {
+    grant_type: 'authorization_code',
+    code: secondCode ?? '',
+    redirect_uri: redirectUri,
+    client_id: 'spa-pages',
+    code_verifier: journeyVerifier,
+  });
+  expect(secondExchange.status).toBe(200);
+  const secondBody = (await secondExchange.json()) as { accessToken: string };
+  expect(secondBody.accessToken).toMatch(/^at_/);
 });

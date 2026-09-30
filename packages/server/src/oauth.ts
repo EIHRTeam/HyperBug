@@ -125,6 +125,13 @@ function scopeTokens(scope: string): readonly string[] {
 }
 
 /** Exact client, exact redirect URI and scope containment; nothing else. */
+export function validateAuthorizeQuery(
+  clients: readonly OAuthClientRegistration[],
+  query: AuthorizeRequest,
+): void {
+  return authorizedClient(clients, query);
+}
+
 function authorizedClient(
   clients: readonly OAuthClientRegistration[],
   query: AuthorizeRequest,
@@ -236,15 +243,40 @@ export async function issueAuthorizationCode(input: {
     nowMs,
   });
   if (!session) throw new RequestFailure('LOGIN_DENIED');
+  return issueCodeForSession({
+    query,
+    keyProvider,
+    codeStore,
+    clients,
+    nowMs,
+    principalId: session.principalId,
+    identityId: session.identityId,
+    signal: input.request.signal,
+  });
+}
+
+/** Code issuance for a session the caller just authenticated itself. */
+export async function issueCodeForSession(input: {
+  readonly query: AuthorizeRequest;
+  readonly keyProvider: KeyProvider;
+  readonly codeStore: OAuthCodeStore | null;
+  readonly clients: readonly OAuthClientRegistration[] | null;
+  readonly nowMs: number;
+  readonly principalId: string;
+  readonly identityId: string;
+  readonly signal: AbortSignal;
+}): Promise<{ redirectUri: string }> {
+  const { query, keyProvider, codeStore, clients, nowMs, signal } = input;
+  if (!codeStore) throw new RequestFailure('OAUTH_UNAVAILABLE');
   authorizedClient(clients ?? [], query);
   const id = crypto.randomUUID();
   const secret = generateOpaqueCredential();
   try {
-    const digest = await withDeadline(request.signal, 1000, () =>
+    const digest = await withDeadline(signal, 1000, () =>
       digestCredential(keyProvider, secret, codeContext(id)),
     );
-    if (request.signal.aborted) throw new Error('Aborted');
-    await withDeadline(request.signal, 1000, () =>
+    if (signal?.aborted) throw new Error('Aborted');
+    await withDeadline(signal, 1000, () =>
       codeStore.insert({
         id,
         digest: JSON.stringify(digest),
@@ -252,8 +284,8 @@ export async function issueAuthorizationCode(input: {
         redirectUri: query.redirectUri,
         scope: query.scope,
         codeChallenge: query.codeChallenge,
-        principalId: session.principalId,
-        identityId: session.identityId,
+        principalId: input.principalId,
+        identityId: input.identityId,
         nowMs,
         expiresAtMs: nowMs + codeLifetimeMs,
       }),

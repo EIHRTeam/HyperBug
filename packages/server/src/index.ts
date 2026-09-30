@@ -79,9 +79,17 @@ import {
   recoverAccount,
 } from './account-recovery.ts';
 import {
+  authorizeConsentPage,
+  authorizeErrorPage,
+  authorizeLoginPage,
+  type AuthorizeQuery,
+} from './authorize-pages.ts';
+import {
   exchangeAuthorizationCode,
   issueAuthorizationCode,
+  issueCodeForSession,
   revokeAccessToken,
+  validateAuthorizeQuery,
   type OAuthClientRegistration,
 } from './oauth.ts';
 import {
@@ -268,8 +276,38 @@ export function createApp({
       ...(pending === undefined ? {} : { bootstrapPending: pending }),
     },
   });
+  const authorizeQueryFrom = (
+    fields: Record<string, unknown>,
+  ): AuthorizeQuery | null => {
+    const value = (name: (typeof oauthQueryFields)[number]): string | null => {
+      const raw = fields[name];
+      return typeof raw === 'string' && raw.length >= 1 && raw.length <= 2048
+        ? raw
+        : null;
+    };
+    const query = {
+      response_type: value('response_type'),
+      client_id: value('client_id'),
+      redirect_uri: value('redirect_uri'),
+      scope: value('scope'),
+      state: value('state'),
+      code_challenge: value('code_challenge'),
+      code_challenge_method: value('code_challenge_method'),
+    };
+    for (const field of Object.values(query)) if (field === null) return null;
+    return query as AuthorizeQuery;
+  };
   const starts = new WeakMap<Request, number>();
   const boundaries = new WeakMap<Request, BoundaryHeaders>();
+  const oauthQueryFields = [
+    'response_type',
+    'client_id',
+    'redirect_uri',
+    'scope',
+    'state',
+    'code_challenge',
+    'code_challenge_method',
+  ] as const;
   const captchaGate = captcha ?? createCaptchaGate();
   const boundSensitiveAdmission = createBoundSensitiveActionAdmission(
     captchaGate,
@@ -327,8 +365,8 @@ export function createApp({
                       : path.startsWith('/auth/passkey/') &&
                           request.method === 'POST'
                         ? 'account.passkey'
-                        : path === '/auth/authorize' &&
-                            request.method === 'POST'
+                        : path === '/auth/authorize' ||
+                            path.startsWith('/auth/authorize/')
                           ? 'account.authorize'
                           : (path === '/auth/token' ||
                                 path === '/auth/token/revoke') &&
@@ -416,7 +454,12 @@ export function createApp({
         request.method === 'POST'
       ) {
         const path = new URL(request.url).pathname;
-        if (path === '/auth/token' || path === '/auth/token/revoke')
+        if (
+          path === '/auth/token' ||
+          path === '/auth/token/revoke' ||
+          path === '/auth/authorize/login' ||
+          path === '/auth/authorize/consent'
+        )
           return readBoundedForm(
             request,
             config.maxBodyBytes,
@@ -585,7 +628,7 @@ export function createApp({
     .post(
       '/auth/login',
       async ({ request, body, set, sensitiveAdmission }) => {
-        const cookie = await loginAccount({
+        const { cookie } = await loginAccount({
           request,
           body,
           admission: sensitiveAdmission,
@@ -755,6 +798,164 @@ export function createApp({
         response: t.Unsafe<AuthorizeResponse>(AuthorizeResponseSchema),
       },
     )
+    .get('/auth/authorize', async ({ request, set }) => {
+      // Backend-owned authorization page: login form without a session,
+      // consent with one; every failure stays on this origin.
+      const parameters = Object.fromEntries(new URL(request.url).searchParams);
+      const query = authorizeQueryFrom(parameters);
+      if (!query) return authorizeErrorPage('Invalid authorization request.');
+      try {
+        validateAuthorizeQuery(registeredClients ?? [], {
+          clientId: query.client_id,
+          redirectUri: query.redirect_uri,
+          scope: query.scope,
+          state: query.state,
+          codeChallenge: query.code_challenge,
+        });
+      } catch {
+        return authorizeErrorPage('Unknown client or redirect target.');
+      }
+      const session =
+        keyProvider && sessionStore
+          ? await currentAccountSession({
+              request,
+              provider: keyProvider,
+              store: sessionStore,
+              nowMs: Date.now(),
+            })
+          : null;
+      if (session)
+        return authorizeConsentPage({ query, handle: null, error: null });
+      set.status = 200;
+      return authorizeLoginPage({
+        query,
+        captchaRequired: captchaGate.enabled,
+        captchaSiteKey: publicCaptchaSiteKey,
+        error: null,
+      });
+    })
+    .post(
+      '/auth/authorize/login',
+      async ({ request, body, set, sensitiveAdmission }) => {
+        requireAuthOrigin(request);
+        const fields = body as Record<string, unknown>;
+        const query = authorizeQueryFrom(fields);
+        if (!query) return authorizeErrorPage('Invalid authorization request.');
+        try {
+          validateAuthorizeQuery(registeredClients ?? [], {
+            clientId: query.client_id,
+            redirectUri: query.redirect_uri,
+            scope: query.scope,
+            state: query.state,
+            codeChallenge: query.code_challenge,
+          });
+        } catch {
+          return authorizeErrorPage('Unknown client or redirect target.');
+        }
+        const captchaToken =
+          typeof fields.captchaToken === 'string' &&
+          fields.captchaToken.length >= 1 &&
+          fields.captchaToken.length <= 4096
+            ? fields.captchaToken
+            : undefined;
+        const loginFailure = 'Sign-in failed. Check your credentials.';
+        let sessionFacts: { principalId: string; identityId: string };
+        try {
+          const { cookie, principalId, identityId } = await loginAccount({
+            request,
+            body: {
+              handle: String(fields.handle ?? ''),
+              password: String(fields.password ?? ''),
+              ...(captchaToken === undefined ? {} : { captchaToken }),
+            },
+            admission: sensitiveAdmission,
+            requestId: boundaryFor(request).requestId,
+            passwordService: standardPassword ?? null,
+            passwordStore: passwordStore ?? null,
+            keyProvider: keyProvider ?? null,
+            sessionStore: sessionStore ?? null,
+          });
+          set.headers['set-cookie'] = cookie;
+          sessionFacts = { principalId, identityId };
+        } catch {
+          set.status = 401;
+          return authorizeLoginPage({
+            query,
+            captchaRequired: captchaGate.enabled,
+            captchaSiteKey: publicCaptchaSiteKey,
+            error: loginFailure,
+          });
+        }
+        const issued = await issueCodeForSession({
+          query: {
+            clientId: query.client_id,
+            redirectUri: query.redirect_uri,
+            scope: query.scope,
+            state: query.state,
+            codeChallenge: query.code_challenge,
+          },
+          keyProvider: keyProvider!,
+          codeStore: oauthCodeStore ?? null,
+          clients: registeredClients,
+          nowMs: Date.now(),
+          principalId: sessionFacts.principalId,
+          identityId: sessionFacts.identityId,
+          signal: request.signal,
+        });
+        return new Response(null, {
+          status: 302,
+          headers: { location: issued.redirectUri },
+        });
+      },
+      { body: t.Any() },
+    )
+    .post(
+      '/auth/authorize/consent',
+      async ({ request, body, set }) => {
+        requireAuthOrigin(request);
+        const fields = body as Record<string, unknown>;
+        const query = authorizeQueryFrom(fields);
+        if (!query) return authorizeErrorPage('Invalid authorization request.');
+        const session =
+          keyProvider && sessionStore
+            ? await currentAccountSession({
+                request,
+                provider: keyProvider,
+                store: sessionStore,
+                nowMs: Date.now(),
+              })
+            : null;
+        if (!session) {
+          set.status = 401;
+          return authorizeLoginPage({
+            query,
+            captchaRequired: captchaGate.enabled,
+            captchaSiteKey: publicCaptchaSiteKey,
+            error: 'Sign-in failed. Check your credentials.',
+          });
+        }
+        const issued = await issueAuthorizationCode({
+          request,
+          query: {
+            clientId: query.client_id,
+            redirectUri: query.redirect_uri,
+            scope: query.scope,
+            state: query.state,
+            codeChallenge: query.code_challenge,
+          },
+          keyProvider: keyProvider ?? null,
+          sessionStore: sessionStore ?? null,
+          codeStore: oauthCodeStore ?? null,
+          clients: registeredClients,
+          nowMs: Date.now(),
+        });
+        return new Response(null, {
+          status: 302,
+          headers: { location: issued.redirectUri },
+        });
+      },
+      { body: t.Any() },
+    )
     .post(
       '/auth/token',
       async ({ request, body, sensitiveAdmission }) =>
@@ -793,7 +994,13 @@ export function createApp({
 export { RequestFailure, withDeadline } from './bounds.ts';
 export { verifyAccountPassword } from './account-password.ts';
 export { parseBootstrapEnrollmentCode } from './bootstrap-enrollment.ts';
-export { parseOAuthClients } from './oauth.ts';
+export { parseOAuthClients, validateAuthorizeQuery } from './oauth.ts';
+export {
+  authorizeConsentPage,
+  authorizeErrorPage,
+  authorizeLoginPage,
+} from './authorize-pages.ts';
+export type { AuthorizeQuery } from './authorize-pages.ts';
 export type { OAuthClientRegistration } from './oauth.ts';
 export type { VerifiedAccountPassword } from './account-password.ts';
 export { requireSensitiveRateAdmission } from './rate-admission.ts';

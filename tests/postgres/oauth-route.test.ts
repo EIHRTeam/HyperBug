@@ -24,6 +24,11 @@ const clients = [
     redirectUris: [redirectUri],
     scopes: ['public-api'],
   },
+  {
+    clientId: 'spa-pages',
+    redirectUris: [redirectUri],
+    scopes: ['public-api'],
+  },
 ];
 let bootstrap: Pool;
 let pool: Pool;
@@ -381,4 +386,151 @@ it('runs the authorization-code + PKCE journey end to end', async () => {
   expect(revokedUnknown.status).toBe(204);
   const revokedGarbage = await revoke('not-a-token');
   expect(revokedGarbage.status).toBe(204);
+});
+
+it('drives the browser flow through the backend-owned authorize pages', async () => {
+  const registered = await fetch(new URL('/api/v1/accounts/register', base), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      handle: 'pageuser',
+      password: 'first-password-123',
+    }),
+  });
+  expect(registered.status).toBe(202);
+
+  const journeyVerifier = verifier();
+  const challenge = await challengeOf(journeyVerifier);
+  const authorizeUrl = new URL('/auth/authorize', base);
+  const oauthQuery = {
+    response_type: 'code',
+    client_id: 'spa-pages',
+    redirect_uri: redirectUri,
+    scope: 'public-api',
+    state: 'page-state-42',
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+  };
+  for (const [name, value] of Object.entries(oauthQuery))
+    authorizeUrl.searchParams.set(name, value);
+
+  const badClient = new URL('/auth/authorize', base);
+  badClient.searchParams.set('response_type', 'code');
+  badClient.searchParams.set('client_id', 'unknown-client');
+  badClient.searchParams.set('redirect_uri', redirectUri);
+  badClient.searchParams.set('scope', 'public-api');
+  badClient.searchParams.set('state', 's');
+  badClient.searchParams.set('code_challenge', challenge);
+  badClient.searchParams.set('code_challenge_method', 'S256');
+  const rejected = await fetch(badClient);
+  expect(rejected.status).toBe(400);
+  expect(rejected.headers.get('content-type')).toBe('text/html; charset=utf-8');
+  expect(rejected.headers.get('content-security-policy')).toContain(
+    "form-action 'self'",
+  );
+  expect(await rejected.text()).toContain('not permitted');
+
+  const loginPage = await fetch(authorizeUrl);
+  expect(loginPage.status).toBe(200);
+  expect(loginPage.headers.get('content-type')).toBe(
+    'text/html; charset=utf-8',
+  );
+  const loginHtml = await loginPage.text();
+  expect(loginHtml).toContain('lang="en"');
+  expect(loginHtml).toContain('<label for="handle">Handle</label>');
+  expect(loginHtml).toContain('aria-live');
+  expect(loginHtml).toContain('action="/auth/authorize/login"');
+  expect(loginHtml).toContain('name="code_challenge_method"');
+  expect(loginHtml).not.toContain('first-password');
+
+  const form = (over: Record<string, string>) =>
+    new URLSearchParams({ ...oauthQuery, ...over });
+  const wrong = await fetch(new URL('/auth/authorize/login', base), {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      origin: base,
+    },
+    body: form({ handle: 'pageuser', password: 'wrong-password-999' }),
+  });
+  expect(wrong.status).toBe(401);
+  expect(wrong.headers.get('content-type')).toBe('text/html; charset=utf-8');
+  expect(await wrong.text()).toContain('role="alert"');
+
+  const login = await fetch(new URL('/auth/authorize/login', base), {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      origin: base,
+    },
+    body: form({ handle: 'pageuser', password: 'first-password-123' }),
+    redirect: 'manual',
+  });
+  console.log(
+    'page login:',
+    login.status,
+    (await login.text()).slice(0, 300),
+    login.headers.get('set-cookie'),
+  );
+  expect(login.status).toBe(302);
+  const location = login.headers.get('location') ?? '';
+  expect(location).toContain(
+    `${redirectUri}${redirectUri.includes('?') ? '&' : '?'}code=`,
+  );
+  expect(location).toContain('state=page-state-42');
+  const cookie = (login.headers.getSetCookie?.() ?? [])[0] ?? '';
+  expect(cookie).toMatch(/^__Host-hb_session=/);
+
+  const callback = new URL(location);
+  const firstCode = callback.searchParams.get('code') ?? '';
+  expect(firstCode).toMatch(/^at_|^[0-9a-f-]{36}\./);
+  const exchange = await fetch(new URL('/auth/token', base), {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: firstCode,
+      redirect_uri: redirectUri,
+      client_id: 'spa-pages',
+      code_verifier: journeyVerifier,
+    }),
+  });
+  expect(exchange.status).toBe(200);
+  expect(await exchange.json()).toMatchObject({ tokenType: 'Bearer' });
+
+  const consentPage = await fetch(authorizeUrl, { headers: { cookie } });
+  expect(consentPage.status).toBe(200);
+  const consentHtml = await consentPage.text();
+  expect(consentHtml).toContain('Authorize access');
+  expect(consentHtml).toContain('<code>public-api</code>');
+  expect(consentHtml).toContain('action="/auth/authorize/consent"');
+
+  const consent = await fetch(new URL('/auth/authorize/consent', base), {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      origin: base,
+      cookie,
+    },
+    body: form({}),
+    redirect: 'manual',
+  });
+  expect(consent.status).toBe(302);
+  const secondCode = new URL(
+    consent.headers.get('location') ?? '',
+  ).searchParams.get('code');
+  expect(secondCode).toBeTruthy();
+  const secondExchange = await fetch(new URL('/auth/token', base), {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: secondCode ?? '',
+      redirect_uri: redirectUri,
+      client_id: 'spa-pages',
+      code_verifier: journeyVerifier,
+    }),
+  });
+  expect(secondExchange.status).toBe(200);
+  expect((await secondExchange.json()).accessToken).toMatch(/^at_/);
 });
