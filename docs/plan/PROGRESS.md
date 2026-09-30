@@ -755,3 +755,14 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: Assurance tracking on sessions belongs to 04.3; browser ceremonies await 04.2d pages.
 - Next actions: 04.1e (tier account documentation) and 04.2g (instance capability document) — in progress through delegated subagents; then the 04.2 protocol work.
 - Next-session cautions: The fake authenticator is test-only; migration journals immutable; passkey config is all-three-or-none.
+
+### 2026-09-30 — Module 04 batch: tier documentation and instance document
+
+- Scope and checklist IDs: 04.1e and 04.2g accepted; step 04.1 is complete and 04.2g closes the capability surface ahead of the protocol work.
+- Progress: AUTH-FLOWS gained the minimum-tier account-mechanism section (measured PBKDF2 policy with floor-unmet disablement, passkey/recovery-code recommendation, no-email recovery, assurance difference, Argon2id downgrade rule) and the provider-contract section (implemented CAPTCHA contract; specified SSO contract for module 16). `GET /api/v1/instance` serves the closed capability document on both profiles; password flags cannot advertise the tier's floor-disabled login.
+- Change summary: Endpoint implementation by a delegated subagent (contracts, route, label, two route cases) plus this session's documentation, checklist and progress updates. Commit `0f98f06`.
+- Verification: Full matrix 111/50/118/63; typechecks, lint/boundaries, build, secret scan, docs build and format checks.
+- Decisions and deviations: `limits.documented` anchors the real FREE-TIER-PROFILE capacity section; the instance document is computed once from static composition state.
+- Blockers/open questions: None; OpenAPI consolidation is 10.1a, SPA consumption 11.1g.
+- Next actions: 04.2a/04.2b (Authorization Code + PKCE and opaque tokens) under way through a delegated implementation subagent; 04.2c rotation assessment recorded when it lands.
+- Next-session cautions: The instance document is a capability contract, never authorization.
