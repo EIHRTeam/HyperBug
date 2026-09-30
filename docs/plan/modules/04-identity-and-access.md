@@ -13,6 +13,8 @@ Provide a working authorization service and account/project permission system wi
 
 **Password-login direction (2026-09-25):** Implement and expose password registration/login/recovery on the standard profiles as part of this module. Independent audit may be deferred or run in parallel and never blocks development or password-login enablement. Further Argon2id performance testing remains stopped. The optional Free minimum tier remains subject to its separate PBKDF2 parameter-floor and acceptance requirements. See [ADR 0009](../../decisions/0009-standard-password-login.md).
 
+**Deferred Phase 03 scope owned here (2026-09-30 re-scope):** the recovery and token rate-limit categories and their measured budgets deferred from 03.3c/03.3d are implemented with this module's owning routes — recovery with 04.2f, token activity with 04.2b/04.2e, privileged operations with 04.3c — using the frozen category-dimension policy from module 03. Production budget numbers are measured under the staging real-load budget milestone, not inferred from local fixtures.
+
 ## Ordered checklist
 
 ### Step 04.1 — Prove the authentication implementation

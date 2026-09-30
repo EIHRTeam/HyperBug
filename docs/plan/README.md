@@ -8,7 +8,7 @@ Module 00 has now created and validated the [development](../../.agents/skills/h
 
 **Audit instruction (2026-09-21): [All audit work is suspended — no audit for now](AUDIT-SUSPENSION.md).** Skip suspended audit work when selecting a future batch.
 
-**Current worktree hold (2026-09-28):** Pause new features and scope expansion while the existing changes are consolidated. See the [consolidation record](evidence/2026-09-28-worktree-consolidation.md). Do not expand Modules 04/09, start the SPA, enable the Free tier, or resume audit or Argon2id performance work. Resume the ordered checklist only after a later user instruction.
+**Current user-directed state (2026-09-30):** Module 04 is released from the 2026-09-28 hold and advances across its full checklist. The hold's other parts remain in force: do not start the SPA, enable or partially enable the Free tier, resume later-module audit portions or Argon2id performance work, or expand Module 09 beyond its existing narrow 03 dependency. The untracked root `SECURITY.md` is a user draft — keep it in the working tree and never commit it. See the [consolidation record](evidence/2026-09-28-worktree-consolidation.md) for the original hold inventory and [master progress](PROGRESS.md) for the full current state.
 
 ## Start here
 

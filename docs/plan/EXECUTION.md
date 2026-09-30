@@ -10,7 +10,7 @@ Follow the user's current instructions, applicable repository guidance, and the 
 
 ## Current user-directed suspension
 
-As of 2026-09-21, [all audit work is Suspended — no audit for now](AUDIT-SUSPENSION.md). Mixed checklist items keep their other scope; suspended parts remain unchecked and require an explicit user instruction to resume. As of 2026-09-28, the user has also paused new features and scope expansion for worktree consolidation; preserve that hold until a later user instruction. These overrides apply to earlier next-action logs that otherwise schedule development or audit work.
+As of 2026-09-21, [all audit work is Suspended — no audit for now](AUDIT-SUSPENSION.md). Mixed checklist items keep their other scope; suspended parts remain unchecked and require an explicit user instruction to resume. As of 2026-09-28, the user also paused new features and scope expansion for worktree consolidation; on 2026-09-30 the user released Module 04 from that hold to advance its full checklist while keeping the hold's other parts in force (no SPA, no Free-tier enablement, later-module audit suspension, stopped Argon2id performance work, no Module 09 expansion). The untracked root `SECURITY.md` is a protected user draft that must never be committed. These overrides apply to earlier next-action logs that otherwise schedule development or audit work.
 
 ## Session start checklist
 

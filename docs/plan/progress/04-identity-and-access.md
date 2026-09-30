@@ -6,30 +6,31 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (narrow Phase 03 dependency only)
+- Status: In progress (full module scope, released from the 2026-09-28 hold by the 2026-09-30 user instruction)
 - Delivery scope: MVP backend
-- Prerequisites: 03 complete.
-- Implementation started: Narrow registration/login/session dependency for Phase 03 only; full module prerequisite and acceptance remain open.
+- Prerequisites: 03 complete (2026-09-30 compliant completion with the recorded re-scope; the recovery/token/privileged category routes deferred from 03.3c/03.3d are owned here).
+- Implementation started: Narrow registration/login/session work exists as the Phase 03 dependency starting point; the full 04.1 ordered work begins now and must finish rather than rewrite that foundation.
 - Completed implementation checklist IDs: None.
-- Active/next checklist group: Narrow 04.1d/04.2c support for Phase 03 account admission, session failure and runtime readiness; all 04 checklist items and acceptance remain open. Standard-profile password login remains approved under [ADR 0009](../../decisions/0009-standard-password-login.md); the optional Free tier keeps separate gates. Do not extend Module 04 beyond a concrete Phase 03 consumer need.
-- Last updated: 2026-09-28.
-- Blocking issues discovered: Signed ingress and login/session behavior pass locally, and a synthetic-address two-Worker D1 deployment passed. Genuine deployed client provenance, live configured provider success and full 04.1/04.2 account flows remain unverified; the narrow dependency does not remove the Module 03 prerequisite.
-- Evidence: [Registration admission](../evidence/03-registration-admission.md), [login/session admission](../evidence/03-login-admission.md) and [signed ingress](../evidence/03-workers-ingress.md) cover partial local and test-only deployed behavior; no Module 04 acceptance claim.
+- Active/next checklist group: 04.1a (AUTH-FLOWS specification), then 04.1b–04.1e, 04.2a–04.2g, 04.3a–04.3d and acceptance 04.V1–04.V6 (non-suspended portions). Standard-profile password login is approved under [ADR 0009](../../decisions/0009-standard-password-login.md); the optional Free tier stays startup-disabled on its separate path. Audit portions of 04.3a/04.3c/04.V5 remain suspended and unchecked.
+- Last updated: 2026-09-30.
+- Blocking issues discovered: None structural. The existing registration/login/session routes are proven locally and on the authorized test deployments (genuine ingress, live challenge, cross-location consistency closed in module 03's evidence); the authorization-service flows, recovery, Staff enrollment and project authorization remain to be built in this module.
+- Evidence: [Registration admission](../evidence/03-registration-admission.md), [login/session admission](../evidence/03-login-admission.md) and [signed ingress](../evidence/03-workers-ingress.md) cover the existing narrow dependency; no Module 04 acceptance claim.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 04.1 | Prove the authentication implementation | Not started | None yet |
-| 04.2 | Implement cross-site authorization | Not started | None yet |
+| 04.1 | Prove the authentication implementation | In progress (04.1a next) | Narrow 04.1c/04.1d registration/login dependency exists ([registration](../evidence/03-registration-admission.md), [login](../evidence/03-login-admission.md)); full items open |
+| 04.2 | Implement cross-site authorization | In progress (narrow 04.2c dependency only) | [Login admission](../evidence/03-login-admission.md); authorization-service flows not started |
 | 04.3 | Implement identity and permission management | Not started | None yet |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. Hold Module 04 implementation under the 2026-09-28 user instruction; retain registration/login/session as narrow Phase 03 dependencies.
-2. Resume the remaining ordered 04.1/04.2 account journey, recovery, Staff enrollment and provider decisions after the prerequisite gate.
+1. Write `docs/AUTH-FLOWS.md` (04.1a), then run the Better Auth candidate PoC with current documentation on both profiles (04.1b).
+2. Continue 04.1c–04.1e and 04.2a–04.2g in small reviewable batches, finishing the existing registration/login/session foundation rather than rewriting it.
+3. Implement 04.3a–04.3d non-audit portions; keep audit portions suspended and unchecked.
 
 ## Next-session cautions
 
@@ -581,3 +582,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None from this batch; the module's own acceptance remains pending its prerequisite.
 - Next actions: Unchanged — resume the ordered 04.1/04.2 account journey when the prerequisite gate and authorization allow.
 - Next-session cautions: The rehash fixture intentionally binds a superseding policy through the same constructors the production roots call; production roots still pin the initial source-floor policy.
+
+### 2026-09-30 — Module 04 released from hold; Phase 03 remainder re-scoped in
+
+- Scope and checklist IDs: Planning/session-start batch for the full module; no implementation checklist item was executed or checked. Affected ownership: 04.2b/04.2e (token activity), 04.2f (recovery), 04.3c (privileged operations).
+- Progress: The 2026-09-30 user instruction released Module 04 from the 2026-09-28 hold to advance its entire checklist, with the hold's other parts (no SPA, no Free-tier enablement, suspended later-module audit portions, stopped Argon2id performance work, no Module 09 expansion) still in force. The same instruction re-scoped module 03's remainder: this module now formally owns the recovery/token/privileged-operation rate-limit categories and their measured budgets (production numbers at the staging real-load budget milestone), using module 03's frozen category-dimension policy. Module 03 is recorded as compliantly complete, which clears this module's stated prerequisite.
+- Change summary: The module plan gained the deferred-ownership note; this record's status, step tracking and next actions moved from the narrow-dependency hold to the full ordered checklist. No application code changed.
+- Files/artifacts: [module 04 plan](../modules/04-identity-and-access.md), [module 03 plan](../modules/03-security-foundation.md), [closure matrix](../evidence/03-closure-matrix.md), this record, master progress and the plan README/EXECUTION/COVERAGE synchronization.
+- Verification: Documentation-only session; no application tests were run because no application behavior changed. Shared batch checks are recorded in the master session entry.
+- Decisions and deviations: The 2026-09-28 hold's Module 04 portion is lifted by explicit user instruction; the rest of that hold remains. The untracked root `SECURITY.md` is a protected user draft that must never be committed.
+- Blockers/open questions: None structural; the G1 audit-governance decision (resume vs deferral+ADR for suspended audit portions) remains with the user and will be raised when only suspended portions remain.
+- Next actions: Begin 04.1a (AUTH-FLOWS specification), then 04.1b (Better Auth PoC with current documentation), in small reviewable batches.
+- Next-session cautions: Keep User and Staff identities separate — email equality never grants Staff. The SPA must never persist access/refresh tokens. Finish the existing registration/login/session foundation; do not rewrite it. Keep audit portions of 04.3a/04.3c/04.V5 suspended and unchecked, and the Free tier startup-disabled.

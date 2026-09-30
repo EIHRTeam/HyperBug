@@ -12,7 +12,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Implementation started: No.
 - Completed implementation checklist IDs: None.
 - Active/next checklist group: 06.1, after prerequisites are satisfied.
-- Last updated: 2026-09-17.
+- Last updated: 2026-09-30 (plan amendment recording re-scoped Phase 03 ownership; no implementation).
 - Blocking issues discovered: None during planning; prerequisite completion is still required.
 - Evidence: Planning documents only; no implementation or runtime validation yet.
 
@@ -78,3 +78,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Module prerequisites and acceptance remain open.
 - Next actions: Keep Module 06 untouched during the feature hold.
 - Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-09-30 — Phase 03 re-scope ownership recorded
+
+- Scope and checklist IDs: Planning amendment only; no implementation checklist item was executed or checked. Affects this module's future project routes.
+- Progress: A user-directed plan re-scope formally assigned module 06 ownership of the project-dimension rate-limit categories deferred from module 03's 03.3c/03.3d: they are wired to this module's project routes using module 03's frozen category-dimension policy, with production budget numbers measured under the staging real-load budget milestone rather than inferred from local fixtures. This allowed module 03 to be recorded as compliantly complete with its deferred remainder explicit.
+- Change summary: The module plan's outcome section gained a "Deferred Phase 03 scope owned here (2026-09-30 re-scope)" note.
+- Files/artifacts: `docs/plan/modules/06-issue-core.md`; this record; see the [closure matrix](../evidence/03-closure-matrix.md) and master progress for the re-scope record.
+- Verification: Documentation-only amendment; no application tests were run because no application behavior changed. Shared batch checks (docs build and changed-file review) are recorded in the master session entry.
+- Decisions and deviations: None beyond the recorded re-scope; this module remains Not started and its audit portions remain suspended per the [suspension register](../AUDIT-SUSPENSION.md).
+- Blockers/open questions: None introduced; prerequisites (modules 04–05) are not yet complete.
+- Next actions: Unchanged — begin 06.1 after module 05 completes; wire the re-scoped project categories with the project routes and measure budgets at the staging milestone.
+- Next-session cautions: The re-scope adds scope to this module's project routes; it does not authorize starting module 06 early or resuming suspended audit work.

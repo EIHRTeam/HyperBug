@@ -9,6 +9,8 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Make plugin boundaries a real, versioned part of the backend before building feature-specific integrations. Prove them with local conformance fixtures, not production third-party dependencies.
 
+**Deferred Phase 03 scope owned here (2026-09-30 re-scope):** 03.3f's fail-closed plugin-permission failure handling is implemented with 05.2c when this module's runtime resumes; a plugin-permission check that fails, times out or is unavailable must deny without silently disabling verification.
+
 **Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
 
 ## Ordered checklist
@@ -25,7 +27,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 
 - [ ] **05.2a** **Audit portion suspended — no audit for now.** Implement registry/lifecycle validation and authorized, audited plugin-management endpoints.
 - [ ] **05.2b** Implement scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, and namespace ownership.
-- [ ] **05.2c** Define authentication/SSO, CAPTCHA, notifications, issue actions/metadata, search, import/export, and settings extension contracts with their Core policy boundaries.
+- [ ] **05.2c** Define authentication/SSO, CAPTCHA, notifications, issue actions/metadata, search, import/export, and settings extension contracts with their Core policy boundaries, including the fail-closed plugin-permission failure handling re-scoped from 03.3f (2026-09-30).
 - [ ] **05.2d** Connect hook/event envelopes to the outbox model; complete actual async dispatch in module 09 before enabling side-effect consumers.
 - [ ] **05.2e** Define build-time frontend extension descriptors and reviewed CSP merging. Do not implement remote JavaScript URL loading.
 - [ ] **05.2f** Provide one minimal official example plugin and a failing/slow plugin fixture that use only the public SDK/API.

@@ -9,6 +9,8 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Deliver the complete MVP issue-tracking API on both profiles. Public APIs, database contracts, and auditable mutations come before frontend screens.
 
+**Deferred Phase 03 scope owned here (2026-09-30 re-scope):** the project-dimension rate-limit categories deferred from 03.3c/03.3d are wired to this module's project routes with the frozen category-dimension policy from module 03; production budget numbers are measured under the staging real-load budget milestone.
+
 **Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
 
 ## Ordered checklist

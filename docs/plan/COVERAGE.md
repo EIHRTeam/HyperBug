@@ -14,7 +14,7 @@ This map assigns implementation and verification ownership to the source require
 | IDs, Issue numbers, timestamps, deletion, concurrency, outbox | 02 | 02, 06, 09 |
 | Framework-independent REST/OpenAPI and official API client | 02, feature modules, 10 | 10 |
 | Crypto/key providers/rotation, credential hashing, redaction | 03 | 03–04, 10, 13 |
-| Anti-abuse, consistent sensitive limits, outbound SSRF policy | 03 | 03, 07, 09–10, 16 |
+| Anti-abuse, consistent sensitive limits, outbound SSRF policy | 03; route categories owned by 04 (recovery/token/privileged) and 06 (project), budgets at the staging real-load milestone | 03, 04, 06–07, 09–10, 16 |
 | Public User/Staff separation, PKCE, session/token lifecycle | 04 | 04, 10–11 |
 | Object permissions, roles, bootstrap/recovery, assurance | 03–04 | 04, every resource module, 10 |
 | Projects independent of Git repositories | 06 | 06, 10, 12 |
