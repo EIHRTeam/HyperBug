@@ -124,12 +124,42 @@ function scopeTokens(scope: string): readonly string[] {
   return [...new Set(scope.split(' '))];
 }
 
-/** Exact client, exact redirect URI and scope containment; nothing else. */
+/**
+ * Exact client, exact redirect URI and scope containment; nothing else. The
+ * code-flow/S256 protocol literals are enforced after the registry check, so
+ * their rejections can redirect back to the verified redirect URI while
+ * registry failures never redirect anywhere.
+ */
 export function validateAuthorizeQuery(
   clients: readonly OAuthClientRegistration[],
   query: AuthorizeRequest,
 ): void {
-  return authorizedClient(clients, query);
+  authorizedClient(clients, query);
+  requireSupportedAuthorizeProtocol(query);
+}
+
+/**
+ * Protocol-shape rejection for an authorization request whose client and
+ * redirect URI already validated. Per RFC 6749 §4.2.2.1 and RFC 7636 §4.4.1
+ * these errors are sent back to the verified redirect URI; they are never
+ * rendered on the authorization origin like registry failures.
+ */
+export class AuthorizeProtocolFailure extends RequestFailure {
+  readonly protocolError: 'unsupported_response_type' | 'invalid_request';
+  constructor(protocolError: 'unsupported_response_type' | 'invalid_request') {
+    super('OAUTH_DENIED');
+    this.protocolError = protocolError;
+  }
+}
+
+/** This authorization service is code-flow-only with S256 PKCE. */
+function requireSupportedAuthorizeProtocol(
+  query: Pick<AuthorizeRequest, 'responseType' | 'codeChallengeMethod'>,
+): void {
+  if (query.responseType !== 'code')
+    throw new AuthorizeProtocolFailure('unsupported_response_type');
+  if (query.codeChallengeMethod !== 'S256')
+    throw new AuthorizeProtocolFailure('invalid_request');
 }
 
 function authorizedClient(
@@ -210,9 +240,11 @@ async function s256Challenge(verifier: string): Promise<string> {
 
 /**
  * Session-authenticated authorization-code issuance behind PKCE S256. The
- * registry is matched exactly (client id, redirect URI, scope containment);
- * S256 is the only supported challenge method, enforced by the request
- * schema upstream. The code lives for 60 seconds and one redemption.
+ * registry is matched exactly (client id, redirect URI, scope containment)
+ * and the code-flow/S256 protocol literals are enforced on every issuance
+ * path by requireSupportedAuthorizeProtocol — schema pass-through alone
+ * never substitutes for this check. The code lives for 60 seconds and one
+ * redemption.
  */
 export async function issueAuthorizationCode(input: {
   readonly request: Request;
@@ -269,6 +301,7 @@ export async function issueCodeForSession(input: {
   const { query, keyProvider, codeStore, clients, nowMs, signal } = input;
   if (!codeStore) throw new RequestFailure('OAUTH_UNAVAILABLE');
   authorizedClient(clients ?? [], query);
+  requireSupportedAuthorizeProtocol(query);
   const id = crypto.randomUUID();
   const secret = generateOpaqueCredential();
   try {

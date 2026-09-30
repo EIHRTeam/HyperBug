@@ -105,6 +105,8 @@ async function bearerToken(
   const authorized = await post(
     '/auth/authorize',
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId,
       redirectUri,
       scope: 'public-api',
@@ -243,6 +245,8 @@ async function tokenFromCookie(cookie: string, state: string): Promise<string> {
   const authorized = await post(
     '/auth/authorize',
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId: 'roles-admin-cli',
       redirectUri,
       scope: 'public-api',
@@ -412,6 +416,8 @@ it('manages sessions, project roles and principal suspension end to end', async 
   const steppedAuthorized = await post(
     '/auth/authorize',
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId: 'roles-admin-cli',
       redirectUri,
       scope: 'public-api',

@@ -132,6 +132,8 @@ it('runs the authorization-code + PKCE journey on workerd/D1', async () => {
   if (pair === undefined) throw new Error('Missing session cookie');
 
   const unauthenticated = await post('/auth/authorize', {
+    responseType: 'code',
+    codeChallengeMethod: 'S256',
     clientId: 'spa-poc',
     redirectUri,
     scope: 'public-api',
@@ -143,10 +145,54 @@ it('runs the authorization-code + PKCE journey on workerd/D1', async () => {
     error: { code: 'LOGIN_DENIED' },
   });
 
+  // The authorize step is code-flow-only with S256 PKCE: a token
+  // response_type or a plain challenge method never reaches code issuance.
+  const wrongResponseType = await post(
+    '/auth/authorize',
+    {
+      responseType: 'token',
+      codeChallengeMethod: 'S256',
+      clientId: 'spa-poc',
+      redirectUri,
+      scope: 'public-api',
+      state: 'st-token',
+      codeChallenge: await challengeOf(verifier()),
+    },
+    { cookie: pair },
+  );
+  expect(wrongResponseType.status).toBe(400);
+  expect(await wrongResponseType.json()).toMatchObject({
+    error: { code: 'OAUTH_DENIED' },
+  });
+  const plainMethod = await post(
+    '/auth/authorize',
+    {
+      responseType: 'code',
+      codeChallengeMethod: 'plain',
+      clientId: 'spa-poc',
+      redirectUri,
+      scope: 'public-api',
+      state: 'st-plain',
+      codeChallenge: await challengeOf(verifier()),
+    },
+    { cookie: pair },
+  );
+  expect(plainMethod.status).toBe(400);
+  expect(await plainMethod.json()).toMatchObject({
+    error: { code: 'OAUTH_DENIED' },
+  });
+  const rejectionDb = await mf.getD1Database('DB');
+  const codesAfterRejections = await rejectionDb
+    .prepare('SELECT count(*) AS count FROM oauth_codes')
+    .first<{ count: number }>();
+  expect(codesAfterRejections?.count).toBe(0);
+
   const firstVerifier = verifier();
   const first = await post(
     '/auth/authorize',
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId: 'spa-poc',
       redirectUri,
       scope: 'public-api',
@@ -191,6 +237,8 @@ it('runs the authorization-code + PKCE journey on workerd/D1', async () => {
   const second = await post(
     '/auth/authorize',
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId: 'spa-poc',
       redirectUri,
       scope: 'public-api',
@@ -342,6 +390,53 @@ it('renders the backend-owned authorize pages and completes the browser flow', a
   expect(html).toContain('<label for="handle">Handle</label>');
   expect(html).toContain('aria-live');
 
+  // Protocol-shape rejections of an already-verified client/redirect are
+  // redirected back to the registered redirect URI with the RFC 6749
+  // §4.2.2.1 / RFC 7636 §4.4.1 error, never rendered as an error page.
+  const tokenTypeUrl = `${authOrigin}/auth/authorize?${new URLSearchParams({ ...oauthQuery, response_type: 'token' })}`;
+  const tokenTypeRejected = await mf.dispatchFetch(tokenTypeUrl, {
+    redirect: 'manual',
+  });
+  expect(tokenTypeRejected.status).toBe(302);
+  const tokenTypeLocation = new URL(
+    tokenTypeRejected.headers.get('location') ?? '',
+  );
+  expect(tokenTypeLocation.origin + tokenTypeLocation.pathname).toBe(
+    redirectUri,
+  );
+  expect(tokenTypeLocation.searchParams.get('error')).toBe(
+    'unsupported_response_type',
+  );
+  expect(tokenTypeLocation.searchParams.get('state')).toBe('page-state-42');
+
+  const plainUrl = `${authOrigin}/auth/authorize?${new URLSearchParams({ ...oauthQuery, code_challenge_method: 'plain' })}`;
+  const plainRejected = await mf.dispatchFetch(plainUrl, {
+    redirect: 'manual',
+  });
+  expect(plainRejected.status).toBe(302);
+  expect(
+    new URL(plainRejected.headers.get('location') ?? '').searchParams.get(
+      'error',
+    ),
+  ).toBe('invalid_request');
+
+  // The login POST validates before any credential work: no cookie, no code.
+  const loginRejected = await sameOriginForm('/auth/authorize/login', {
+    ...oauthQuery,
+    response_type: 'token',
+    handle: 'pageuser',
+    password: 'first-password-123',
+  });
+  expect(loginRejected.status).toBe(302);
+  const loginRejectedLocation = new URL(
+    loginRejected.headers.get('location') ?? '',
+  );
+  expect(loginRejectedLocation.searchParams.get('error')).toBe(
+    'unsupported_response_type',
+  );
+  expect(loginRejectedLocation.searchParams.get('code')).toBeNull();
+  expect(loginRejected.headers.get('set-cookie')).toBeNull();
+
   const login = await sameOriginForm('/auth/authorize/login', {
     ...oauthQuery,
     handle: 'pageuser',
@@ -394,6 +489,34 @@ it('renders the backend-owned authorize pages and completes the browser flow', a
     consent.headers.get('location') ?? '',
   ).searchParams.get('code');
   expect(secondCode).toBeTruthy();
+
+  // The consent path enforces the same protocol literals: a plain challenge
+  // method redirects the RFC error instead of issuing another code.
+  const consentRejected = await mf.dispatchFetch(
+    `${authOrigin}/auth/authorize/consent`,
+    {
+      redirect: 'manual',
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        origin: authOrigin,
+        'sec-fetch-site': 'same-origin',
+        cookie: pair,
+      },
+      body: new URLSearchParams({
+        ...oauthQuery,
+        code_challenge_method: 'plain',
+      }),
+    },
+  );
+  expect(consentRejected.status).toBe(302);
+  const consentRejectedLocation = new URL(
+    consentRejected.headers.get('location') ?? '',
+  );
+  expect(consentRejectedLocation.searchParams.get('error')).toBe(
+    'invalid_request',
+  );
+  expect(consentRejectedLocation.searchParams.get('code')).toBeNull();
   const secondExchange = await form('/auth/token', {
     grant_type: 'authorization_code',
     code: secondCode ?? '',

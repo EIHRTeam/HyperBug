@@ -82,6 +82,8 @@ async function tokenFromCookie(cookie: string, state: string): Promise<string> {
   const authorized = await post(
     '/auth/authorize',
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId: 'roles-cli',
       redirectUri,
       scope: 'public-api',

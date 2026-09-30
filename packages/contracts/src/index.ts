@@ -178,6 +178,7 @@ export const RecoveredSchema = Type.Object(
 export type Recovered = Static<typeof RecoveredSchema>;
 export const AuthorizeRequestSchema = Type.Object(
   {
+    responseType: Type.String({ minLength: 1, maxLength: 64 }),
     clientId: Type.String({ pattern: '^[A-Za-z0-9_-]{1,128}$' }),
     redirectUri: Type.String({ minLength: 1, maxLength: 2048 }),
     scope: Type.String({ minLength: 1, maxLength: 256 }),
@@ -185,6 +186,7 @@ export const AuthorizeRequestSchema = Type.Object(
     codeChallenge: Type.String({
       pattern: '^[A-Za-z0-9_-]{43,128}$',
     }),
+    codeChallengeMethod: Type.String({ minLength: 1, maxLength: 16 }),
   },
   { additionalProperties: false },
 );

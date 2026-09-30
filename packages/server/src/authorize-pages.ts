@@ -164,3 +164,26 @@ export function authorizeErrorPage(message: string): Response {
     headers: response.headers,
   });
 }
+
+/**
+ * RFC 6749 §4.2.2.1 / RFC 7636 §4.4.1 protocol rejection: unlike registry
+ * failures, a request whose client and redirect URI already validated is
+ * answered by redirecting the error (and state) back to that verified
+ * redirect URI instead of rendering an error page.
+ */
+export function authorizeErrorRedirect(input: {
+  readonly redirectUri: string;
+  readonly error: 'unsupported_response_type' | 'invalid_request';
+  readonly state: string;
+}): Response {
+  const parameters = new URLSearchParams({
+    error: input.error,
+    state: input.state,
+  });
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: `${input.redirectUri}${input.redirectUri.includes('?') ? '&' : '?'}${parameters.toString()}`,
+    },
+  });
+}

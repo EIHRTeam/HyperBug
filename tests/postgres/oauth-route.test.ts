@@ -189,11 +189,15 @@ const authorizeWithSession = async (
     clientId: string;
     redirectUri: string;
     scope: string;
+    responseType: string;
+    codeChallengeMethod: string;
   }> = {},
 ) => {
   const value = verifier();
   const response = await authorize(
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId: 'spa-local',
       redirectUri,
       scope: 'public-api',
@@ -230,6 +234,8 @@ it('runs the authorization-code + PKCE journey end to end', async () => {
   if (pair === undefined) throw new Error('Missing session cookie');
 
   const unauthenticated = await authorize({
+    responseType: 'code',
+    codeChallengeMethod: 'S256',
     clientId: 'spa-local',
     redirectUri,
     scope: 'public-api',
@@ -250,6 +256,8 @@ it('runs the authorization-code + PKCE journey end to end', async () => {
 
   const wrongRedirect = await authorize(
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId: 'spa-local',
       redirectUri: 'http://localhost:5173/attacker',
       scope: 'public-api',
@@ -265,6 +273,8 @@ it('runs the authorization-code + PKCE journey end to end', async () => {
 
   const wrongScope = await authorize(
     {
+      responseType: 'code',
+      codeChallengeMethod: 'S256',
       clientId: 'spa-local',
       redirectUri,
       scope: 'public-api staff-admin',
@@ -277,6 +287,27 @@ it('runs the authorization-code + PKCE journey end to end', async () => {
   expect(await wrongScope.json()).toMatchObject({
     error: { code: unknownClientBody.error?.code },
   });
+
+  // The authorize step is code-flow-only with S256 PKCE: a token
+  // response_type or a plain challenge method never reaches code issuance.
+  const wrongResponseType = await authorizeWithSession(pair, 'st-token', {
+    responseType: 'token',
+  });
+  expect(wrongResponseType.response.status).toBe(400);
+  expect(await wrongResponseType.response.json()).toMatchObject({
+    error: { code: 'OAUTH_DENIED' },
+  });
+  const plainMethod = await authorizeWithSession(pair, 'st-plain', {
+    codeChallengeMethod: 'plain',
+  });
+  expect(plainMethod.response.status).toBe(400);
+  expect(await plainMethod.response.json()).toMatchObject({
+    error: { code: 'OAUTH_DENIED' },
+  });
+  const jsonCodesAfterRejections = await pool.query(
+    'SELECT count(*)::int AS count FROM oauth_codes',
+  );
+  expect(jsonCodesAfterRejections.rows[0]?.count).toBe(0);
 
   const wrongGrant = await token({
     grant_type: 'client_credentials',
@@ -474,6 +505,37 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
   );
   expect(await rejected.text()).toContain('not permitted');
 
+  // Protocol-shape rejections of an already-verified client/redirect are
+  // redirected back to the registered redirect URI with the RFC 6749
+  // §4.2.2.1 / RFC 7636 §4.4.1 error, never rendered as an error page.
+  const tokenType = new URL('/auth/authorize', base);
+  for (const [name, value] of Object.entries(oauthQuery))
+    tokenType.searchParams.set(name, value);
+  tokenType.searchParams.set('response_type', 'token');
+  const tokenTypeRejected = await fetch(tokenType, { redirect: 'manual' });
+  expect(tokenTypeRejected.status).toBe(302);
+  const tokenTypeLocation = new URL(
+    tokenTypeRejected.headers.get('location') ?? '',
+  );
+  expect(tokenTypeLocation.origin + tokenTypeLocation.pathname).toBe(
+    redirectUri,
+  );
+  expect(tokenTypeLocation.searchParams.get('error')).toBe(
+    'unsupported_response_type',
+  );
+  expect(tokenTypeLocation.searchParams.get('state')).toBe('page-state-42');
+  expect(tokenTypeRejected.headers.get('set-cookie')).toBeNull();
+
+  const plainChallenge = new URL('/auth/authorize', base);
+  for (const [name, value] of Object.entries(oauthQuery))
+    plainChallenge.searchParams.set(name, value);
+  plainChallenge.searchParams.set('code_challenge_method', 'plain');
+  const plainRejected = await fetch(plainChallenge, { redirect: 'manual' });
+  expect(plainRejected.status).toBe(302);
+  const plainLocation = new URL(plainRejected.headers.get('location') ?? '');
+  expect(plainLocation.searchParams.get('error')).toBe('invalid_request');
+  expect(plainLocation.searchParams.get('state')).toBe('page-state-42');
+
   const loginPage = await fetch(authorizeUrl);
   expect(loginPage.status).toBe(200);
   expect(loginPage.headers.get('content-type')).toBe(
@@ -500,6 +562,27 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
   expect(wrong.status).toBe(401);
   expect(wrong.headers.get('content-type')).toBe('text/html; charset=utf-8');
   expect(await wrong.text()).toContain('role="alert"');
+
+  // A protocol-shape rejection redirects before any credential work: no
+  // login attempt, no session cookie, no code.
+  const loginRejected = await fetch(new URL('/auth/authorize/login', base), {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      origin: base,
+    },
+    body: form({ response_type: 'token' }),
+    redirect: 'manual',
+  });
+  expect(loginRejected.status).toBe(302);
+  const loginRejectedLocation = new URL(
+    loginRejected.headers.get('location') ?? '',
+  );
+  expect(loginRejectedLocation.searchParams.get('error')).toBe(
+    'unsupported_response_type',
+  );
+  expect(loginRejectedLocation.searchParams.get('code')).toBeNull();
+  expect(loginRejected.headers.get('set-cookie')).toBeNull();
 
   const login = await fetch(new URL('/auth/authorize/login', base), {
     method: 'POST',
@@ -564,6 +647,33 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
     consent.headers.get('location') ?? '',
   ).searchParams.get('code');
   expect(secondCode).toBeTruthy();
+
+  // The consent path enforces the same protocol literals: a plain challenge
+  // method redirects the RFC error instead of issuing a second code.
+  const consentRejected = await fetch(
+    new URL('/auth/authorize/consent', base),
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        origin: base,
+        cookie,
+      },
+      body: form({ code_challenge_method: 'plain' }),
+      redirect: 'manual',
+    },
+  );
+  expect(consentRejected.status).toBe(302);
+  const consentRejectedLocation = new URL(
+    consentRejected.headers.get('location') ?? '',
+  );
+  expect(consentRejectedLocation.searchParams.get('error')).toBe(
+    'invalid_request',
+  );
+  expect(consentRejectedLocation.searchParams.get('code')).toBeNull();
+  expect(consentRejectedLocation.searchParams.get('state')).toBe(
+    'page-state-42',
+  );
   const secondExchange = await fetch(new URL('/auth/token', base), {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -614,6 +724,8 @@ it(
           cookie,
         },
         body: JSON.stringify({
+          responseType: 'code',
+          codeChallengeMethod: 'S256',
           clientId: 'spa-negative',
           redirectUri,
           scope: 'public-api',

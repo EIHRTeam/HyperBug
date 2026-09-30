@@ -93,10 +93,12 @@ import {
 import {
   authorizeConsentPage,
   authorizeErrorPage,
+  authorizeErrorRedirect,
   authorizeLoginPage,
   type AuthorizeQuery,
 } from './authorize-pages.ts';
 import {
+  AuthorizeProtocolFailure,
   exchangeAuthorizationCode,
   issueAuthorizationCode,
   issueCodeForSession,
@@ -333,6 +335,29 @@ export function createApp({
     'code_challenge',
     'code_challenge_method',
   ] as const;
+  // Registry failures render on this origin; a protocol-shape rejection of
+  // an already-verified client/redirect redirects back per RFC 6749
+  // §4.2.2.1 / RFC 7636 §4.4.1.
+  const authorizeValidationFailure = (
+    query: AuthorizeQuery,
+    error: unknown,
+  ): Response =>
+    error instanceof AuthorizeProtocolFailure
+      ? authorizeErrorRedirect({
+          redirectUri: query.redirect_uri,
+          error: error.protocolError,
+          state: query.state,
+        })
+      : authorizeErrorPage('Unknown client or redirect target.');
+  const authorizeRequestBody = (query: AuthorizeQuery): AuthorizeRequest => ({
+    responseType: query.response_type,
+    clientId: query.client_id,
+    redirectUri: query.redirect_uri,
+    scope: query.scope,
+    state: query.state,
+    codeChallenge: query.code_challenge,
+    codeChallengeMethod: query.code_challenge_method,
+  });
   const captchaGate = captcha ?? createCaptchaGate();
   const boundSensitiveAdmission = createBoundSensitiveActionAdmission(
     captchaGate,
@@ -472,86 +497,86 @@ export function createApp({
     boundaries.set(request, fallback);
     return fallback;
   };
-// Ordered (method, path) matchers over the frozen ROUTE_LABELS universe in
-// @hyperbug/observability; the first hit wins and everything else falls back
-// to 'unmatched'. Derived from RouteLabel so a label outside the frozen list
-// cannot compile here.
-const routeLabelRules: readonly {
-  readonly label: RouteLabel;
-  /** null matches every method. */
-  readonly methods: readonly string[] | null;
-  readonly path?: string;
-  readonly prefix?: string;
-  readonly infix?: string;
-}[] = [
-  {
-    label: 'account.register',
-    methods: ['GET', 'POST'],
-    path: '/api/v1/accounts/register',
-  },
-  { label: 'account.login', methods: ['GET', 'POST'], path: '/auth/login' },
-  { label: 'account.session', methods: ['GET'], path: '/auth/session' },
-  { label: 'account.logout', methods: ['POST'], path: '/auth/logout' },
-  {
-    label: 'account.bootstrap',
-    methods: ['POST'],
-    path: '/auth/bootstrap/enroll',
-  },
-  { label: 'account.instance', methods: ['GET'], path: '/api/v1/instance' },
-  { label: 'account.account', methods: ['GET'], path: '/api/v1/account' },
-  {
-    label: 'account.sessions',
-    methods: ['GET', 'DELETE'],
-    path: '/api/v1/account/sessions',
-  },
-  {
-    label: 'admin.principal',
-    methods: ['POST'],
-    prefix: '/api/v1/admin/principals/',
-  },
-  {
-    label: 'project.members',
-    methods: ['PUT', 'DELETE'],
-    prefix: '/api/v1/projects/',
-    infix: '/members/',
-  },
-  {
-    label: 'account.recovery-codes',
-    methods: ['POST'],
-    path: '/auth/recovery-codes',
-  },
-  { label: 'account.recover', methods: ['POST'], path: '/auth/recover' },
-  {
-    label: 'account.passkey',
-    methods: ['POST'],
-    prefix: '/auth/passkey/',
-  },
-  { label: 'account.authorize', methods: null, path: '/auth/authorize' },
-  { label: 'account.authorize', methods: null, prefix: '/auth/authorize/' },
-  { label: 'account.token', methods: ['POST'], path: '/auth/token' },
-  {
-    label: 'account.token',
-    methods: ['POST'],
-    path: '/auth/token/revoke',
-  },
-  { label: 'health.live', methods: ['GET'], path: '/health/live' },
-  { label: 'health.ready', methods: ['GET'], path: '/health/ready' },
-  { label: 'proof', methods: null, prefix: '/_proof' },
-];
+  // Ordered (method, path) matchers over the frozen ROUTE_LABELS universe in
+  // @hyperbug/observability; the first hit wins and everything else falls back
+  // to 'unmatched'. Derived from RouteLabel so a label outside the frozen list
+  // cannot compile here.
+  const routeLabelRules: readonly {
+    readonly label: RouteLabel;
+    /** null matches every method. */
+    readonly methods: readonly string[] | null;
+    readonly path?: string;
+    readonly prefix?: string;
+    readonly infix?: string;
+  }[] = [
+    {
+      label: 'account.register',
+      methods: ['GET', 'POST'],
+      path: '/api/v1/accounts/register',
+    },
+    { label: 'account.login', methods: ['GET', 'POST'], path: '/auth/login' },
+    { label: 'account.session', methods: ['GET'], path: '/auth/session' },
+    { label: 'account.logout', methods: ['POST'], path: '/auth/logout' },
+    {
+      label: 'account.bootstrap',
+      methods: ['POST'],
+      path: '/auth/bootstrap/enroll',
+    },
+    { label: 'account.instance', methods: ['GET'], path: '/api/v1/instance' },
+    { label: 'account.account', methods: ['GET'], path: '/api/v1/account' },
+    {
+      label: 'account.sessions',
+      methods: ['GET', 'DELETE'],
+      path: '/api/v1/account/sessions',
+    },
+    {
+      label: 'admin.principal',
+      methods: ['POST'],
+      prefix: '/api/v1/admin/principals/',
+    },
+    {
+      label: 'project.members',
+      methods: ['PUT', 'DELETE'],
+      prefix: '/api/v1/projects/',
+      infix: '/members/',
+    },
+    {
+      label: 'account.recovery-codes',
+      methods: ['POST'],
+      path: '/auth/recovery-codes',
+    },
+    { label: 'account.recover', methods: ['POST'], path: '/auth/recover' },
+    {
+      label: 'account.passkey',
+      methods: ['POST'],
+      prefix: '/auth/passkey/',
+    },
+    { label: 'account.authorize', methods: null, path: '/auth/authorize' },
+    { label: 'account.authorize', methods: null, prefix: '/auth/authorize/' },
+    { label: 'account.token', methods: ['POST'], path: '/auth/token' },
+    {
+      label: 'account.token',
+      methods: ['POST'],
+      path: '/auth/token/revoke',
+    },
+    { label: 'health.live', methods: ['GET'], path: '/health/live' },
+    { label: 'health.ready', methods: ['GET'], path: '/health/ready' },
+    { label: 'proof', methods: null, prefix: '/_proof' },
+  ];
 
-function routeLabelFor(path: string, method: string): RouteLabel {
-  for (const rule of routeLabelRules) {
-    if (rule.methods !== null && !rule.methods.includes(method)) continue;
-    if (rule.path !== undefined && path !== rule.path) continue;
-    if (rule.prefix !== undefined && !path.startsWith(rule.prefix)) continue;
-    if (rule.infix !== undefined && !path.includes(rule.infix)) continue;
-    return rule.label;
+  function routeLabelFor(path: string, method: string): RouteLabel {
+    for (const rule of routeLabelRules) {
+      if (rule.methods !== null && !rule.methods.includes(method)) continue;
+      if (rule.path !== undefined && path !== rule.path) continue;
+      if (rule.prefix !== undefined && !path.startsWith(rule.prefix)) continue;
+      if (rule.infix !== undefined && !path.includes(rule.infix)) continue;
+      return rule.label;
+    }
+    return 'unmatched';
   }
-  return 'unmatched';
-}
 
-const observeRequest = (request: Request, status: number): void => {
-  const label = routeLabelFor(new URL(request.url).pathname, request.method);
+  const observeRequest = (request: Request, status: number): void => {
+    const label = routeLabelFor(new URL(request.url).pathname, request.method);
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -1195,15 +1220,12 @@ const observeRequest = (request: Request, status: number): void => {
       const query = authorizeQueryFrom(parameters);
       if (!query) return authorizeErrorPage('Invalid authorization request.');
       try {
-        validateAuthorizeQuery(registeredClients ?? [], {
-          clientId: query.client_id,
-          redirectUri: query.redirect_uri,
-          scope: query.scope,
-          state: query.state,
-          codeChallenge: query.code_challenge,
-        });
-      } catch {
-        return authorizeErrorPage('Unknown client or redirect target.');
+        validateAuthorizeQuery(
+          registeredClients ?? [],
+          authorizeRequestBody(query),
+        );
+      } catch (error) {
+        return authorizeValidationFailure(query, error);
       }
       const session =
         keyProvider && sessionStore
@@ -1232,15 +1254,12 @@ const observeRequest = (request: Request, status: number): void => {
         const query = authorizeQueryFrom(fields);
         if (!query) return authorizeErrorPage('Invalid authorization request.');
         try {
-          validateAuthorizeQuery(registeredClients ?? [], {
-            clientId: query.client_id,
-            redirectUri: query.redirect_uri,
-            scope: query.scope,
-            state: query.state,
-            codeChallenge: query.code_challenge,
-          });
-        } catch {
-          return authorizeErrorPage('Unknown client or redirect target.');
+          validateAuthorizeQuery(
+            registeredClients ?? [],
+            authorizeRequestBody(query),
+          );
+        } catch (error) {
+          return authorizeValidationFailure(query, error);
         }
         const captchaToken =
           typeof fields.captchaToken === 'string' &&
@@ -1277,13 +1296,7 @@ const observeRequest = (request: Request, status: number): void => {
           });
         }
         const issued = await issueCodeForSession({
-          query: {
-            clientId: query.client_id,
-            redirectUri: query.redirect_uri,
-            scope: query.scope,
-            state: query.state,
-            codeChallenge: query.code_challenge,
-          },
+          query: authorizeRequestBody(query),
           keyProvider: keyProvider!,
           codeStore: oauthCodeStore ?? null,
           clients: registeredClients,
@@ -1306,6 +1319,14 @@ const observeRequest = (request: Request, status: number): void => {
         const fields = body as Record<string, unknown>;
         const query = authorizeQueryFrom(fields);
         if (!query) return authorizeErrorPage('Invalid authorization request.');
+        try {
+          validateAuthorizeQuery(
+            registeredClients ?? [],
+            authorizeRequestBody(query),
+          );
+        } catch (error) {
+          return authorizeValidationFailure(query, error);
+        }
         const session =
           keyProvider && sessionStore
             ? await currentAccountSession({
@@ -1326,13 +1347,7 @@ const observeRequest = (request: Request, status: number): void => {
         }
         const issued = await issueAuthorizationCode({
           request,
-          query: {
-            clientId: query.client_id,
-            redirectUri: query.redirect_uri,
-            scope: query.scope,
-            state: query.state,
-            codeChallenge: query.code_challenge,
-          },
+          query: authorizeRequestBody(query),
           keyProvider: keyProvider ?? null,
           sessionStore: sessionStore ?? null,
           codeStore: oauthCodeStore ?? null,

@@ -153,7 +153,7 @@ Core operates with zero plugins: no email, SSO or CAPTCHA provider is required f
 | Specification | Status |
 | --- | --- |
 | Origins/trust boundaries, CORS/origin enforcement | Implemented (shared HTTP boundary) |
-| Public-client registration, authorize/token endpoints, PKCE | Implemented (both profiles; exact-match registry, 60 s single-use codes, consume-before-verify, S256 constant-time) |
+| Public-client registration, authorize/token endpoints, PKCE | Implemented (both profiles; exact-match registry, 60 s single-use codes, consume-before-verify, S256 constant-time; authorize-side `response_type=code` / `S256`-only enforcement on every authorize and issuance path, with RFC 6749 §4.2.2.1 / RFC 7636 error redirects to the verified redirect URI) |
 | Opaque bearer tokens, revocation, recent authentication | `at_` tokens implemented (keyed digest, 600 s, RFC 7009 revocation, both profiles); bearer authentication implemented with `GET /api/v1/account` as the first consumer; recent-authentication enforcement stays with the shared guard for owners that need it |
 | First-party session cookie, idle/absolute expiry, fixation protection | Implemented; rotation specified for 04.2c |
 | Registration/login routes with admission and CAPTCHA | Implemented (narrow Phase 03 dependency) |
