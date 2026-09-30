@@ -43,6 +43,30 @@ export interface PasskeyRelyingParty {
 
 const challengeTtlMs = 5 * 60 * 1000;
 
+/**
+ * All-three-or-none parsing of the public relying-party values: a partial
+ * selection refuses startup, none disarms every passkey route, and a
+ * complete selection returns the triple for the root to bind to its stores.
+ */
+export function parsePasskeyConfiguration(input: {
+  readonly rpId: string | undefined;
+  readonly rpName: string | undefined;
+  readonly origin: string | undefined;
+}): Pick<PasskeyRelyingParty, 'rpID' | 'rpName' | 'origin'> | null {
+  const configured = [input.rpId, input.rpName, input.origin].filter(
+    (value) => value !== undefined,
+  ).length;
+  if (configured !== 0 && configured !== 3)
+    throw new Error('Invalid passkey configuration');
+  return configured === 3
+    ? {
+        rpID: input.rpId as string,
+        rpName: input.rpName as string,
+        origin: input.origin as string,
+      }
+    : null;
+}
+
 function decodeClientDataChallenge(response: {
   response: { clientDataJSON: string };
 }): string {

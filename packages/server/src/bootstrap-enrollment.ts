@@ -3,6 +3,7 @@ import type { BootstrapEnrollRequest } from '@hyperbug/contracts';
 import type { StandardPasswordService } from '@hyperbug/security';
 import { canonicalRegistrationHandle } from './account-registration.ts';
 import { requireAuthOrigin } from './account-session.ts';
+import { constantTimeEquals } from './oauth.ts';
 import type { BoundSensitiveActionAdmission } from './sensitive-admission.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
@@ -25,24 +26,6 @@ export function parseBootstrapEnrollmentCode(value: unknown): string | null {
   return typeof value === 'string' && enrollmentCodePattern.test(value)
     ? value
     : null;
-}
-
-/** Hash both sides first so the byte comparison cannot leak length position. */
-async function enrollmentCodeMatches(
-  presented: string,
-  configured: string,
-): Promise<boolean> {
-  const encoder = new TextEncoder();
-  const [a, b] = await Promise.all([
-    crypto.subtle.digest('SHA-256', encoder.encode(presented)),
-    crypto.subtle.digest('SHA-256', encoder.encode(configured)),
-  ]);
-  let difference = 0;
-  const left = new Uint8Array(a);
-  const right = new Uint8Array(b);
-  for (let index = 0; index < left.length; index += 1)
-    difference |= left[index]! ^ right[index]!;
-  return difference === 0;
 }
 
 /**
@@ -83,7 +66,7 @@ export async function enrollInitialStaff(input: {
   });
   const presented = parseBootstrapEnrollmentCode(body.enrollmentCode);
   const matches =
-    presented !== null && (await enrollmentCodeMatches(presented, code));
+    presented !== null && (await constantTimeEquals(presented, code));
   if (!matches || request.signal.aborted)
     throw new RequestFailure('BOOTSTRAP_FORBIDDEN');
   try {

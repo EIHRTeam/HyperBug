@@ -1399,7 +1399,12 @@ export function createApp({
 export { RequestFailure, withDeadline } from './bounds.ts';
 export { verifyAccountPassword } from './account-password.ts';
 export { parseBootstrapEnrollmentCode } from './bootstrap-enrollment.ts';
-export { parseOAuthClients, validateAuthorizeQuery } from './oauth.ts';
+export { parsePasskeyConfiguration } from './passkey.ts';
+export {
+  constantTimeEquals,
+  parseOAuthClients,
+  validateAuthorizeQuery,
+} from './oauth.ts';
 export {
   authorizeConsentPage,
   authorizeErrorPage,

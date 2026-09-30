@@ -210,8 +210,11 @@ function formString(
     : null;
 }
 
-/** Hash both sides first so the byte comparison cannot leak length position. */
-async function constantTimeEquals(
+/**
+ * Hash both sides first so the byte comparison cannot leak length position;
+ * shared by code/token verification and the bootstrap enrollment code.
+ */
+export async function constantTimeEquals(
   presented: string,
   stored: string,
 ): Promise<boolean> {

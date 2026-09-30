@@ -5,6 +5,7 @@ import {
   createApp,
   parseBootstrapEnrollmentCode,
   parseOAuthClients,
+  parsePasskeyConfiguration,
 } from '@hyperbug/server';
 import { assertDeploymentAvailable, loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
@@ -101,30 +102,26 @@ const projectRoleStore = env.DB ? createD1ProjectRoleStore(env.DB) : null;
 const accountAdministration = env.DB
   ? createD1AccountAdministration(env.DB)
   : null;
-// Public relying-party configuration: all three values or none. A complete
-// selection without the session/key prerequisites refuses startup instead of
-// silently disabling passkey authentication.
+// A complete relying-party selection without the session/key prerequisites
+// refuses startup instead of silently disabling passkey authentication.
+// Not declared required anywhere, so the bindings are read through a
+// narrowed view of the generated environment.
 const passkeyVars = env as {
   PASSKEY_RP_ID?: string;
   PASSKEY_RP_NAME?: string;
   PASSKEY_ORIGIN?: string;
 };
-const passkeySet = [
-  passkeyVars.PASSKEY_RP_ID,
-  passkeyVars.PASSKEY_RP_NAME,
-  passkeyVars.PASSKEY_ORIGIN,
-].filter((value) => value !== undefined).length;
-if (passkeySet !== 0 && passkeySet !== 3)
-  throw new Error('Invalid passkey configuration');
-const passkeyConfigured = passkeySet === 3;
-if (passkeyConfigured && (!env.DB || !keyProvider))
+const passkeyConfig = parsePasskeyConfiguration({
+  rpId: passkeyVars.PASSKEY_RP_ID,
+  rpName: passkeyVars.PASSKEY_RP_NAME,
+  origin: passkeyVars.PASSKEY_ORIGIN,
+});
+if (passkeyConfig && (!env.DB || !keyProvider))
   throw new Error('Invalid passkey configuration');
 const passkey =
-  passkeyConfigured && env.DB && keyProvider
+  passkeyConfig && env.DB && keyProvider
     ? {
-        rpID: passkeyVars.PASSKEY_RP_ID as string,
-        rpName: passkeyVars.PASSKEY_RP_NAME as string,
-        origin: passkeyVars.PASSKEY_ORIGIN as string,
+        ...passkeyConfig,
         store: createD1PasskeyStores(env.DB),
         passwordStore: createD1AccountRegistrationStore(env.DB),
         sessionStore: createD1AccountSessionStore(env.DB),

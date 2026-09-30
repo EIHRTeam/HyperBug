@@ -1,24 +1,16 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import { assertId } from '@hyperbug/domain';
 import {
+  isProjectStaffRole,
   validateProjectRoleGrant,
   type ProjectRoleStore,
   type ProjectStaffRole,
 } from '@hyperbug/application';
 
-const roles: readonly ProjectStaffRole[] = [
-  'triage',
-  'maintainer',
-  'administrator',
-];
-
 function validRole(value: unknown): ProjectStaffRole {
-  if (
-    typeof value !== 'string' ||
-    !(roles as readonly string[]).includes(value)
-  )
+  if (!isProjectStaffRole(value))
     throw new Error('Invalid project role record');
-  return value as ProjectStaffRole;
+  return value;
 }
 
 /**

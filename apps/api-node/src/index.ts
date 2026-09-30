@@ -5,6 +5,7 @@ import {
   configureOptionalTurnstile,
   createApp,
   parseOAuthClients,
+  parsePasskeyConfiguration,
 } from '@hyperbug/server';
 import { loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
@@ -45,28 +46,22 @@ const keyProvider = abuse.keyProvider;
 const bootstrapCode = await loadNodeBootstrapEnrollmentCode(
   process.env.HYPERBUG_BOOTSTRAP_FILE,
 );
-// Public relying-party configuration: all three values or none; a complete
-// selection without the session/key prerequisites refuses startup.
-const passkeyValues = [
-  process.env.PASSKEY_RP_ID,
-  process.env.PASSKEY_RP_NAME,
-  process.env.PASSKEY_ORIGIN,
-];
-const passkeySet = passkeyValues.filter((value) => value !== undefined).length;
-if (passkeySet !== 0 && passkeySet !== 3)
-  throw new Error('Invalid passkey configuration');
-const passkeyConfigured = passkeySet === 3;
+// A complete relying-party selection without the session/key prerequisites
+// refuses startup instead of arming a passkey flow that fails closed.
+const passkeyConfig = parsePasskeyConfiguration({
+  rpId: process.env.PASSKEY_RP_ID,
+  rpName: process.env.PASSKEY_RP_NAME,
+  origin: process.env.PASSKEY_ORIGIN,
+});
 if (
-  passkeyConfigured &&
+  passkeyConfig &&
   (!abuse.passkeyStores || !keyProvider || !abuse.sessionStore)
 )
   throw new Error('Invalid passkey configuration');
 const passkey =
-  passkeyConfigured && abuse.passkeyStores && keyProvider && abuse.sessionStore
+  passkeyConfig && abuse.passkeyStores && keyProvider && abuse.sessionStore
     ? {
-        rpID: passkeyValues[0] as string,
-        rpName: passkeyValues[1] as string,
-        origin: passkeyValues[2] as string,
+        ...passkeyConfig,
         store: abuse.passkeyStores,
         passwordStore: abuse.passwordStore!,
         sessionStore: abuse.sessionStore,

@@ -5,6 +5,7 @@ import type {
   PermissionRequest,
   StaffRole,
 } from '@hyperbug/security';
+import { projectStaffRoles } from '@hyperbug/application';
 
 /**
  * Provisional recent-authentication bound from AUTH-FLOWS: 15 minutes, the
@@ -26,12 +27,6 @@ export const authorizationPolicy: AuthorizationPolicy = Object.freeze({
  * only needs to know the principal has not expired.
  */
 const farFutureMs = 8_640_000_000_000_000;
-
-const staffRoles: readonly StaffRole[] = [
-  'triage',
-  'maintainer',
-  'administrator',
-];
 
 export interface DbAuthorizationDependencies {
   loadPrincipal(principalId: string): Promise<{
@@ -133,7 +128,10 @@ export function createDbAuthorizationResolver(
             projectRow.state !== 'deleted'))
       )
         throw new Error('Invalid project facts');
-      if (membershipRow !== null && !staffRoles.includes(membershipRow.role))
+      if (
+        membershipRow !== null &&
+        !projectStaffRoles.includes(membershipRow.role)
+      )
         throw new Error('Invalid membership facts');
       if (actorId !== null) {
         // A verified bearer credential implies an unrevoked issuance; a null
