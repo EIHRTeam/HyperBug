@@ -1,6 +1,7 @@
 import type { Pool, PoolClient } from 'pg';
 export { createPostgresRateCounterStore } from './rate-limit.ts';
 export { createPostgresAccountRegistrationStore } from './account-registration.ts';
+export { createPostgresStaffEnrollmentStore } from './staff-enrollment.ts';
 import {
   DomainError,
   assertId,

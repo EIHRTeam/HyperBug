@@ -20,6 +20,8 @@ const failures = {
   CAPTCHA_DENIED: [403, 'Required challenge verification failed.'],
   CAPTCHA_UNAVAILABLE: [503, 'Required challenge verification is unavailable.'],
   REGISTRATION_UNAVAILABLE: [503, 'Account registration is unavailable.'],
+  BOOTSTRAP_UNAVAILABLE: [503, 'Initial enrollment is unavailable.'],
+  BOOTSTRAP_FORBIDDEN: [403, 'Initial enrollment is not permitted.'],
   LOGIN_DENIED: [401, 'Invalid account credentials.'],
   INTERNAL_ERROR: [500, 'An internal error occurred.'],
 } as const;

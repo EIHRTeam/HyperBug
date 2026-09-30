@@ -12,6 +12,7 @@ import {
 
 export * from './account-registration.ts';
 export * from './account-session.ts';
+export * from './staff-enrollment.ts';
 
 export interface MutationIdentity {
   mutationId: string;

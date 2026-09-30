@@ -8,6 +8,7 @@ import { createNodeTurnstileVerifier } from './turnstile.ts';
 import { initialStandardPasswordPolicy } from '@hyperbug/security';
 import { createNodeStandardPasswordService } from './standard-password.ts';
 import { configureNodeAbuseAdmission } from './abuse-admission.ts';
+import { loadNodeBootstrapEnrollmentCode } from './bootstrap.ts';
 
 const config = loadConfig(process.env, 'node');
 const captcha = configureOptionalTurnstile(
@@ -37,6 +38,9 @@ const abuse = configureNodeAbuseAdmission(
   config.environment,
 );
 const keyProvider = abuse.keyProvider;
+const bootstrapCode = await loadNodeBootstrapEnrollmentCode(
+  process.env.HYPERBUG_BOOTSTRAP_FILE,
+);
 const port = Number(process.env.PORT ?? 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535)
   throw new Error('Invalid PORT');
@@ -54,6 +58,11 @@ const app = createApp({
   registrationStore: abuse.registrationStore,
   passwordStore: abuse.passwordStore,
   sessionStore: abuse.sessionStore,
+  bootstrapCode,
+  staffEnrollmentStore: abuse.staffEnrollmentStore,
+  bootstrapState: abuse.staffEnrollmentStore
+    ? async () => (await abuse.staffEnrollmentStore?.countActiveStaff()) === 0
+    : null,
 });
 let listener: Awaited<ReturnType<typeof listenNode>>;
 try {

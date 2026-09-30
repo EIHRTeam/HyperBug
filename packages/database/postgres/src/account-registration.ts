@@ -52,7 +52,7 @@ export function createPostgresAccountRegistrationStore(
         record: unknown;
         revision: number;
       }>(
-        "SELECT p.id AS principal_id, i.id AS identity_id, c.record, c.revision FROM identities i JOIN principals p ON p.id = i.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE i.provider = 'local-password' AND i.issuer = 'hyperbug' AND i.subject = $1 AND p.kind = 'user' AND p.status = 'active' LIMIT 1",
+        "SELECT p.id AS principal_id, i.id AS identity_id, c.record, c.revision FROM identities i JOIN principals p ON p.id = i.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE i.provider = 'local-password' AND i.issuer = 'hyperbug' AND i.subject = $1 AND p.kind IN ('user', 'staff') AND p.status = 'active' LIMIT 1",
         [handle],
       );
       const row = result.rows[0];
@@ -78,7 +78,7 @@ export function createPostgresAccountRegistrationStore(
         throw new Error('Invalid credential replacement');
       const record = parseStandardPasswordRecord(input.record);
       const result = await pool.query(
-        "UPDATE password_credentials c SET record = $1, revision = c.revision + 1, updated_at = GREATEST(c.updated_at, $2) WHERE c.identity_id = $3 AND c.revision = $4 AND EXISTS (SELECT 1 FROM identities i JOIN principals p ON p.id = i.principal_id WHERE i.id = c.identity_id AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind = 'user' AND p.status = 'active')",
+        "UPDATE password_credentials c SET record = $1, revision = c.revision + 1, updated_at = GREATEST(c.updated_at, $2) WHERE c.identity_id = $3 AND c.revision = $4 AND EXISTS (SELECT 1 FROM identities i JOIN principals p ON p.id = i.principal_id WHERE i.id = c.identity_id AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active')",
         [
           JSON.stringify(record),
           input.nowMs,

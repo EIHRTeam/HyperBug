@@ -721,3 +721,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None introduced.
 - Next actions: Begin 04.1a (AUTH-FLOWS specification), then 04.1b (Better Auth PoC via current documentation).
 - Next-session cautions: Do not treat the re-scoped categories as implemented; the Free tier stays disabled; the root `SECURITY.md` must never be committed; later-module audit portions stay suspended.
+
+### 2026-09-30 — Module 04 batch: AUTH-FLOWS, Better Auth PoC and bootstrap enrollment
+
+- Scope and checklist IDs: 04.1a, 04.1b and 04.1c accepted in three reviewable batches; documentation re-scope recorded separately earlier this session.
+- Progress: The authentication-flow specification exists (04.1a, cross-checked against the full source requirement inventory), the Better Auth candidate PoC ran on both profiles and was recorded as not accepted with the business framework unchanged (04.1b), and the operator-channel initial-administrator enrollment is implemented and tested on both profiles (04.1c) including readiness `bootstrapPending` and staff-aware login. Registration/login/session behavior is unchanged for existing User accounts.
+- Change summary: New `docs/AUTH-FLOWS.md`; new PoC evidence; new `StaffEnrollmentStore` port, adapters, `POST /auth/bootstrap/enroll` route, contracts/readiness/observability additions, both-root wiring and two focused route suites; API conventions, development README and the plan records synchronized.
+- Files/artifacts: See the module 04 session entries for the full lists; commits land per batch.
+- Verification: Full matrix green — unit/contract 111/111, node 50/50, workerd 115/115, isolated PostgreSQL 18.6 60/60; both typechecks, lint/boundaries, build, both Drizzle histories, secret scan, docs build, format and diff checks.
+- Decisions and deviations: Bootstrap single-shot atomicity via conditional insert; `registration` category reuse; no audit write (suspension); PoC verdict recorded upstream-gap-based.
+- Blockers/open questions: None new; the G1 audit-governance decision stays with the user.
+- Next actions: 04.1d — finish password registration/login/recovery and the non-SSO Staff passkey path.
+- Next-session cautions: Enrollment codes are deployment secrets; the Free tier stays disabled; the root `SECURITY.md` draft must never be committed.

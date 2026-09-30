@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
-import { createApp } from '@hyperbug/server';
+import { createApp, parseBootstrapEnrollmentCode } from '@hyperbug/server';
 import { loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
 import { initialStandardPasswordPolicy } from '../../packages/security/src/standard-password.ts';
@@ -10,6 +10,7 @@ import { createCloudflareVolumetricLimiter } from '../../apps/api-cloudflare/src
 import {
   createD1AccountRegistrationStore,
   createD1RateCounterStore,
+  createD1StaffEnrollmentStore,
 } from '@hyperbug/database-d1';
 
 const config = loadConfig(env, 'cloudflare');
@@ -34,6 +35,10 @@ export default createApp({
     initialStandardPasswordPolicy,
     initialStandardPasswordPolicy.maximum.memoryKiB,
   ),
+  bootstrapCode: parseBootstrapEnrollmentCode(env.HYPERBUG_TEST_BOOTSTRAP_CODE),
+  staffEnrollmentStore: createD1StaffEnrollmentStore(env.DB),
+  bootstrapState: async () =>
+    (await createD1StaffEnrollmentStore(env.DB).countActiveStaff()) === 0,
 })
   .get('/_proof/observations', () =>
     observations.map((line) => JSON.parse(line)),

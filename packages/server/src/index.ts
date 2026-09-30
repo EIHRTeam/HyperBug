@@ -14,6 +14,8 @@ import {
   LoginRequestSchema,
   LoginChallengeSchema,
   AccountSessionSchema,
+  BootstrapEnrollRequestSchema,
+  BootstrapEnrolledSchema,
   type RegistrationRequest,
   type RegistrationAccepted,
   type RegistrationChallenge,
@@ -21,11 +23,14 @@ import {
   type LoginRequest,
   type LoginChallenge,
   type AccountSession,
+  type BootstrapEnrollRequest,
+  type BootstrapEnrolled,
 } from '@hyperbug/contracts';
 import type {
   AccountPasswordStore,
   AccountRegistrationStore,
   AccountSessionStore,
+  StaffEnrollmentStore,
 } from '@hyperbug/application';
 import { readBoundedJson, RequestFailure, withDeadline } from './bounds.ts';
 import { publicFailure } from './errors.ts';
@@ -39,6 +44,7 @@ import {
 import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 import { registerAccount } from './account-registration.ts';
 import { loginAccount } from './account-login.ts';
+import { enrollInitialStaff } from './bootstrap-enrollment.ts';
 import {
   clearedSessionCookie,
   currentAccountSession,
@@ -67,6 +73,11 @@ export interface AppOptions {
   registrationStore?: AccountRegistrationStore | null;
   passwordStore?: AccountPasswordStore | null;
   sessionStore?: AccountSessionStore | null;
+  /** Operator-channel one-time enrollment code; null disarms the route. */
+  bootstrapCode?: string | null;
+  staffEnrollmentStore?: StaffEnrollmentStore | null;
+  /** Reports pending enrollment for readiness; null or failure omits the field. */
+  bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
 }
 
@@ -163,6 +174,9 @@ export function createApp({
   registrationStore,
   passwordStore,
   sessionStore,
+  bootstrapCode = null,
+  staffEnrollmentStore = null,
+  bootstrapState = null,
   minimumLoginAdmission,
 }: AppOptions) {
   assertDeploymentAvailable(config.deployment);
@@ -173,11 +187,13 @@ export function createApp({
   });
   const readiness = (
     status: ReadinessResponse['status'],
+    pending?: boolean,
   ): ReadinessResponse => ({
     status,
     deployment: {
       ...deployment,
       degradationIds: [...deployment.degradationIds],
+      ...(pending === undefined ? {} : { bootstrapPending: pending }),
     },
   });
   const starts = new WeakMap<Request, number>();
@@ -223,13 +239,15 @@ export function createApp({
             ? 'account.session'
             : path === '/auth/logout' && request.method === 'POST'
               ? 'account.logout'
-              : path === '/health/live' && request.method === 'GET'
-                ? 'health.live'
-                : path === '/health/ready' && request.method === 'GET'
-                  ? 'health.ready'
-                  : path.startsWith('/_proof')
-                    ? 'proof'
-                    : 'unmatched';
+              : path === '/auth/bootstrap/enroll' && request.method === 'POST'
+                ? 'account.bootstrap'
+                : path === '/health/live' && request.method === 'GET'
+                  ? 'health.live'
+                  : path === '/health/ready' && request.method === 'GET'
+                    ? 'health.ready'
+                    : path.startsWith('/_proof')
+                      ? 'proof'
+                      : 'unmatched';
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -275,7 +293,9 @@ export function createApp({
       const path = new URL(request.url).pathname;
       if (
         request.method === 'POST' &&
-        (path === '/auth/login' || path === '/auth/logout')
+        (path === '/auth/login' ||
+          path === '/auth/logout' ||
+          path === '/auth/bootstrap/enroll')
       )
         requireAuthOrigin(request);
       if (request.method === 'GET' && path === '/auth/session')
@@ -371,7 +391,21 @@ export function createApp({
             config.requestTimeoutMs,
             ready,
           );
-          if (available) return readiness('ok');
+          if (available) {
+            let pending: boolean | undefined;
+            if (bootstrapState && !request.signal.aborted) {
+              try {
+                pending = await withDeadline(
+                  request.signal,
+                  1000,
+                  bootstrapState,
+                );
+              } catch {
+                /* A failed state probe omits the field, never fails readiness. */
+              }
+            }
+            return readiness('ok', pending);
+          }
         } catch {
           /* Health responses intentionally hide dependency details. */
         }
@@ -481,11 +515,32 @@ export function createApp({
         return null;
       },
       { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/auth/bootstrap/enroll',
+      async ({ request, body, set, sensitiveAdmission }) => {
+        const result = await enrollInitialStaff({
+          request,
+          body,
+          admission: sensitiveAdmission,
+          password: standardPassword ?? null,
+          code: bootstrapCode,
+          store: staffEnrollmentStore,
+          requestId: boundaryFor(request).requestId,
+        });
+        set.status = 201;
+        return result;
+      },
+      {
+        body: t.Unsafe<BootstrapEnrollRequest>(BootstrapEnrollRequestSchema),
+        response: { 201: t.Unsafe<BootstrapEnrolled>(BootstrapEnrolledSchema) },
+      },
     );
 }
 
 export { RequestFailure, withDeadline } from './bounds.ts';
 export { verifyAccountPassword } from './account-password.ts';
+export { parseBootstrapEnrollmentCode } from './bootstrap-enrollment.ts';
 export type { VerifiedAccountPassword } from './account-password.ts';
 export { requireSensitiveRateAdmission } from './rate-admission.ts';
 export {

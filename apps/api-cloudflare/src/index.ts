@@ -1,6 +1,10 @@
 import { env } from 'cloudflare:workers';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
-import { configureOptionalTurnstile, createApp } from '@hyperbug/server';
+import {
+  configureOptionalTurnstile,
+  createApp,
+  parseBootstrapEnrollmentCode,
+} from '@hyperbug/server';
 import { assertDeploymentAvailable, loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
 import { createCloudflareTurnstileVerifier } from './turnstile.ts';
@@ -16,6 +20,7 @@ import {
   createD1AuditRepository,
   createD1KeyRegistry,
   createD1RateCounterStore,
+  createD1StaffEnrollmentStore,
 } from '@hyperbug/database-d1';
 import { createCloudflareVolumetricLimiter } from './rate-limit.ts';
 import { createWorkerKeyProvider } from './key-provider.ts';
@@ -55,6 +60,24 @@ const ingress = env.HYPERBUG_INGRESS_KEY
   ? createIngressAttestation(env.HYPERBUG_INGRESS_KEY)
   : null;
 const accountStore = env.DB ? createD1AccountRegistrationStore(env.DB) : null;
+// Optional operator-channel enrollment code: absent disarms the bootstrap
+// route; a present but malformed value must refuse startup instead of
+// silently disabling enrollment. Not declared required anywhere, so the
+// binding is read through a narrowed view of the generated environment.
+const bootstrapSecret = (
+  env as {
+    HYPERBUG_BOOTSTRAP_ENROLLMENT?: string;
+  }
+).HYPERBUG_BOOTSTRAP_ENROLLMENT;
+const bootstrapCode =
+  bootstrapSecret === undefined
+    ? null
+    : parseBootstrapEnrollmentCode(bootstrapSecret);
+if (bootstrapSecret !== undefined && bootstrapCode === null)
+  throw new Error('Invalid bootstrap enrollment configuration');
+const staffEnrollmentStore = env.DB
+  ? createD1StaffEnrollmentStore(env.DB)
+  : null;
 // A correctly acknowledged minimum-tier selection is warned about and its
 // enablement attempt audited before the fail-closed barrier refuses startup.
 // The refusal audit write is best-effort by design: a refused deployment
@@ -121,6 +144,11 @@ const app = createApp({
   registrationStore: accountStore,
   passwordStore: accountStore,
   sessionStore: env.DB ? createD1AccountSessionStore(env.DB) : null,
+  bootstrapCode,
+  staffEnrollmentStore,
+  bootstrapState: staffEnrollmentStore
+    ? async () => (await staffEnrollmentStore.countActiveStaff()) === 0
+    : null,
 }).compile();
 
 export default {

@@ -35,6 +35,7 @@ export const ReadinessSchema = Type.Object(
           Type.Literal('argon2id'),
           Type.Literal('pbkdf2-hmac-sha256'),
         ]),
+        bootstrapPending: Type.Optional(Type.Boolean()),
       },
       { additionalProperties: false },
     ),
@@ -88,6 +89,22 @@ export const AccountSessionSchema = Type.Object(
   { additionalProperties: false },
 );
 export type AccountSession = Static<typeof AccountSessionSchema>;
+export const BootstrapEnrollRequestSchema = Type.Object(
+  {
+    enrollmentCode: Type.String({ minLength: 1, maxLength: 128 }),
+    handle: Type.String({ pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]{2,31}$' }),
+    password: Type.String({ minLength: 12, maxLength: 128 }),
+  },
+  { additionalProperties: false },
+);
+export type BootstrapEnrollRequest = Static<
+  typeof BootstrapEnrollRequestSchema
+>;
+export const BootstrapEnrolledSchema = Type.Object(
+  { enrolled: Type.Literal(true) },
+  { additionalProperties: false },
+);
+export type BootstrapEnrolled = Static<typeof BootstrapEnrolledSchema>;
 export const EchoSchema = Type.Object(
   { message: Type.String({ minLength: 1, maxLength: 100 }) },
   { additionalProperties: false },

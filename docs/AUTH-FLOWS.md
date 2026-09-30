@@ -147,5 +147,5 @@ Core operates with zero plugins: no email, SSO or CAPTCHA provider is required f
 | Recovery codes, reset tokens, admin-assisted recovery, sessions revocation | Specified; 04.2f |
 | Logout (session) | Implemented; token revocation endpoint specified |
 | Account states (active/suspended/deleted) | Suspension/expiry denial implemented on session validation; full account-state surface specified |
-| Bootstrap enrollment | Specified; 04.1c |
+| Bootstrap enrollment | Implemented (both profiles; operator-channel code, single-shot, readiness state) |
 | Staff SSO/passkey paths, account/role management APIs | Specified at boundary level; 04.3 |
