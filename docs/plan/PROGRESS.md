@@ -777,3 +777,14 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None; the 04.2c rotation points beyond login/recovery arrive with 04.3c.
 - Next actions: 04.2d authorization-service HTML pages (guides pre-fetched); 04.2c stays open pending its remaining rotation triggers.
 - Next-session cautions: Codes and tokens are bearer secrets, never logged; client registry is exact-match only.
+
+### 2026-09-30 — Module 04 batches: authorization pages, bearer auth, provider contracts
+
+- Scope and checklist IDs: 04.2d, 04.2e and 04.3d accepted; 04.3a's non-audit modeling assessed complete (the audited linking portion stays suspended, item unchecked).
+- Progress: The backend-owned authorization pages (no-JS semantic login/consent/error HTML, aria-live errors, strict CSP widened only for the CAPTCHA origin, code issued from just-authenticated session facts) complete the browser leg of the code flow; `authenticateBearer` plus `GET /api/v1/account` give business APIs their first bearer-only consumer (cookies rejected, no-Origin clients valid, active-principal enforcement); the provider contracts (CAPTCHA implemented, SSO specified) are recorded in AUTH-FLOWS.
+- Change summary: Page renderer + three routes + issuance split + session-fact login return + two browser-flow suites (commit `1779ca2`); bearer module + account route + error codes + kind lookup + contract + suite assertions (commit `62c41f1`); documentation and checklist updates.
+- Verification: Full matrix 111/50/120/65 at each acceptance; typechecks, lint/boundaries, build, secret scan, docs build, format and diff checks.
+- Decisions and deviations: Turnstile loader is not SRI-pinnable by provider design (exact-origin script-src pin recorded as the control); `/api/v1/account` carries no admission (parity decision deferred to the staging budget milestone); recent-authentication stays with the shared guard.
+- Blockers/open questions: None; the 04.3b/04.3c batch is in flight through a delegated subagent.
+- Next actions: Integrate the roles/account-management batch, then the 04.2c/04.2f assessments and the V acceptance items.
+- Next-session cautions: Pages never redirect failures to client URIs; the 401 bearer envelope stays generic.
