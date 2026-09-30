@@ -6,8 +6,10 @@ Owner: [04.1](plan/modules/04-identity-and-access.md). Decision context: [ADR 00
 
 A deployment exposes three origins, each of which may be on a different registrable domain and provider: the static frontend (for example `issues.example.org`), the public API (`api.example.net`) and the authorization service (`auth.example.net`). The security model MUST NOT rely on shared origins, shared-domain cookies, third-party cookies, a reverse proxy or same-provider deployment.
 
-- The **authorization service** owns every cookie-authenticated interaction: login, the authorization/consent pages behind the code flow, session read, logout and account-recovery pages. First-party cookies are scoped to this origin only.
-- The **public API** authenticates business requests with `Authorization: Bearer <access-token>` only. Business API requests are independent of cookies and frontend proxies: clients send `credentials: "omit"`, and the API never enables credentialed CORS. A no-Origin authorized API client remains valid (04.V4).
+Deployment shape: the authorization service is an origin-scoped route group of the shared backend (modular monolith) — today the `/auth/*` routes on the standard roots — served under the authorization origin. It may be split into its own Worker/service later under the documented service-split policy; the protocol and cookie scope above are identical either way.
+
+- The **authorization service** owns every cookie-authenticated interaction: login, the authorization/consent pages behind the code flow, session read, logout and account-recovery pages. It also owns the login/consent **user interface**: these backend-owned pages live on the authorization origin (built under 04.2d with the modern-web-guidance and accessibility baseline); the SPA never hosts the credential-entry form and never proxies it.
+- The **public API** authenticates business requests with `Authorization: Bearer <access-token>` only. Business API requests are independent of cookies and frontend proxies: clients send `credentials: "omit"`, and the API never enables credentialed CORS. A no-Origin authorized API client remains valid (04.V4). Non-SPA machine clients (CLI/bots) use the same bearer surface; a personal-access-token registry is a future separately reviewed contract (SECURITY §22) and no client-credentials flow is offered now.
 - The **frontend** is an untrusted execution environment. Anything readable in the browser is not a secret; access tokens live in memory only.
 
 Cross-origin browser access to the API uses the explicit CORS allowlist from [SECURITY-FOUNDATION](SECURITY-FOUNDATION.md); the authorization service additionally enforces same-origin checks on its cookie-authenticated mutations (see CSRF defenses below).
@@ -32,7 +34,7 @@ Dynamic or self-service client registration is not offered. Authorization reques
 
 ## Authorization Code + PKCE flow (04.2a, specified)
 
-The browser default protocol is OAuth 2.0 Authorization Code with PKCE `S256`. The Implicit flow and `plain` PKCE are prohibited. One flow:
+The browser default protocol is OAuth 2.0 Authorization Code with PKCE `S256` (OAuth 2.1-style; the Implicit flow and `plain` PKCE are prohibited). One flow:
 
 ```text
 SPA (memory)                         authorization service                 API
@@ -71,8 +73,8 @@ The SPA keeps the access token in memory only. After a page refresh the SPA repe
 - The server stores `public_id` and a keyed digest `HMAC-SHA-256(index-key, secret)` (or equivalent keyed digest from the existing key-provider machinery), never plaintext; verification is constant-time.
 - Default lifetime 10 minutes, configurable only within 5–15 minutes. Long-lived browser tokens are prohibited without an ADR.
 - Revocation is immediate and primary-backed: revoking a token (logout-of-API, suspected compromise, password reset, suspension) takes effect on the next request. Token state is always read from the authoritative store; no long-lived permission state is encoded into a self-contained JWT.
-- Bearer tokens are transmitted only in the `Authorization` header — never in URL query, fragment, path or Referer-visible locations.
-- Sensitive management operations can additionally require **recent authentication** (a bound on time since the authorization session's last credential verification); the API answers stale assurance with `REAUTHENTICATION_REQUIRED` (403), which the existing shared authorization guard already maps ([API conventions](API-CONVENTIONS.md)).
+- Bearer tokens are transmitted only in the `Authorization` header — never in URL query, fragment, path or Referer-visible locations. Token, session and account responses are `Cache-Control: no-store`.
+- Sensitive management operations can additionally require **recent authentication** (a bound on time since the authorization session's last credential verification; provisional default 15 minutes, configurable within 5–60 minutes until measured); the API answers stale assurance with `REAUTHENTICATION_REQUIRED` (403), which the existing shared authorization guard already maps ([API conventions](API-CONVENTIONS.md)).
 
 ## Authorization sessions (first-party cookies)
 
@@ -108,6 +110,10 @@ Account recovery never depends on an email plugin being installed:
 
 All recovery routes are rate-admitted under the `password reset` category (account + trusted IP dimensions) and use enumeration-resistant responses.
 
+## Account states
+
+A principal is `active`, `suspended` or `deleted`. Suspension takes effect immediately on the primary-backed validation paths: existing authorization sessions and access tokens deny on their next use, new sessions/tokens are not issued, and write operations are refused, while already-dispatched side effects are not retroactively undone. Deletion leaves the tombstone principal for attribution and removes personal data through the retention workflow; suspended accounts can only be restored by an authorized administrator.
+
 ## Logout
 
 - `POST /auth/logout` (authorization-service origin, same-origin check): revokes the current authorization session in the primary store and clears the cookie. Implemented.
@@ -140,5 +146,6 @@ Core operates with zero plugins: no email, SSO or CAPTCHA provider is required f
 | Assurance representation | Guard implemented; `password`-only initial assurance recorded |
 | Recovery codes, reset tokens, admin-assisted recovery, sessions revocation | Specified; 04.2f |
 | Logout (session) | Implemented; token revocation endpoint specified |
+| Account states (active/suspended/deleted) | Suspension/expiry denial implemented on session validation; full account-state surface specified |
 | Bootstrap enrollment | Specified; 04.1c |
 | Staff SSO/passkey paths, account/role management APIs | Specified at boundary level; 04.3 |
