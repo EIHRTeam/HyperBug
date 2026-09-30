@@ -11,8 +11,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 03 complete (2026-09-30 compliant completion with the recorded re-scope; the recovery/token/privileged category routes deferred from 03.3c/03.3d are owned here).
 - Implementation started: Narrow registration/login/session work exists as the Phase 03 dependency starting point; the full 04.1 ordered work begins now and must finish rather than rewrite that foundation.
 - Completed implementation checklist IDs: 04.1a, 04.1b, 04.1c.
-- Active/next checklist group: the 04.2c/04.2f assessments and acceptance 04.V1–04.V4 plus 04.V6's executable parts. Steps 04.1 and 04.3 are complete except the suspended audit portions; 04.2 is complete except the 04.2c/04.2f assessments. The Better Auth candidate is recorded as not accepted (04.1b evidence); the Core-owned implementation proceeds. Standard-profile password login is approved under [ADR 0009](../../decisions/0009-standard-password-login.md); the optional Free tier stays startup-disabled on its separate path. Audit portions of 04.3a/04.3c/04.V5 remain suspended and unchecked.
-- Last updated: 2026-10-01 (all implementation items accepted; remaining: 04.2c/04.2f assessments and V acceptance).
+- Active/next checklist group: acceptance 04.V1–04.V4 plus 04.V6's executable parts (04.V5 stays suspended). Every implementation checklist item is accepted. The Better Auth candidate is recorded as not accepted (04.1b evidence); the Core-owned implementation proceeds. Standard-profile password login is approved under [ADR 0009](../../decisions/0009-standard-password-login.md); the optional Free tier stays startup-disabled on its separate path. Audit portions of 04.3a/04.3c/04.V5 remain suspended and unchecked.
+- Last updated: 2026-10-01 (all implementation items and the 04.2c/04.2f assessments accepted; only V acceptance remains).
 - Blocking issues discovered: None structural. The existing registration/login/session routes are proven locally and on the authorized test deployments (genuine ingress, live challenge, cross-location consistency closed in module 03's evidence); the authorization-service flows, recovery, Staff enrollment and project authorization remain to be built in this module.
 - Evidence: [Registration admission](../evidence/03-registration-admission.md), [login/session admission](../evidence/03-login-admission.md) and [signed ingress](../evidence/03-workers-ingress.md) cover the existing narrow dependency; no Module 04 acceptance claim.
 
@@ -726,3 +726,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: The resource `permissionGranted` hook stands open for module 06 feature predicates by design; the audited variants of the management APIs wait for the audit resume decision.
 - Next actions: The 04.2c/04.2f assessment records, then the 04.V1–V4/V6 executable acceptance evidence.
 - Next-session cautions: The bootstrap administrator's seeded role is deployment policy, not an API path; never lower the sensitive assurance floor; keep management 403 envelopes generic.
+
+### 2026-10-01 — 04.2c and 04.2f accepted by recorded assessment
+
+- Scope and checklist IDs: **04.2c and 04.2f accepted**; with these, every Module 04 implementation checklist item is accepted (audit portions of 04.3a/04.3c remain suspended and unchecked by instruction).
+- Progress: 04.2c — the cookie contract, CSRF defenses, idle/absolute expiry and fixation protection are implemented and regression-covered since the Phase 03 dependency; the rotation mapping over every trigger that exists on the implemented surface is recorded (login/step-up mint fresh identifiers; recovery revokes outright; no in-session password change exists), with the SECURITY §18 triggers that would attach to a future cookie-session management surface recorded as standing invariants. 04.2f — the enabled (no-email) feature set's reset path is the single-use recovery-code journey with atomic single-use consumption, enumeration-resistant generic denials, timing-parity decoys and full session revocation; the email-channel token variant belongs to the module 16 plugin and must reuse the same contract, recorded as a standing requirement.
+- Change summary: Checklist acceptance notes only; no code changed.
+- Files/artifacts: The module checklist; this record.
+- Verification: Documentation-only increment; docs build passed with the batch that follows.
+- Decisions and deviations: Both acceptances are scope assessments over already-verified behavior, not new evidence claims; the standing invariants (rotate on privilege/role change for any future cookie-session management; email tokens reuse the single-use contract) are explicit so no future surface silently misses them.
+- Blockers/open questions: None.
+- Next actions: The 04.V1–V4/V6 executable acceptance evidence.
+- Next-session cautions: A future cookie-session management API must rotate on the recorded triggers before it ships.
