@@ -744,3 +744,14 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 04.1d passkey path, then 04.1e and the 04.2 protocol work.
 - Next-session cautions: Recovery codes are bearer secrets; migration journals are immutable; local D1 still has pending 0009–0012.
+
+### 2026-09-30 — Module 04 batch: passkey path; step 04.1 complete
+
+- Scope and checklist IDs: 04.1d accepted (passkey batch; the recovery-code portion landed earlier); step 04.1 is complete.
+- Progress: Discoverable passkey registration and login are implemented on both profiles with the pinned @simplewebauthn/server 14.0.3 — required user verification, single-use stored challenges, replay-counter enforcement, login-category admission keyed by credential id, and revision-bound first-party session issuance. Dual-dialect webauthn migration 0013 (D1) / 0012 (PostgreSQL); identity-scoped credential lookup; all-or-nothing relying-party configuration in both roots; a test-only software authenticator drives real ceremonies (fmt none attestation, ECDSA P-256 DER assertions).
+- Change summary: Port + adapters + server module + four routes + contracts/labels + root/fixture wiring + dependency pin + oxlint boundary allowance + two ceremony suites + migration-position updates + documentation. Commits `0ac58d8` (research record) and `55d1f74`.
+- Verification: Full matrix 111/50/117/62; typechecks, lint/boundaries, build, both Drizzle histories, secret and license scans, docs build, format and diff checks.
+- Decisions and deviations: Passkeys are available to User and Staff identities (broader than the Staff minimum); sessions stay credential-revision-bound by design.
+- Blockers/open questions: Assurance tracking on sessions belongs to 04.3; browser ceremonies await 04.2d pages.
+- Next actions: 04.1e (tier account documentation) and 04.2g (instance capability document) — in progress through delegated subagents; then the 04.2 protocol work.
+- Next-session cautions: The fake authenticator is test-only; migration journals immutable; passkey config is all-three-or-none.
