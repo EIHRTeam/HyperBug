@@ -20,6 +20,7 @@ import {
   createD1AccountSessionStore,
   createD1AuditRepository,
   createD1KeyRegistry,
+  createD1PasskeyStores,
   createD1RateCounterStore,
   createD1StaffEnrollmentStore,
 } from '@hyperbug/database-d1';
@@ -79,6 +80,36 @@ if (bootstrapSecret !== undefined && bootstrapCode === null)
 const staffEnrollmentStore = env.DB
   ? createD1StaffEnrollmentStore(env.DB)
   : null;
+// Public relying-party configuration: all three values or none. A complete
+// selection without the session/key prerequisites refuses startup instead of
+// silently disabling passkey authentication.
+const passkeyVars = env as {
+  PASSKEY_RP_ID?: string;
+  PASSKEY_RP_NAME?: string;
+  PASSKEY_ORIGIN?: string;
+};
+const passkeySet = [
+  passkeyVars.PASSKEY_RP_ID,
+  passkeyVars.PASSKEY_RP_NAME,
+  passkeyVars.PASSKEY_ORIGIN,
+].filter((value) => value !== undefined).length;
+if (passkeySet !== 0 && passkeySet !== 3)
+  throw new Error('Invalid passkey configuration');
+const passkeyConfigured = passkeySet === 3;
+if (passkeyConfigured && (!env.DB || !keyProvider))
+  throw new Error('Invalid passkey configuration');
+const passkey =
+  passkeyConfigured && env.DB && keyProvider
+    ? {
+        rpID: passkeyVars.PASSKEY_RP_ID as string,
+        rpName: passkeyVars.PASSKEY_RP_NAME as string,
+        origin: passkeyVars.PASSKEY_ORIGIN as string,
+        store: createD1PasskeyStores(env.DB),
+        passwordStore: createD1AccountRegistrationStore(env.DB),
+        sessionStore: createD1AccountSessionStore(env.DB),
+        keyProvider,
+      }
+    : null;
 // A correctly acknowledged minimum-tier selection is warned about and its
 // enablement attempt audited before the fail-closed barrier refuses startup.
 // The refusal audit write is best-effort by design: a refused deployment
@@ -146,6 +177,7 @@ const app = createApp({
   passwordStore: accountStore,
   sessionStore: env.DB ? createD1AccountSessionStore(env.DB) : null,
   recoveryStore: env.DB ? createD1AccountRecoveryStore(env.DB) : null,
+  passkey,
   bootstrapCode,
   staffEnrollmentStore,
   bootstrapState: staffEnrollmentStore

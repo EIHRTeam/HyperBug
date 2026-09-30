@@ -33,6 +33,11 @@ function fixture() {
         ? { principalId, identityId, record: currentRecord, revision }
         : null;
     },
+    async loadCredentialByIdentity(_identityId) {
+      return exists && active
+        ? { principalId, identityId, record: currentRecord, revision }
+        : null;
+    },
     async replaceCredential(input) {
       events.push(`replace:${input.expectedRevision}`);
       if (stale || !active || input.expectedRevision !== revision) return false;

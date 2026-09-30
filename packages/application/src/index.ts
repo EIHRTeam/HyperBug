@@ -14,6 +14,7 @@ export * from './account-registration.ts';
 export * from './account-session.ts';
 export * from './staff-enrollment.ts';
 export * from './account-recovery.ts';
+export * from './passkey-store.ts';
 
 export interface MutationIdentity {
   mutationId: string;

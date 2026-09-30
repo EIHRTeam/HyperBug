@@ -148,4 +148,4 @@ Core operates with zero plugins: no email, SSO or CAPTCHA provider is required f
 | Logout (session) | Implemented; token revocation endpoint specified |
 | Account states (active/suspended/deleted) | Suspension/expiry denial implemented on session validation; full account-state surface specified |
 | Bootstrap enrollment | Implemented (both profiles; operator-channel code, single-shot, readiness state) |
-| Staff SSO/passkey paths, account/role management APIs | Specified at boundary level; 04.3 |
+| Staff SSO/passkey paths, account/role management APIs | Passkey registration and discoverable login implemented (user-verification required, revision-bound session issuance); SSO plugin contracts and role APIs remain for 04.3 |

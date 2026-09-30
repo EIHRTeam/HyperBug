@@ -76,6 +76,21 @@ export async function issueAccountSession(input: {
   readonly signal: AbortSignal;
   readonly nowMs: number;
 }): Promise<string> {
+  return issueSessionCookieFor(input);
+}
+
+/** Shared issuance for password and passkey logins; no credential is embedded. */
+export async function issueSessionCookieFor(input: {
+  readonly account: {
+    readonly principalId: string;
+    readonly identityId: string;
+    readonly credentialRevision: number;
+  };
+  readonly provider: KeyProvider | null;
+  readonly store: AccountSessionStore | null;
+  readonly signal: AbortSignal;
+  readonly nowMs: number;
+}): Promise<string> {
   const { account, provider, store, signal, nowMs } = input;
   if (!provider || !store || signal.aborted)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');

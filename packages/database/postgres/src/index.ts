@@ -3,6 +3,7 @@ export { createPostgresRateCounterStore } from './rate-limit.ts';
 export { createPostgresAccountRegistrationStore } from './account-registration.ts';
 export { createPostgresStaffEnrollmentStore } from './staff-enrollment.ts';
 export { createPostgresAccountRecoveryStore } from './account-recovery.ts';
+export { createPostgresPasskeyStores } from './passkey-store.ts';
 import {
   DomainError,
   assertId,

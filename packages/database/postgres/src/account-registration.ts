@@ -66,6 +66,29 @@ export function createPostgresAccountRegistrationStore(
         revision: row.revision,
       };
     },
+    async loadCredentialByIdentity(identityId) {
+      if (!/^[0-9a-f-]{36}$/.test(identityId))
+        throw new Error('Invalid account identity');
+      const result = await pool.query<{
+        principal_id: string;
+        identity_id: string;
+        record: unknown;
+        revision: number;
+      }>(
+        "SELECT p.id AS principal_id, i.id AS identity_id, c.record, c.revision FROM identities i JOIN principals p ON p.id = i.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE i.id = $1::uuid AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' LIMIT 1",
+        [identityId],
+      );
+      const row = result.rows[0];
+      if (!row) return null;
+      if (!Number.isSafeInteger(row.revision) || row.revision < 1)
+        throw new Error('Invalid credential revision');
+      return {
+        principalId: row.principal_id,
+        identityId: row.identity_id,
+        record: parseStandardPasswordRecord(row.record),
+        revision: row.revision,
+      };
+    },
     async replaceCredential(input) {
       if (
         !Number.isSafeInteger(input.expectedRevision) ||

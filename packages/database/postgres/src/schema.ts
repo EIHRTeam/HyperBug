@@ -1189,3 +1189,72 @@ export const recoveryCodes = table(
     ),
   ],
 );
+
+/** WebAuthn passkey credentials and one-time ceremony challenges. */
+export const passkeyCredentials = table(
+  'passkey_credentials',
+  {
+    id: text('id').primaryKey(),
+    identityId: id('identity_id')
+      .notNull()
+      .references(() => identities.id),
+    publicKey: text('public_key').notNull(),
+    counter: integer('counter').notNull(),
+    transports: text('transports'),
+    deviceType: text('device_type').notNull(),
+    backedUp: integer('backed_up').notNull(),
+    aaguid: text('aaguid').notNull(),
+    createdAt: instant('created_at').notNull(),
+    lastUsedAt: instant('last_used_at'),
+  },
+  (t) => [
+    index('passkey_identity').on(t.identityId),
+    check('passkey_id_bound', sql`length(${t.id}) BETWEEN 1 AND 1024`),
+    check(
+      'passkey_public_key_bound',
+      sql`length(${t.publicKey}) BETWEEN 1 AND 4096`,
+    ),
+    check('passkey_counter', sql`${t.counter} BETWEEN 0 AND 2147483647`),
+    check(
+      'passkey_device_type',
+      sql`${t.deviceType} IN ('singleDevice', 'multiDevice')`,
+    ),
+    check('passkey_backed_up', sql`${t.backedUp} IN (0, 1)`),
+    check('passkey_aaguid_bound', sql`length(${t.aaguid}) = 36`),
+    validTime('passkey_created', t.createdAt),
+    check(
+      'passkey_last_used',
+      sql`(${t.lastUsedAt} IS NULL OR (${t.lastUsedAt} BETWEEN 0 AND 8640000000000000 AND ${t.lastUsedAt} >= ${t.createdAt}))`,
+    ),
+  ],
+);
+
+export const webauthnChallenges = table(
+  'webauthn_challenges',
+  {
+    id: id('id').primaryKey(),
+    kind: text('kind').notNull(),
+    challenge: text('challenge').notNull(),
+    identityId: id('identity_id'),
+    createdAt: instant('created_at').notNull(),
+    expiresAt: instant('expires_at').notNull(),
+    consumedAt: instant('consumed_at'),
+  },
+  (t) => [
+    uniqueIndex('webauthn_challenge_value').on(t.challenge),
+    index('webauthn_challenge_expiry').on(t.expiresAt),
+    validId('webauthn_challenge_id', t.id),
+    check(
+      'webauthn_challenge_kind',
+      sql`${t.kind} IN ('registration', 'authentication')`,
+    ),
+    check(
+      'webauthn_challenge_value',
+      sql`length(${t.challenge}) BETWEEN 16 AND 256`,
+    ),
+    check(
+      'webauthn_challenge_time',
+      sql`${t.expiresAt} > ${t.createdAt} AND ${t.expiresAt} BETWEEN 0 AND 8640000000000000 AND (${t.consumedAt} IS NULL OR ${t.consumedAt} >= ${t.createdAt})`,
+    ),
+  ],
+);

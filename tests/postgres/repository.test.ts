@@ -414,8 +414,8 @@ it('migrates a fresh database and protects history from truncation', async () =>
   await pool.query('CREATE DATABASE hyperbug_fresh');
   const fresh = new Pool({ database: 'hyperbug_fresh' });
   try {
-    expect((await migratePostgres(fresh)).pending).toHaveLength(12);
-    expect((await migratePostgres(fresh, true)).applied).toHaveLength(12);
+    expect((await migratePostgres(fresh)).pending).toHaveLength(13);
+    expect((await migratePostgres(fresh, true)).applied).toHaveLength(13);
     expect(await migratePostgres(fresh, true)).toEqual({
       applied: [],
       pending: [],
@@ -426,7 +426,7 @@ it('migrates a fresh database and protects history from truncation', async () =>
           "SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema = 'public' AND table_name != 'hyperbug_schema_migrations'",
         )
       ).rows[0].count,
-    ).toBe(34);
+    ).toBe(36);
     await expect(fresh.query('TRUNCATE audit_events')).rejects.toThrow(
       'append-only',
     );

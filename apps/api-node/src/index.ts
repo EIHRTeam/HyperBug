@@ -41,6 +41,34 @@ const keyProvider = abuse.keyProvider;
 const bootstrapCode = await loadNodeBootstrapEnrollmentCode(
   process.env.HYPERBUG_BOOTSTRAP_FILE,
 );
+// Public relying-party configuration: all three values or none; a complete
+// selection without the session/key prerequisites refuses startup.
+const passkeyValues = [
+  process.env.PASSKEY_RP_ID,
+  process.env.PASSKEY_RP_NAME,
+  process.env.PASSKEY_ORIGIN,
+];
+const passkeySet = passkeyValues.filter((value) => value !== undefined).length;
+if (passkeySet !== 0 && passkeySet !== 3)
+  throw new Error('Invalid passkey configuration');
+const passkeyConfigured = passkeySet === 3;
+if (
+  passkeyConfigured &&
+  (!abuse.passkeyStores || !keyProvider || !abuse.sessionStore)
+)
+  throw new Error('Invalid passkey configuration');
+const passkey =
+  passkeyConfigured && abuse.passkeyStores && keyProvider && abuse.sessionStore
+    ? {
+        rpID: passkeyValues[0] as string,
+        rpName: passkeyValues[1] as string,
+        origin: passkeyValues[2] as string,
+        store: abuse.passkeyStores,
+        passwordStore: abuse.passwordStore!,
+        sessionStore: abuse.sessionStore,
+        keyProvider,
+      }
+    : null;
 const port = Number(process.env.PORT ?? 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535)
   throw new Error('Invalid PORT');
@@ -61,6 +89,7 @@ const app = createApp({
   bootstrapCode,
   staffEnrollmentStore: abuse.staffEnrollmentStore,
   recoveryStore: abuse.recoveryStore,
+  passkey,
   bootstrapState: abuse.staffEnrollmentStore
     ? async () => (await abuse.staffEnrollmentStore?.countActiveStaff()) === 0
     : null,

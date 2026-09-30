@@ -38,6 +38,10 @@ export interface AccountPasswordCredential {
 
 export interface AccountPasswordStore {
   loadCredential(handle: string): Promise<AccountPasswordCredential | null>;
+  /** Identity-scoped lookup used by passkey login to bind the session. */
+  loadCredentialByIdentity(
+    identityId: string,
+  ): Promise<AccountPasswordCredential | null>;
   replaceCredential(input: {
     identityId: string;
     expectedRevision: number;

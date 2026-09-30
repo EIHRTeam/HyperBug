@@ -53,6 +53,13 @@ import { registerAccount } from './account-registration.ts';
 import { loginAccount } from './account-login.ts';
 import { enrollInitialStaff } from './bootstrap-enrollment.ts';
 import {
+  passkeyLoginOptions,
+  passkeyLoginVerify,
+  passkeyRegistrationOptions,
+  passkeyRegistrationVerify,
+  type PasskeyRelyingParty,
+} from './passkey.ts';
+import {
   generateAccountRecoveryCodes,
   recoverAccount,
 } from './account-recovery.ts';
@@ -88,6 +95,8 @@ export interface AppOptions {
   bootstrapCode?: string | null;
   staffEnrollmentStore?: StaffEnrollmentStore | null;
   recoveryStore?: AccountRecoveryStore | null;
+  /** Relying-party configuration; null disarms every passkey route. */
+  passkey?: PasskeyRelyingParty | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
   bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
@@ -189,6 +198,7 @@ export function createApp({
   bootstrapCode = null,
   staffEnrollmentStore = null,
   recoveryStore = null,
+  passkey = null,
   bootstrapState = null,
   minimumLoginAdmission,
 }: AppOptions) {
@@ -258,13 +268,16 @@ export function createApp({
                   ? 'account.recovery-codes'
                   : path === '/auth/recover' && request.method === 'POST'
                     ? 'account.recover'
-                    : path === '/health/live' && request.method === 'GET'
-                      ? 'health.live'
-                      : path === '/health/ready' && request.method === 'GET'
-                        ? 'health.ready'
-                        : path.startsWith('/_proof')
-                          ? 'proof'
-                          : 'unmatched';
+                    : path.startsWith('/auth/passkey/') &&
+                        request.method === 'POST'
+                      ? 'account.passkey'
+                      : path === '/health/live' && request.method === 'GET'
+                        ? 'health.live'
+                        : path === '/health/ready' && request.method === 'GET'
+                          ? 'health.ready'
+                          : path.startsWith('/_proof')
+                            ? 'proof'
+                            : 'unmatched';
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -314,7 +327,8 @@ export function createApp({
           path === '/auth/logout' ||
           path === '/auth/bootstrap/enroll' ||
           path === '/auth/recovery-codes' ||
-          path === '/auth/recover')
+          path === '/auth/recover' ||
+          path.startsWith('/auth/passkey/'))
       )
         requireAuthOrigin(request);
       if (request.method === 'GET' && path === '/auth/session')
@@ -587,6 +601,58 @@ export function createApp({
       {
         body: t.Unsafe<RecoveryRequest>(RecoveryRequestSchema),
         response: t.Unsafe<Recovered>(RecoveredSchema),
+      },
+    )
+    .post(
+      '/auth/passkey/register/options',
+      async ({ request }) =>
+        passkeyRegistrationOptions({
+          request,
+          relyingParty: passkey,
+          nowMs: Date.now(),
+        }),
+      { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/auth/passkey/register',
+      async ({ request, body }) =>
+        passkeyRegistrationVerify({
+          request,
+          body: body as { response: never },
+          relyingParty: passkey,
+          nowMs: Date.now(),
+        }),
+      {
+        body: t.Object({ response: t.Any() }, { additionalProperties: false }),
+      },
+    )
+    .post(
+      '/auth/passkey/login/options',
+      async ({ request }) =>
+        passkeyLoginOptions({
+          request,
+          relyingParty: passkey,
+          nowMs: Date.now(),
+        }),
+      { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/auth/passkey/login',
+      async ({ request, body, sensitiveAdmission, set }) => {
+        const cookie = await passkeyLoginVerify({
+          request,
+          body: body as { response: never },
+          admission: sensitiveAdmission,
+          relyingParty: passkey,
+          nowMs: Date.now(),
+          requestId: boundaryFor(request).requestId,
+        });
+        set.headers['set-cookie'] = cookie;
+        return { authenticated: true as const };
+      },
+      {
+        body: t.Object({ response: t.Any() }, { additionalProperties: false }),
+        response: t.Unsafe<AccountSession>(AccountSessionSchema),
       },
     );
 }

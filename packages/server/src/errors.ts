@@ -25,6 +25,8 @@ const failures = {
   LOGIN_DENIED: [401, 'Invalid account credentials.'],
   RECOVERY_DENIED: [403, 'Account recovery is not permitted.'],
   RECOVERY_UNAVAILABLE: [503, 'Account recovery is unavailable.'],
+  PASSKEY_DENIED: [403, 'Passkey verification is not permitted.'],
+  PASSKEY_UNAVAILABLE: [503, 'Passkey authentication is unavailable.'],
   INTERNAL_ERROR: [500, 'An internal error occurred.'],
 } as const;
 

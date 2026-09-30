@@ -194,9 +194,11 @@
                   "!@hyperbug/config",
                   "!@hyperbug/observability",
                   "!elysia",
-                  "!elysia/**"
+                  "!elysia/**",
+                  "!@simplewebauthn/server",
+                  "!@simplewebauthn/server/**"
                 ],
-                "message": "packages/server may import only the shared server-side packages and Elysia."
+                "message": "packages/server may import only the shared server-side packages, Elysia and the pinned WebAuthn verifier."
               }
             ]
           }
