@@ -238,6 +238,38 @@ afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 });
 
+async function tokenFromCookie(cookie: string, state: string): Promise<string> {
+  const journeyVerifier = verifier();
+  const authorized = await post(
+    '/auth/authorize',
+    {
+      clientId: 'roles-admin-cli',
+      redirectUri,
+      scope: 'public-api',
+      state,
+      codeChallenge: await challengeOf(journeyVerifier),
+    },
+    { cookie },
+  );
+  expect(authorized.status).toBe(200);
+  const code = new URL(
+    ((await authorized.json()) as { redirectUri: string }).redirectUri,
+  ).searchParams.get('code');
+  const exchange = await fetch(new URL('/auth/token', base), {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: code ?? '',
+      redirect_uri: redirectUri,
+      client_id: 'roles-admin-cli',
+      code_verifier: journeyVerifier,
+    }),
+  });
+  expect(exchange.status).toBe(200);
+  return ((await exchange.json()) as { accessToken: string }).accessToken;
+}
+
 it('manages sessions, project roles and principal suspension end to end', async () => {
   const enrolled = await post('/auth/bootstrap/enroll', {
     enrollmentCode,
@@ -510,4 +542,145 @@ it('manages sessions, project roles and principal suspension end to end', async 
     },
   );
   expect(memberRemoved.status).toBe(204);
+});
+
+it('closes the 04.V3 role-behavior matrix', async () => {
+  // A second staff principal is seeded directly (bootstrap is single-shot);
+  // the administrator grants it the triage role through the guarded API.
+  const enrolled = await post('/auth/bootstrap/enroll', {
+    enrollmentCode,
+    handle: 'rootadmin',
+    password: 'operator-password-1',
+  });
+  expect(enrolled.status).toBe(403); // staff already exists; the code is inert
+
+  const staffLogin = await post('/auth/login', {
+    handle: 'rootadmin',
+    password: 'operator-password-1',
+  });
+  expect(staffLogin.status).toBe(200);
+  const staffCookie = (staffLogin.headers.getSetCookie?.() ?? [])[0]?.split(
+    ';',
+  )[0];
+  if (staffCookie === undefined) throw new Error('Missing session cookie');
+  const loginOptions = await post('/auth/passkey/login/options', {});
+  const challenge = ((await loginOptions.json()) as { challenge: string })
+    .challenge;
+  const passkeyLogin = await post('/auth/passkey/login', {
+    response: await authenticator.assertion(challenge, 2),
+  });
+  expect(passkeyLogin.status).toBe(200);
+  const passkeyCookie = (passkeyLogin.headers.getSetCookie?.() ?? [])[0]?.split(
+    ';',
+  )[0];
+  if (passkeyCookie === undefined) throw new Error('Missing passkey cookie');
+  const adminToken = await tokenFromCookie(passkeyCookie!, 'v3-state');
+  const adminAccount = await fetch(new URL('/api/v1/account', base), {
+    headers: { authorization: `Bearer ${adminToken}` },
+  });
+  const adminPrincipalId = (
+    (await adminAccount.json()) as { principalId: string }
+  ).principalId;
+
+  // The first journey removed the administrator's role; re-seed it out of
+  // band exactly as the bootstrap policy does for the initial grant.
+  await pool.query(
+    "INSERT INTO project_roles (project_id, principal_id, principal_kind, role, granted_at) VALUES ($1, $2, 'staff', 'administrator', $3)",
+    [projectId, adminPrincipalId, Date.now()],
+  );
+
+  const triagePrincipalId = crypto.randomUUID();
+  const triageIdentityId = crypto.randomUUID();
+  await pool.query('BEGIN');
+  await pool.query(
+    "INSERT INTO principals (id, kind, display_name, status, created_at, revision) VALUES ($1, 'staff', 'triageonly', 'active', $2, 1)",
+    [triagePrincipalId, Date.now()],
+  );
+  await pool.query(
+    "INSERT INTO identities (id, principal_id, provider, issuer, subject, created_at) VALUES ($1, $2, 'local-password', 'hyperbug', 'triageonly', $3)",
+    [triageIdentityId, triagePrincipalId, Date.now()],
+  );
+  await pool.query('COMMIT');
+
+  const grant = await fetch(
+    new URL(`/api/v1/projects/${projectId}/members/${triagePrincipalId}`, base),
+    {
+      method: 'PUT',
+      headers: {
+        authorization: `Bearer ${adminToken}`,
+        'content-type': 'application/json',
+        origin: base,
+      },
+      body: JSON.stringify({ role: 'triage' }),
+    },
+  );
+  expect(grant.status).toBe(200);
+
+  const otherProjectId = crypto.randomUUID();
+  await pool.query(
+    'INSERT INTO projects (id, slug, name, created_at, updated_at) VALUES ($1, $2, $3, $4, $4)',
+    [otherProjectId, 'other-project', 'Other Project', Date.now()],
+  );
+
+  // Cross-project: the administrator of the first project holds no role in
+  // the second, so both administration attempts on it are forbidden.
+  const crossProjectGrant = await fetch(
+    new URL(
+      `/api/v1/projects/${otherProjectId}/members/${triagePrincipalId}`,
+      base,
+    ),
+    {
+      method: 'PUT',
+      headers: {
+        authorization: `Bearer ${adminToken}`,
+        'content-type': 'application/json',
+        origin: base,
+      },
+      body: JSON.stringify({ role: 'triage' }),
+    },
+  );
+  expect(crossProjectGrant.status).toBe(403);
+  expect(await crossProjectGrant.json()).toMatchObject({
+    error: { code: 'FORBIDDEN' },
+  });
+
+  // Anonymous: no token at all answers authentication-required.
+  const anonymous = await fetch(
+    new URL(`/api/v1/projects/${projectId}/members/${triagePrincipalId}`, base),
+    {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', origin: base },
+      body: JSON.stringify({ role: 'triage' }),
+    },
+  );
+  expect(anonymous.status).toBe(401);
+
+  // Permission removal strips administration: after deleting the
+  // administrator's own role, even the stepped-up token can no longer act.
+  const removed = await fetch(
+    new URL(`/api/v1/projects/${projectId}/members/${adminPrincipalId}`, base),
+    {
+      method: 'DELETE',
+      headers: {
+        authorization: `Bearer ${adminToken}`,
+        'content-type': 'application/json',
+        origin: base,
+      },
+      body: '{}',
+    },
+  );
+  expect(removed.status).toBe(204);
+  const afterRemoval = await fetch(
+    new URL(`/api/v1/projects/${projectId}/members/${triagePrincipalId}`, base),
+    {
+      method: 'PUT',
+      headers: {
+        authorization: `Bearer ${adminToken}`,
+        'content-type': 'application/json',
+        origin: base,
+      },
+      body: JSON.stringify({ role: 'maintainer' }),
+    },
+  );
+  expect(afterRemoval.status).toBe(403);
 });

@@ -29,6 +29,11 @@ const clients = [
     redirectUris: [redirectUri],
     scopes: ['public-api'],
   },
+  {
+    clientId: 'spa-negative',
+    redirectUris: [redirectUri],
+    scopes: ['public-api'],
+  },
 ];
 let bootstrap: Pool;
 let pool: Pool;
@@ -573,3 +578,120 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
   expect(secondExchange.status).toBe(200);
   expect((await secondExchange.json()).accessToken).toMatch(/^at_/);
 });
+
+it(
+  'closes the 04.V2 negative protocol cases',
+  { timeout: 120_000 },
+  async () => {
+    const registered = await fetch(new URL('/api/v1/accounts/register', base), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        handle: 'negativeuser',
+        password: 'first-password-123',
+      }),
+    });
+    expect(registered.status).toBe(202);
+    const login = await fetch(new URL('/auth/login', base), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: base },
+      body: JSON.stringify({
+        handle: 'negativeuser',
+        password: 'first-password-123',
+      }),
+    });
+    expect(login.status).toBe(200);
+    const cookie = (login.headers.getSetCookie?.() ?? [])[0]?.split(';')[0];
+    if (cookie === undefined) throw new Error('Missing session cookie');
+
+    const issue = async () => {
+      const journeyVerifier = verifier();
+      const authorized = await fetch(new URL('/auth/authorize', base), {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          origin: base,
+          cookie,
+        },
+        body: JSON.stringify({
+          clientId: 'spa-negative',
+          redirectUri,
+          scope: 'public-api',
+          state: 'negative-state',
+          codeChallenge: await challengeOf(journeyVerifier),
+        }),
+      });
+      expect(authorized.status).toBe(200);
+      const code = new URL(
+        ((await authorized.json()) as { redirectUri: string }).redirectUri,
+      ).searchParams.get('code');
+      return { code: code ?? '', journeyVerifier };
+    };
+
+    const { code, journeyVerifier } = await issue();
+    const wrongRedirect = await fetch(new URL('/auth/token', base), {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: 'http://localhost:5173/attacker',
+        client_id: 'spa-negative',
+        code_verifier: journeyVerifier,
+      }),
+    });
+    expect(wrongRedirect.status).toBe(400);
+
+    // A code older than the 60-second bound is expired: a real wait, no clock
+    // injection, so this case costs a minute and proves the bound honestly.
+    const aged = await issue();
+    await new Promise((resolve) => setTimeout(resolve, 61_000));
+    const expired = await fetch(new URL('/auth/token', base), {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: aged.code,
+        redirect_uri: 'http://localhost:5173/oauth/callback',
+        client_id: 'spa-negative',
+        code_verifier: aged.journeyVerifier,
+      }),
+    });
+    expect(expired.status).toBe(400);
+    expect(await expired.json()).toMatchObject({
+      error: { code: 'OAUTH_DENIED' },
+    });
+
+    // 04.V4: a browser Origin outside the allowlist is rejected on the account
+    // API even with a valid bearer token, while the no-Origin client works.
+    const fresh = await issue();
+    const exchange = await fetch(new URL('/auth/token', base), {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: fresh.code,
+        redirect_uri: 'http://localhost:5173/oauth/callback',
+        client_id: 'spa-negative',
+        code_verifier: fresh.journeyVerifier,
+      }),
+    });
+    expect(exchange.status).toBe(200);
+    const negativeToken = ((await exchange.json()) as { accessToken: string })
+      .accessToken;
+    const disallowedOrigin = await fetch(new URL('/api/v1/account', base), {
+      headers: {
+        authorization: `Bearer ${negativeToken}`,
+        origin: 'https://evil.example',
+      },
+    });
+    expect(disallowedOrigin.status).toBe(403);
+    expect(await disallowedOrigin.json()).toMatchObject({
+      error: { code: 'ORIGIN_FORBIDDEN' },
+    });
+    const noOrigin = await fetch(new URL('/api/v1/account', base), {
+      headers: { authorization: `Bearer ${negativeToken}` },
+    });
+    expect(noOrigin.status).toBe(200);
+  },
+);

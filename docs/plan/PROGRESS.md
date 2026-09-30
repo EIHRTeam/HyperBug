@@ -788,3 +788,14 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None; the 04.3b/04.3c batch is in flight through a delegated subagent.
 - Next actions: Integrate the roles/account-management batch, then the 04.2c/04.2f assessments and the V acceptance items.
 - Next-session cautions: Pages never redirect failures to client URIs; the 401 bearer envelope stays generic.
+
+### 2026-10-01 — Module 04 complete within the goal boundary
+
+- Scope and checklist IDs: 04.V1–04.V4 accepted; 04.V6's executable parts accepted (tier-journey remainder on the activation path, item unchecked); 04.V5 and the audit portions of 04.3a/04.3c stay suspended and unchecked. Every other Module 04 checklist and acceptance item is accepted on both profiles.
+- Progress: The full journey matrix is evidenced — Authorization Code + PKCE with opaque tokens and revocation, backend-owned authorization pages, bearer business authentication, recovery codes, passkeys with step-up assurance, bootstrap enrollment, project roles with object-level checks and staff administration, the instance capability document, and the acceptance evidence including a real-browser fixture and a real-wait code expiry.
+- Change summary: Two acceptance journeys, the acceptance evidence file, checklist/status finalization. This session (2026-09-30 through 2026-10-01) delivered Module 04 end to end: the re-scope startup batch, AUTH-FLOWS, the Better Auth PoC (not adopted), bootstrap, recovery, passkeys, the OAuth core, pages, bearer auth, roles and administration, the instance document, provider contracts and the acceptance closures.
+- Verification: Final matrix 111/50/121/68 plus every batch's recorded full-matrix run; documentation builds, migration histories, secret/license scans, format and diff checks throughout.
+- Decisions and deviations: All recorded in the module progress entries; the automation-browser cross-origin redirect refusal is recorded as an environment limitation.
+- Blockers/open questions: Only the G1 audit-governance decision remains (resume vs deferral+ADR for the suspended audit portions of modules 04–09), presented to the user now per the goal's completion definition.
+- Next actions: Awaiting the user's G1 audit-governance decision; the Free-tier activation path (13.G6) remains separate and untouched.
+- Next-session cautions: Module 04's standing invariants remain binding; the suspended audit portions must not be resumed implicitly.
