@@ -733,3 +733,14 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new; the G1 audit-governance decision stays with the user.
 - Next actions: 04.1d — finish password registration/login/recovery and the non-SSO Staff passkey path.
 - Next-session cautions: Enrollment codes are deployment secrets; the Free tier stays disabled; the root `SECURITY.md` draft must never be committed.
+
+### 2026-09-30 — Module 04 batch: single-use recovery codes
+
+- Scope and checklist IDs: 04.1d recovery portion (item remains open for the passkey path).
+- Progress: The no-email recovery-code journey is implemented and tested on both profiles — generation, digest-only storage with one active generation, rate-admitted enumeration-resistant redemption, atomic single-use consumption, revision-checked password replacement and principal-wide session revocation. Dual-dialect additive migration 0012 (D1) / 0011 (PostgreSQL) with mirrored Drizzle schemas; session reads now carry the identity and the session store can revoke by principal.
+- Change summary: New application port, adapters, server module, routes, contracts, labels, root wiring, fixture wiring, two route suites, migration-position updates in existing suites, and API/DATA-MODEL/AUTH-FLOWS synchronization. Commit `022a5f5`.
+- Verification: Full matrix 111/50/116/61; typechecks, lint/boundaries, build, both Drizzle histories, secret scan, docs build, format and diff checks. One intermittent workerd failure in one full run passed on all reruns.
+- Decisions and deviations: Sequential verification with deliberate inline lint disables; consumption precedes replacement.
+- Blockers/open questions: None new.
+- Next actions: 04.1d passkey path, then 04.1e and the 04.2 protocol work.
+- Next-session cautions: Recovery codes are bearer secrets; migration journals are immutable; local D1 still has pending 0009–0012.
