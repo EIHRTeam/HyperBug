@@ -24,6 +24,10 @@ import {
   AuthorizeRequestSchema,
   AuthorizeResponseSchema,
   TokenResponseSchema,
+  AccountSessionsSchema,
+  PrincipalStatusSchema,
+  ProjectMemberRoleRequestSchema,
+  ProjectMemberRoleSchema,
   type RegistrationRequest,
   type RegistrationAccepted,
   type RegistrationChallenge,
@@ -41,14 +45,20 @@ import {
   type AuthorizeRequest,
   type AuthorizeResponse,
   type TokenResponse,
+  type AccountSessions,
+  type PrincipalStatus,
+  type ProjectMemberRole,
+  type ProjectMemberRoleRequest,
 } from '@hyperbug/contracts';
 import type {
+  AccountAdministrationStore,
   AccountPasswordStore,
   AccountRecoveryStore,
   AccountRegistrationStore,
   AccountSessionStore,
   OAuthAccessTokenStore,
   OAuthCodeStore,
+  ProjectRoleStore,
   StaffEnrollmentStore,
 } from '@hyperbug/application';
 import {
@@ -95,6 +105,11 @@ import {
   type OAuthClientRegistration,
 } from './oauth.ts';
 import { authenticateBearer } from './bearer-auth.ts';
+import { requireAuthorizedAction } from './authorization.ts';
+import {
+  authorizationPolicy,
+  createDbAuthorizationResolver,
+} from './authorization-facts.ts';
 import {
   clearedSessionCookie,
   currentAccountSession,
@@ -134,6 +149,10 @@ export interface AppOptions {
   /** Authorization-code and access-token persistence for the code flow and
    * bearer-authenticated business reads. */
   oauthCodeStore?: (OAuthCodeStore & OAuthAccessTokenStore) | null;
+  /** Staff project-role persistence for membership management. */
+  projectRoleStore?: ProjectRoleStore | null;
+  /** Principal/project directory and staff account administration. */
+  accountAdministration?: AccountAdministrationStore | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
   bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
@@ -238,6 +257,8 @@ export function createApp({
   passkey = null,
   oauthClients = [],
   oauthCodeStore = null,
+  projectRoleStore = null,
+  accountAdministration = null,
   bootstrapState = null,
   minimumLoginAdmission,
 }: AppOptions) {
@@ -335,6 +356,112 @@ export function createApp({
   if (registeredClients.length > 0 && (!oauthCodeStore || !keyProvider))
     throw new Error('Invalid OAuth client configuration');
   const publicCaptchaSiteKey = captchaSiteKey ?? null;
+  const administration = accountAdministration;
+  const roleStore = projectRoleStore;
+  // The resolver binds the authorization-facts loaders to the staff role
+  // store; either side missing disarms every guarded management route.
+  const authorizationResolver =
+    administration && roleStore
+      ? createDbAuthorizationResolver({
+          loadPrincipal: (principalId) =>
+            administration.loadPrincipal(principalId),
+          loadProject: (projectId) => administration.loadProject(projectId),
+          tokenIssuedAtMs: (principalId) =>
+            administration.tokenIssuedAtMs(principalId),
+          loadMembership: (projectId, principalId) =>
+            roleStore.loadRole(projectId, principalId),
+        })
+      : null;
+  const uuidPattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  const canonicalInstant = (ms: number): string => new Date(ms).toISOString();
+  // A suspended or deleted principal denies like any other invalid bearer
+  // credential; the kind lookup is shared by the account-session routes.
+  const requireActivePrincipalKind = async (
+    request: Request,
+    principalId: string,
+  ): Promise<'user' | 'staff'> => {
+    let kind: 'user' | 'staff' | null;
+    try {
+      kind = await withDeadline(request.signal, 1000, () =>
+        oauthCodeStore!.loadPrincipalKind(principalId),
+      );
+    } catch (error) {
+      if (error instanceof RequestFailure) throw error;
+      throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
+    }
+    if (kind !== 'user' && kind !== 'staff')
+      throw new RequestFailure('AUTHENTICATION_REQUIRED');
+    return kind;
+  };
+  // Deployment-level staff account administration. The permission inventory
+  // has no deployment-scope resource type yet and the shared evaluator is
+  // project-centric, so the guard anchors to an active project the actor
+  // administrates under the closest deployment-wide sensitive permission
+  // ('data:export'); a deployment-role model or a dedicated permission
+  // replaces this anchor when the inventory grows one.
+  const suspendPrincipal = async (
+    request: Request,
+    targetId: string | undefined,
+    suspend: boolean,
+  ): Promise<PrincipalStatus> => {
+    if (targetId === undefined || !uuidPattern.test(targetId))
+      throw new RequestFailure('NOT_FOUND');
+    const principal = await authenticateBearer(request, {
+      keyProvider: keyProvider ?? null,
+      tokenStore: oauthCodeStore ?? null,
+    });
+    if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+    if (
+      !authorizationResolver ||
+      !administration ||
+      !roleStore ||
+      !staffEnrollmentStore
+    )
+      throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+    try {
+      const anchors = await withDeadline(request.signal, 1000, () =>
+        roleStore.listAdministratorProjectIds(principal.principalId),
+      );
+      const projectId = anchors[0];
+      if (projectId === undefined) throw new RequestFailure('FORBIDDEN');
+      await requireAuthorizedAction({
+        request: {
+          actorId: principal.principalId,
+          permission: 'data:export',
+          target: { projectId, type: 'export', id: targetId },
+        },
+        resolver: authorizationResolver,
+        policy: authorizationPolicy,
+        signal: request.signal,
+      });
+      const facts = await withDeadline(request.signal, 1000, () =>
+        administration.loadPrincipal(targetId),
+      );
+      if (!facts) throw new RequestFailure('NOT_FOUND');
+      if (suspend && facts.kind === 'staff' && facts.status === 'active') {
+        const activeStaff = await withDeadline(request.signal, 1000, () =>
+          staffEnrollmentStore.countActiveStaff(),
+        );
+        // Suspending the last active staff principal would strand the
+        // deployment behind the operator-channel bootstrap re-arm.
+        if (activeStaff <= 1) throw new RequestFailure('FORBIDDEN');
+      }
+      const applied = await withDeadline(request.signal, 1000, () =>
+        suspend
+          ? administration.suspendPrincipal(targetId)
+          : administration.activatePrincipal(targetId),
+      );
+      if (!applied) throw new RequestFailure('NOT_FOUND');
+      return {
+        principalId: targetId,
+        status: suspend ? 'suspended' : 'active',
+      };
+    } catch (error) {
+      if (error instanceof RequestFailure) throw error;
+      throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+    }
+  };
   const boundaryFor = (request: Request): BoundaryHeaders => {
     const existing = boundaries.get(request);
     if (existing) return existing;
@@ -364,30 +491,43 @@ export function createApp({
                   ? 'account.instance'
                   : path === '/api/v1/account' && request.method === 'GET'
                     ? 'account.account'
-                    : path === '/auth/recovery-codes' &&
-                        request.method === 'POST'
-                      ? 'account.recovery-codes'
-                      : path === '/auth/recover' && request.method === 'POST'
-                        ? 'account.recover'
-                        : path.startsWith('/auth/passkey/') &&
-                            request.method === 'POST'
-                          ? 'account.passkey'
-                          : path === '/auth/authorize' ||
-                              path.startsWith('/auth/authorize/')
-                            ? 'account.authorize'
-                            : (path === '/auth/token' ||
-                                  path === '/auth/token/revoke') &&
+                    : path === '/api/v1/account/sessions' &&
+                        (request.method === 'GET' ||
+                          request.method === 'DELETE')
+                      ? 'account.sessions'
+                      : path.startsWith('/api/v1/admin/principals/') &&
+                          request.method === 'POST'
+                        ? 'admin.principal'
+                        : path.startsWith('/api/v1/projects/') &&
+                            path.includes('/members/') &&
+                            (request.method === 'PUT' ||
+                              request.method === 'DELETE')
+                          ? 'project.members'
+                          : path === '/auth/recovery-codes' &&
+                              request.method === 'POST'
+                            ? 'account.recovery-codes'
+                            : path === '/auth/recover' &&
                                 request.method === 'POST'
-                              ? 'account.token'
-                              : path === '/health/live' &&
-                                  request.method === 'GET'
-                                ? 'health.live'
-                                : path === '/health/ready' &&
-                                    request.method === 'GET'
-                                  ? 'health.ready'
-                                  : path.startsWith('/_proof')
-                                    ? 'proof'
-                                    : 'unmatched';
+                              ? 'account.recover'
+                              : path.startsWith('/auth/passkey/') &&
+                                  request.method === 'POST'
+                                ? 'account.passkey'
+                                : path === '/auth/authorize' ||
+                                    path.startsWith('/auth/authorize/')
+                                  ? 'account.authorize'
+                                  : (path === '/auth/token' ||
+                                        path === '/auth/token/revoke') &&
+                                      request.method === 'POST'
+                                    ? 'account.token'
+                                    : path === '/health/live' &&
+                                        request.method === 'GET'
+                                      ? 'health.live'
+                                      : path === '/health/ready' &&
+                                          request.method === 'GET'
+                                        ? 'health.ready'
+                                        : path.startsWith('/_proof')
+                                          ? 'proof'
+                                          : 'unmatched';
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -618,6 +758,191 @@ export function createApp({
         };
       },
       { response: t.Unsafe<AccountDocument>(AccountDocumentSchema) },
+    )
+    .get(
+      '/api/v1/account/sessions',
+      async ({ request }): Promise<AccountSessions> => {
+        // Bearer-only listing of the token principal's own sessions. Like
+        // /api/v1/account this authenticated read takes no rate admission.
+        const principal = await authenticateBearer(request, {
+          keyProvider: keyProvider ?? null,
+          tokenStore: oauthCodeStore ?? null,
+        });
+        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+        if (!sessionStore)
+          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
+        await requireActivePrincipalKind(request, principal.principalId);
+        let sessions;
+        try {
+          sessions = await withDeadline(request.signal, 1000, () =>
+            sessionStore.listActiveByPrincipal(
+              principal.principalId,
+              Date.now(),
+            ),
+          );
+        } catch (error) {
+          if (error instanceof RequestFailure) throw error;
+          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
+        }
+        return {
+          sessions: sessions.map((session) => ({
+            id: session.id,
+            createdAt: canonicalInstant(session.createdAtMs),
+            idleExpiresAt: canonicalInstant(session.idleExpiresAtMs),
+            absoluteExpiresAt: canonicalInstant(session.absoluteExpiresAtMs),
+          })),
+        };
+      },
+      { response: t.Unsafe<AccountSessions>(AccountSessionsSchema) },
+    )
+    .delete(
+      '/api/v1/account/sessions/:id',
+      async ({ request, params, set }) => {
+        const principal = await authenticateBearer(request, {
+          keyProvider: keyProvider ?? null,
+          tokenStore: oauthCodeStore ?? null,
+        });
+        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+        if (!sessionStore)
+          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
+        await requireActivePrincipalKind(request, principal.principalId);
+        // A foreign or unknown session id answers the same closed 404.
+        const id = params.id;
+        if (id === undefined || !uuidPattern.test(id))
+          throw new RequestFailure('NOT_FOUND');
+        let revoked: boolean;
+        try {
+          revoked = await withDeadline(request.signal, 1000, () =>
+            sessionStore.revokeOwned(id, principal.principalId, Date.now()),
+          );
+        } catch (error) {
+          if (error instanceof RequestFailure) throw error;
+          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
+        }
+        if (!revoked) throw new RequestFailure('NOT_FOUND');
+        set.status = 204;
+        return null;
+      },
+      { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/api/v1/admin/principals/:id/suspend',
+      async ({ request, params }): Promise<PrincipalStatus> =>
+        suspendPrincipal(request, params.id, true),
+      {
+        body: t.Object({}, { additionalProperties: false }),
+        response: t.Unsafe<PrincipalStatus>(PrincipalStatusSchema),
+      },
+    )
+    .post(
+      '/api/v1/admin/principals/:id/activate',
+      async ({ request, params }): Promise<PrincipalStatus> =>
+        suspendPrincipal(request, params.id, false),
+      {
+        body: t.Object({}, { additionalProperties: false }),
+        response: t.Unsafe<PrincipalStatus>(PrincipalStatusSchema),
+      },
+    )
+    .put(
+      '/api/v1/projects/:projectId/members/:principalId',
+      async ({ request, params, body }): Promise<ProjectMemberRole> => {
+        const { projectId, principalId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          principalId === undefined ||
+          !uuidPattern.test(principalId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const principal = await authenticateBearer(request, {
+          keyProvider: keyProvider ?? null,
+          tokenStore: oauthCodeStore ?? null,
+        });
+        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+        if (!authorizationResolver || !administration || !roleStore)
+          throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+        await requireAuthorizedAction({
+          request: {
+            actorId: principal.principalId,
+            permission: 'role:manage',
+            target: { projectId, type: 'project', id: projectId },
+          },
+          resolver: authorizationResolver,
+          policy: authorizationPolicy,
+          signal: request.signal,
+        });
+        try {
+          const target = await withDeadline(request.signal, 1000, () =>
+            administration.loadPrincipal(principalId),
+          );
+          if (!target) throw new RequestFailure('NOT_FOUND');
+          // Membership never converts a User into Staff; only an active
+          // staff principal can hold a project role.
+          if (target.kind !== 'staff' || target.status !== 'active')
+            throw new RequestFailure('FORBIDDEN');
+          await withDeadline(request.signal, 1000, () =>
+            roleStore.grant({
+              projectId,
+              principalId,
+              role: body.role,
+              nowMs: Date.now(),
+            }),
+          );
+        } catch (error) {
+          if (error instanceof RequestFailure) throw error;
+          throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+        }
+        return { projectId, principalId, role: body.role };
+      },
+      {
+        body: t.Unsafe<ProjectMemberRoleRequest>(
+          ProjectMemberRoleRequestSchema,
+        ),
+        response: t.Unsafe<ProjectMemberRole>(ProjectMemberRoleSchema),
+      },
+    )
+    .delete(
+      '/api/v1/projects/:projectId/members/:principalId',
+      async ({ request, params, set }) => {
+        const { projectId, principalId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          principalId === undefined ||
+          !uuidPattern.test(principalId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const principal = await authenticateBearer(request, {
+          keyProvider: keyProvider ?? null,
+          tokenStore: oauthCodeStore ?? null,
+        });
+        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+        if (!authorizationResolver || !roleStore)
+          throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+        await requireAuthorizedAction({
+          request: {
+            actorId: principal.principalId,
+            permission: 'role:manage',
+            target: { projectId, type: 'project', id: projectId },
+          },
+          resolver: authorizationResolver,
+          policy: authorizationPolicy,
+          signal: request.signal,
+        });
+        let removed: boolean;
+        try {
+          removed = await withDeadline(request.signal, 1000, () =>
+            roleStore.revoke(projectId, principalId),
+          );
+        } catch (error) {
+          if (error instanceof RequestFailure) throw error;
+          throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+        }
+        if (!removed) throw new RequestFailure('NOT_FOUND');
+        set.status = 204;
+        return null;
+      },
+      { body: t.Object({}, { additionalProperties: false }) },
     )
     .get(
       '/api/v1/accounts/register',
@@ -1062,6 +1387,11 @@ export type {
   MinimumLoginPermit,
 } from './minimum-login-admission.ts';
 export { requireAuthorizedAction } from './authorization.ts';
+export {
+  authorizationPolicy,
+  createDbAuthorizationResolver,
+} from './authorization-facts.ts';
+export type { DbAuthorizationDependencies } from './authorization-facts.ts';
 export { authenticateBearer, bearerScope } from './bearer-auth.ts';
 export type { BearerPrincipal } from './bearer-auth.ts';
 export { createCaptchaGate, requireRequiredCaptcha } from './captcha.ts';

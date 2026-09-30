@@ -16,6 +16,7 @@ import {
 import { createCloudflareStandardPasswordService } from './standard-password.ts';
 import { createWorkerAbuseKeyProvider } from './abuse-keys.ts';
 import {
+  createD1AccountAdministration,
   createD1AccountRegistrationStore,
   createD1AccountRecoveryStore,
   createD1AccountSessionStore,
@@ -23,6 +24,7 @@ import {
   createD1KeyRegistry,
   createD1OAuthStores,
   createD1PasskeyStores,
+  createD1ProjectRoleStore,
   createD1RateCounterStore,
   createD1StaffEnrollmentStore,
 } from '@hyperbug/database-d1';
@@ -95,6 +97,10 @@ const oauthClients = parseOAuthClients(oauthSecret);
 if (oauthClients.length > 0 && (!env.DB || !keyProvider))
   throw new Error('Invalid OAuth client configuration');
 const oauthCodeStore = env.DB ? createD1OAuthStores(env.DB) : null;
+const projectRoleStore = env.DB ? createD1ProjectRoleStore(env.DB) : null;
+const accountAdministration = env.DB
+  ? createD1AccountAdministration(env.DB)
+  : null;
 // Public relying-party configuration: all three values or none. A complete
 // selection without the session/key prerequisites refuses startup instead of
 // silently disabling passkey authentication.
@@ -195,6 +201,8 @@ const app = createApp({
   passkey,
   oauthClients,
   oauthCodeStore,
+  projectRoleStore,
+  accountAdministration,
   bootstrapCode,
   staffEnrollmentStore,
   bootstrapState: staffEnrollmentStore

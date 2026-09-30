@@ -2,25 +2,29 @@ import { isAbsolute } from 'node:path';
 import { Pool, type PoolConfig } from 'pg';
 import type { RuntimeConfig } from '@hyperbug/config';
 import {
+  createPostgresAccountAdministration,
+  createPostgresAccountRecoveryStore,
   createPostgresAccountRegistrationStore,
   createPostgresAccountSessionStore,
   createPostgresAuditRepository,
   createPostgresKeyRegistry,
-  createPostgresAccountRecoveryStore,
   createPostgresOAuthStores,
   createPostgresPasskeyStores,
+  createPostgresProjectRoleStore,
   createPostgresRateCounterStore,
   createPostgresStaffEnrollmentStore,
 } from '@hyperbug/database-postgres';
 import type { SensitiveAdmissionDependencies } from '@hyperbug/server';
 import type { KeyProvider, KeyRegistry } from '@hyperbug/security';
 import type {
+  AccountAdministrationStore,
   AccountPasswordStore,
   AccountRecoveryStore,
   AccountRegistrationStore,
   AccountSessionStore,
   OAuthAccessTokenStore,
   OAuthCodeStore,
+  ProjectRoleStore,
   StaffEnrollmentStore,
 } from '@hyperbug/application';
 import { createNodeAbuseKeyProvider } from './abuse-keys.ts';
@@ -49,6 +53,8 @@ export interface NodeAbuseAdmission {
   readonly staffEnrollmentStore: StaffEnrollmentStore | null;
   readonly recoveryStore: AccountRecoveryStore | null;
   readonly oauthCodeStore: (OAuthCodeStore & OAuthAccessTokenStore) | null;
+  readonly projectRoleStore: ProjectRoleStore | null;
+  readonly accountAdministration: AccountAdministrationStore | null;
   readonly passkeyStores:
     | (import('@hyperbug/application').PasskeyStore &
         import('@hyperbug/application').WebauthnChallengeStore)
@@ -90,6 +96,8 @@ export function configureNodeAbuseAdmission(
       staffEnrollmentStore: null,
       recoveryStore: null,
       oauthCodeStore: null,
+      projectRoleStore: null,
+      accountAdministration: null,
       passkeyStores: null,
       purgeExpiredRateCounters: async () => {
         throw new Error('Rate counter cleanup unavailable');
@@ -204,6 +212,8 @@ export function configureNodeAbuseAdmission(
     staffEnrollmentStore: createPostgresStaffEnrollmentStore(pool),
     recoveryStore: createPostgresAccountRecoveryStore(pool),
     oauthCodeStore: createPostgresOAuthStores(pool),
+    projectRoleStore: createPostgresProjectRoleStore(pool),
+    accountAdministration: createPostgresAccountAdministration(pool),
     passkeyStores: createPostgresPasskeyStores(pool),
     purgeExpiredRateCounters: cleanup.run,
     async ready(signal: AbortSignal): Promise<boolean> {

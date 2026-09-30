@@ -96,5 +96,46 @@ export function createPostgresAccountSessionStore(
         throw new Error('Invalid session revocation result');
       return result.rowCount;
     },
+    async listActiveByPrincipal(principalId, nowMs) {
+      assertId(principalId);
+      assertInstant(nowMs);
+      const result = await pool.query<{
+        id: string;
+        created_at: string;
+        idle_expires_at: string;
+        absolute_expires_at: string;
+      }>(
+        "SELECT s.id, s.created_at, s.idle_expires_at, s.absolute_expires_at FROM authorization_sessions s JOIN principals p ON p.id = s.principal_id AND p.status = 'active' WHERE s.principal_id = $1 AND s.revoked_at IS NULL AND s.idle_expires_at > $2 AND s.absolute_expires_at > $2 ORDER BY s.created_at DESC, s.id DESC LIMIT 50",
+        [principalId, nowMs],
+      );
+      return result.rows.map((row) => {
+        const createdAtMs = Number(row.created_at);
+        const idleExpiresAtMs = Number(row.idle_expires_at);
+        const absoluteExpiresAtMs = Number(row.absolute_expires_at);
+        if (
+          !/^[0-9a-f-]{36}$/.test(row.id) ||
+          !Number.isSafeInteger(createdAtMs) ||
+          !Number.isSafeInteger(idleExpiresAtMs) ||
+          !Number.isSafeInteger(absoluteExpiresAtMs)
+        )
+          throw new Error('Invalid authorization session listing');
+        return {
+          id: row.id,
+          createdAtMs,
+          idleExpiresAtMs,
+          absoluteExpiresAtMs,
+        };
+      });
+    },
+    async revokeOwned(id, principalId, nowMs) {
+      assertId(id);
+      assertId(principalId);
+      assertInstant(nowMs);
+      const result = await pool.query(
+        'UPDATE authorization_sessions SET revoked_at = GREATEST(created_at, $3) WHERE id = $1 AND principal_id = $2 AND revoked_at IS NULL',
+        [id, principalId, nowMs],
+      );
+      return changed(result.rowCount);
+    },
   };
 }

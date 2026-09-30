@@ -110,5 +110,48 @@ export function createD1AccountSessionStore(
         throw new Error('Invalid session revocation result');
       return result.meta.changes;
     },
+    async listActiveByPrincipal(principalId, nowMs) {
+      assertId(principalId);
+      assertInstant(nowMs);
+      const rows = await db
+        .withSession('first-primary')
+        .prepare(
+          "SELECT s.id, s.created_at, s.idle_expires_at, s.absolute_expires_at FROM authorization_sessions s JOIN principals p ON p.id = s.principal_id AND p.status = 'active' WHERE s.principal_id = ? AND s.revoked_at IS NULL AND s.idle_expires_at > ? AND s.absolute_expires_at > ? ORDER BY s.created_at DESC, s.id DESC LIMIT 50",
+        )
+        .bind(principalId, nowMs, nowMs)
+        .all<{
+          id: string;
+          created_at: number;
+          idle_expires_at: number;
+          absolute_expires_at: number;
+        }>();
+      return rows.results.map((row) => {
+        if (
+          !/^[0-9a-f-]{36}$/.test(row.id) ||
+          !Number.isSafeInteger(row.created_at) ||
+          !Number.isSafeInteger(row.idle_expires_at) ||
+          !Number.isSafeInteger(row.absolute_expires_at)
+        )
+          throw new Error('Invalid authorization session listing');
+        return {
+          id: row.id,
+          createdAtMs: row.created_at,
+          idleExpiresAtMs: row.idle_expires_at,
+          absoluteExpiresAtMs: row.absolute_expires_at,
+        };
+      });
+    },
+    async revokeOwned(id, principalId, nowMs) {
+      assertId(id);
+      assertId(principalId);
+      assertInstant(nowMs);
+      const result = await db
+        .prepare(
+          'UPDATE authorization_sessions SET revoked_at = max(created_at, ?) WHERE id = ? AND principal_id = ? AND revoked_at IS NULL',
+        )
+        .bind(nowMs, id, principalId)
+        .run();
+      return changed(result.meta.changes);
+    },
   };
 }

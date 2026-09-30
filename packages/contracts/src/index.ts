@@ -204,6 +204,58 @@ export const TokenResponseSchema = Type.Object(
   { additionalProperties: false },
 );
 export type TokenResponse = Static<typeof TokenResponseSchema>;
+const canonicalInstant = {
+  pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$',
+};
+export const AccountSessionSummarySchema = Type.Object(
+  {
+    id: Type.String({ format: 'uuid' }),
+    createdAt: Type.String(canonicalInstant),
+    idleExpiresAt: Type.String(canonicalInstant),
+    absoluteExpiresAt: Type.String(canonicalInstant),
+  },
+  { additionalProperties: false },
+);
+export type AccountSessionSummary = Static<typeof AccountSessionSummarySchema>;
+export const AccountSessionsSchema = Type.Object(
+  {
+    sessions: Type.Array(AccountSessionSummarySchema, {
+      minItems: 0,
+      maxItems: 50,
+    }),
+  },
+  { additionalProperties: false },
+);
+export type AccountSessions = Static<typeof AccountSessionsSchema>;
+export const PrincipalStatusSchema = Type.Object(
+  {
+    principalId: Type.String({ format: 'uuid' }),
+    status: Type.Union([Type.Literal('active'), Type.Literal('suspended')]),
+  },
+  { additionalProperties: false },
+);
+export type PrincipalStatus = Static<typeof PrincipalStatusSchema>;
+const MemberRoleSchema = Type.Union([
+  Type.Literal('triage'),
+  Type.Literal('maintainer'),
+  Type.Literal('administrator'),
+]);
+export const ProjectMemberRoleRequestSchema = Type.Object(
+  { role: MemberRoleSchema },
+  { additionalProperties: false },
+);
+export type ProjectMemberRoleRequest = Static<
+  typeof ProjectMemberRoleRequestSchema
+>;
+export const ProjectMemberRoleSchema = Type.Object(
+  {
+    projectId: Type.String({ format: 'uuid' }),
+    principalId: Type.String({ format: 'uuid' }),
+    role: MemberRoleSchema,
+  },
+  { additionalProperties: false },
+);
+export type ProjectMemberRole = Static<typeof ProjectMemberRoleSchema>;
 export const EchoSchema = Type.Object(
   { message: Type.String({ minLength: 1, maxLength: 100 }) },
   { additionalProperties: false },

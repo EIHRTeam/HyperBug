@@ -12,9 +12,11 @@ import { createCloudflareStandardPasswordService } from '../../apps/api-cloudfla
 import { createWorkerAbuseKeyProvider } from '../../apps/api-cloudflare/src/abuse-keys.ts';
 import { createCloudflareVolumetricLimiter } from '../../apps/api-cloudflare/src/rate-limit.ts';
 import {
+  createD1AccountAdministration,
   createD1AccountRecoveryStore,
   createD1OAuthStores,
   createD1PasskeyStores,
+  createD1ProjectRoleStore,
   createD1AccountRegistrationStore,
   createD1AccountSessionStore,
   createD1KeyRegistry,
@@ -69,6 +71,8 @@ export default createApp({
   passwordStore: createD1AccountRegistrationStore(env.DB),
   recoveryStore: createD1AccountRecoveryStore(env.DB),
   oauthClients: parseOAuthClients(env.HYPERBUG_TEST_OAUTH_CLIENTS),
+  projectRoleStore: createD1ProjectRoleStore(env.DB),
+  accountAdministration: createD1AccountAdministration(env.DB),
   oauthCodeStore: createD1OAuthStores(env.DB),
   keyProvider: env.HYPERBUG_KEY_RING
     ? createWorkerKeyProvider(

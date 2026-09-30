@@ -260,4 +260,6 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
 
 export * from './key-registry.ts';
 export { createPostgresAccountSessionStore } from './account-session.ts';
+export { createPostgresProjectRoleStore } from './project-role-store.ts';
+export { createPostgresAccountAdministration } from './account-administration.ts';
 export { createPostgresAuditRepository } from './audit.ts';

@@ -8,6 +8,8 @@ export { createD1AccountRecoveryStore } from './account-recovery.ts';
 export { createD1PasskeyStores } from './passkey-store.ts';
 export { createD1OAuthStores } from './oauth-store.ts';
 export { createD1AuditRepository } from './audit.ts';
+export { createD1ProjectRoleStore } from './project-role-store.ts';
+export { createD1AccountAdministration } from './account-administration.ts';
 import {
   DomainError,
   assertId,

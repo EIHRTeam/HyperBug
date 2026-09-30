@@ -13,6 +13,9 @@ export type RouteLabel =
   | 'account.passkey'
   | 'account.authorize'
   | 'account.token'
+  | 'account.sessions'
+  | 'admin.principal'
+  | 'project.members'
   | 'unmatched'
   | 'proof';
 export interface RequestObservation {
@@ -45,6 +48,9 @@ export function jsonTelemetry(write: (line: string) => void): Telemetry {
         'account.passkey',
         'account.authorize',
         'account.token',
+        'account.sessions',
+        'admin.principal',
+        'project.members',
         'proof',
       ].includes(observation.route)
         ? observation.route

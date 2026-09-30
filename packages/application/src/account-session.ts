@@ -20,6 +20,14 @@ export interface AccountSessionRecord {
   readonly absoluteExpiresAtMs: number;
 }
 
+/** One active session of a principal, without its credential digest. */
+export interface AccountSessionSummary {
+  readonly id: string;
+  readonly createdAtMs: number;
+  readonly idleExpiresAtMs: number;
+  readonly absoluteExpiresAtMs: number;
+}
+
 export interface AccountSessionStore {
   /** Insert only while the verified User credential revision is still current. */
   createIfCurrent(input: AccountSessionCreate): Promise<boolean>;
@@ -36,6 +44,16 @@ export interface AccountSessionStore {
   revoke(id: string, digest: string, nowMs: number): Promise<boolean>;
   /** Revoke every active session of a principal; used by account recovery. */
   revokeAllForPrincipal(principalId: string, nowMs: number): Promise<number>;
+  /** The principal's active sessions, newest first, bounded at 50 rows. */
+  listActiveByPrincipal(
+    principalId: string,
+    nowMs: number,
+  ): Promise<readonly AccountSessionSummary[]>;
+  /**
+   * Revoke a session owned by exactly this principal without its digest;
+   * false when the id is unknown, foreign or already revoked.
+   */
+  revokeOwned(id: string, principalId: string, nowMs: number): Promise<boolean>;
 }
 
 export function validateAccountSessionCreate(

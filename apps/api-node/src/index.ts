@@ -96,6 +96,8 @@ const app = createApp({
   bootstrapCode,
   staffEnrollmentStore: abuse.staffEnrollmentStore,
   recoveryStore: abuse.recoveryStore,
+  projectRoleStore: abuse.projectRoleStore,
+  accountAdministration: abuse.accountAdministration,
   passkey,
   oauthClients,
   oauthCodeStore: abuse.oauthCodeStore,
