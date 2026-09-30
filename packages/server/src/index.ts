@@ -8,6 +8,7 @@ import type { Telemetry, RouteLabel } from '@hyperbug/observability';
 import {
   HealthSchema,
   ReadinessSchema,
+  InstanceDocumentSchema,
   RegistrationAcceptedSchema,
   RegistrationChallengeSchema,
   RegistrationRequestSchema,
@@ -26,6 +27,7 @@ import {
   type LoginRequest,
   type LoginChallenge,
   type AccountSession,
+  type InstanceDocument,
   type BootstrapEnrollRequest,
   type BootstrapEnrolled,
   type RecoveryCodes,
@@ -208,6 +210,28 @@ export function createApp({
     degradationIds: Object.freeze([...config.deployment.degradationIds]),
     passwordHashPolicy: config.deployment.requiredPasswordAlgorithm,
   });
+  // Password capabilities are advertised only under the standard algorithm:
+  // the minimum tier's floor-disabled login must not present itself as usable.
+  const passwordCapable =
+    standardPassword != null && deployment.passwordHashPolicy === 'argon2id';
+  const instanceDocument: InstanceDocument = Object.freeze({
+    tier: deployment.tier,
+    degradationIds: [...deployment.degradationIds],
+    passwordHashPolicy: {
+      algorithm: deployment.passwordHashPolicy,
+      downgraded: deployment.passwordHashPolicy !== 'argon2id',
+    },
+    authentication: {
+      passwordRegistration: passwordCapable,
+      passwordLogin: passwordCapable,
+      recoveryCodes: passwordCapable,
+      passkeys: passkey != null,
+      administratorAssistedRecovery: staffEnrollmentStore != null,
+    },
+    limits: {
+      documented: 'docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas',
+    },
+  });
   const readiness = (
     status: ReadinessResponse['status'],
     pending?: boolean,
@@ -264,20 +288,22 @@ export function createApp({
               ? 'account.logout'
               : path === '/auth/bootstrap/enroll' && request.method === 'POST'
                 ? 'account.bootstrap'
-                : path === '/auth/recovery-codes' && request.method === 'POST'
-                  ? 'account.recovery-codes'
-                  : path === '/auth/recover' && request.method === 'POST'
-                    ? 'account.recover'
-                    : path.startsWith('/auth/passkey/') &&
-                        request.method === 'POST'
-                      ? 'account.passkey'
-                      : path === '/health/live' && request.method === 'GET'
-                        ? 'health.live'
-                        : path === '/health/ready' && request.method === 'GET'
-                          ? 'health.ready'
-                          : path.startsWith('/_proof')
-                            ? 'proof'
-                            : 'unmatched';
+                : path === '/api/v1/instance' && request.method === 'GET'
+                  ? 'account.instance'
+                  : path === '/auth/recovery-codes' && request.method === 'POST'
+                    ? 'account.recovery-codes'
+                    : path === '/auth/recover' && request.method === 'POST'
+                      ? 'account.recover'
+                      : path.startsWith('/auth/passkey/') &&
+                          request.method === 'POST'
+                        ? 'account.passkey'
+                        : path === '/health/live' && request.method === 'GET'
+                          ? 'health.live'
+                          : path === '/health/ready' && request.method === 'GET'
+                            ? 'health.ready'
+                            : path.startsWith('/_proof')
+                              ? 'proof'
+                              : 'unmatched';
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -452,6 +478,9 @@ export function createApp({
         },
       },
     )
+    .get('/api/v1/instance', () => instanceDocument, {
+      response: t.Unsafe<InstanceDocument>(InstanceDocumentSchema),
+    })
     .get(
       '/api/v1/accounts/register',
       (): RegistrationChallenge => ({

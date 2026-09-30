@@ -130,6 +130,16 @@ There is no unauthenticated production bootstrap bypass. The first Staff adminis
 
 This mechanism's trust root is authenticated operator access to the deployment's secret channel, which is the same trust root as deployment configuration itself.
 
+## Minimum tier account mechanism (Cloudflare Free)
+
+This section specifies the `cloudflare-free-minimum` account surface per [FREE-TIER-PROFILE](FREE-TIER-PROFILE.md) and [ADR 0007](decisions/0007-cloudflare-free-minimum-tier.md); the tier stays startup-disabled until its 13.G6 acceptance, and nothing here substitutes for the standard profiles.
+
+- **Password under the tier's PBKDF2 policy.** Password registration, login and recovery use PBKDF2-HMAC-SHA256 with the mandatory keyed pepper, per-user random salt and versioned algorithm/iteration/pepper records; the measured policy fixes current 50,000 / stored-maximum 100,000 iterations, and the reviewed 600,000-iteration floor is unmet, so **password login and registration advertise as disabled** (`authentication.passwordLogin = false` in the instance document) until plan limits change. A stored record stronger than the configured maximum refuses verification rather than downgrading.
+- **Passkeys and single-use recovery codes are the recommended path.** The passkey and recovery-code mechanisms specified above are hash-policy-independent and are the recommended account journey on the tier; D1-backed account lockout with progressive delay, per-account/per-route quotas and required Turnstile when a provider is configured compensate for the reduced password posture, with digest-only bounded administrator alerting.
+- **Administrator-assisted recovery without email.** The no-email recovery path is identical to the standard tier: single-use recovery codes, plus administrator-assisted reset through the account-management API; an email channel exists only when an email plugin is installed (later module).
+- **Assurance difference.** Standard-profile assurance distinguishes Argon2id-verified passwords from passkey/SSO ceremonies; the tier's password path (when a future floor change enables it) provides PBKDF2-verified assurance only — a recorded degradation (FREE identifiers), never an equal claim. High-assurance operations on the tier rely on passkeys and recent authentication.
+- **Downgrade rule.** Existing Argon2id records are never verified by the tier's PBKDF2 path. Enabling the tier on data with existing Argon2id credentials requires migrating or resetting those records first (re-registration or administrator-forced reset); the migration path is part of any future activation acceptance, not of this specification.
+
 ## Provider optionality
 
 Core operates with zero plugins: no email, SSO or CAPTCHA provider is required for accounts, sessions, the code flow, recovery codes or administrator-assisted recovery. A configured CAPTCHA provider enables required verification on the account routes automatically (implemented); SSO/email plugins plug into the provider contracts defined by 04.3d and later modules without weakening any boundary above.

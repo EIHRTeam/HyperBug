@@ -289,3 +289,23 @@ it('lets the enrolled Staff administrator sign in through the shared login route
   expect(session.status).toBe(200);
   expect(await session.json()).toEqual({ authenticated: true });
 });
+
+it('publishes the unauthenticated instance capability document', async () => {
+  const response = await fetch(new URL('/api/v1/instance', base));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({
+    tier: 'standard',
+    degradationIds: [],
+    passwordHashPolicy: { algorithm: 'argon2id', downgraded: false },
+    authentication: {
+      passwordRegistration: true,
+      passwordLogin: true,
+      passkeys: false,
+      recoveryCodes: true,
+      administratorAssistedRecovery: true,
+    },
+    limits: {
+      documented: 'docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas',
+    },
+  });
+});

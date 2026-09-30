@@ -43,6 +43,44 @@ export const ReadinessSchema = Type.Object(
   { additionalProperties: false },
 );
 export type ReadinessResponse = Static<typeof ReadinessSchema>;
+export const InstanceDocumentSchema = Type.Object(
+  {
+    tier: Type.Union([
+      Type.Literal('standard'),
+      Type.Literal('cloudflare-free-minimum'),
+    ]),
+    degradationIds: Type.Array(Type.String({ pattern: '^FREE-0[1-8]$' }), {
+      maxItems: 8,
+      uniqueItems: true,
+    }),
+    passwordHashPolicy: Type.Object(
+      {
+        algorithm: Type.Union([
+          Type.Literal('argon2id'),
+          Type.Literal('pbkdf2-hmac-sha256'),
+        ]),
+        downgraded: Type.Boolean(),
+      },
+      { additionalProperties: false },
+    ),
+    authentication: Type.Object(
+      {
+        passwordRegistration: Type.Boolean(),
+        passwordLogin: Type.Boolean(),
+        passkeys: Type.Boolean(),
+        recoveryCodes: Type.Boolean(),
+        administratorAssistedRecovery: Type.Boolean(),
+      },
+      { additionalProperties: false },
+    ),
+    limits: Type.Object(
+      { documented: Type.String({ minLength: 1, maxLength: 2048 }) },
+      { additionalProperties: false },
+    ),
+  },
+  { additionalProperties: false },
+);
+export type InstanceDocument = Static<typeof InstanceDocumentSchema>;
 export const RegistrationRequestSchema = Type.Object(
   {
     handle: Type.String({ pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]{2,31}$' }),

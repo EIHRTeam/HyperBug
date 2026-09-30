@@ -128,3 +128,12 @@ it('registers a passkey and signs in discoverably on workerd/D1', async () => {
     error: { code: 'PASSKEY_DENIED' },
   });
 });
+
+it('advertises passkey capability in the instance document', async () => {
+  const response = await mf.dispatchFetch(`${authOrigin}/api/v1/instance`);
+  expect(response.status).toBe(200);
+  const instance = (await response.json()) as {
+    authentication: { passkeys: boolean };
+  };
+  expect(instance.authentication.passkeys).toBe(true);
+});

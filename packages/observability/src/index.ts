@@ -6,6 +6,7 @@ export type RouteLabel =
   | 'account.session'
   | 'account.logout'
   | 'account.bootstrap'
+  | 'account.instance'
   | 'account.recovery-codes'
   | 'account.recover'
   | 'account.passkey'
@@ -35,6 +36,7 @@ export function jsonTelemetry(write: (line: string) => void): Telemetry {
         'account.session',
         'account.logout',
         'account.bootstrap',
+        'account.instance',
         'account.recovery-codes',
         'account.recover',
         'account.passkey',
