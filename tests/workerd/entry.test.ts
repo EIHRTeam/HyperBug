@@ -75,19 +75,23 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
   try {
     const db = await configured.getD1Database('DB');
     const migrations = await migrationStatements('d1');
-    const accountMigration = migrations.at(-2);
+    const accountMigration = migrations.at(-3);
     if (accountMigration?.name !== '0010_password_credentials')
       throw new Error('Registration migration missing');
-    const sessionMigration = migrations.at(-1);
+    const sessionMigration = migrations.at(-2);
     if (sessionMigration?.name !== '0011_authorization_sessions')
       throw new Error('Session migration missing');
-    for (const migration of migrations.slice(0, -2))
+    const recoveryMigration = migrations.at(-1);
+    if (recoveryMigration?.name !== '0012_recovery_codes')
+      throw new Error('Recovery migration missing');
+    for (const migration of migrations.slice(0, -3))
       await db.batch(migration.statements.map((sql) => db.prepare(sql)));
     const base = await configured.ready;
     const missingCredentials = await fetch(new URL('/health/ready', base));
     expect(missingCredentials.status).toBe(503);
     await db.batch(accountMigration.statements.map((sql) => db.prepare(sql)));
     await db.batch(sessionMigration.statements.map((sql) => db.prepare(sql)));
+    await db.batch(recoveryMigration.statements.map((sql) => db.prepare(sql)));
     const missingTokenKey = await fetch(new URL('/health/ready', base));
     expect(missingTokenKey.status).toBe(503);
     expect(missingTokenKey.headers.get('cache-control')).toBe('no-store');

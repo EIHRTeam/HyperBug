@@ -6,6 +6,7 @@ import {
   createPostgresAccountSessionStore,
   createPostgresAuditRepository,
   createPostgresKeyRegistry,
+  createPostgresAccountRecoveryStore,
   createPostgresRateCounterStore,
   createPostgresStaffEnrollmentStore,
 } from '@hyperbug/database-postgres';
@@ -13,6 +14,7 @@ import type { SensitiveAdmissionDependencies } from '@hyperbug/server';
 import type { KeyProvider, KeyRegistry } from '@hyperbug/security';
 import type {
   AccountPasswordStore,
+  AccountRecoveryStore,
   AccountRegistrationStore,
   AccountSessionStore,
   StaffEnrollmentStore,
@@ -41,6 +43,7 @@ export interface NodeAbuseAdmission {
   readonly passwordStore: AccountPasswordStore | null;
   readonly sessionStore: AccountSessionStore | null;
   readonly staffEnrollmentStore: StaffEnrollmentStore | null;
+  readonly recoveryStore: AccountRecoveryStore | null;
   /** Trusted maintenance call; the runtime also schedules it every five minutes. */
   purgeExpiredRateCounters(nowMs: number): Promise<number>;
   ready(signal: AbortSignal): Promise<boolean>;
@@ -76,6 +79,7 @@ export function configureNodeAbuseAdmission(
       passwordStore: null,
       sessionStore: null,
       staffEnrollmentStore: null,
+      recoveryStore: null,
       purgeExpiredRateCounters: async () => {
         throw new Error('Rate counter cleanup unavailable');
       },
@@ -187,6 +191,7 @@ export function configureNodeAbuseAdmission(
     passwordStore: accountStore,
     sessionStore: createPostgresAccountSessionStore(pool),
     staffEnrollmentStore: createPostgresStaffEnrollmentStore(pool),
+    recoveryStore: createPostgresAccountRecoveryStore(pool),
     purgeExpiredRateCounters: cleanup.run,
     async ready(signal: AbortSignal): Promise<boolean> {
       if (signal.aborted || !provider || !keyProvider) return false;

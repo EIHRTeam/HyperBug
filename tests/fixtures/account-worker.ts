@@ -8,10 +8,14 @@ import { createCloudflareStandardPasswordService } from '../../apps/api-cloudfla
 import { createWorkerAbuseKeyProvider } from '../../apps/api-cloudflare/src/abuse-keys.ts';
 import { createCloudflareVolumetricLimiter } from '../../apps/api-cloudflare/src/rate-limit.ts';
 import {
+  createD1AccountRecoveryStore,
   createD1AccountRegistrationStore,
+  createD1AccountSessionStore,
+  createD1KeyRegistry,
   createD1RateCounterStore,
   createD1StaffEnrollmentStore,
 } from '@hyperbug/database-d1';
+import { createWorkerKeyProvider } from '../../apps/api-cloudflare/src/key-provider.ts';
 
 const config = loadConfig(env, 'cloudflare');
 const observations: string[] = [];
@@ -39,6 +43,15 @@ export default createApp({
   staffEnrollmentStore: createD1StaffEnrollmentStore(env.DB),
   bootstrapState: async () =>
     (await createD1StaffEnrollmentStore(env.DB).countActiveStaff()) === 0,
+  sessionStore: createD1AccountSessionStore(env.DB),
+  passwordStore: createD1AccountRegistrationStore(env.DB),
+  recoveryStore: createD1AccountRecoveryStore(env.DB),
+  keyProvider: env.HYPERBUG_KEY_RING
+    ? createWorkerKeyProvider(
+        env.HYPERBUG_KEY_RING,
+        createD1KeyRegistry(env.DB),
+      )
+    : null,
 })
   .get('/_proof/observations', () =>
     observations.map((line) => JSON.parse(line)),

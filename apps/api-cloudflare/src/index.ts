@@ -16,6 +16,7 @@ import { createCloudflareStandardPasswordService } from './standard-password.ts'
 import { createWorkerAbuseKeyProvider } from './abuse-keys.ts';
 import {
   createD1AccountRegistrationStore,
+  createD1AccountRecoveryStore,
   createD1AccountSessionStore,
   createD1AuditRepository,
   createD1KeyRegistry,
@@ -144,6 +145,7 @@ const app = createApp({
   registrationStore: accountStore,
   passwordStore: accountStore,
   sessionStore: env.DB ? createD1AccountSessionStore(env.DB) : null,
+  recoveryStore: env.DB ? createD1AccountRecoveryStore(env.DB) : null,
   bootstrapCode,
   staffEnrollmentStore,
   bootstrapState: staffEnrollmentStore

@@ -1160,3 +1160,32 @@ export const authorizationSessions = table(
     ),
   ],
 );
+/** Single-use account recovery codes; only keyed digests are stored. */
+export const recoveryCodes = table(
+  'recovery_codes',
+  {
+    id: id('id').primaryKey(),
+    identityId: id('identity_id')
+      .notNull()
+      .references(() => identities.id),
+    generation: integer('generation').notNull(),
+    digest: json('digest').notNull(),
+    createdAt: instant('created_at').notNull(),
+    usedAt: instant('used_at'),
+  },
+  (t) => [
+    index('recovery_code_identity').on(t.identityId, t.generation),
+    validId('recovery_code_id', t.id),
+    validTime('recovery_code_created', t.createdAt),
+    validTime('recovery_code_used', t.usedAt),
+    validJson('recovery_code_digest', t.digest),
+    check(
+      'recovery_code_generation',
+      sql`${t.generation} BETWEEN 1 AND 2147483647`,
+    ),
+    check(
+      'recovery_code_time_order',
+      sql`(${t.usedAt} IS NULL OR ${t.usedAt} >= ${t.createdAt})`,
+    ),
+  ],
+);

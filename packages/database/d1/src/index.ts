@@ -4,6 +4,7 @@ export { createD1AccountLockoutStore } from './account-lockout.ts';
 export { createD1AccountRegistrationStore } from './account-registration.ts';
 export { createD1AccountSessionStore } from './account-session.ts';
 export { createD1StaffEnrollmentStore } from './staff-enrollment.ts';
+export { createD1AccountRecoveryStore } from './account-recovery.ts';
 export { createD1AuditRepository } from './audit.ts';
 import {
   DomainError,

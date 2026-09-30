@@ -16,6 +16,9 @@ import {
   AccountSessionSchema,
   BootstrapEnrollRequestSchema,
   BootstrapEnrolledSchema,
+  RecoveryCodesSchema,
+  RecoveryRequestSchema,
+  RecoveredSchema,
   type RegistrationRequest,
   type RegistrationAccepted,
   type RegistrationChallenge,
@@ -25,9 +28,13 @@ import {
   type AccountSession,
   type BootstrapEnrollRequest,
   type BootstrapEnrolled,
+  type RecoveryCodes,
+  type RecoveryRequest,
+  type Recovered,
 } from '@hyperbug/contracts';
 import type {
   AccountPasswordStore,
+  AccountRecoveryStore,
   AccountRegistrationStore,
   AccountSessionStore,
   StaffEnrollmentStore,
@@ -45,6 +52,10 @@ import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 import { registerAccount } from './account-registration.ts';
 import { loginAccount } from './account-login.ts';
 import { enrollInitialStaff } from './bootstrap-enrollment.ts';
+import {
+  generateAccountRecoveryCodes,
+  recoverAccount,
+} from './account-recovery.ts';
 import {
   clearedSessionCookie,
   currentAccountSession,
@@ -76,6 +87,7 @@ export interface AppOptions {
   /** Operator-channel one-time enrollment code; null disarms the route. */
   bootstrapCode?: string | null;
   staffEnrollmentStore?: StaffEnrollmentStore | null;
+  recoveryStore?: AccountRecoveryStore | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
   bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
@@ -176,6 +188,7 @@ export function createApp({
   sessionStore,
   bootstrapCode = null,
   staffEnrollmentStore = null,
+  recoveryStore = null,
   bootstrapState = null,
   minimumLoginAdmission,
 }: AppOptions) {
@@ -241,13 +254,17 @@ export function createApp({
               ? 'account.logout'
               : path === '/auth/bootstrap/enroll' && request.method === 'POST'
                 ? 'account.bootstrap'
-                : path === '/health/live' && request.method === 'GET'
-                  ? 'health.live'
-                  : path === '/health/ready' && request.method === 'GET'
-                    ? 'health.ready'
-                    : path.startsWith('/_proof')
-                      ? 'proof'
-                      : 'unmatched';
+                : path === '/auth/recovery-codes' && request.method === 'POST'
+                  ? 'account.recovery-codes'
+                  : path === '/auth/recover' && request.method === 'POST'
+                    ? 'account.recover'
+                    : path === '/health/live' && request.method === 'GET'
+                      ? 'health.live'
+                      : path === '/health/ready' && request.method === 'GET'
+                        ? 'health.ready'
+                        : path.startsWith('/_proof')
+                          ? 'proof'
+                          : 'unmatched';
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -295,7 +312,9 @@ export function createApp({
         request.method === 'POST' &&
         (path === '/auth/login' ||
           path === '/auth/logout' ||
-          path === '/auth/bootstrap/enroll')
+          path === '/auth/bootstrap/enroll' ||
+          path === '/auth/recovery-codes' ||
+          path === '/auth/recover')
       )
         requireAuthOrigin(request);
       if (request.method === 'GET' && path === '/auth/session')
@@ -490,13 +509,13 @@ export function createApp({
     .get(
       '/auth/session',
       async ({ request }) => {
-        const principalId = await currentAccountSession({
+        const session = await currentAccountSession({
           request,
           provider: keyProvider ?? null,
           store: sessionStore ?? null,
           nowMs: Date.now(),
         });
-        if (!principalId) throw new RequestFailure('LOGIN_DENIED');
+        if (!session) throw new RequestFailure('LOGIN_DENIED');
         return { authenticated: true as const };
       },
       { response: t.Unsafe<AccountSession>(AccountSessionSchema) },
@@ -534,6 +553,40 @@ export function createApp({
       {
         body: t.Unsafe<BootstrapEnrollRequest>(BootstrapEnrollRequestSchema),
         response: { 201: t.Unsafe<BootstrapEnrolled>(BootstrapEnrolledSchema) },
+      },
+    )
+    .post(
+      '/auth/recovery-codes',
+      async ({ request }) =>
+        generateAccountRecoveryCodes({
+          request,
+          keyProvider: keyProvider ?? null,
+          recoveryStore: recoveryStore ?? null,
+          sessionStore: sessionStore ?? null,
+          nowMs: Date.now(),
+        }),
+      {
+        body: t.Object({}, { additionalProperties: false }),
+        response: t.Unsafe<RecoveryCodes>(RecoveryCodesSchema),
+      },
+    )
+    .post(
+      '/auth/recover',
+      async ({ request, body, sensitiveAdmission }) =>
+        recoverAccount({
+          request,
+          body,
+          admission: sensitiveAdmission,
+          password: standardPassword ?? null,
+          passwordStore: passwordStore ?? null,
+          recoveryStore: recoveryStore ?? null,
+          sessionStore: sessionStore ?? null,
+          keyProvider: keyProvider ?? null,
+          requestId: boundaryFor(request).requestId,
+        }),
+      {
+        body: t.Unsafe<RecoveryRequest>(RecoveryRequestSchema),
+        response: t.Unsafe<Recovered>(RecoveredSchema),
       },
     );
 }

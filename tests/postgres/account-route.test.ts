@@ -36,6 +36,7 @@ let tokenKeyFile: string;
 let base: string;
 let registrationStatements: string[];
 let sessionStatements: string[];
+let recoveryStatements: string[];
 const sessionKeys = cryptoFixture();
 const observations: string[] = [];
 
@@ -55,15 +56,19 @@ beforeAll(async () => {
     max: 2,
   });
   const migrations = await migrationStatements('postgres');
-  const registrationMigration = migrations.at(-2);
+  const registrationMigration = migrations.at(-3);
   if (registrationMigration?.name !== '0009_password_credentials')
     throw new Error('Registration migration missing');
   registrationStatements = registrationMigration.statements;
-  const sessionMigration = migrations.at(-1);
+  const sessionMigration = migrations.at(-2);
   if (sessionMigration?.name !== '0010_authorization_sessions')
     throw new Error('Authorization session migration missing');
   sessionStatements = sessionMigration.statements;
-  for (const migration of migrations.slice(0, -2)) {
+  const recoveryMigration = migrations.at(-1);
+  if (recoveryMigration?.name !== '0011_recovery_codes')
+    throw new Error('Recovery migration missing');
+  recoveryStatements = recoveryMigration.statements;
+  for (const migration of migrations.slice(0, -3)) {
     const db = await pool.connect();
     try {
       await db.query('BEGIN');
@@ -141,7 +146,11 @@ it('registers a real User through Node, primary counters and PostgreSQL atomical
   const db = await pool.connect();
   try {
     await db.query('BEGIN');
-    for (const statement of [...registrationStatements, ...sessionStatements])
+    for (const statement of [
+      ...registrationStatements,
+      ...sessionStatements,
+      ...recoveryStatements,
+    ])
       await db.query(statement);
     await db.query('COMMIT');
   } catch (error) {

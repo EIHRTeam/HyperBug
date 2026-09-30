@@ -110,7 +110,7 @@ export async function currentAccountSession(input: {
   readonly provider: KeyProvider | null;
   readonly store: AccountSessionStore | null;
   readonly nowMs: number;
-}): Promise<string | null> {
+}): Promise<{ principalId: string; identityId: string } | null> {
   const { request, provider, store, nowMs } = input;
   const cookie = parseCookie(request);
   if (!cookie) return null;
@@ -140,7 +140,7 @@ export async function currentAccountSession(input: {
     );
     if (!touched || request.signal.aborted)
       throw new Error('Session changed during validation');
-    return record.principalId;
+    return { principalId: record.principalId, identityId: record.identityId };
   } catch {
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   }

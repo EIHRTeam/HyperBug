@@ -105,6 +105,30 @@ export const BootstrapEnrolledSchema = Type.Object(
   { additionalProperties: false },
 );
 export type BootstrapEnrolled = Static<typeof BootstrapEnrolledSchema>;
+export const RecoveryCodesSchema = Type.Object(
+  {
+    codes: Type.Array(Type.String({ minLength: 1, maxLength: 128 }), {
+      minItems: 10,
+      maxItems: 10,
+    }),
+  },
+  { additionalProperties: false },
+);
+export type RecoveryCodes = Static<typeof RecoveryCodesSchema>;
+export const RecoveryRequestSchema = Type.Object(
+  {
+    handle: Type.String({ pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]{2,31}$' }),
+    recoveryCode: Type.String({ minLength: 1, maxLength: 128 }),
+    password: Type.String({ minLength: 12, maxLength: 128 }),
+  },
+  { additionalProperties: false },
+);
+export type RecoveryRequest = Static<typeof RecoveryRequestSchema>;
+export const RecoveredSchema = Type.Object(
+  { recovered: Type.Literal(true) },
+  { additionalProperties: false },
+);
+export type Recovered = Static<typeof RecoveredSchema>;
 export const EchoSchema = Type.Object(
   { message: Type.String({ minLength: 1, maxLength: 100 }) },
   { additionalProperties: false },

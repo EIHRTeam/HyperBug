@@ -37,10 +37,11 @@ export function createPostgresAccountSessionStore(
       assertInstant(nowMs);
       const result = await pool.query<{
         principal_id: string;
+        identity_id: string;
         digest: unknown;
         absolute_expires_at: string;
       }>(
-        "SELECT s.principal_id, s.digest, s.absolute_expires_at FROM authorization_sessions s JOIN identities i ON i.id = s.identity_id AND i.principal_id = s.principal_id JOIN principals p ON p.id = s.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE s.id = $1 AND s.revoked_at IS NULL AND s.idle_expires_at > $2 AND s.absolute_expires_at > $2 AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = s.credential_revision LIMIT 1",
+        "SELECT s.principal_id, s.identity_id, s.digest, s.absolute_expires_at FROM authorization_sessions s JOIN identities i ON i.id = s.identity_id AND i.principal_id = s.principal_id JOIN principals p ON p.id = s.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE s.id = $1 AND s.revoked_at IS NULL AND s.idle_expires_at > $2 AND s.absolute_expires_at > $2 AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = s.credential_revision LIMIT 1",
         [id, nowMs],
       );
       const row = result.rows[0];
@@ -48,6 +49,8 @@ export function createPostgresAccountSessionStore(
       const digest = JSON.stringify(row.digest);
       const absoluteExpiresAtMs = Number(row.absolute_expires_at);
       if (
+        typeof row.identity_id !== 'string' ||
+        !/^[0-9a-f-]{36}$/.test(row.identity_id) ||
         typeof digest !== 'string' ||
         digest.length > 1024 ||
         !Number.isSafeInteger(absoluteExpiresAtMs) ||
@@ -56,6 +59,7 @@ export function createPostgresAccountSessionStore(
         throw new Error('Invalid authorization session record');
       return {
         principalId: row.principal_id,
+        identityId: row.identity_id,
         digest,
         absoluteExpiresAtMs,
       };
@@ -80,6 +84,17 @@ export function createPostgresAccountSessionStore(
         [nowMs, id, digest],
       );
       return changed(result.rowCount);
+    },
+    async revokeAllForPrincipal(principalId, nowMs) {
+      assertId(principalId);
+      assertInstant(nowMs);
+      const result = await pool.query(
+        'UPDATE authorization_sessions SET revoked_at = GREATEST(created_at, $1) WHERE principal_id = $2 AND revoked_at IS NULL',
+        [nowMs, principalId],
+      );
+      if (result.rowCount === null || result.rowCount < 0)
+        throw new Error('Invalid session revocation result');
+      return result.rowCount;
     },
   };
 }

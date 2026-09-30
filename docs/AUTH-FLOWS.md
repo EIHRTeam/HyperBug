@@ -144,7 +144,7 @@ Core operates with zero plugins: no email, SSO or CAPTCHA provider is required f
 | First-party session cookie, idle/absolute expiry, fixation protection | Implemented; rotation specified for 04.2c |
 | Registration/login routes with admission and CAPTCHA | Implemented (narrow Phase 03 dependency) |
 | Assurance representation | Guard implemented; `password`-only initial assurance recorded |
-| Recovery codes, reset tokens, admin-assisted recovery, sessions revocation | Specified; 04.2f |
+| Recovery codes, reset tokens, admin-assisted recovery, sessions revocation | Single-use recovery codes implemented (generation, regeneration, redemption, session revocation, enumeration resistance); channel-delivered reset tokens and admin-assisted reset remain for 04.2f/04.3c |
 | Logout (session) | Implemented; token revocation endpoint specified |
 | Account states (active/suspended/deleted) | Suspension/expiry denial implemented on session validation; full account-state surface specified |
 | Bootstrap enrollment | Implemented (both profiles; operator-channel code, single-shot, readiness state) |

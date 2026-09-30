@@ -60,6 +60,7 @@ const app = createApp({
   sessionStore: abuse.sessionStore,
   bootstrapCode,
   staffEnrollmentStore: abuse.staffEnrollmentStore,
+  recoveryStore: abuse.recoveryStore,
   bootstrapState: abuse.staffEnrollmentStore
     ? async () => (await abuse.staffEnrollmentStore?.countActiveStaff()) === 0
     : null,

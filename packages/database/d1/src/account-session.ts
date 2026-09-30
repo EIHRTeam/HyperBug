@@ -41,16 +41,19 @@ export function createD1AccountSessionStore(
       const row = await db
         .withSession('first-primary')
         .prepare(
-          "SELECT s.principal_id, s.digest, s.absolute_expires_at FROM authorization_sessions s JOIN identities i ON i.id = s.identity_id AND i.principal_id = s.principal_id JOIN principals p ON p.id = s.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE s.id = ? AND s.revoked_at IS NULL AND s.idle_expires_at > ? AND s.absolute_expires_at > ? AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = s.credential_revision LIMIT 1",
+          "SELECT s.principal_id, s.identity_id, s.digest, s.absolute_expires_at FROM authorization_sessions s JOIN identities i ON i.id = s.identity_id AND i.principal_id = s.principal_id JOIN principals p ON p.id = s.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE s.id = ? AND s.revoked_at IS NULL AND s.idle_expires_at > ? AND s.absolute_expires_at > ? AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = s.credential_revision LIMIT 1",
         )
         .bind(id, nowMs, nowMs)
         .first<{
           principal_id: string;
+          identity_id: string;
           digest: string;
           absolute_expires_at: number;
         }>();
       if (!row) return null;
       if (
+        typeof row.identity_id !== 'string' ||
+        !/^[0-9a-f-]{36}$/.test(row.identity_id) ||
         typeof row.digest !== 'string' ||
         row.digest.length > 1024 ||
         !Number.isSafeInteger(row.absolute_expires_at)
@@ -58,6 +61,7 @@ export function createD1AccountSessionStore(
         throw new Error('Invalid authorization session record');
       return {
         principalId: row.principal_id,
+        identityId: row.identity_id,
         digest: row.digest,
         absoluteExpiresAtMs: row.absolute_expires_at,
       };
@@ -92,6 +96,19 @@ export function createD1AccountSessionStore(
         .bind(nowMs, id, digest)
         .run();
       return changed(result.meta.changes);
+    },
+    async revokeAllForPrincipal(principalId, nowMs) {
+      assertId(principalId);
+      assertInstant(nowMs);
+      const result = await db
+        .prepare(
+          'UPDATE authorization_sessions SET revoked_at = max(created_at, ?) WHERE principal_id = ? AND revoked_at IS NULL',
+        )
+        .bind(nowMs, principalId)
+        .run();
+      if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes < 0)
+        throw new Error('Invalid session revocation result');
+      return result.meta.changes;
     },
   };
 }

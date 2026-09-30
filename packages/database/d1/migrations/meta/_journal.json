@@ -85,6 +85,13 @@
       "when": 1790515424822,
       "tag": "0011_authorization_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1790771214559,
+      "tag": "0012_recovery_codes",
+      "breakpoints": true
     }
   ]
 }

@@ -15,6 +15,7 @@ export interface AccountSessionCreate {
 
 export interface AccountSessionRecord {
   readonly principalId: string;
+  readonly identityId: string;
   readonly digest: string;
   readonly absoluteExpiresAtMs: number;
 }
@@ -33,6 +34,8 @@ export interface AccountSessionStore {
   }): Promise<boolean>;
   /** Revoke the exact session after the token has been verified. */
   revoke(id: string, digest: string, nowMs: number): Promise<boolean>;
+  /** Revoke every active session of a principal; used by account recovery. */
+  revokeAllForPrincipal(principalId: string, nowMs: number): Promise<number>;
 }
 
 export function validateAccountSessionCreate(

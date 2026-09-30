@@ -6,6 +6,8 @@ export type RouteLabel =
   | 'account.session'
   | 'account.logout'
   | 'account.bootstrap'
+  | 'account.recovery-codes'
+  | 'account.recover'
   | 'unmatched'
   | 'proof';
 export interface RequestObservation {
@@ -32,6 +34,8 @@ export function jsonTelemetry(write: (line: string) => void): Telemetry {
         'account.session',
         'account.logout',
         'account.bootstrap',
+        'account.recovery-codes',
+        'account.recover',
         'proof',
       ].includes(observation.route)
         ? observation.route
