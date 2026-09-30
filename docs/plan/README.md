@@ -26,6 +26,7 @@ Module 07 policies and the optional deployment-tier specification live in these 
 | [MARKDOWN-POLICY](../MARKDOWN-POLICY.md) | Canonical Markdown storage, representation/transport kinds, determinism, derivation and pagination contract | 07.1 |
 | [ADR 0003](../decisions/0003-markdown-representation-and-pagination.md) | Accepted direction for Markdown representation, transport and pagination | 07 |
 | [DATA-MODEL](../DATA-MODEL.md), [API-CONVENTIONS](../API-CONVENTIONS.md), [API-OPERATIONS](../API-OPERATIONS.md) | Records, public contract, cursor rules and permission matrix | 02, 06–10 |
+| [AUTH-FLOWS](../AUTH-FLOWS.md) | Origins and trust boundaries, public-client registration, Authorization Code + PKCE, opaque tokens, first-party sessions, assurance, recovery, logout and operator-channel bootstrap | 04 |
 | [FREE-TIER-PROFILE](../FREE-TIER-PROFILE.md) | Opt-in Cloudflare Free minimum tier: enablement contract, degradation catalog, compensating controls, capacity ceilings, SMTP delivery and disclosure | 03.1e/03.2g/03.3g–03.3h, 04.1e/04.2g, 09.1f/09.2e/09.3g, 13.1f–13.1g |
 | [ADR 0007](../decisions/0007-cloudflare-free-minimum-tier.md) | Accepted direction for the opt-in minimum tier and its recorded deviations | 03, 04, 09, 13 |
 | [TRANSPORT-SECURITY](../TRANSPORT-SECURITY.md) | Platform TLS/PQ capability, deployment verification, and versioned crypto-agility evidence | 03.2f |

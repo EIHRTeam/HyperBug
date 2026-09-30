@@ -63,7 +63,7 @@ A deleted boundary item does not invalidate the tuple; use strict keyset compari
 
 ## Visibility, authentication and deprecation
 
-[API-OPERATIONS](API-OPERATIONS.md) defines the minimum permission matrix. Public User and Staff identities are separate. Browser bearer credentials remain memory-only; no new auth flow or browser token store is introduced by these conventions. Authentication, CSRF/CORS, assurance and revocation implementation belongs to modules 03–04.
+[API-OPERATIONS](API-OPERATIONS.md) defines the minimum permission matrix. Public User and Staff identities are separate. Browser bearer credentials remain memory-only; no new auth flow or browser token store is introduced by these conventions. Authentication, CSRF/CORS, assurance and revocation implementation belongs to modules 03–04; the protocol specification is [AUTH-FLOWS](AUTH-FLOWS.md).
 
 A hidden project/resource yields the same safe 404 as a missing one where existence would disclose information. Moderated content is excluded from public detail, lists, search, history and event metadata. Cross-project references require authorization to both sides and an explicitly accepted feature policy; initial writes disallow them.
 
