@@ -6,7 +6,7 @@ import type { LoginRequest } from '@hyperbug/contracts';
 import type { KeyProvider, StandardPasswordService } from '@hyperbug/security';
 import { verifyAccountPassword } from './account-password.ts';
 import { canonicalRegistrationHandle } from './account-registration.ts';
-import { issueAccountSession } from './account-session.ts';
+import { issueSessionCookieFor } from './account-session.ts';
 import type { BoundSensitiveActionAdmission } from './sensitive-admission.ts';
 import { RequestFailure } from './errors.ts';
 
@@ -76,7 +76,7 @@ export async function loginAccount(input: {
     nowMs,
   });
   if (!account) throw new RequestFailure('LOGIN_DENIED');
-  const cookie = await issueAccountSession({
+  const cookie = await issueSessionCookieFor({
     account,
     provider: keyProvider,
     store: sessionStore,

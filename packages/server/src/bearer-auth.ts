@@ -15,11 +15,6 @@ export interface BearerPrincipal {
   readonly scope: string;
 }
 
-/** Space-separated OAuth scope string split into its granted tokens. */
-export function bearerScope(scope: string): string[] {
-  return [...new Set(scope.split(' '))];
-}
-
 /** The token pattern's own anchors make a plain concatenation unmatchable. */
 const bearerPattern = new RegExp(
   `^Bearer ${accessTokenPattern.source.replace(/^\^/, '').replace(/\$$/, '')}$`,

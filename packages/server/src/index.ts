@@ -1431,7 +1431,7 @@ export {
   createDbAuthorizationResolver,
 } from './authorization-facts.ts';
 export type { DbAuthorizationDependencies } from './authorization-facts.ts';
-export { authenticateBearer, bearerScope } from './bearer-auth.ts';
+export { authenticateBearer } from './bearer-auth.ts';
 export type { BearerPrincipal } from './bearer-auth.ts';
 export { createCaptchaGate, requireRequiredCaptcha } from './captcha.ts';
 export {

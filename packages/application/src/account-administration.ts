@@ -1,5 +1,3 @@
-import { assertId } from '@hyperbug/domain';
-
 /** Current principal state for authorization facts and staff administration. */
 export interface PrincipalAccountFacts {
   readonly kind: 'user' | 'staff';
@@ -33,8 +31,4 @@ export interface AccountAdministrationStore {
   suspendPrincipal(principalId: string): Promise<boolean>;
   /** Restore a suspended principal; false when it cannot apply. */
   activatePrincipal(principalId: string): Promise<boolean>;
-}
-
-export function validatePrincipalAdministrationId(principalId: string): void {
-  assertId(principalId);
 }

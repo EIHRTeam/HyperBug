@@ -70,21 +70,3 @@ export async function verifyAccountPassword(input: {
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   }
 }
-
-/** Identity-scoped account facts for passkey-issued sessions. */
-export async function loadPasswordCredentialByIdentity(
-  identityId: string,
-  store: AccountPasswordStore | null,
-  signal: AbortSignal,
-): Promise<VerifiedAccountPassword | null> {
-  if (!store) throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
-  const credential = await withDeadline(signal, 1000, () =>
-    store.loadCredentialByIdentity(identityId),
-  );
-  if (!credential) return null;
-  return {
-    principalId: credential.principalId,
-    identityId: credential.identityId,
-    credentialRevision: credential.revision,
-  };
-}

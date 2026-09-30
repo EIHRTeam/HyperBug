@@ -5,7 +5,6 @@ import {
   verifyCredential,
   type KeyProvider,
 } from '@hyperbug/security';
-import type { VerifiedAccountPassword } from './account-password.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
@@ -67,17 +66,6 @@ export function issuedSessionCookie(id: string, token: string): string {
 }
 
 export const clearedSessionCookie = `${cookieName}=; Max-Age=0; ${cookieAttributes}`;
-
-/** A fresh identifier prevents login fixation; the store rechecks revision. */
-export async function issueAccountSession(input: {
-  readonly account: VerifiedAccountPassword;
-  readonly provider: KeyProvider | null;
-  readonly store: AccountSessionStore | null;
-  readonly signal: AbortSignal;
-  readonly nowMs: number;
-}): Promise<string> {
-  return issueSessionCookieFor(input);
-}
 
 /** Shared issuance for password and passkey logins; no credential is embedded. */
 export async function issueSessionCookieFor(input: {
