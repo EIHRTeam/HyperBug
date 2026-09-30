@@ -10,9 +10,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 03 complete (2026-09-30 compliant completion with the recorded re-scope; the recovery/token/privileged category routes deferred from 03.3c/03.3d are owned here).
 - Implementation started: Narrow registration/login/session work exists as the Phase 03 dependency starting point; the full 04.1 ordered work begins now and must finish rather than rewrite that foundation.
-- Completed implementation checklist IDs: None.
-- Active/next checklist group: 04.1b (Better Auth candidate PoC), then 04.1c–04.1e, 04.2a–04.2g, 04.3a–04.3d and acceptance 04.V1–04.V6 (non-suspended portions). Standard-profile password login is approved under [ADR 0009](../../decisions/0009-standard-password-login.md); the optional Free tier stays startup-disabled on its separate path. Audit portions of 04.3a/04.3c/04.V5 remain suspended and unchecked.
-- Last updated: 2026-09-30 (04.1a accepted).
+- Completed implementation checklist IDs: 04.1a, 04.1b.
+- Active/next checklist group: 04.1c (public-account mechanism + initial-administrator enrollment), then 04.1d–04.1e, 04.2a–04.2g, 04.3a–04.3d and acceptance 04.V1–04.V6 (non-suspended portions). The Better Auth candidate is recorded as not accepted (04.1b evidence); the Core-owned implementation proceeds. Standard-profile password login is approved under [ADR 0009](../../decisions/0009-standard-password-login.md); the optional Free tier stays startup-disabled on its separate path. Audit portions of 04.3a/04.3c/04.V5 remain suspended and unchecked.
+- Last updated: 2026-09-30 (04.1a/04.1b accepted).
 - Blocking issues discovered: None structural. The existing registration/login/session routes are proven locally and on the authorized test deployments (genuine ingress, live challenge, cross-location consistency closed in module 03's evidence); the authorization-service flows, recovery, Staff enrollment and project authorization remain to be built in this module.
 - Evidence: [Registration admission](../evidence/03-registration-admission.md), [login/session admission](../evidence/03-login-admission.md) and [signed ingress](../evidence/03-workers-ingress.md) cover the existing narrow dependency; no Module 04 acceptance claim.
 
@@ -606,3 +606,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for 04.1a; production route budgets remain at the staging real-load milestone.
 - Next actions: Run 04.1b (Better Auth candidate PoC) against current documentation on both runtime/database profiles.
 - Next-session cautions: The specified-but-unimplemented items (authorize/token endpoints, rotation, recovery, bootstrap) must not be treated as existing behavior in API-CONVENTIONS or the SPA.
+
+### 2026-09-30 — 04.1b accepted: Better Auth candidate PoC, not adopted
+
+- Scope and checklist IDs: **04.1b accepted** (PoC executed and outcome recorded; candidate library not adopted). No application code changed; the workspace dependency graph is untouched.
+- Progress: Ran the bounded candidate PoC on both required profiles — Node 24.21.0/PostgreSQL 18.6 (isolated cluster, real HTTP server, 16/20 checks) and workerd/D1 (Miniflare, 11/11 checks) — using Better Auth 1.7.6 + @better-auth/oauth-provider 1.7.6 with `disableJwtPlugin` opaque tokens, 60 s codes, 600 s access tokens and a public PKCE client. The full Authorization Code + PKCE S256 flow, hashed token storage, public-client revocation and session sign-out/revocation were verified on both profiles.
+- Change summary: Evidence documentation only. Ten gaps/deviations were recorded, the decisive ones being: default opaque-token entropy ≈191 bits (below the ≥256-bit baseline), unkeyed SHA-256 token digest by default, a session-id storage model that differs from HyperBug's keyed-digest cookie contract, `/oauth2/userinfo` rejecting the public-client opaque token in this configuration, a cross-profile revoke status inconsistency, Workers build patching (variable dynamic import) and a drizzle-orm ≥0.45.2 peer requirement against the workspace's 0.44.7.
+- Files/artifacts: [PoC evidence](../evidence/04-better-auth-poc.md) (new); [SOURCES](../SOURCES.md) (2026-09-30 Context7 lookup record); the module checklist and this record. Scratch scripts remain ignored under `.local/phase04-betterauth-poc/`.
+- Verification: PoC runs as recorded above (PostgreSQL 16/20 with each failure explained by a recorded upstream gap; workerd/D1 11/11); `corepack pnpm docs:build` and the changed-file link check passed for this documentation batch. No repository application tests were run because no application behavior changed.
+- Decisions and deviations: Candidate **not accepted** per 04.1b's own rule (session/storage rules deviate from the baseline); the selected business framework is unchanged and 04.2 proceeds Core-owned. TECH-STACK §42's boundary (authorization/roles/permissions/Staff identity stay Core) is unaffected either way.
+- Blockers/open questions: None for this module; the recorded upstream gaps are a future-reconsideration note, not a blocker.
+- Next actions: Implement 04.1c (operational public-account mechanism and the operator-channel initial-administrator enrollment from AUTH-FLOWS), then 04.1d.
+- Next-session cautions: Do not treat the PoC scratch as production code or add its dependencies to the workspace; the PoC's redirect-URI/cookie values are fixtures, not policy.

@@ -77,6 +77,10 @@ No current implementation proof was performed during this planning session. Bett
 
 A third-party Workers password-hashing benchmark could not be retrieved (repeated fetch timeouts) and is not used as evidence; no decision depends on it.
 
+### Better Auth candidate lookup — 2026-09-30
+
+`resolve-library-id` selected `/better-auth/better-auth` (official, high reputation, 3,984 snippets). Three `query-docs` calls covered the OAuth 2.1 provider plugin (public clients, PKCE S256, dynamic registration), opaque access tokens with hashed storage and revocation/introspection, and session management with the D1 binding. Findings fed the 04.1b PoC; see [the PoC evidence](evidence/04-better-auth-poc.md) for what the installed 1.7.6 packages actually verified and where documentation and behavior diverged (opaque userinfo rejection, cross-profile revoke status).
+
 ## Modern web guidance
 
 The explicitly requested modern-web-guidance skill was read and executed through `pnpx`, since pnpm was available. Search preceded retrieval. Skill version supplied: `2026_09_04-7de96777`.
