@@ -41,7 +41,7 @@ export type HookInvocation =
   | { action: 'disabled'; error: 'disabled' }
   | {
       action: Exclude<PluginHookFailureAction, 'continue'>;
-      error: 'error' | 'invalid';
+      error: 'error' | 'timeout' | 'invalid';
     };
 
 /** Validate a module before any invocation: manifest and native trust only. */
@@ -86,14 +86,15 @@ export async function invokePluginHook(input: {
   readonly deadlineMs: number;
   readonly timer?: (ms: number) => Promise<never>;
 }): Promise<HookInvocation> {
-  const definition = pluginHookPoint(input.point);
-  const validated = validatePluginModule(input.module);
-  if (!definition || !validated.ok || definition.mode !== 'sync')
-    return { action: 'fail-request', error: 'invalid' };
+  // A non-enabled plugin participates in nothing, whatever it declares.
   if (input.state !== 'enabled')
     return input.state === 'disabled'
       ? { action: 'disabled', error: 'disabled' }
       : { action: 'fail-request', error: 'invalid' };
+  const definition = pluginHookPoint(input.point);
+  const validated = validatePluginModule(input.module);
+  if (!definition || !validated.ok || definition.mode !== 'sync')
+    return { action: 'fail-request', error: 'invalid' };
   const handler = input.module.hooks[input.point];
   if (!handler) return { action: 'fail-request', error: 'invalid' };
   if (
@@ -117,13 +118,19 @@ export async function invokePluginHook(input: {
         const handle = setTimeout(() => reject(new Error('deadline')), ms);
         if (typeof handle === 'object' && 'unref' in handle) handle.unref();
       }));
+  const startedMs = performance.now();
+  const timeoutPromise = timeout(input.deadlineMs);
   try {
-    // Awaiting races the handler against the deadline; native CPU-bound code
-    // between awaits cannot be preempted (§11.3's documented limitation).
+    // Awaiting races the handler against the deadline. Native CPU-bound code
+    // between awaits cannot be preempted (§11.3's documented limitation), so
+    // the wall clock is checked afterwards: a result produced past the
+    // deadline is not adopted even when the race itself resolved first.
     const result = await Promise.race([
       Promise.resolve(handler(envelope)),
-      timeout(input.deadlineMs),
+      timeoutPromise,
     ]);
+    if (performance.now() - startedMs > input.deadlineMs)
+      throw new Error('deadline');
     return { action: 'continue', result };
   } catch {
     // The declared policy is fail-request for undetermined modules; the
@@ -135,7 +142,9 @@ export async function invokePluginHook(input: {
         : policy === 'enqueue-retry'
           ? ('enqueue-retry' as const)
           : ('fail-request' as const);
-    return { action, error: 'error' };
+    const error =
+      performance.now() - startedMs > input.deadlineMs ? 'timeout' : 'error';
+    return { action, error };
   }
 }
 

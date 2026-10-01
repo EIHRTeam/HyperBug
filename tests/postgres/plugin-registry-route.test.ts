@@ -475,6 +475,56 @@ it('manages the plugin registry with step-up on PostgreSQL and emits no plugin a
     ),
   ).rejects.toMatchObject({ code: 'PLUGIN_STATE_CONFLICT' });
 
+  // 05.3b: a non-administrator principal is forbidden at the boundary.
+  const userRegistered = await post('/api/v1/accounts/register', {
+    handle: 'plainuser',
+    password: 'long-functional-password',
+  });
+  expect(userRegistered.status).toBe(202);
+  const userLogin = await post('/auth/login', {
+    handle: 'plainuser',
+    password: 'long-functional-password',
+  });
+  expect(userLogin.status).toBe(200);
+  const userCookie = (userLogin.headers.getSetCookie?.() ?? [])[0]?.split(
+    ';',
+  )[0];
+  if (userCookie === undefined) throw new Error('Missing session cookie');
+  const userToken = await tokenFromCookie(userCookie!, 'user-state');
+  const userAttempt = await post(
+    '/api/v1/admin/plugins',
+    { manifest: pluginManifest },
+    { authorization: `Bearer ${userToken}` },
+  );
+  expect(userAttempt.status).toBe(403);
+  expect(await userAttempt.json()).toMatchObject({
+    error: { code: 'FORBIDDEN' },
+  });
+
+  // 05.3d non-audit scope: retain keeps namespaced configuration.
+  const sampleAgain = await post(
+    '/api/v1/admin/plugins',
+    { manifest: pluginManifest },
+    { authorization: `Bearer ${token}` },
+  );
+  expect(sampleAgain.status).toBe(201);
+  const retainedConfigure = await post(
+    '/api/v1/admin/plugins/configure',
+    { id: '@hyperbug/sample', secrets: { 'api-key': 'kept-value' } },
+    { authorization: `Bearer ${token}` },
+  );
+  expect(retainedConfigure.status).toBe(200);
+  const retainedUninstall = await post(
+    '/api/v1/admin/plugins/uninstall',
+    { id: '@hyperbug/sample', policy: 'retain' },
+    { authorization: `Bearer ${token}` },
+  );
+  expect(retainedUninstall.status).toBe(204);
+  const retainedRow = await pool.query(
+    "SELECT COUNT(*)::int AS n FROM plugin_settings WHERE plugin_id = '@hyperbug/sample'",
+  );
+  expect(retainedRow.rows[0]?.n).toBe(1);
+
   const pluginAudits = await pool.query(
     "SELECT COUNT(*)::int AS n FROM audit_events WHERE action LIKE 'plugin.%'",
   );

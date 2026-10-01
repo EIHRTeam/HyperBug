@@ -528,6 +528,55 @@ it('manages the plugin registry with step-up on workerd/D1 and emits no plugin a
   });
   expect(unknownPlugin.status).toBe(409);
 
+  // 05.3b: a non-administrator principal is forbidden at the plugin-facing
+  // boundary before any registry work.
+  const userRegistered = await post('/api/v1/accounts/register', {
+    handle: 'plainuser',
+    password: 'long-functional-password',
+  });
+  expect(userRegistered.status).toBe(202);
+  const userLogin = await post('/auth/login', {
+    handle: 'plainuser',
+    password: 'long-functional-password',
+  });
+  expect(userLogin.status).toBe(200);
+  const userCookie = (userLogin.headers.getSetCookie?.() ?? [])[0]?.split(
+    ';',
+  )[0];
+  if (userCookie === undefined) throw new Error('Missing session cookie');
+  const userToken = await tokenFromCookie(userCookie!, 'user-state');
+  const userAttempt = await call('/api/v1/admin/plugins', {
+    body: { manifest: zeroSettingsManifest },
+    token: userToken,
+  });
+  expect(userAttempt.status).toBe(403);
+  expect(await userAttempt.json()).toMatchObject({
+    error: { code: 'FORBIDDEN' },
+  });
+
+  // 05.3d non-audit scope: uninstall retain keeps namespaced configuration.
+  const configdAgain = await call('/api/v1/admin/plugins', {
+    body: { manifest: configuredManifest },
+    token,
+  });
+  expect(configdAgain.status).toBe(201);
+  const retainedSecret = await call('/api/v1/admin/plugins/configure', {
+    body: { id: '@hyperbug/configd', secrets: { 'api-key': 'kept-value' } },
+    token,
+  });
+  expect(retainedSecret.status).toBe(200);
+  const retainedUninstall = await call('/api/v1/admin/plugins/uninstall', {
+    body: { id: '@hyperbug/configd', policy: 'retain' },
+    token,
+  });
+  expect(retainedUninstall.status).toBe(204);
+  const retainedRow = await db
+    .prepare(
+      "SELECT COUNT(*) AS n FROM plugin_settings WHERE plugin_id = '@hyperbug/configd'",
+    )
+    .first<{ n: number }>();
+  expect(retainedRow?.n).toBeGreaterThan(0);
+
   // The suspended module-05 audit scope stays silent: registry operations
   // must not have emitted any plugin audit events.
   const pluginAudits = await db

@@ -10,8 +10,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
-- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b–05.2f (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
-- Active/next checklist group: 05.3a (incompatible versions, malformed manifests, unknown capabilities, missing secrets, invalid configuration, disabled-plugin behavior).
+- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b–05.2f, 05.3a, 05.3b, 05.3c (05.2a stays unchecked with its audit portion suspended; 05.3d's non-audit scope is complete, its configuration-audit portion stays suspended).
+- Active/next checklist group: 05.3e (English extension-author quickstart stating that installing native code means trusting it); then the module acceptance evidence.
 - Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
@@ -22,9 +22,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
 | 05.2 | Implement Core integration | Complete except 05.2a's suspended audit portion (non-audit scope done) | Session entries below |
-| 05.3 | Verify lifecycle and compatibility | Not started | None yet |
+| 05.3 | Verify lifecycle and compatibility | In progress (05.3a–05.3c complete; 05.3d non-audit scope done, audit portion suspended) | Session entries below |
 | 05.2 | Implement Core integration | Not started | None yet |
-| 05.3 | Verify lifecycle and compatibility | Not started | None yet |
+| 05.3 | Verify lifecycle and compatibility | In progress (05.3a–05.3c complete; 05.3d non-audit scope done, audit portion suspended) | Session entries below |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
@@ -284,3 +284,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.3a — negative fixtures: incompatible versions, malformed manifests, unknown capabilities, missing secrets, invalid configuration, disabled-plugin behavior.
 - Next-session cautions: The runtime executor covers sync points; async participation goes through the 05.2d outbox path. Keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Intended batches 05.3a+05.3b+05.3c (recorded before implementation)
+
+- Scope and checklist IDs: 05.3a (incompatible versions, malformed manifests, unknown capabilities, missing secrets, invalid configuration, disabled-plugin behavior), 05.3b (permissions and object authorization at every plugin-facing API boundary, cross-project access, unauthorized secret reads) and 05.3c (timeout/error behavior and bounded hook invocation, documenting the non-preemptibility of in-process CPU-bound native code). Most dimensions already have route-level and unit evidence from 05.2 batches; this batch adds the aggregated negative-fixture suite (contract-level rejections per dimension), the missing authorization negatives (non-administrator management denial on both profiles), the retain-policy retention assertion, and the CPU-bound non-preemption proof.
+- Progress: Starting now; entry recorded before implementation per protocol.
+- Change summary / Files / Verification: Pending.
+- Decisions and deviations: None yet.
+- Blockers/open questions: None.
+- Next actions: Implement, verify, update this entry.
+- Next-session cautions: None yet.
+
+### 2026-10-01 — Batches 05.3a, 05.3b, 05.3c accepted (negative, authorization and timeout fixtures)
+
+- Scope and checklist IDs: 05.3a, 05.3b and 05.3c accepted (intended batches recorded before implementation). 05.3d's non-audit scope (upgrade/data-retention handling, namespaced migrations, contract compatibility across both runtimes) is complete through these suites; its **configuration-audit portion stays suspended — the item remains unchecked**.
+- Progress: The aggregated negative-fixture suite (`tests/unit/plugin-negative-fixtures.test.ts`) rejects every 05.3a dimension at its owning layer: incompatible apiVersion ranges and non-increasing upgrades, malformed manifests (id/version/trust tier/unknown fields), unknown capabilities, missing declared secrets, wrong-typed/unknown configuration values, and disabled-plugin inertness. Route-level negatives on both profiles add the non-administrator FORBIDDEN denial at the plugin-facing boundary (05.3b; unauthorized configuration reads were already impossible — the read surface returns redacted views only, asserted since 05.2b) and the retain-policy retention assertion (namespaced configuration survives uninstall for reinstall; delete removes it — 05.3d non-audit scope). 05.3c is verified end to end: throwing and stalling handlers deny on the security-critical CAPTCHA point, invalid deadlines and async points refuse before any handler runs, and the CPU-spin test proves in-process native code between awaits cannot be preempted — the wall clock shows the spin ran to completion, and the hardened executor then refuses to adopt its past-deadline result, documenting exactly the §11.3 limitation.
+- Change summary: New negative-fixture suite; executor hardening (deadline starts before the handler; past-deadline results are not adopted; error vs wall-clock-timeout classification); route negatives and retention assertions on both profiles; one new runtime test.
+- Files/artifacts: `tests/unit/plugin-negative-fixtures.test.ts`; `packages/plugin-runtime/src/index.ts`; `tests/unit/plugin-runtime.test.ts`; `tests/workerd/plugin-route.test.ts`; `tests/postgres/plugin-registry-route.test.ts`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 186/186, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build, db:check both dialects, docs build, secret and license scans all passed.
+- Decisions and deviations: The executor was hardened during this batch: the original race let a synchronously-completed CPU-bound handler win even past its deadline because the timer could not fire during the spin — the deadline now starts before the handler and a post-race wall-clock check refuses to adopt late results (non-preemption remains documented and unavoidable; adoption of late results is not). This is a strengthening within §11.3's specified bounds, not a baseline change.
+- Blockers/open questions: None new.
+- Next actions: 05.3e — the English extension-author quickstart.
+- Next-session cautions: 05.3d stays unchecked until its configuration-audit portion is resumed; keep the root `SECURITY.md` draft uncommitted.

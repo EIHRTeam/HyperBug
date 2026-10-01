@@ -128,8 +128,10 @@ describe('bounded sync execution (§11)', () => {
       state: 'enabled',
       payload: { token: 'x' },
       nowMs: Date.now(),
-      deadlineMs: 5,
-      // Injected fast timer stands in for the wall clock without waiting.
+      deadlineMs: 500,
+      // Injected fast timer stands in for the deadline without waiting; the
+      // real wall clock stays far inside it, so this is an error, not a
+      // wall-clock timeout (the CPU-spin case below covers that one).
       timer: () =>
         new Promise<never>((_, reject) => setTimeout(reject, 5) as never),
     });
@@ -165,5 +167,37 @@ describe('bounded sync execution (§11)', () => {
     });
     expect(badDeadline).toEqual({ action: 'fail-request', error: 'invalid' });
     expect(called).toBe(false);
+  });
+});
+
+describe('documented non-preemption (§11.3, 05.3c)', () => {
+  it('cannot preempt CPU-bound native code between awaits', async () => {
+    const started = Date.now();
+    const invocation = await invokePluginHook({
+      module: {
+        manifest: failingCaptchaPlugin,
+        hooks: {
+          'captcha:verify-required': () => {
+            // Synchronous CPU work: the deadline rejection cannot be
+            // delivered until this handler yields the event loop.
+            const until = Date.now() + 60;
+            while (Date.now() < until) {
+              /* spin */
+            }
+            return { verified: true };
+          },
+        },
+      },
+      point: 'captcha:verify-required',
+      state: 'enabled',
+      payload: {},
+      nowMs: Date.now(),
+      deadlineMs: 5,
+      timer: () => Promise.reject(new Error('deadline')) as Promise<never>,
+    });
+    // The wall clock proves the spin ran to completion before the denial —
+    // non-preempted, but its past-deadline result is still not adopted.
+    expect(Date.now() - started).toBeGreaterThanOrEqual(50);
+    expect(invocation).toEqual({ action: 'deny', error: 'timeout' });
   });
 });

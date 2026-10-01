@@ -942,3 +942,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 05.3a negative fixtures.
 - Next-session cautions: Keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batches: negative, authorization and timeout fixtures
+
+- Scope and checklist IDs: 05.3a, 05.3b, 05.3c accepted; 05.3d's non-audit scope is complete with its configuration-audit portion suspended (item unchecked).
+- Progress: The full negative matrix rejects at contract and route level on both profiles; the non-administrator FORBIDDEN denial and retain-policy retention are asserted; timeout/error behavior is verified including the documented non-preemption of CPU-bound native code — with the executor hardened so past-deadline results are never adopted.
+- Change summary: Negative-fixture suite, executor hardening, route negatives, one new runtime test.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — full matrix green (unit 186, contract 1, node 50, workerd 129, postgres 69; lint/typecheck/format/build/db:check/docs/scans).
+- Decisions and deviations: Executor hardening (deadline starts pre-handler; late results refused) strengthens §11.3 within its specified bounds.
+- Blockers/open questions: None new.
+- Next actions: 05.3e extension-author quickstart.
+- Next-session cautions: Keep the root `SECURITY.md` draft uncommitted.
