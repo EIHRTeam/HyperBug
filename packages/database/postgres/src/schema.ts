@@ -1376,3 +1376,35 @@ export const pluginRegistry = table(
     ),
   ],
 );
+/** Namespaced plugin configuration: public values stored, secrets only as envelopes. */
+export const pluginSettings = table(
+  'plugin_settings',
+  {
+    id: id('id').primaryKey(),
+    pluginId: text('plugin_id').notNull(),
+    settingKey: text('setting_key').notNull(),
+    kind: text('kind').notNull(),
+    publicValue: text('public_value'),
+    secretRecord: json('secret_record'),
+    updatedAt: instant('updated_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('plugin_setting_namespace').on(t.pluginId, t.settingKey),
+    validId('plugin_setting_id', t.id),
+    check(
+      'plugin_settings_id',
+      sql`${t.pluginId} ~ '^@[a-z0-9][a-z0-9-]{0,62}/[a-z0-9][a-z0-9-]{0,62}$'`,
+    ),
+    check(
+      'plugin_settings_key',
+      sql`${t.settingKey} ~ '^[a-z][a-z0-9-]{0,63}$'`,
+    ),
+    check('plugin_settings_kind', sql`${t.kind} IN ('public','secret')`),
+    check(
+      'plugin_settings_shape',
+      sql`((${t.kind} = 'public' AND ${t.publicValue} IS NOT NULL AND ${t.secretRecord} IS NULL) OR (${t.kind} = 'secret' AND ${t.publicValue} IS NULL))`,
+    ),
+    validJson('plugin_settings_secret', t.secretRecord),
+    validTime('plugin_settings_updated', t.updatedAt),
+  ],
+);

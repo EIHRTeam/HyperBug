@@ -10,8 +10,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
-- Completed implementation checklist IDs: 05.1a, 05.1b, 05.1c, 05.1d, 05.1e.
-- Active/next checklist group: 05.2b (scoped configuration and storage interfaces). 05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended.
+- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
+- Active/next checklist group: 05.2c (extension contracts and the re-scoped fail-closed plugin-permission handling).
 - Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
@@ -21,7 +21,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
-| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done; audit portion suspended) | Session entries below |
+| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done — audit portion suspended; 05.2b complete) | Session entries below |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 | 05.2 | Implement Core integration | Not started | None yet |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
@@ -174,3 +174,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new. The wrangler/workers-types peer conflict remains latent (module 01).
 - Next actions: 05.2b — scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, namespace ownership (uses the maintenance migrations reference for namespaced schema).
 - Next-session cautions: 05.2a stays unchecked until its audit portion is resumed by user instruction; enable currently succeeds only for settings-free plugins by design until 05.2b lands; local D1 still has pending migrations beyond 0008 and the isolated `hyperbug-test-1` D1 is at 0011 — do not apply 0015 anywhere without an authorized target.
+
+### 2026-10-01 — Intended batch 05.2b (recorded before implementation)
+
+- Scope and checklist IDs: 05.2b — scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, and namespace ownership. Planned: namespaced plugin settings persistence (public values stored, secret values encrypted through the module-03 key-provider envelope with only digests/presence readable back), configuration endpoints on the management surface (write-only secret updates; redacted configuration reads), registry enable consuming stored configuration, both dialects+migrations, both roots, route/repository tests.
+- Progress: Starting now; entry recorded before implementation per protocol.
+- Change summary / Files / Verification: Pending.
+- Decisions and deviations: None yet.
+- Blockers/open questions: None.
+- Next actions: Survey the security package's envelope/key-provider surface, then implement.
+- Next-session cautions: None yet.
+
+### 2026-10-01 — Batch 05.2b accepted (scoped configuration and storage)
+
+- Scope and checklist IDs: 05.2b accepted — scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, and namespace ownership.
+- Progress: `plugin_settings` exists in both dialects (migrations `0016_plugin_settings`/`0015_plugin_settings`) with a uuid row identity per setting, namespace-key uniqueness and shape checks. The `PluginSettingsStore` port stores public values as text and secret values only as opaque A256GCM/A256KW envelopes produced by the module-03 key provider (`encryptSecret`), each envelope context-bound to its row uuid (`resourceType: 'plugin-setting'`) so a stored envelope cannot be replayed onto another row. `POST /api/v1/admin/plugins/configure` validates values against the manifest before storing anything; `POST /api/v1/admin/plugins/configuration` returns the redacted view (public values typed, secrets only as presence); enable consumes the stored configuration; uninstall `policy: delete` removes the namespaced settings while `retain` keeps them.
+- Change summary: Schema/port/adapters/server/contracts additions, both roots and fixture wiring, two route suites extended with the configure flow (write-only secret, redacted read, ciphertext-not-plaintext assertion, enable-after-configure, uninstall cleanup), migration-position updates for the two new migrations.
+- Files/artifacts: `packages/application/src/plugin-settings.ts`; `packages/database/{d1,postgres}/src/plugin-settings.ts` + schema + migrations 0016/0015; `packages/server/src/{plugin-management,index}.ts`; `apps/api-{cloudflare,node}` roots; `tests/fixtures/account-worker.ts`; `tests/workerd/plugin-route.test.ts`; `tests/postgres/plugin-registry-route.test.ts`; migration-position edits in five suites; `docs/API-CONVENTIONS.md`; `docs/plan/modules/05-plugin-foundation.md`; this record.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 160/160, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build, db:check both dialects, docs build, secret and license scans all passed. Both suites assert the stored secret record contains the A256GCM envelope and not the plaintext.
+- Decisions and deviations: Secret envelopes bind to a per-setting uuid because `contextBytes` requires a uuid resource id — plugin ids cannot serve as the binding. Encryption calls the key provider sequentially per secret (deliberate; inline lint disable) while independent row writes parallelize. `plugin:configure` remains reserved for a plugin-scoped facts loader; configuration endpoints anchor on `plugin:install` like the rest of the surface (same role and recent-authentication requirements). A generic namespaced plugin-data store is deferred until its first runtime consumer (05.2f) — the settings store already demonstrates namespace ownership.
+- Blockers/open questions: None new.
+- Next actions: 05.2c — extension contracts per capability with Core policy boundaries, including the fail-closed plugin-permission failure handling re-scoped from 03.3f.
+- Next-session cautions: Migrations are at D1 0016 / PostgreSQL 0015; local D1 has pending 0009+ and the isolated test D1 sits at 0011 — apply only against authorized targets. Keep the root `SECURITY.md` draft uncommitted.

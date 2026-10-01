@@ -26,7 +26,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 ### Step 05.2 — Implement Core integration
 
 - [ ] **05.2a** **Audit portion suspended — no audit for now.** Implement registry/lifecycle validation and authorized, audited plugin-management endpoints.
-- [ ] **05.2b** Implement scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, and namespace ownership.
+- [x] **05.2b** Implement scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, and namespace ownership.
 - [ ] **05.2c** Define authentication/SSO, CAPTCHA, notifications, issue actions/metadata, search, import/export, and settings extension contracts with their Core policy boundaries, including the fail-closed plugin-permission failure handling re-scoped from 03.3f (2026-09-30).
 - [ ] **05.2d** Connect hook/event envelopes to the outbox model; complete actual async dispatch in module 09 before enabling side-effect consumers.
 - [ ] **05.2e** Define build-time frontend extension descriptors and reviewed CSP merging. Do not implement remote JavaScript URL loading.

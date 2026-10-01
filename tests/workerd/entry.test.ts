@@ -75,25 +75,25 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
   try {
     const db = await configured.getD1Database('DB');
     const migrations = await migrationStatements('d1');
-    const accountMigration = migrations.at(-6);
+    const accountMigration = migrations.at(-7);
     if (accountMigration?.name !== '0010_password_credentials')
       throw new Error('Registration migration missing');
-    const sessionMigration = migrations.at(-5);
+    const sessionMigration = migrations.at(-6);
     if (sessionMigration?.name !== '0011_authorization_sessions')
       throw new Error('Session migration missing');
-    const recoveryMigration = migrations.at(-4);
+    const recoveryMigration = migrations.at(-5);
     if (recoveryMigration?.name !== '0012_recovery_codes')
       throw new Error('Recovery migration missing');
-    const webauthnMigration = migrations.at(-3);
+    const webauthnMigration = migrations.at(-4);
     if (webauthnMigration?.name !== '0013_webauthn')
       throw new Error('WebAuthn migration missing');
-    const oauthMigration = migrations.at(-2);
+    const oauthMigration = migrations.at(-3);
     if (oauthMigration?.name !== '0014_oauth_codes')
       throw new Error('OAuth migration missing');
-    const pluginMigration = migrations.at(-1);
+    const pluginMigration = migrations.at(-2);
     if (pluginMigration?.name !== '0015_plugin_registry')
       throw new Error('Plugin registry migration missing');
-    for (const migration of migrations.slice(0, -6))
+    for (const migration of migrations.slice(0, -7))
       await db.batch(migration.statements.map((sql) => db.prepare(sql)));
     const base = await configured.ready;
     const missingCredentials = await fetch(new URL('/health/ready', base));

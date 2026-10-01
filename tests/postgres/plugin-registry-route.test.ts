@@ -132,7 +132,7 @@ const pluginManifest = {
   capabilities: ['notifications'],
   extensionPoints: [],
   permissions: [],
-  settings: [],
+  settings: [{ key: 'api-key', kind: 'secret' }],
 };
 
 beforeAll(async () => {
@@ -213,6 +213,7 @@ beforeAll(async () => {
       oauthCodeStore: configured.oauthCodeStore,
       projectRoleStore: configured.projectRoleStore,
       pluginRegistry: configured.pluginRegistryStore,
+      pluginSettings: configured.pluginSettingsStore,
       accountAdministration: configured.accountAdministration,
       auditAppend: configured.auditAppend,
       bootstrapCode: enrollmentCode,
@@ -340,6 +341,33 @@ it('manages the plugin registry with step-up on PostgreSQL and emits no plugin a
     { authorization: `Bearer ${token}` },
   );
   expect(duplicate.status).toBe(409);
+
+  // 05.2b configuration: write-only secret, redacted read, enable on stored config.
+  const writeSecret = await post(
+    '/api/v1/admin/plugins/configure',
+    { id: '@hyperbug/sample', secrets: { 'api-key': 'super-secret-value' } },
+    { authorization: `Bearer ${token}` },
+  );
+  console.log(
+    'PG_CONFIGURE_STATUS',
+    writeSecret.status,
+    await writeSecret.text(),
+  );
+  expect(writeSecret.status).toBe(200);
+  const configRead = await post(
+    '/api/v1/admin/plugins/configuration',
+    { id: '@hyperbug/sample' },
+    { authorization: `Bearer ${token}` },
+  );
+  expect(configRead.status).toBe(200);
+  expect(await configRead.json()).toEqual({
+    settings: [{ key: 'api-key', kind: 'secret', secretPresent: true }],
+  });
+  const secretRow = await pool.query(
+    "SELECT secret_record::text AS record FROM plugin_settings WHERE plugin_id = '@hyperbug/sample'",
+  );
+  expect(secretRow.rows[0]?.record).toContain('A256GCM');
+  expect(secretRow.rows[0]?.record).not.toContain('super-secret-value');
 
   const enabled = await post(
     '/api/v1/admin/plugins/enable',

@@ -41,7 +41,7 @@ beforeAll(async () => {
     max: 2,
   });
   const migrations = await migrationStatements('postgres');
-  if (migrations.at(-4)?.name !== '0011_recovery_codes')
+  if (migrations.at(-5)?.name !== '0011_recovery_codes')
     throw new Error('Recovery migration missing');
   for (const migration of migrations) {
     const db = await pool.connect();

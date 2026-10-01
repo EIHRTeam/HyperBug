@@ -262,5 +262,6 @@ export * from './key-registry.ts';
 export { createPostgresAccountSessionStore } from './account-session.ts';
 export { createPostgresProjectRoleStore } from './project-role-store.ts';
 export { createPostgresPluginRegistryStore } from './plugin-registry.ts';
+export { createPostgresPluginSettingsStore } from './plugin-settings.ts';
 export { createPostgresAccountAdministration } from './account-administration.ts';
 export { createPostgresAuditRepository } from './audit.ts';

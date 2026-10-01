@@ -882,3 +882,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 05.2b scoped configuration and storage interfaces.
 - Next-session cautions: Do not apply migrations 0015/0014 to any remote database without authorization; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batch: scoped plugin configuration and storage
+
+- Scope and checklist IDs: 05.2b accepted (05.2a stays unchecked with its suspended audit portion; non-audit scope complete from the previous batch).
+- Progress: Namespaced plugin configuration is live on both profiles — public values stored as text, secret values write-only as module-03 A256GCM/A256KW envelopes context-bound to per-setting uuid rows, redacted configuration reads, enable consuming stored configuration, and uninstall's explicit retain/delete policy extending to namespaced settings.
+- Change summary: plugin_settings table in both dialects (migrations 0016/0015), PluginSettingsStore port + adapters, configure/configuration endpoints, root/fixture wiring, extended route suites, migration-position updates, API-CONVENTIONS documentation.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format, unit 160/160, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build, db:check, docs build, secret and license scans passed; both suites assert envelope-not-plaintext storage.
+- Decisions and deviations: Envelope contexts bind to setting-row uuids (plugin ids are not uuids); plugin:configure still awaits a plugin-scoped facts loader; generic plugin-data storage deferred to its first consumer (05.2f).
+- Blockers/open questions: None new.
+- Next actions: 05.2c extension contracts with Core policy boundaries and the re-scoped fail-closed plugin-permission handling.
+- Next-session cautions: Migrations at D1 0016 / PostgreSQL 0015, apply only to authorized targets; keep the root `SECURITY.md` draft uncommitted.

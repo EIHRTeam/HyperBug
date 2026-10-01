@@ -10,6 +10,11 @@ import type {
 } from '@hyperbug/application';
 import {
   pluginRegistryView,
+  publicTextOf,
+  publicValueOf,
+  pluginSettingView,
+  type PluginSettingView,
+  type PluginSettingsStore,
   type PluginRegistryRecord,
   type PluginRegistryStore,
   type PluginRegistryView,
@@ -19,6 +24,11 @@ import type {
   AuthorizationPolicy,
   AuthorizationResolver,
   KeyProvider,
+} from '@hyperbug/security';
+import {
+  CryptoFailure,
+  encryptSecret,
+  type SecretContext,
 } from '@hyperbug/security';
 import { authenticateBearer, type BearerPrincipal } from './bearer-auth.ts';
 import { requireAuthorizedAction } from './authorization.ts';
@@ -33,6 +43,7 @@ export interface PluginManagementContext {
   readonly authorizationPolicy: AuthorizationPolicy;
   readonly roleStore: ProjectRoleStore | null;
   readonly registry: PluginRegistryStore | null;
+  readonly settings: PluginSettingsStore | null;
 }
 
 const storeTimeoutMs = 1_000;
@@ -95,6 +106,39 @@ function loadRecord(
     if (!record) throw new RequestFailure('NOT_FOUND');
     return record;
   });
+}
+
+function settings(context: PluginManagementContext): PluginSettingsStore {
+  if (!context.settings) throw new RequestFailure('PLUGIN_UNAVAILABLE');
+  return context.settings;
+}
+
+async function storedConfiguration(
+  context: PluginManagementContext,
+  request: Request,
+  manifest: PluginManifest,
+): Promise<{
+  publicValues: Record<string, string | number | boolean>;
+  secretPresent: string[];
+}> {
+  const rows = await withDeadline(request.signal, storeTimeoutMs, () =>
+    settings(context).list(manifest.id),
+  );
+  const publicValues: Record<string, string | number | boolean> = {};
+  const secretPresent: string[] = [];
+  const declared = new Map(manifest.settings.map((s) => [s.key, s]));
+  for (const row of rows) {
+    const setting = declared.get(row.key);
+    if (!setting || setting.kind !== row.kind)
+      throw new RequestFailure('PLUGIN_STATE_CONFLICT');
+    if (row.kind === 'secret') secretPresent.push(row.key);
+    else if (setting.kind === 'public')
+      publicValues[row.key] = publicValueOf(
+        row.publicValue ?? '',
+        setting.valueType,
+      );
+  }
+  return { publicValues, secretPresent };
 }
 
 /** POST /api/v1/admin/plugins — register a validated manifest. */
@@ -174,10 +218,15 @@ export async function enablePlugin(
 ): Promise<PluginRegistryView> {
   await requirePluginAdministrator(request, context);
   const record = await loadRecord(context, request, id);
+  const configuration = await storedConfiguration(
+    context,
+    request,
+    record.manifest,
+  );
   const decision = decideEnable({
     state: record.state,
     manifest: record.manifest,
-    configuration: { publicValues: {}, secretPresent: [] },
+    configuration,
   });
   if (!decision.ok) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
   const updated = await withDeadline(request.signal, storeTimeoutMs, () =>
@@ -269,4 +318,143 @@ export async function uninstallPlugin(
     registry(context).remove(id),
   );
   if (!removed) throw new RequestFailure('NOT_FOUND');
+  if (policyInput === 'delete' && context.settings)
+    await withDeadline(request.signal, storeTimeoutMs, () =>
+      settings(context).removeAll(id),
+    );
+}
+
+/**
+ * POST /api/v1/admin/plugins/configure — write configuration: public values
+ * directly, secret values write-only and encrypted through the key provider
+ * (SECURITY §121; PLUGIN-SPEC §§9.5, 10.3). Unknown keys and wrong types
+ * answer PLUGIN_INVALID without storing anything.
+ */
+export async function configurePlugin(
+  request: Request,
+  context: PluginManagementContext,
+  id: string,
+  input: { values?: unknown; secrets?: unknown },
+): Promise<PluginRegistryView> {
+  await requirePluginAdministrator(request, context);
+  const record = await loadRecord(context, request, id);
+  const declared = new Map(record.manifest.settings.map((s) => [s.key, s]));
+  const values = input.values ?? {};
+  const secrets = input.secrets ?? {};
+  if (typeof values !== 'object' || values === null || Array.isArray(values))
+    throw new RequestFailure('PLUGIN_INVALID');
+  if (typeof secrets !== 'object' || secrets === null || Array.isArray(secrets))
+    throw new RequestFailure('PLUGIN_INVALID');
+  const nowMs = Date.now();
+  const existing = await withDeadline(request.signal, storeTimeoutMs, () =>
+    settings(context).list(record.id),
+  );
+  const rowIds = new Map(existing.map((row) => [row.key, row.id]));
+  const writes: {
+    key: string;
+    kind: 'public' | 'secret';
+    rowId: string;
+    record: unknown;
+  }[] = [];
+  for (const [key, value] of Object.entries(values)) {
+    const setting = declared.get(key);
+    if (!setting || setting.kind !== 'public')
+      throw new RequestFailure('PLUGIN_INVALID');
+    if (typeof value !== setting.valueType)
+      throw new RequestFailure('PLUGIN_INVALID');
+    writes.push({
+      key,
+      kind: 'public',
+      rowId: rowIds.get(key) ?? crypto.randomUUID(),
+      record: { publicValue: publicTextOf(value) },
+    });
+  }
+  for (const [key, value] of Object.entries(secrets)) {
+    const setting = declared.get(key);
+    if (!setting || setting.kind !== 'secret')
+      throw new RequestFailure('PLUGIN_INVALID');
+    if (typeof value !== 'string' || value.length < 1 || value.length > 4096)
+      throw new RequestFailure('PLUGIN_INVALID');
+    if (!context.keyProvider) throw new RequestFailure('PLUGIN_UNAVAILABLE');
+    // Envelopes bind to the stable row uuid — contextBytes requires a uuid
+    // resource id — so a stored envelope can never be replayed onto another row.
+    const rowId = rowIds.get(key) ?? crypto.randomUUID();
+    const contextBinding: SecretContext = {
+      resourceType: 'plugin-setting',
+      resourceId: rowId,
+      field: key,
+      projectId: null,
+      schemaVersion: 1,
+    };
+    let envelope: unknown;
+    try {
+      // Sequential by design: one key-provider round trip per secret avoids
+      // concurrent current-key bursts on the registry.
+      // eslint-disable-next-line no-await-in-loop
+      envelope = await encryptSecret(
+        context.keyProvider,
+        new TextEncoder().encode(value),
+        contextBinding,
+      );
+    } catch (error) {
+      if (error instanceof CryptoFailure)
+        throw new RequestFailure('PLUGIN_UNAVAILABLE');
+      throw error;
+    }
+    writes.push({
+      key,
+      kind: 'secret',
+      rowId,
+      record: { secretRecord: envelope },
+    });
+  }
+  await Promise.all(
+    writes.map((write) =>
+      withDeadline(request.signal, storeTimeoutMs, () =>
+        settings(context).upsert({
+          id: write.rowId,
+          pluginId: record.id,
+          key: write.key,
+          kind: write.kind,
+          ...(write.kind === 'public'
+            ? {
+                publicValue: (write.record as { publicValue: string })
+                  .publicValue,
+              }
+            : {
+                secretRecord: (write.record as { secretRecord: unknown })
+                  .secretRecord,
+              }),
+          updatedAtMs: nowMs,
+        }),
+      ),
+    ),
+  );
+  return pluginRegistryView(record);
+}
+
+/**
+ * POST /api/v1/admin/plugins/configuration — redacted read: public values in
+ * their declared types, secrets only as presence (PLUGIN-SPEC §9.5).
+ */
+export async function readConfiguration(
+  request: Request,
+  context: PluginManagementContext,
+  id: string,
+): Promise<PluginSettingView[]> {
+  await requirePluginAdministrator(request, context);
+  const record = await loadRecord(context, request, id);
+  const declared = new Map(record.manifest.settings.map((s) => [s.key, s]));
+  const rows = await withDeadline(request.signal, storeTimeoutMs, () =>
+    settings(context).list(record.id),
+  );
+  return rows.map((row) => {
+    const setting = declared.get(row.key);
+    if (!setting || setting.kind !== row.kind)
+      throw new RequestFailure('PLUGIN_STATE_CONFLICT');
+    return pluginSettingView(
+      row,
+      setting.kind === 'public' ? setting.valueType : undefined,
+    );
+  });
 }

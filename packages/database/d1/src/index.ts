@@ -10,6 +10,7 @@ export { createD1OAuthStores } from './oauth-store.ts';
 export { createD1AuditRepository } from './audit.ts';
 export { createD1ProjectRoleStore } from './project-role-store.ts';
 export { createD1PluginRegistryStore } from './plugin-registry.ts';
+export { createD1PluginSettingsStore } from './plugin-settings.ts';
 export { createD1AccountAdministration } from './account-administration.ts';
 import {
   DomainError,

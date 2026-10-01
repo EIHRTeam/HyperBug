@@ -63,6 +63,7 @@ import {
 import type {
   AccountAdministrationStore,
   PluginRegistryStore,
+  PluginSettingsStore,
   AccountPasswordStore,
   AccountRecoveryStore,
   AccountRegistrationStore,
@@ -123,10 +124,12 @@ import {
 import { authenticateBearer } from './bearer-auth.ts';
 import { requireAuthorizedAction } from './authorization.ts';
 import {
+  configurePlugin,
   disablePlugin,
   enablePlugin,
   listPlugins,
   loadPlugin,
+  readConfiguration,
   registerPlugin,
   uninstallPlugin,
   upgradePlugin,
@@ -182,6 +185,8 @@ export interface AppOptions {
   projectRoleStore?: ProjectRoleStore | null;
   /** Deployment-level plugin registry persistence for plugin management. */
   pluginRegistry?: PluginRegistryStore | null;
+  /** Namespaced plugin configuration persistence. */
+  pluginSettings?: PluginSettingsStore | null;
   /** Principal/project directory and staff account administration. */
   accountAdministration?: AccountAdministrationStore | null;
   /** Append-only audit sink for the audited account/role mutations. */
@@ -293,6 +298,7 @@ export function createApp({
   oauthCodeStore = null,
   projectRoleStore = null,
   pluginRegistry = null,
+  pluginSettings = null,
   accountAdministration = null,
   auditAppend = null,
   bootstrapState = null,
@@ -669,6 +675,7 @@ export function createApp({
     authorizationPolicy,
     roleStore,
     registry: pluginRegistry,
+    settings: pluginSettings,
   };
   return new Elysia({ adapter, aot: true, normalize: false })
     .decorate('captcha', captchaGate)
@@ -1192,6 +1199,61 @@ export function createApp({
       {
         body: pluginIdBodySchema,
         response: t.Unsafe<PluginRecord>(PluginRecordSchema),
+      },
+    )
+    .post(
+      '/api/v1/admin/plugins/configure',
+      async ({ request, body }): Promise<PluginSummary> =>
+        configurePlugin(request, pluginManagement, pluginIdBody(body), {
+          values: body.values,
+          secrets: body.secrets,
+        }),
+      {
+        body: t.Object(
+          {
+            id: t.String({ minLength: 3, maxLength: 128 }),
+            values: t.Optional(
+              t.Record(
+                t.String(),
+                t.Union([t.String(), t.Number(), t.Boolean()]),
+              ),
+            ),
+            secrets: t.Optional(t.Record(t.String(), t.String())),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<PluginSummary>(PluginSummarySchema),
+      },
+    )
+    .post(
+      '/api/v1/admin/plugins/configuration',
+      async ({ request, body }) => ({
+        settings: await readConfiguration(
+          request,
+          pluginManagement,
+          pluginIdBody(body),
+        ),
+      }),
+      {
+        body: pluginIdBodySchema,
+        response: t.Object(
+          {
+            settings: t.Array(
+              t.Object(
+                {
+                  key: t.String(),
+                  kind: t.Union([t.Literal('public'), t.Literal('secret')]),
+                  value: t.Optional(
+                    t.Union([t.String(), t.Number(), t.Boolean()]),
+                  ),
+                  secretPresent: t.Optional(t.Boolean()),
+                },
+                { additionalProperties: false },
+              ),
+            ),
+          },
+          { additionalProperties: false },
+        ),
       },
     )
     .post(

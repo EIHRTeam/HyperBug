@@ -127,7 +127,10 @@ const zeroSettingsManifest = {
 const configuredManifest = {
   ...zeroSettingsManifest,
   id: '@hyperbug/configd',
-  settings: [{ key: 'api-key', kind: 'secret' }],
+  settings: [
+    { key: 'api-key', kind: 'secret' },
+    { key: 'threshold', kind: 'public', valueType: 'number' },
+  ],
 };
 
 beforeAll(async () => {
@@ -168,12 +171,13 @@ beforeAll(async () => {
     await db.batch(
       migration.statements.map((statement) => db.prepare(statement)),
     );
-  await db
-    .prepare(
-      "INSERT INTO key_versions (purpose, key_id, version, state, created_at) VALUES ('token-hmac', 'token-hmac-test', 1, 'current', ?)",
-    )
-    .bind(Date.now())
-    .run();
+  for (const purpose of ['token-hmac', 'envelope-kek'])
+    await db
+      .prepare(
+        'INSERT INTO key_versions (purpose, key_id, version, state, created_at) VALUES (?, ?, 1, ?, ?)',
+      )
+      .bind(purpose, `${purpose}-test`, 'current', Date.now())
+      .run();
   authenticator = await createFakeAuthenticator('auth.poc.example', authOrigin);
 });
 
@@ -326,6 +330,50 @@ it('manages the plugin registry with step-up on workerd/D1 and emits no plugin a
   });
   expect(prematureEnable.status).toBe(409);
 
+  // Configuration interfaces (05.2b): write-only secret update, redacted
+  // read, and enable consuming the stored configuration.
+  const badConfigure = await call('/api/v1/admin/plugins/configure', {
+    body: { id: '@hyperbug/configd', values: { bogus: 1 } },
+    token,
+  });
+  expect(badConfigure.status).toBe(400);
+  const publicOnly = await call('/api/v1/admin/plugins/configure', {
+    body: { id: '@hyperbug/configd', values: { threshold: 3 } },
+    token,
+  });
+  expect(publicOnly.status).toBe(200);
+  const writeConfigured = await call('/api/v1/admin/plugins/configure', {
+    body: {
+      id: '@hyperbug/configd',
+      secrets: { 'api-key': 'super-secret-value' },
+    },
+    token,
+  });
+  expect(writeConfigured.status).toBe(200);
+  const configRead = await call('/api/v1/admin/plugins/configuration', {
+    body: { id: '@hyperbug/configd' },
+    token,
+  });
+  expect(configRead.status).toBe(200);
+  expect(await configRead.json()).toEqual({
+    settings: [
+      { key: 'api-key', kind: 'secret', secretPresent: true },
+      { key: 'threshold', kind: 'public', value: 3 },
+    ],
+  });
+  const secretRow = await db
+    .prepare(
+      "SELECT secret_record FROM plugin_settings WHERE plugin_id = '@hyperbug/configd'",
+    )
+    .first<{ secret_record: string }>();
+  expect(secretRow?.secret_record).toContain('A256GCM');
+  expect(secretRow?.secret_record).not.toContain('super-secret-value');
+  const enabledConfigd = await call('/api/v1/admin/plugins/enable', {
+    body: { id: '@hyperbug/configd' },
+    token,
+  });
+  expect(enabledConfigd.status).toBe(200);
+
   const enabled = await call('/api/v1/admin/plugins/enable', {
     body: { id: '@hyperbug/sample' },
     token,
@@ -381,7 +429,7 @@ it('manages the plugin registry with step-up on workerd/D1 and emits no plugin a
   expect(registry.plugins).toHaveLength(2);
   expect(registry.plugins[0]).toMatchObject({
     id: '@hyperbug/configd',
-    state: 'registered',
+    state: 'enabled',
   });
   expect(registry.plugins[1]).toMatchObject({
     id: '@hyperbug/sample',
@@ -399,6 +447,15 @@ it('manages the plugin registry with step-up on workerd/D1 and emits no plugin a
     token,
   });
   expect(uninstalled.status).toBe(204);
+  const uninstalledConfigd = await call('/api/v1/admin/plugins/uninstall', {
+    body: { id: '@hyperbug/configd', policy: 'delete' },
+    token,
+  });
+  expect(uninstalledConfigd.status).toBe(204);
+  const remainingSettings = await db
+    .prepare('SELECT COUNT(*) AS n FROM plugin_settings')
+    .first<{ n: number }>();
+  expect(remainingSettings?.n).toBe(0);
   const gone = await call('/api/v1/admin/plugins/load', {
     body: { id: '@hyperbug/sample' },
     token,

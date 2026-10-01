@@ -11,6 +11,7 @@ import {
   createPostgresOAuthStores,
   createPostgresPasskeyStores,
   createPostgresPluginRegistryStore,
+  createPostgresPluginSettingsStore,
   createPostgresProjectRoleStore,
   createPostgresRateCounterStore,
   createPostgresStaffEnrollmentStore,
@@ -29,6 +30,7 @@ import type {
   OAuthAccessTokenStore,
   OAuthCodeStore,
   PluginRegistryStore,
+  PluginSettingsStore,
   ProjectRoleStore,
   StaffEnrollmentStore,
 } from '@hyperbug/application';
@@ -60,6 +62,7 @@ export interface NodeAbuseAdmission {
   readonly oauthCodeStore: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   readonly projectRoleStore: ProjectRoleStore | null;
   readonly pluginRegistryStore: PluginRegistryStore | null;
+  readonly pluginSettingsStore: PluginSettingsStore | null;
   readonly accountAdministration: AccountAdministrationStore | null;
   readonly passkeyStores:
     | (import('@hyperbug/application').PasskeyStore &
@@ -106,6 +109,7 @@ export function configureNodeAbuseAdmission(
       oauthCodeStore: null,
       projectRoleStore: null,
       pluginRegistryStore: null,
+      pluginSettingsStore: null,
       accountAdministration: null,
       passkeyStores: null,
       auditAppend: null,
@@ -225,6 +229,7 @@ export function configureNodeAbuseAdmission(
     oauthCodeStore: createPostgresOAuthStores(pool),
     projectRoleStore: createPostgresProjectRoleStore(pool),
     pluginRegistryStore: createPostgresPluginRegistryStore(pool),
+    pluginSettingsStore: createPostgresPluginSettingsStore(pool),
     accountAdministration: createPostgresAccountAdministration(pool),
     passkeyStores: createPostgresPasskeyStores(pool),
     auditAppend,
