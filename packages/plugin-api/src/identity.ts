@@ -7,7 +7,7 @@ export const PLUGIN_API_PACKAGE = '@hyperbug/plugin-api' as const;
  * Version of this package. The specification document version follows this
  * value; manifests declare compatibility against it (PLUGIN-SPEC §4).
  */
-export const PLUGIN_API_VERSION = '1.5.0' as const;
+export const PLUGIN_API_VERSION = '1.6.0' as const;
 
 /**
  * Trust tiers a plugin can occupy (PLUGIN-SPEC §3; SECURITY §117). A

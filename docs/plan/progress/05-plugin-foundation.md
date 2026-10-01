@@ -10,8 +10,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
-- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b, 05.2c, 05.2d (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
-- Active/next checklist group: 05.2e (build-time frontend extension descriptors and reviewed CSP merging; no remote JavaScript URL loading).
+- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b–05.2e (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
+- Active/next checklist group: 05.2f (minimal official example plugin and failing/slow fixture using only the public SDK/API).
 - Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
@@ -21,7 +21,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
-| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done — audit suspended; 05.2b–05.2d complete) | Session entries below |
+| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done — audit suspended; 05.2b–05.2e complete) | Session entries below |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 | 05.2 | Implement Core integration | Not started | None yet |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
@@ -240,3 +240,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.2e — build-time frontend extension descriptors and reviewed CSP merging (no remote JavaScript URL loading; no SPA work).
 - Next-session cautions: Migrations at D1 0017 / PostgreSQL 0016. The proof publish route is fixture-only; production publication arrives with module 06's business actions.
+
+### 2026-10-01 — Intended batch 05.2e (recorded before implementation)
+
+- Scope and checklist IDs: 05.2e — build-time frontend extension descriptors and reviewed CSP merging; no remote JavaScript URL loading, no SPA work. Planned: PLUGIN-SPEC §14 defining the `ui:build-time-descriptor` payload and the merge rules (only manifest-declared https exact origins, no wildcards, Core baseline never weakened, unsafe-* structurally impossible), a pure `mergeCspOrigins` helper + descriptor schema in plugin-api (1.6.0), and unit tests covering dedupe/bounds/baseline preservation/zero-plugin equality.
+- Progress: Starting now; entry recorded before implementation per protocol.
+- Change summary / Files / Verification: Pending.
+- Decisions and deviations: None yet.
+- Blockers/open questions: None.
+- Next actions: Implement, verify, update this entry.
+- Next-session cautions: None yet.
+
+### 2026-10-01 — Batch 05.2e accepted (build-time descriptors and CSP merging)
+
+- Scope and checklist IDs: 05.2e accepted — build-time frontend extension descriptors and reviewed CSP merging; no remote JavaScript URL loading; no SPA work.
+- Progress: PLUGIN-SPEC is at 1.6.0 with §14: the `ui:build-time-descriptor` payload (`PluginUiDescriptorSchema` — plugin id, manifest-declared CSP origins, declared surfaces) and the reviewed merge rules implemented as the pure `mergeCspOrigins` in plugin-api 1.6.0 (sdk 1.5.0 re-exports): only https exact origins enter (wildcards, paths, plain http and `unsafe-*` are structurally impossible), the Core baseline is preserved verbatim and always leads, duplicates collapse, at most eight merged entries per directive beyond the baseline, and a zero-plugin merge is the identity. The merge is review input — the build reports what each enabled frontend plugin contributed.
+- Change summary: New `packages/plugin-api/src/frontend.ts`, index/SDK re-exports, version bumps, PLUGIN-SPEC §14 + chapter row, 5 new merge tests.
+- Files/artifacts: `packages/plugin-api/{package.json,src/frontend.ts,src/identity.ts,src/index.ts}`; `packages/plugin-sdk/{package.json,src/index.ts}`; `tests/unit/plugin-frontend.test.ts`; `docs/PLUGIN-SPEC.md`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`; `pnpm-lock.yaml`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 170/170, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build, db:check both dialects, docs build, secret and license scans all passed.
+- Decisions and deviations: None beyond the specification; the frontend build consumption itself is module 11's (no SPA work here).
+- Blockers/open questions: None new.
+- Next actions: 05.2f — one minimal official example plugin and a failing/slow plugin fixture using only the public SDK/API (this activates `@hyperbug/plugin-runtime`'s first real host machinery).
+- Next-session cautions: Keep the root `SECURITY.md` draft uncommitted; the merge is data-only — never a runtime CSP mechanism.

@@ -89,3 +89,10 @@ export {
   pluginMayOccupyPoint,
   pointFailurePolicy,
 } from './extension-points.ts';
+export {
+  CSP_ORIGIN_DIRECTIVE_LIMIT,
+  PluginUiDescriptorSchema,
+  type CspOriginDirectiveSet,
+  type PluginUiDescriptor,
+  mergeCspOrigins,
+} from './frontend.ts';

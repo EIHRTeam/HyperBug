@@ -918,3 +918,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 05.2e build-time frontend descriptors and CSP merging.
 - Next-session cautions: Keep the root `SECURITY.md` draft uncommitted; migrations at D1 0017 / PostgreSQL 0016.
+
+### 2026-10-01 — Module 05 batch: build-time descriptors and CSP merging
+
+- Scope and checklist IDs: 05.2e accepted. No SPA work, no remote JavaScript loading.
+- Progress: PLUGIN-SPEC 1.6.0 §14 defines the build-time `ui` descriptor payload and reviewed CSP merge rules, implemented as the pure `mergeCspOrigins` (https-exact origins only, baseline preserved and leading, dedupe, eight-per-directive bound, zero-plugin identity) in plugin-api 1.6.0 / sdk 1.5.0.
+- Change summary: Frontend descriptor module, re-exports, version bumps, specification chapter, 5 new tests.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — full matrix green (unit 170, contract 1, node 50, workerd 129, postgres 69; lint/typecheck/format/build/db:check/docs/scans).
+- Decisions and deviations: Frontend build consumption is module 11's.
+- Blockers/open questions: None new.
+- Next actions: 05.2f example plugin and failing/slow fixture.
+- Next-session cautions: Keep the root `SECURITY.md` draft uncommitted.

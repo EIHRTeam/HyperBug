@@ -1,6 +1,6 @@
 # HyperBug plugin specification (PLUGIN-SPEC)
 
-Specification version: **1.5.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
+Specification version: **1.6.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
 
 Status: MVP backend development ([module 05](plan/modules/05-plugin-foundation.md)). This frame is defined by checklist 05.1a; the manifest, lifecycle, hook and external-service chapters land with 05.1b–05.1e and Core integration with 05.2.
 
@@ -269,6 +269,25 @@ Registration validates each declared point (`pluginMayOccupyPoint`): the point m
 
 Async points only define their envelopes (§11.5) today: 05.2d connects them to the existing outbox model, and actual dispatch plus side-effect consumers are module 09's, not expanded here.
 
+## 14. Build-time frontend descriptors and CSP merging
+
+The frontend is a static application (§7): plugins integrate at **build time only**. There is no remote JavaScript URL loading, no runtime `import()` of plugin code, and no plugin-served scripts.
+
+### 14.1 Descriptor
+
+A plugin with the `ui` capability participates through the `ui:build-time-descriptor` point (§13). Its payload is `PluginUiDescriptorSchema`: the plugin id, its manifest-declared CSP origins (§9.6 — https exact origins, no wildcards, no paths), and the frontend surfaces it declares. Descriptors are data consumed by the frontend build (module 11); they never execute at runtime.
+
+### 14.2 Reviewed merging
+
+Core's build process merges declared origins into the deployment's CSP baseline via `mergeCspOrigins`:
+
+- only https exact origins merge — the manifest schema and the merge itself reject wildcards, paths and plain http, so `*`, `unsafe-eval` and `unsafe-inline` are structurally impossible additions;
+- the Core baseline is preserved verbatim and always leads; a plugin cannot remove or reorder baseline entries, and a plugin origin already in the baseline does not duplicate;
+- at most eight merged entries per directive beyond the baseline;
+- a zero-plugin merge returns the baseline unchanged.
+
+Merging is review input, not review: the build reports the merged policy so a reviewer sees exactly what each enabled frontend plugin contributed.
+
 ## Chapter status
 
 | Chapter | Content | Defined by |
@@ -278,4 +297,5 @@ Async points only define their envelopes (§11.5) today: 05.2d connects them to 
 | §10 | Lifecycle: states, register/validate, configure, enable, disable, upgrade, uninstall and explicit retain/delete policy | 05.1c |
 | §11 | Hook protocol: mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, idempotency | 05.1d |
 | §12 | External service protocol: channels, scoped/revocable capability grants, bounded delivery, signed versioned events | 05.1e |
-| §13 | Extension-point catalog: per-capability points, modes, payload versions, security classification, participation rules | 05.2c (this version) |
+| §13 | Extension-point catalog: per-capability points, modes, payload versions, security classification, participation rules | 05.2c |
+| §14 | Build-time frontend descriptors and reviewed CSP merging | 05.2e (this version) |
