@@ -31,11 +31,11 @@ Deliver the complete MVP issue-tracking API on both profiles. Public APIs, datab
 
 ### Step 06.3 — Implement discussion and timeline
 
-- [ ] **06.3a** Implement comments with stable permalinks, create/edit history, owner/staff permissions, moderation/redaction, and the agreed deletion/retention behavior.
-- [ ] **06.3b** Implement Issue and Comment reactions with allowed values, uniqueness, idempotent add/remove, bounded counters, and anti-abuse limits.
-- [ ] **06.3c** Implement one cursor-paginated timeline merging comments and state/taxonomy/assignment/edit events with stable ordering and safe actor DTOs.
-- [ ] **06.3d** Keep mentions, comment size, label/assignee cardinality, and event generation bounded. Emit normalized subscription/notification events for later use without synchronous fan-out.
-- [ ] **06.3e** Expose shared schemas and OpenAPI for every operation, including failures and permission requirements.
+- [x] **06.3a** Implement comments with stable permalinks, create/edit history, owner/staff permissions, moderation/redaction, and the agreed deletion/retention behavior. Accepted 2026-10-01: body-only comments with 24-hour idempotency receipts, ascending `(created_at, id)` cursor pagination, immutable per-revision history (staff-only), own-content editing with the moderation lock, visible/hidden/redacted moderation, and tombstone deletion that keeps the body staff-restricted. Verified on both profiles.
+- [x] **06.3b** Implement Issue and Comment reactions with allowed values, uniqueness, idempotent add/remove, bounded counters, and anti-abuse limits. Accepted 2026-10-01: the eight-value allowlist, the schema's unique actor/target/value constraint driving idempotent add/remove (`added`/`present`/`removed`/`absent`), bounded grouped count queries, and `reaction`-category rate admission on principal+project. Verified on both profiles.
+- [x] **06.3c** Implement one cursor-paginated timeline merging comments and state/taxonomy/assignment/edit events with stable ordering and safe actor DTOs. Accepted 2026-10-01: the UNION read merges timeline_events and comments in ascending `(created_at, id)` order with cursor pagination, audience-filtered hidden/deleted rows, comment bodies only for visible rows, and actor DTOs limited to principal ids and fixed system-actor names. Verified on both profiles.
+- [x] **06.3d** Keep mentions, comment size, label/assignee cardinality, and event generation bounded. Emit normalized subscription/notification events for later use without synchronous fan-out. Accepted 2026-10-01: comment bodies bounded to 1–32768 code points, label/assignee cardinality bounded at 20/10, every mutation emits exactly one bounded normalized outbox event (`issue.*`/`comment.*` payloads carry ids only) with no synchronous fan-out; mention extraction is deferred to module 07's representation pipeline and inherits its bounds — nothing unbounded ships.
+- [x] **06.3e** Expose shared schemas and OpenAPI for every operation, including failures and permission requirements. Accepted 2026-10-01: TypeBox contract schemas cover every project/taxonomy/issue/discussion operation and failure shape, and the permission requirements are documented per endpoint family in API-CONVENTIONS; the consolidated OpenAPI artifact remains 10.1a scope.
 
 ## Verification and acceptance
 

@@ -10,9 +10,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 05 complete (2026-10-01; audit remainders closed by the parallel session in commit db90248).
 - Implementation started: Yes (2026-10-01).
-- Completed implementation checklist IDs: 06.1a, 06.1b, 06.2a, 06.2b, 06.2d, 06.2e.
-- Active/next checklist group: 06.3 (06.3a comments next).
-- Last updated: 2026-10-01 (06.2 lifecycle accepted; 06.2c non-audit scope delivered, audit portion suspended).
+- Completed implementation checklist IDs: 06.1a, 06.1b, 06.2a, 06.2b, 06.2d, 06.2e, 06.3a, 06.3b, 06.3c, 06.3d, 06.3e.
+- Active/next checklist group: acceptance (06.V1 next).
+- Last updated: 2026-10-01 (06.3 discussion accepted; steps 06.1–06.3 delivered except the suspended 06.1c/06.2c audit portions).
 - Blocking issues discovered: None during planning; prerequisite completion is still required.
 - Evidence: Planning documents only; no implementation or runtime validation yet.
 
@@ -22,7 +22,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | --- | --- | --- | --- |
 | 06.1 | Implement project and taxonomy services | 06.1a/06.1b accepted 2026-10-01; 06.1c non-audit scope delivered, audit portion suspended | [06 batch entry](#2026-10-01--batch-061a--061b-accepted-project-and-taxonomy-services) |
 | 06.2 | Implement the Issue lifecycle | 06.2a/b/d/e accepted 2026-10-01; 06.2c non-audit scope delivered, audit portion suspended | [06.2 batch entry](#2026-10-01--batch-062-accepted-issue-lifecycle-triage-projections-cache-spec) |
-| 06.3 | Implement discussion and timeline | Not started | None yet |
+| 06.3 | Implement discussion and timeline | 06.3a–06.3e accepted 2026-10-01 | [06.3 batch entry](#2026-10-01--batch-063-accepted-comments-reactions-merged-timeline) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
@@ -78,6 +78,18 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Module prerequisites and acceptance remain open.
 - Next actions: Keep Module 06 untouched during the feature hold.
 - Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-10-01 — Batch 06.3 accepted (comments, reactions, merged timeline)
+
+- Scope and checklist IDs: 06.3a–06.3e accepted. Intended batch recorded above before implementation.
+- Progress: The discussion surface is live on both profiles. Comments are body-only raw Markdown with 24-hour idempotency receipts (comment row, first history row, outbox row and receipt in one atomic operation), ascending cursor pagination, immutable per-revision history restricted to `issue:moderate` holders, own-content editing under the moderation lock, visible/hidden/redacted moderation, and tombstone deletion that keeps bodies staff-restricted (public reads see only visible non-deleted rows; moderator permalink reads show withheld bodies). Reactions carry the eight-value allowlist with idempotent add/remove through the schema's unique actor/target/value constraint (`added`/`present`/`removed`/`absent`), bounded grouped count endpoints, and `reaction`-category admission on principal+project. The merged timeline is one UNION read ordering events and comments by `(created_at, id)` with the same cursor contract, audience-filtered rows and safe actor DTOs (principal ids or fixed system-actor names). `comment-create`/`reaction` categories consume the frozen module-03 dimension policy with provisional local budgets. No comment/timeline audit events exist (no suspended 06.3 item covers them, but the module-wide audit suspension is respected).
+- Change summary: Application ports and validators for comments, reactions and the timeline (with per-resource cursor codecs); both-dialect adapters (atomic comment mutations, idempotent reaction writes, grouped counts, merged timeline reads); a shared server mutation-identity module; the discussion server module; contract schemas including the flattened timeline item (a discriminated union cannot cross the response validation boundary); seventeen routes and the `issue.discussion` route label; `requireRate` (rate-only admission) already landed with 06.2; both roots and fixture wired; both-profile journeys; API-CONVENTIONS documentation.
+- Files/artifacts: `packages/application/src/{comments,reactions,timeline}.ts`; `packages/database/{d1,postgres}/src/comments.ts`; `packages/server/src/{discussion,mutation-identity,index}.ts`; `packages/contracts/src/index.ts`; `packages/observability/src/index.ts`; `apps/api-node/src/{abuse-admission,index}.ts`; `apps/api-cloudflare/src/index.ts`; `tests/fixtures/account-worker.ts`; `tests/workerd/discussion-route.test.ts`; `tests/postgres/discussion-route.test.ts` (authored by a parallel subagent, verified here); `docs/API-CONVENTIONS.md`; `docs/plan/modules/06-issue-core.md`; this record.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check (305 files), unit 197/197, contract 1/1, node 50/50, workerd 132/132 (including the discussion journey), isolated PostgreSQL 18.6 72/72 (including the subagent-authored discussion journey after two corrections below), build, db:check both dialects (D1 0017 / PostgreSQL 0016 unchanged), docs build, secret and license scans all passed. Local/emulated only. Corrections during the batch: (1) a template bug produced `ON CONFLICT ((cols))` — double parentheses that match no constraint; the reaction uniques existed in migration 0003 all along, and a speculative duplicate-index migration was generated and reverted before commit. (2) The timeline UNION aligned `revision` with `moderation` by position — both dialects' event arms now order columns identically. (3) The PostgreSQL timeline cursor bound one unreferenced parameter — rewritten to bind each value once. (4) Re-deleting a tombstoned comment answers the closed 404.
+- Decisions and deviations: (1) Comments never bump the issue aggregate revision; they merge into the timeline at read time. (2) The timeline item schema is flattened (optional action/systemActor/moderation/deleted/body fields) because a discriminated union fails Elysia's response validation on both profiles. (3) Reaction writes return outcome states rather than resource counts; count endpoints are separate bounded reads. (4) 06.3d's mention extraction is deferred to module 07's representation pipeline; the bounds that exist today are fixed (comment size, taxonomy cardinality, one bounded event per mutation).
+- Blockers/open questions: None new. The G1 audit-governance decision remains with the user.
+- Next actions: 06.V1–06.V4 — the acceptance matrix: the HTTP workflow journey on both profiles, the principal-class/visibility/moderation matrix, concurrency/idempotency/rollback checks, and query-count/indexed-plan comparisons.
+- Next-session cautions: 06.1c/06.2c audit portions must not resume implicitly; migrations remain at D1 0017 / PostgreSQL 0016; the timeline UNION's column order is position-matched — any new column must be added to both arms.
 
 ### 2026-10-01 — Batch 06.2 accepted (issue lifecycle, triage, projections, cache spec)
 

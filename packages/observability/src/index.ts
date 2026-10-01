@@ -29,6 +29,7 @@ export const ROUTE_LABELS = [
   'issue.read',
   'issue.write',
   'issue.triage',
+  'issue.discussion',
   'proof',
 ] as const;
 

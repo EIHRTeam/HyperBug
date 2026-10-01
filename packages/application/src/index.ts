@@ -23,6 +23,9 @@ export * from './plugin-settings.ts';
 export * from './plugin-events.ts';
 export * from './projects.ts';
 export * from './taxonomy.ts';
+export * from './comments.ts';
+export * from './reactions.ts';
+export * from './timeline.ts';
 
 export interface MutationIdentity {
   mutationId: string;

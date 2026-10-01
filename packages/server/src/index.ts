@@ -57,6 +57,16 @@ import {
   IssueSetAssigneesRequestSchema,
   IssueSetTypeRequestSchema,
   IssueSetMilestoneRequestSchema,
+  CommentDocumentSchema,
+  CommentPageSchema,
+  CreateCommentRequestSchema,
+  EditCommentRequestSchema,
+  CommentModerationRequestSchema,
+  CommentHistorySchema,
+  ReactionRequestSchema,
+  ReactionListSchema,
+  ReactionOutcomeSchema,
+  TimelinePageSchema,
   PluginListSchema,
   PluginRecordSchema,
   PluginSummarySchema,
@@ -106,6 +116,16 @@ import {
   type IssueSetAssigneesRequest,
   type IssueSetTypeRequest,
   type IssueSetMilestoneRequest,
+  type CommentDocument,
+  type CommentPage,
+  type CreateCommentRequest,
+  type EditCommentRequest,
+  type CommentModerationRequest,
+  type CommentHistory,
+  type ReactionRequest,
+  type ReactionList,
+  type ReactionOutcome,
+  type TimelinePage,
   type PluginList,
   type PluginRecord,
   type PluginSummary,
@@ -123,6 +143,9 @@ import type {
   ProjectRoleStore,
   ProjectStore,
   IssueRepository,
+  CommentStore,
+  ReactionStore,
+  TimelineStore,
   StaffEnrollmentStore,
   TaxonomyStore,
 } from '@hyperbug/application';
@@ -210,6 +233,20 @@ import {
   type IssueContext,
 } from './issues.ts';
 import {
+  addReaction,
+  commentHistory,
+  createComment,
+  deleteComment,
+  editComment,
+  issueTimeline,
+  listComments,
+  moderateComment,
+  reactionCounts,
+  readComment,
+  removeReaction,
+  type DiscussionContext,
+} from './discussion.ts';
+import {
   createIssueType,
   createLabel,
   createMilestone,
@@ -282,6 +319,12 @@ export interface AppOptions {
   taxonomyStore?: TaxonomyStore | null;
   /** Project-scoped issue persistence (the module-02 repository). */
   issueRepository?: IssueRepository | null;
+  /** Issue comment persistence with history and moderation. */
+  commentStore?: CommentStore | null;
+  /** Issue/comment reaction persistence. */
+  reactionStore?: ReactionStore | null;
+  /** Merged per-issue timeline reads. */
+  timelineStore?: TimelineStore | null;
   /** Deployment-level plugin registry persistence for plugin management. */
   pluginRegistry?: PluginRegistryStore | null;
   /** Namespaced plugin configuration persistence. */
@@ -401,6 +444,9 @@ export function createApp({
   projectStore = null,
   taxonomyStore = null,
   issueRepository = null,
+  commentStore = null,
+  reactionStore = null,
+  timelineStore = null,
   pluginRegistry = null,
   pluginSettings = null,
   pluginEventOutbox = null,
@@ -738,6 +784,24 @@ export function createApp({
       infix: '/milestones',
     },
     {
+      label: 'issue.discussion',
+      methods: null,
+      prefix: '/api/v1/projects/',
+      infix: '/comments',
+    },
+    {
+      label: 'issue.discussion',
+      methods: null,
+      prefix: '/api/v1/projects/',
+      infix: '/reactions',
+    },
+    {
+      label: 'issue.discussion',
+      methods: ['GET'],
+      prefix: '/api/v1/projects/',
+      infix: '/timeline',
+    },
+    {
       label: 'issue.triage',
       methods: ['POST', 'PUT'],
       prefix: '/api/v1/projects/',
@@ -843,6 +907,13 @@ export function createApp({
   const issueContext: IssueContext = {
     ...projectContext,
     issues: issueRepository,
+    admission: boundSensitiveAdmission,
+  };
+  const discussionContext: DiscussionContext = {
+    ...projectContext,
+    comments: commentStore,
+    reactions: reactionStore,
+    timeline: timelineStore,
     admission: boundSensitiveAdmission,
   };
   return new Elysia({ adapter, aot: true, normalize: false })
@@ -1861,6 +1932,366 @@ export function createApp({
           IssueSetMilestoneRequestSchema,
         ),
         response: t.Unsafe<IssueDocument>(IssueDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/issues/:issueId/comments',
+      async ({ request, params, body, set }): Promise<CommentDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const view = await createComment(
+          request,
+          discussionContext,
+          projectId,
+          issueId,
+          boundaryFor(request).requestId,
+          { body: body.body },
+        );
+        set.status = 201;
+        return view as CommentDocument;
+      },
+      {
+        body: t.Unsafe<CreateCommentRequest>(CreateCommentRequestSchema),
+        response: { 201: t.Unsafe<CommentDocument>(CommentDocumentSchema) },
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issues/:issueId/comments',
+      async ({ request, params, query }): Promise<CommentPage> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await listComments(
+          request,
+          discussionContext,
+          projectId,
+          issueId,
+          {
+            limit: query.limit === undefined ? undefined : Number(query.limit),
+            cursor: query.cursor,
+          },
+        )) as CommentPage;
+      },
+      {
+        query: t.Object(
+          {
+            limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
+            cursor: t.Optional(t.String({ maxLength: 1024 })),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<CommentPage>(CommentPageSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issues/:issueId/comments/:commentId',
+      async ({ request, params }): Promise<CommentDocument> => {
+        const { projectId, issueId, commentId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          commentId === undefined ||
+          !uuidPattern.test(commentId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await readComment(
+          request,
+          discussionContext,
+          projectId,
+          issueId,
+          commentId,
+        )) as CommentDocument;
+      },
+      { response: t.Unsafe<CommentDocument>(CommentDocumentSchema) },
+    )
+    .patch(
+      '/api/v1/projects/:projectId/issues/:issueId/comments/:commentId',
+      async ({ request, params, body }): Promise<CommentDocument> => {
+        const { projectId, issueId, commentId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          commentId === undefined ||
+          !uuidPattern.test(commentId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await editComment(
+          request,
+          discussionContext,
+          projectId,
+          issueId,
+          commentId,
+          boundaryFor(request).requestId,
+          { expectedRevision: body.expectedRevision, body: body.body },
+        )) as CommentDocument;
+      },
+      {
+        body: t.Unsafe<EditCommentRequest>(EditCommentRequestSchema),
+        response: t.Unsafe<CommentDocument>(CommentDocumentSchema),
+      },
+    )
+    .delete(
+      '/api/v1/projects/:projectId/issues/:issueId/comments/:commentId',
+      async ({ request, params, set }) => {
+        const { projectId, issueId, commentId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          commentId === undefined ||
+          !uuidPattern.test(commentId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        await deleteComment(
+          request,
+          discussionContext,
+          projectId,
+          issueId,
+          commentId,
+        );
+        set.status = 204;
+        return null;
+      },
+      { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/api/v1/projects/:projectId/issues/:issueId/comments/:commentId/moderate',
+      async ({ request, params, body }): Promise<CommentDocument> => {
+        const { projectId, issueId, commentId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          commentId === undefined ||
+          !uuidPattern.test(commentId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await moderateComment(
+          request,
+          discussionContext,
+          projectId,
+          issueId,
+          commentId,
+          { moderation: body.moderation },
+        )) as CommentDocument;
+      },
+      {
+        body: t.Unsafe<CommentModerationRequest>(
+          CommentModerationRequestSchema,
+        ),
+        response: t.Unsafe<CommentDocument>(CommentDocumentSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issues/:issueId/comments/:commentId/history',
+      async ({ request, params }): Promise<CommentHistory> => {
+        const { projectId, issueId, commentId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          commentId === undefined ||
+          !uuidPattern.test(commentId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await commentHistory(
+          request,
+          discussionContext,
+          projectId,
+          issueId,
+          commentId,
+        )) as CommentHistory;
+      },
+      { response: t.Unsafe<CommentHistory>(CommentHistorySchema) },
+    )
+    .post(
+      '/api/v1/projects/:projectId/issues/:issueId/reactions',
+      async ({ request, params, body }): Promise<ReactionOutcome> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const status = await addReaction(
+          request,
+          discussionContext,
+          projectId,
+          {
+            issueId,
+          },
+          body.reaction,
+        );
+        return { status: status as ReactionOutcome['status'] };
+      },
+      {
+        body: t.Unsafe<ReactionRequest>(ReactionRequestSchema),
+        response: t.Unsafe<ReactionOutcome>(ReactionOutcomeSchema),
+      },
+    )
+    .delete(
+      '/api/v1/projects/:projectId/issues/:issueId/reactions/:reaction',
+      async ({ request, params }): Promise<ReactionOutcome> => {
+        const { projectId, issueId, reaction } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          reaction === undefined
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const status = await removeReaction(
+          request,
+          discussionContext,
+          projectId,
+          {
+            issueId,
+          },
+          reaction,
+        );
+        return { status: status as ReactionOutcome['status'] };
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issues/:issueId/reactions',
+      async ({ request, params }): Promise<ReactionList> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await reactionCounts(request, discussionContext, projectId, {
+          issueId,
+        })) as ReactionList;
+      },
+      { response: t.Unsafe<ReactionList>(ReactionListSchema) },
+    )
+    .post(
+      '/api/v1/projects/:projectId/issues/:issueId/comments/:commentId/reactions',
+      async ({ request, params, body }): Promise<ReactionOutcome> => {
+        const { projectId, issueId, commentId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          commentId === undefined ||
+          !uuidPattern.test(commentId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const status = await addReaction(
+          request,
+          discussionContext,
+          projectId,
+          { issueId, commentId },
+          body.reaction,
+        );
+        return { status: status as ReactionOutcome['status'] };
+      },
+      {
+        body: t.Unsafe<ReactionRequest>(ReactionRequestSchema),
+        response: t.Unsafe<ReactionOutcome>(ReactionOutcomeSchema),
+      },
+    )
+    .delete(
+      '/api/v1/projects/:projectId/issues/:issueId/comments/:commentId/reactions/:reaction',
+      async ({ request, params }): Promise<ReactionOutcome> => {
+        const { projectId, issueId, commentId, reaction } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          commentId === undefined ||
+          !uuidPattern.test(commentId) ||
+          reaction === undefined
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const status = await removeReaction(
+          request,
+          discussionContext,
+          projectId,
+          { issueId, commentId },
+          reaction,
+        );
+        return { status: status as ReactionOutcome['status'] };
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issues/:issueId/comments/:commentId/reactions',
+      async ({ request, params }): Promise<ReactionList> => {
+        const { projectId, issueId, commentId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId) ||
+          commentId === undefined ||
+          !uuidPattern.test(commentId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await reactionCounts(request, discussionContext, projectId, {
+          issueId,
+          commentId,
+        })) as ReactionList;
+      },
+      { response: t.Unsafe<ReactionList>(ReactionListSchema) },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issues/:issueId/timeline',
+      async ({ request, params, query }): Promise<TimelinePage> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await issueTimeline(
+          request,
+          discussionContext,
+          projectId,
+          issueId,
+          {
+            limit: query.limit === undefined ? undefined : Number(query.limit),
+            cursor: query.cursor,
+          },
+        )) as TimelinePage;
+      },
+      {
+        query: t.Object(
+          {
+            limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
+            cursor: t.Optional(t.String({ maxLength: 1024 })),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<TimelinePage>(TimelinePageSchema),
       },
     )
     .get(

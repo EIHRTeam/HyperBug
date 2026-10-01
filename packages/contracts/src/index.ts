@@ -637,3 +637,139 @@ export const IssueSetMilestoneRequestSchema = Type.Object(
 export type IssueSetMilestoneRequest = Static<
   typeof IssueSetMilestoneRequestSchema
 >;
+
+const CommentModerationSchema = Type.Union([
+  Type.Literal('visible'),
+  Type.Literal('hidden'),
+  Type.Literal('redacted'),
+]);
+const ReactionValueSchema = Type.Union([
+  Type.Literal('thumbs_up'),
+  Type.Literal('thumbs_down'),
+  Type.Literal('laugh'),
+  Type.Literal('hooray'),
+  Type.Literal('confused'),
+  Type.Literal('heart'),
+  Type.Literal('rocket'),
+  Type.Literal('eyes'),
+]);
+export const CommentDocumentSchema = Type.Object(
+  {
+    id: Type.String({ format: 'uuid' }),
+    projectId: Type.String({ format: 'uuid' }),
+    issueId: Type.String({ format: 'uuid' }),
+    authorId: Type.String({ format: 'uuid' }),
+    body: Type.Optional(Type.String({ maxLength: 32768 })),
+    revision: Type.Integer({ minimum: 1 }),
+    moderation: CommentModerationSchema,
+    deleted: Type.Boolean(),
+    createdAt: Type.String(canonicalInstant),
+    updatedAt: Type.String(canonicalInstant),
+  },
+  { additionalProperties: false },
+);
+export type CommentDocument = Static<typeof CommentDocumentSchema>;
+export const CommentPageSchema = Type.Object(
+  {
+    comments: Type.Array(CommentDocumentSchema, { maxItems: 100 }),
+    nextCursor: Type.Union([Type.Null(), Type.String({ maxLength: 1024 })]),
+  },
+  { additionalProperties: false },
+);
+export type CommentPage = Static<typeof CommentPageSchema>;
+export const CreateCommentRequestSchema = Type.Object(
+  { body: Type.String({ minLength: 1, maxLength: 32768 }) },
+  { additionalProperties: false },
+);
+export type CreateCommentRequest = Static<typeof CreateCommentRequestSchema>;
+export const EditCommentRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    body: Type.String({ minLength: 1, maxLength: 32768 }),
+  },
+  { additionalProperties: false },
+);
+export type EditCommentRequest = Static<typeof EditCommentRequestSchema>;
+export const CommentModerationRequestSchema = Type.Object(
+  { moderation: CommentModerationSchema },
+  { additionalProperties: false },
+);
+export type CommentModerationRequest = Static<
+  typeof CommentModerationRequestSchema
+>;
+export const CommentHistoryEntrySchema = Type.Object(
+  {
+    id: Type.String({ format: 'uuid' }),
+    commentId: Type.String({ format: 'uuid' }),
+    revision: Type.Integer({ minimum: 1 }),
+    editorId: Type.String({ format: 'uuid' }),
+    body: Type.String({ maxLength: 32768 }),
+    changedAt: Type.String(canonicalInstant),
+  },
+  { additionalProperties: false },
+);
+export const CommentHistorySchema = Type.Object(
+  { entries: Type.Array(CommentHistoryEntrySchema, { maxItems: 100 }) },
+  { additionalProperties: false },
+);
+export type CommentHistory = Static<typeof CommentHistorySchema>;
+export const ReactionRequestSchema = Type.Object(
+  { reaction: ReactionValueSchema },
+  { additionalProperties: false },
+);
+export type ReactionRequest = Static<typeof ReactionRequestSchema>;
+export const ReactionSummarySchema = Type.Object(
+  {
+    reaction: ReactionValueSchema,
+    count: Type.Integer({ minimum: 0, maximum: 2147483647 }),
+  },
+  { additionalProperties: false },
+);
+export const ReactionListSchema = Type.Object(
+  { reactions: Type.Array(ReactionSummarySchema, { maxItems: 8 }) },
+  { additionalProperties: false },
+);
+export type ReactionList = Static<typeof ReactionListSchema>;
+export const ReactionOutcomeSchema = Type.Object(
+  {
+    status: Type.Union([
+      Type.Literal('added'),
+      Type.Literal('present'),
+      Type.Literal('removed'),
+      Type.Literal('absent'),
+    ]),
+  },
+  { additionalProperties: false },
+);
+export type ReactionOutcome = Static<typeof ReactionOutcomeSchema>;
+/**
+ * One merged timeline row. Event and comment rows share optional fields —
+ * events carry action/systemActor, comments carry moderation/deleted/body —
+ * because a discriminated union cannot cross the runtime response
+ * validation boundary on both profiles.
+ */
+export const TimelineItemSchema = Type.Object(
+  {
+    kind: Type.Union([Type.Literal('event'), Type.Literal('comment')]),
+    id: Type.String({ format: 'uuid' }),
+    actorId: Type.Union([Type.Null(), Type.String({ format: 'uuid' })]),
+    revision: Type.Integer({ minimum: 1 }),
+    createdAt: Type.String(canonicalInstant),
+    action: Type.Optional(Type.String({ minLength: 3, maxLength: 64 })),
+    systemActor: Type.Optional(
+      Type.Union([Type.Null(), Type.String({ maxLength: 64 })]),
+    ),
+    moderation: Type.Optional(CommentModerationSchema),
+    deleted: Type.Optional(Type.Boolean()),
+    body: Type.Optional(Type.String({ maxLength: 32768 })),
+  },
+  { additionalProperties: false },
+);
+export const TimelinePageSchema = Type.Object(
+  {
+    items: Type.Array(TimelineItemSchema, { maxItems: 100 }),
+    nextCursor: Type.Union([Type.Null(), Type.String({ maxLength: 1024 })]),
+  },
+  { additionalProperties: false },
+);
+export type TimelinePage = Static<typeof TimelinePageSchema>;

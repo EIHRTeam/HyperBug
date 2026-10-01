@@ -546,3 +546,8 @@ export function createD1Repository(db: D1Database): IssueRepository {
 export * from './key-registry.ts';
 export { createD1ProjectStore } from './projects.ts';
 export { createD1TaxonomyStore } from './taxonomy.ts';
+export {
+  createD1CommentStore,
+  createD1ReactionStore,
+  createD1TimelineStore,
+} from './comments.ts';

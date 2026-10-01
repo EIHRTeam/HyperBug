@@ -998,3 +998,14 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new; the G1 audit-governance decision remains with the user.
 - Next actions: 06.3a/06.3b — comments and reactions.
 - Next-session cautions: 06.2c's audit portion must not resume implicitly; the shared mutate core serves all eight operations; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 06 batch: comments, reactions and the merged timeline
+
+- Scope and checklist IDs: 06.3a–06.3e accepted (intended batch recorded before implementation in the module record).
+- Progress: Comments with idempotent receipts, ascending pagination, immutable staff-only history, own-content editing under the moderation lock, visible/hidden/redacted moderation and staff-restricted tombstone deletion; reactions with the eight-value allowlist, idempotent add/remove through the unique actor/target/value constraint, bounded grouped counts and `reaction`-category admission; and the merged cursor-paginated timeline ordering events and comments by `(created_at, id)` with audience-filtered rows and safe actor DTOs — all on both profiles. Mention extraction is deferred to module 07 with today's bounds fixed (comment size, taxonomy cardinality, one bounded outbox event per mutation).
+- Change summary: Application ports/validators for comments/reactions/timeline, both-dialect adapters (atomic comment mutations, idempotent reactions, merged reads), the discussion server module, contract schemas (flattened timeline item), seventeen routes and one route label, both roots and the fixture wired, both-profile journeys, API-CONVENTIONS documentation. The PostgreSQL journey was authored by a parallel subagent. See the [module 06 session entry](progress/06-issue-core.md) for the full file list and the four corrections made during the batch.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check (305 files), unit 197/197, contract 1/1, node 50/50, workerd 132/132, isolated PostgreSQL 18.6 72/72, build, db:check both dialects, docs build, secret and license scans all passed. Local/emulated only.
+- Decisions and deviations: Comments never bump the issue revision; the timeline item schema is flattened because discriminated unions fail response validation; reaction endpoints return outcome states with separate bounded count reads. Rationale in the module record.
+- Blockers/open questions: None new; the G1 audit-governance decision remains with the user.
+- Next actions: 06.V1–06.V4, the module's acceptance matrix.
+- Next-session cautions: Suspended audit portions must not resume implicitly; the timeline UNION's columns are position-matched; keep the root `SECURITY.md` draft uncommitted.

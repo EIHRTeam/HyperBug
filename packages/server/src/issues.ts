@@ -12,7 +12,6 @@ import {
   type CreateIssueIntent,
   type EditIssueIntent,
   type IssueRepository,
-  type MutationIdentity,
   type ReopenIssueIntent,
   type SetIssueAssigneesIntent,
   type SetIssueLabelsIntent,
@@ -30,10 +29,10 @@ import {
 } from './projects.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
+import { mutationIdentityOf } from './mutation-identity.ts';
 
 const storeTimeoutMs = 1_000;
 const receiptValidityMs = 86_400_000;
-const idempotencyKeyPattern = /^[!-~]{16,128}$/;
 
 /** Everything the issue handlers need, supplied by the app. */
 export interface IssueContext extends ProjectContext {
@@ -75,68 +74,6 @@ function mapDomainError(error: unknown): never {
   }
   if (error instanceof RequestFailure) throw error;
   throw new RequestFailure('ISSUE_UNAVAILABLE');
-}
-
-async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-/**
- * The mutation identity per DATA-MODEL: a present Idempotency-Key (16–128
- * ASCII characters) scopes the receipt, and the canonical payload hash makes
- * a same-key/different-payload retry a conflict. Without a header the
- * mutation is one-shot: the receipt row still participates in the atomic
- * write but no retry can ever match it.
- */
-async function mutationIdentity(
-  request: Request,
-  requestId: string,
-  operation: string,
-  payload: string,
-  principalId: string,
-  projectId: string,
-): Promise<
-  Pick<
-    MutationIdentity,
-    | 'mutationId'
-    | 'keyHash'
-    | 'payloadHash'
-    | 'now'
-    | 'expiresAt'
-    | 'principalId'
-    | 'projectId'
-    | 'requestId'
-  >
-> {
-  const mutationId = crypto.randomUUID();
-  const now = Date.now();
-  const header = request.headers.get('idempotency-key');
-  const keyHash = await sha256Hex(
-    header !== null && idempotencyKeyPattern.test(header)
-      ? `${operation}:${header}`
-      : `one-shot:${mutationId}`,
-  );
-  const payloadHash = await sha256Hex(
-    header !== null && idempotencyKeyPattern.test(header)
-      ? payload
-      : `one-shot:${mutationId}`,
-  );
-  return {
-    mutationId,
-    keyHash,
-    payloadHash,
-    now,
-    expiresAt: now + receiptValidityMs,
-    principalId,
-    projectId,
-    requestId,
-  };
 }
 
 async function requireIssuePermission(
@@ -343,13 +280,14 @@ export async function createIssue(
     throw new RequestFailure('ISSUE_INVALID');
   }
   const intent: CreateIssueIntent = {
-    ...(await mutationIdentity(
+    ...(await mutationIdentityOf(
       request,
       requestId,
       'issue.create',
       JSON.stringify(input),
       principal.principalId,
       projectId,
+      receiptValidityMs,
     )),
     id: crypto.randomUUID(),
     title: input.title,
@@ -511,13 +449,14 @@ export async function editIssue(
     throw new RequestFailure('ISSUE_INVALID');
   }
   const intent: EditIssueIntent = {
-    ...(await mutationIdentity(
+    ...(await mutationIdentityOf(
       request,
       requestId,
       'issue.edit',
       JSON.stringify(input),
       principal.principalId,
       projectId,
+      receiptValidityMs,
     )),
     id: issueId,
     expectedRevision: checkedRevision(input.expectedRevision),
@@ -598,13 +537,14 @@ async function stateChange(
     issueId,
   );
   const expectedRevision = checkedRevision(input.expectedRevision);
-  const identity = await mutationIdentity(
+  const identity = await mutationIdentityOf(
     request,
     requestId,
     operation,
     JSON.stringify(input),
     principal.principalId,
     projectId,
+    receiptValidityMs,
   );
   try {
     if (operation === 'issue.close') {
@@ -659,13 +599,14 @@ export async function setIssueLabels(
     issueId,
   );
   const intent: SetIssueLabelsIntent = {
-    ...(await mutationIdentity(
+    ...(await mutationIdentityOf(
       request,
       requestId,
       'issue.labels',
       JSON.stringify(input),
       principal.principalId,
       projectId,
+      receiptValidityMs,
     )),
     id: issueId,
     expectedRevision: checkedRevision(input.expectedRevision),
@@ -702,13 +643,14 @@ export async function setIssueAssignees(
     issueId,
   );
   const intent: SetIssueAssigneesIntent = {
-    ...(await mutationIdentity(
+    ...(await mutationIdentityOf(
       request,
       requestId,
       'issue.assignees',
       JSON.stringify(input),
       principal.principalId,
       projectId,
+      receiptValidityMs,
     )),
     id: issueId,
     expectedRevision: checkedRevision(input.expectedRevision),
@@ -745,13 +687,14 @@ export async function setIssueType(
     issueId,
   );
   const intent: SetIssueTypeIntent = {
-    ...(await mutationIdentity(
+    ...(await mutationIdentityOf(
       request,
       requestId,
       'issue.type',
       JSON.stringify(input),
       principal.principalId,
       projectId,
+      receiptValidityMs,
     )),
     id: issueId,
     expectedRevision: checkedRevision(input.expectedRevision),
@@ -788,13 +731,14 @@ export async function setIssueMilestone(
     issueId,
   );
   const intent: SetIssueMilestoneIntent = {
-    ...(await mutationIdentity(
+    ...(await mutationIdentityOf(
       request,
       requestId,
       'issue.milestone',
       JSON.stringify(input),
       principal.principalId,
       projectId,
+      receiptValidityMs,
     )),
     id: issueId,
     expectedRevision: checkedRevision(input.expectedRevision),

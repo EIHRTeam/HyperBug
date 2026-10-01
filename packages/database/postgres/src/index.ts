@@ -534,3 +534,8 @@ export { createPostgresAccountAdministration } from './account-administration.ts
 export { createPostgresAuditRepository } from './audit.ts';
 export { createPostgresProjectStore } from './projects.ts';
 export { createPostgresTaxonomyStore } from './taxonomy.ts';
+export {
+  createPostgresCommentStore,
+  createPostgresReactionStore,
+  createPostgresTimelineStore,
+} from './comments.ts';
