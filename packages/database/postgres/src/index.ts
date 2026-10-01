@@ -266,3 +266,5 @@ export { createPostgresPluginSettingsStore } from './plugin-settings.ts';
 export { createPostgresPluginEventOutbox } from './plugin-events.ts';
 export { createPostgresAccountAdministration } from './account-administration.ts';
 export { createPostgresAuditRepository } from './audit.ts';
+export { createPostgresProjectStore } from './projects.ts';
+export { createPostgresTaxonomyStore } from './taxonomy.ts';

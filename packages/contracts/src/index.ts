@@ -300,3 +300,202 @@ export const PluginListSchema = Type.Object(
   { additionalProperties: false },
 );
 export type PluginList = Static<typeof PluginListSchema>;
+
+const instantPattern = canonicalInstant;
+const ProjectVisibilitySchema = Type.Union([
+  Type.Literal('public'),
+  Type.Literal('private'),
+]);
+const ProjectStatusSchema = Type.Union([
+  Type.Literal('active'),
+  Type.Literal('archived'),
+]);
+export const ProjectDocumentSchema = Type.Object(
+  {
+    id: Type.String({ format: 'uuid' }),
+    slug: Type.String({ pattern: '^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$' }),
+    name: Type.String({ minLength: 1, maxLength: 100 }),
+    visibility: ProjectVisibilitySchema,
+    status: ProjectStatusSchema,
+    revision: Type.Integer({ minimum: 1 }),
+    createdAt: Type.String(instantPattern),
+    updatedAt: Type.String(instantPattern),
+  },
+  { additionalProperties: false },
+);
+export type ProjectDocument = Static<typeof ProjectDocumentSchema>;
+export const CreateProjectRequestSchema = Type.Object(
+  {
+    slug: Type.String({ minLength: 1, maxLength: 63 }),
+    name: Type.String({ minLength: 1, maxLength: 100 }),
+    visibility: Type.Optional(ProjectVisibilitySchema),
+  },
+  { additionalProperties: false },
+);
+export type CreateProjectRequest = Static<typeof CreateProjectRequestSchema>;
+export const ConfigureProjectRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    name: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
+    visibility: Type.Optional(ProjectVisibilitySchema),
+  },
+  { additionalProperties: false },
+);
+export type ConfigureProjectRequest = Static<
+  typeof ConfigureProjectRequestSchema
+>;
+const TaxonomyColorSchema = Type.String({
+  pattern: '^(#[0-9a-f]{6})?$',
+  maxLength: 32,
+});
+export const LabelDocumentSchema = Type.Object(
+  {
+    id: Type.String({ format: 'uuid' }),
+    projectId: Type.String({ format: 'uuid' }),
+    name: Type.String({ minLength: 1, maxLength: 100 }),
+    description: Type.String({ maxLength: 4096 }),
+    color: TaxonomyColorSchema,
+    revision: Type.Integer({ minimum: 1 }),
+  },
+  { additionalProperties: false },
+);
+export type LabelDocument = Static<typeof LabelDocumentSchema>;
+export const LabelRequestSchema = Type.Object(
+  {
+    name: Type.String({ minLength: 1, maxLength: 100 }),
+    description: Type.Optional(Type.String({ maxLength: 4096 })),
+    color: Type.Optional(TaxonomyColorSchema),
+  },
+  { additionalProperties: false },
+);
+export type LabelRequest = Static<typeof LabelRequestSchema>;
+export const LabelUpdateRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    name: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
+    description: Type.Optional(Type.String({ maxLength: 4096 })),
+    color: Type.Optional(TaxonomyColorSchema),
+  },
+  { additionalProperties: false },
+);
+export type LabelUpdateRequest = Static<typeof LabelUpdateRequestSchema>;
+export const LabelListSchema = Type.Object(
+  { labels: Type.Array(LabelDocumentSchema, { maxItems: 500 }) },
+  { additionalProperties: false },
+);
+export type LabelList = Static<typeof LabelListSchema>;
+export const IssueTypeDocumentSchema = Type.Object(
+  {
+    id: Type.String({ format: 'uuid' }),
+    projectId: Type.String({ format: 'uuid' }),
+    name: Type.String({ minLength: 1, maxLength: 100 }),
+    description: Type.String({ maxLength: 4096 }),
+    icon: Type.String({ maxLength: 100 }),
+    color: TaxonomyColorSchema,
+    position: Type.Integer({ minimum: 0 }),
+    enabled: Type.Boolean(),
+    revision: Type.Integer({ minimum: 1 }),
+  },
+  { additionalProperties: false },
+);
+export type IssueTypeDocument = Static<typeof IssueTypeDocumentSchema>;
+export const IssueTypeRequestSchema = Type.Object(
+  {
+    name: Type.String({ minLength: 1, maxLength: 100 }),
+    description: Type.Optional(Type.String({ maxLength: 4096 })),
+    icon: Type.Optional(Type.String({ maxLength: 100 })),
+    color: Type.Optional(TaxonomyColorSchema),
+    position: Type.Optional(Type.Integer({ minimum: 0 })),
+    enabled: Type.Optional(Type.Boolean()),
+  },
+  { additionalProperties: false },
+);
+export type IssueTypeRequest = Static<typeof IssueTypeRequestSchema>;
+export const IssueTypeUpdateRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    name: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
+    description: Type.Optional(Type.String({ maxLength: 4096 })),
+    icon: Type.Optional(Type.String({ maxLength: 100 })),
+    color: Type.Optional(TaxonomyColorSchema),
+    position: Type.Optional(Type.Integer({ minimum: 0 })),
+    enabled: Type.Optional(Type.Boolean()),
+  },
+  { additionalProperties: false },
+);
+export type IssueTypeUpdateRequest = Static<
+  typeof IssueTypeUpdateRequestSchema
+>;
+export const IssueTypeListSchema = Type.Object(
+  { types: Type.Array(IssueTypeDocumentSchema, { maxItems: 500 }) },
+  { additionalProperties: false },
+);
+export type IssueTypeList = Static<typeof IssueTypeListSchema>;
+export const MilestoneProgressSchema = Type.Object(
+  {
+    open: Type.Integer({ minimum: 0 }),
+    closed: Type.Integer({ minimum: 0 }),
+  },
+  { additionalProperties: false },
+);
+export const MilestoneDocumentSchema = Type.Object(
+  {
+    id: Type.String({ format: 'uuid' }),
+    projectId: Type.String({ format: 'uuid' }),
+    title: Type.String({ minLength: 1, maxLength: 200 }),
+    description: Type.String({ maxLength: 32768 }),
+    state: Type.Union([Type.Literal('open'), Type.Literal('closed')]),
+    dueDate: Type.Union([
+      Type.Null(),
+      Type.String({
+        pattern: '^\\d{4}-\\d{2}-\\d{2}$',
+        maxLength: 10,
+      }),
+    ]),
+    revision: Type.Integer({ minimum: 1 }),
+    createdAt: Type.String(instantPattern),
+    updatedAt: Type.String(instantPattern),
+    progress: MilestoneProgressSchema,
+  },
+  { additionalProperties: false },
+);
+export type MilestoneDocument = Static<typeof MilestoneDocumentSchema>;
+export const MilestoneRequestSchema = Type.Object(
+  {
+    title: Type.String({ minLength: 1, maxLength: 200 }),
+    description: Type.Optional(Type.String({ maxLength: 32768 })),
+    dueDate: Type.Optional(
+      Type.Union([
+        Type.Null(),
+        Type.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', maxLength: 10 }),
+      ]),
+    ),
+  },
+  { additionalProperties: false },
+);
+export type MilestoneRequest = Static<typeof MilestoneRequestSchema>;
+export const MilestoneUpdateRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    title: Type.Optional(Type.String({ minLength: 1, maxLength: 200 })),
+    description: Type.Optional(Type.String({ maxLength: 32768 })),
+    dueDate: Type.Optional(
+      Type.Union([
+        Type.Null(),
+        Type.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', maxLength: 10 }),
+      ]),
+    ),
+    state: Type.Optional(
+      Type.Union([Type.Literal('open'), Type.Literal('closed')]),
+    ),
+  },
+  { additionalProperties: false },
+);
+export type MilestoneUpdateRequest = Static<
+  typeof MilestoneUpdateRequestSchema
+>;
+export const MilestoneListSchema = Type.Object(
+  { milestones: Type.Array(MilestoneDocumentSchema, { maxItems: 200 }) },
+  { additionalProperties: false },
+);
+export type MilestoneList = Static<typeof MilestoneListSchema>;

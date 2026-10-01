@@ -17,9 +17,9 @@ Deliver the complete MVP issue-tracking API on both profiles. Public APIs, datab
 
 ### Step 06.1 — Implement project and taxonomy services
 
-- [ ] **06.1a** Implement project create/read/configure/archive or delete behavior according to the data-retention decision, with no Git repository dependency.
-- [ ] **06.1b** Implement labels, configurable Issue Types, assignee eligibility, and milestones with state/due date and bounded progress counts.
-- [ ] **06.1c** **Audit portion suspended — no audit for now.** Enforce per-project name/slug uniqueness, reference ownership, disabled/removed taxonomy behavior, permissions, and staff configuration audits.
+- [x] **06.1a** Implement project create/read/configure/archive or delete behavior according to the data-retention decision, with no Git repository dependency. Accepted 2026-10-01: Staff-only creation with the first administrator grant written atomically with the project row, slug uniqueness, visibility-aware reads (private projects invisible: 404), revision-conditional sensitive configuration, and archive as the destructive surface per the DATA-MODEL archive-before-delete direction (physical deletion belongs to the controlled retention workflow). Verified on workerd/D1 and Node/PostgreSQL route journeys plus unit validators.
+- [x] **06.1b** Implement labels, configurable Issue Types, assignee eligibility, and milestones with state/due date and bounded progress counts. Accepted 2026-10-01: per-project labels/issue types/milestones under `taxonomy:manage` (maintainer-or-higher), name-key uniqueness with preserved display spelling, disabled issue types, revision-conditional updates, reference-checked removals, real calendar due dates and milestone progress derived from one bounded grouped query; assignee eligibility is enforced by the schema's membership foreign key and verified at assignment time by the 06.2 routes. Verified on both profiles.
+- [ ] **06.1c** **Audit portion suspended — no audit for now.** Enforce per-project name/slug uniqueness, reference ownership, disabled/removed taxonomy behavior, permissions, and staff configuration audits. Non-audit scope delivered with 06.1a/06.1b (slug/name-key uniqueness, composite-key reference ownership, referenced-entry removal refusal, disabled-type behavior, permission ladder); the staff configuration audits stay suspended and the item stays unchecked.
 
 ### Step 06.2 — Implement the Issue lifecycle
 

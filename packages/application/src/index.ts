@@ -21,6 +21,8 @@ export * from './account-administration.ts';
 export * from './plugin-registry.ts';
 export * from './plugin-settings.ts';
 export * from './plugin-events.ts';
+export * from './projects.ts';
+export * from './taxonomy.ts';
 
 export interface MutationIdentity {
   mutationId: string;

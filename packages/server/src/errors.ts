@@ -42,6 +42,19 @@ const failures = {
     'The plugin registry state does not allow this operation.',
   ],
   PLUGIN_UNAVAILABLE: [503, 'The plugin registry is unavailable.'],
+  REVISION_CONFLICT: [
+    409,
+    'The resource was changed concurrently. Retry with the current revision.',
+  ],
+  PROJECT_INVALID: [400, 'The project request is invalid.'],
+  PROJECT_CONFLICT: [409, 'The project slug is already in use.'],
+  PROJECT_UNAVAILABLE: [503, 'The project service is unavailable.'],
+  TAXONOMY_INVALID: [400, 'The taxonomy request is invalid.'],
+  TAXONOMY_CONFLICT: [
+    409,
+    'The taxonomy name is already in use or the entry is referenced.',
+  ],
+  TAXONOMY_UNAVAILABLE: [503, 'The taxonomy service is unavailable.'],
   INTERNAL_ERROR: [500, 'An internal error occurred.'],
 } as const;
 

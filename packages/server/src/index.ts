@@ -32,6 +32,21 @@ import {
   PrincipalStatusSchema,
   ProjectMemberRoleRequestSchema,
   ProjectMemberRoleSchema,
+  ProjectDocumentSchema,
+  CreateProjectRequestSchema,
+  ConfigureProjectRequestSchema,
+  LabelRequestSchema,
+  LabelUpdateRequestSchema,
+  LabelListSchema,
+  LabelDocumentSchema,
+  IssueTypeRequestSchema,
+  IssueTypeUpdateRequestSchema,
+  IssueTypeListSchema,
+  IssueTypeDocumentSchema,
+  MilestoneRequestSchema,
+  MilestoneUpdateRequestSchema,
+  MilestoneListSchema,
+  MilestoneDocumentSchema,
   PluginListSchema,
   PluginRecordSchema,
   PluginSummarySchema,
@@ -56,6 +71,21 @@ import {
   type PrincipalStatus,
   type ProjectMemberRole,
   type ProjectMemberRoleRequest,
+  type ProjectDocument,
+  type CreateProjectRequest,
+  type ConfigureProjectRequest,
+  type LabelRequest,
+  type LabelUpdateRequest,
+  type LabelList,
+  type LabelDocument,
+  type IssueTypeRequest,
+  type IssueTypeUpdateRequest,
+  type IssueTypeList,
+  type IssueTypeDocument,
+  type MilestoneRequest,
+  type MilestoneUpdateRequest,
+  type MilestoneList,
+  type MilestoneDocument,
   type PluginList,
   type PluginRecord,
   type PluginSummary,
@@ -71,7 +101,9 @@ import type {
   OAuthAccessTokenStore,
   OAuthCodeStore,
   ProjectRoleStore,
+  ProjectStore,
   StaffEnrollmentStore,
+  TaxonomyStore,
 } from '@hyperbug/application';
 import {
   readBoundedForm,
@@ -136,6 +168,27 @@ import {
   type PluginManagementContext,
 } from './plugin-management.ts';
 import { publishPluginEvent } from './plugin-events.ts';
+import {
+  archiveProject,
+  configureProject,
+  createProject,
+  readProject,
+  type ProjectContext,
+} from './projects.ts';
+import {
+  createIssueType,
+  createLabel,
+  createMilestone,
+  deleteIssueType,
+  deleteLabel,
+  deleteMilestone,
+  listIssueTypes,
+  listLabels,
+  listMilestones,
+  updateIssueType,
+  updateLabel,
+  updateMilestone,
+} from './taxonomy.ts';
 export {
   publishPluginEvent,
   type PluginEventPublisherDependencies,
@@ -189,6 +242,10 @@ export interface AppOptions {
   oauthCodeStore?: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   /** Staff project-role persistence for membership management. */
   projectRoleStore?: ProjectRoleStore | null;
+  /** Project persistence for the issue-tracking core. */
+  projectStore?: ProjectStore | null;
+  /** Per-project label/type/milestone persistence. */
+  taxonomyStore?: TaxonomyStore | null;
   /** Deployment-level plugin registry persistence for plugin management. */
   pluginRegistry?: PluginRegistryStore | null;
   /** Namespaced plugin configuration persistence. */
@@ -305,6 +362,8 @@ export function createApp({
   oauthClients = [],
   oauthCodeStore = null,
   projectRoleStore = null,
+  projectStore = null,
+  taxonomyStore = null,
   pluginRegistry = null,
   pluginSettings = null,
   pluginEventOutbox = null,
@@ -624,6 +683,35 @@ export function createApp({
       infix: '/members/',
     },
     {
+      label: 'project.taxonomy',
+      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+      prefix: '/api/v1/projects/',
+      infix: '/labels',
+    },
+    {
+      label: 'project.taxonomy',
+      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+      prefix: '/api/v1/projects/',
+      infix: '/issue-types',
+    },
+    {
+      label: 'project.taxonomy',
+      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+      prefix: '/api/v1/projects/',
+      infix: '/milestones',
+    },
+    {
+      label: 'project.manage',
+      methods: ['POST'],
+      path: '/api/v1/projects',
+    },
+    {
+      label: 'project.manage',
+      methods: ['POST', 'PATCH'],
+      prefix: '/api/v1/projects/',
+    },
+    { label: 'project.read', methods: ['GET'], prefix: '/api/v1/projects/' },
+    {
       label: 'account.recovery-codes',
       methods: ['POST'],
       path: '/auth/recovery-codes',
@@ -686,6 +774,16 @@ export function createApp({
     registry: pluginRegistry,
     settings: pluginSettings,
     auditAppend,
+  };
+  const projectContext: ProjectContext = {
+    keyProvider: keyProvider ?? null,
+    tokenStore: oauthCodeStore,
+    authorizationResolver,
+    authorizationPolicy,
+    roleStore,
+    administration,
+    projects: projectStore,
+    taxonomy: taxonomyStore,
   };
   return new Elysia({ adapter, aot: true, normalize: false })
     .decorate('captcha', captchaGate)
@@ -1143,6 +1241,300 @@ export function createApp({
           }),
           signal: request.signal,
         });
+        set.status = 204;
+        return null;
+      },
+      { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/api/v1/projects',
+      async ({ request, body, set }): Promise<ProjectDocument> => {
+        const view = await createProject(request, projectContext, {
+          slug: body.slug,
+          name: body.name,
+          visibility: body.visibility,
+        });
+        set.status = 201;
+        return view;
+      },
+      {
+        body: t.Unsafe<CreateProjectRequest>(CreateProjectRequestSchema),
+        response: { 201: t.Unsafe<ProjectDocument>(ProjectDocumentSchema) },
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId',
+      async ({ request, params }): Promise<ProjectDocument> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return readProject(request, projectContext, projectId);
+      },
+      { response: t.Unsafe<ProjectDocument>(ProjectDocumentSchema) },
+    )
+    .patch(
+      '/api/v1/projects/:projectId',
+      async ({ request, params, body }): Promise<ProjectDocument> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return configureProject(request, projectContext, projectId, {
+          expectedRevision: body.expectedRevision,
+          name: body.name,
+          visibility: body.visibility,
+        });
+      },
+      {
+        body: t.Unsafe<ConfigureProjectRequest>(ConfigureProjectRequestSchema),
+        response: t.Unsafe<ProjectDocument>(ProjectDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/archive',
+      async ({ request, params, body }): Promise<ProjectDocument> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return archiveProject(
+          request,
+          projectContext,
+          projectId,
+          body.expectedRevision,
+        );
+      },
+      {
+        body: t.Object(
+          { expectedRevision: t.Integer({ minimum: 1 }) },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<ProjectDocument>(ProjectDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/labels',
+      async ({ request, params, body, set }): Promise<LabelDocument> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        const view = await createLabel(request, projectContext, projectId, {
+          name: body.name,
+          description: body.description,
+          color: body.color,
+        });
+        set.status = 201;
+        return view;
+      },
+      {
+        body: t.Unsafe<LabelRequest>(LabelRequestSchema),
+        response: { 201: t.Unsafe<LabelDocument>(LabelDocumentSchema) },
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/labels',
+      async ({ request, params }): Promise<LabelList> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return {
+          labels: [...(await listLabels(request, projectContext, projectId))],
+        };
+      },
+      { response: t.Unsafe<LabelList>(LabelListSchema) },
+    )
+    .patch(
+      '/api/v1/projects/:projectId/labels/:labelId',
+      async ({ request, params, body }): Promise<LabelDocument> => {
+        const { projectId, labelId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          labelId === undefined ||
+          !uuidPattern.test(labelId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return updateLabel(request, projectContext, projectId, labelId, {
+          expectedRevision: body.expectedRevision,
+          name: body.name,
+          description: body.description,
+          color: body.color,
+        });
+      },
+      {
+        body: t.Unsafe<LabelUpdateRequest>(LabelUpdateRequestSchema),
+        response: t.Unsafe<LabelDocument>(LabelDocumentSchema),
+      },
+    )
+    .delete(
+      '/api/v1/projects/:projectId/labels/:labelId',
+      async ({ request, params, set }) => {
+        const { projectId, labelId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          labelId === undefined ||
+          !uuidPattern.test(labelId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        await deleteLabel(request, projectContext, projectId, labelId);
+        set.status = 204;
+        return null;
+      },
+      { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/api/v1/projects/:projectId/issue-types',
+      async ({ request, params, body, set }): Promise<IssueTypeDocument> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        const view = await createIssueType(request, projectContext, projectId, {
+          name: body.name,
+          description: body.description,
+          icon: body.icon,
+          color: body.color,
+          position: body.position,
+          enabled: body.enabled,
+        });
+        set.status = 201;
+        return view;
+      },
+      {
+        body: t.Unsafe<IssueTypeRequest>(IssueTypeRequestSchema),
+        response: { 201: t.Unsafe<IssueTypeDocument>(IssueTypeDocumentSchema) },
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issue-types',
+      async ({ request, params }): Promise<IssueTypeList> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return {
+          types: [
+            ...(await listIssueTypes(request, projectContext, projectId)),
+          ],
+        };
+      },
+      { response: t.Unsafe<IssueTypeList>(IssueTypeListSchema) },
+    )
+    .patch(
+      '/api/v1/projects/:projectId/issue-types/:typeId',
+      async ({ request, params, body }): Promise<IssueTypeDocument> => {
+        const { projectId, typeId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          typeId === undefined ||
+          !uuidPattern.test(typeId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return updateIssueType(request, projectContext, projectId, typeId, {
+          expectedRevision: body.expectedRevision,
+          name: body.name,
+          description: body.description,
+          icon: body.icon,
+          color: body.color,
+          position: body.position,
+          enabled: body.enabled,
+        });
+      },
+      {
+        body: t.Unsafe<IssueTypeUpdateRequest>(IssueTypeUpdateRequestSchema),
+        response: t.Unsafe<IssueTypeDocument>(IssueTypeDocumentSchema),
+      },
+    )
+    .delete(
+      '/api/v1/projects/:projectId/issue-types/:typeId',
+      async ({ request, params, set }) => {
+        const { projectId, typeId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          typeId === undefined ||
+          !uuidPattern.test(typeId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        await deleteIssueType(request, projectContext, projectId, typeId);
+        set.status = 204;
+        return null;
+      },
+      { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/api/v1/projects/:projectId/milestones',
+      async ({ request, params, body, set }): Promise<MilestoneDocument> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        const view = await createMilestone(request, projectContext, projectId, {
+          title: body.title,
+          description: body.description,
+          dueDate: body.dueDate,
+        });
+        set.status = 201;
+        return view;
+      },
+      {
+        body: t.Unsafe<MilestoneRequest>(MilestoneRequestSchema),
+        response: { 201: t.Unsafe<MilestoneDocument>(MilestoneDocumentSchema) },
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/milestones',
+      async ({ request, params }): Promise<MilestoneList> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return {
+          milestones: [
+            ...(await listMilestones(request, projectContext, projectId)),
+          ],
+        };
+      },
+      { response: t.Unsafe<MilestoneList>(MilestoneListSchema) },
+    )
+    .patch(
+      '/api/v1/projects/:projectId/milestones/:milestoneId',
+      async ({ request, params, body }): Promise<MilestoneDocument> => {
+        const { projectId, milestoneId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          milestoneId === undefined ||
+          !uuidPattern.test(milestoneId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return updateMilestone(
+          request,
+          projectContext,
+          projectId,
+          milestoneId,
+          {
+            expectedRevision: body.expectedRevision,
+            title: body.title,
+            description: body.description,
+            dueDate: body.dueDate,
+            state: body.state,
+          },
+        );
+      },
+      {
+        body: t.Unsafe<MilestoneUpdateRequest>(MilestoneUpdateRequestSchema),
+        response: t.Unsafe<MilestoneDocument>(MilestoneDocumentSchema),
+      },
+    )
+    .delete(
+      '/api/v1/projects/:projectId/milestones/:milestoneId',
+      async ({ request, params, set }) => {
+        const { projectId, milestoneId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          milestoneId === undefined ||
+          !uuidPattern.test(milestoneId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        await deleteMilestone(request, projectContext, projectId, milestoneId);
         set.status = 204;
         return null;
       },

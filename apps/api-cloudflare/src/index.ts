@@ -33,8 +33,10 @@ import {
   createD1PluginEventOutbox,
   createD1PluginSettingsStore,
   createD1ProjectRoleStore,
+  createD1ProjectStore,
   createD1RateCounterStore,
   createD1StaffEnrollmentStore,
+  createD1TaxonomyStore,
 } from '@hyperbug/database-d1';
 import { createCloudflareVolumetricLimiter } from './rate-limit.ts';
 import { createWorkerKeyProvider } from './key-provider.ts';
@@ -107,6 +109,8 @@ if (oauthClients.length > 0 && (!env.DB || !keyProvider))
   throw new Error('Invalid OAuth client configuration');
 const oauthCodeStore = env.DB ? createD1OAuthStores(env.DB) : null;
 const projectRoleStore = env.DB ? createD1ProjectRoleStore(env.DB) : null;
+const projectStore = env.DB ? createD1ProjectStore(env.DB) : null;
+const taxonomyStore = env.DB ? createD1TaxonomyStore(env.DB) : null;
 const pluginRegistry = env.DB ? createD1PluginRegistryStore(env.DB) : null;
 const pluginSettings = env.DB ? createD1PluginSettingsStore(env.DB) : null;
 const pluginEventOutbox = env.DB ? createD1PluginEventOutbox(env.DB) : null;
@@ -253,6 +257,8 @@ const app = createApp({
   oauthClients,
   oauthCodeStore,
   projectRoleStore,
+  projectStore,
+  taxonomyStore,
   pluginRegistry,
   pluginSettings,
   pluginEventOutbox,

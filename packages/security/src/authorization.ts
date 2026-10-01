@@ -33,6 +33,11 @@ const rules = {
     write: true,
     role: 'maintainer',
   },
+  'taxonomy:manage': {
+    types: ['project'],
+    write: true,
+    role: 'maintainer',
+  },
   'project:configure': {
     types: ['project'],
     write: true,

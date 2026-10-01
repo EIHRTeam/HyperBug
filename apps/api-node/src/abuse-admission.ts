@@ -14,8 +14,10 @@ import {
   createPostgresPluginEventOutbox,
   createPostgresPluginSettingsStore,
   createPostgresProjectRoleStore,
+  createPostgresProjectStore,
   createPostgresRateCounterStore,
   createPostgresStaffEnrollmentStore,
+  createPostgresTaxonomyStore,
 } from '@hyperbug/database-postgres';
 import type {
   AuditAppend,
@@ -34,7 +36,9 @@ import type {
   PluginEventOutboxStore,
   PluginSettingsStore,
   ProjectRoleStore,
+  ProjectStore,
   StaffEnrollmentStore,
+  TaxonomyStore,
 } from '@hyperbug/application';
 import { createNodeAbuseKeyProvider } from './abuse-keys.ts';
 import { nodeSocketClientAddress } from './client-address.ts';
@@ -63,6 +67,8 @@ export interface NodeAbuseAdmission {
   readonly recoveryStore: AccountRecoveryStore | null;
   readonly oauthCodeStore: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   readonly projectRoleStore: ProjectRoleStore | null;
+  readonly projectStore: ProjectStore | null;
+  readonly taxonomyStore: TaxonomyStore | null;
   readonly pluginRegistryStore: PluginRegistryStore | null;
   readonly pluginSettingsStore: PluginSettingsStore | null;
   readonly pluginEventOutbox: PluginEventOutboxStore | null;
@@ -111,6 +117,8 @@ export function configureNodeAbuseAdmission(
       recoveryStore: null,
       oauthCodeStore: null,
       projectRoleStore: null,
+      projectStore: null,
+      taxonomyStore: null,
       pluginRegistryStore: null,
       pluginSettingsStore: null,
       pluginEventOutbox: null,
@@ -232,6 +240,8 @@ export function configureNodeAbuseAdmission(
     recoveryStore: createPostgresAccountRecoveryStore(pool),
     oauthCodeStore: createPostgresOAuthStores(pool),
     projectRoleStore: createPostgresProjectRoleStore(pool),
+    projectStore: createPostgresProjectStore(pool),
+    taxonomyStore: createPostgresTaxonomyStore(pool),
     pluginRegistryStore: createPostgresPluginRegistryStore(pool),
     pluginSettingsStore: createPostgresPluginSettingsStore(pool),
     pluginEventOutbox: createPostgresPluginEventOutbox(pool),

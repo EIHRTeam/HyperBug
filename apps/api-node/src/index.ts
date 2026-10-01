@@ -92,6 +92,8 @@ const app = createApp({
   staffEnrollmentStore: abuse.staffEnrollmentStore,
   recoveryStore: abuse.recoveryStore,
   projectRoleStore: abuse.projectRoleStore,
+  projectStore: abuse.projectStore,
+  taxonomyStore: abuse.taxonomyStore,
   pluginRegistry: abuse.pluginRegistryStore,
   pluginSettings: abuse.pluginSettingsStore,
   pluginEventOutbox: abuse.pluginEventOutbox,

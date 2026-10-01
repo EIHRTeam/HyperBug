@@ -6,13 +6,13 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Not started
+- Status: In progress
 - Delivery scope: MVP backend
-- Prerequisites: 05 complete.
-- Implementation started: No.
-- Completed implementation checklist IDs: None.
-- Active/next checklist group: 06.1, after prerequisites are satisfied.
-- Last updated: 2026-09-30 (plan amendment recording re-scoped Phase 03 ownership; no implementation).
+- Prerequisites: 05 complete (2026-10-01; audit remainders closed by the parallel session in commit db90248).
+- Implementation started: Yes (2026-10-01).
+- Completed implementation checklist IDs: 06.1a, 06.1b.
+- Active/next checklist group: 06.2 (06.2a next: the Issue lifecycle on the module-02 repository).
+- Last updated: 2026-10-01 (06.1a + 06.1b accepted; step 06.1 delivered except 06.1c's suspended audit portion).
 - Blocking issues discovered: None during planning; prerequisite completion is still required.
 - Evidence: Planning documents only; no implementation or runtime validation yet.
 
@@ -20,7 +20,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 06.1 | Implement project and taxonomy services | Not started | None yet |
+| 06.1 | Implement project and taxonomy services | 06.1a/06.1b accepted 2026-10-01; 06.1c non-audit scope delivered, audit portion suspended | [06 batch entry](#2026-10-01--batch-061a--061b-accepted-project-and-taxonomy-services) |
 | 06.2 | Implement the Issue lifecycle | Not started | None yet |
 | 06.3 | Implement discussion and timeline | Not started | None yet |
 
@@ -78,6 +78,18 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Module prerequisites and acceptance remain open.
 - Next actions: Keep Module 06 untouched during the feature hold.
 - Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-10-01 — Batch 06.1a + 06.1b accepted (project and taxonomy services)
+
+- Scope and checklist IDs: 06.1a and 06.1b accepted; 06.1c's non-audit scope (per-project uniqueness, reference ownership, disabled/removed taxonomy behavior, permissions) is delivered through these stores while its audit portion stays suspended — the item stays unchecked. Intended batch recorded above before implementation.
+- Progress: The project service is live on both profiles — Staff-only creation with the creator's first `administrator` grant written atomically with the project row (D1 batch / PostgreSQL transaction), slug uniqueness with normalized-lowercase validation (no silent normalization), visibility-aware reads where private projects answer the closed 404 to anonymous callers and non-members, revision-conditional configuration under the sensitive `project:configure` permission, and archive as the destructive surface (read-only afterwards). The taxonomy service is live on both profiles — labels, issue types and milestones under the new `taxonomy:manage` permission (maintainer-or-higher, non-sensitive), name-key uniqueness preserving display spelling, disabled issue types, revision-conditional updates, reference-checked removals (`TAXONOMY_CONFLICT` while any issue references the entry), real-calendar due dates, and milestone open/closed progress derived from one bounded grouped query. Assignee eligibility is schema-enforced (the `issue_assignees` membership foreign key) and will be exercised by the 06.2 assignment routes. No project/taxonomy audit event exists or is emitted (suspension respected, asserted in both route suites).
+- Change summary: Application ports and validators (`projects.ts`, `taxonomy.ts`); D1 and PostgreSQL adapters for both stores; the `taxonomy:manage` permission rule; project/taxonomy contract schemas; `REVISION_CONFLICT`/`PROJECT_*`/`TAXONOMY_*` error codes; server handler modules with a shared visibility pre-check; routes and route labels (`project.read`, `project.manage`, `project.taxonomy`); Node root (through abuse-admission), Workers root and fixture wiring; API-CONVENTIONS documentation.
+- Files/artifacts: `packages/application/src/{projects,taxonomy}.ts`; `packages/database/d1/src/{projects,taxonomy}.ts`; `packages/database/postgres/src/{projects,taxonomy}.ts`; `packages/application/src/index.ts`; both `packages/database/*/src/index.ts`; `packages/security/src/authorization.ts`; `packages/contracts/src/index.ts`; `packages/observability/src/index.ts`; `packages/server/src/{errors,projects,taxonomy,index}.ts`; `apps/api-node/src/{abuse-admission,index}.ts`; `apps/api-cloudflare/src/index.ts`; `tests/fixtures/account-worker.ts`; `tests/unit/projects.test.ts`; `tests/workerd/project-route.test.ts`; `tests/postgres/project-route.test.ts`; `docs/API-CONVENTIONS.md`; `docs/plan/modules/06-issue-core.md`; this record.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix (root + both Cloudflare projects), format:check (293 files), unit 196/196, contract 1/1, node 50/50, workerd 130/130 (including the new project-route journey), isolated PostgreSQL 70/70 (including the new project-route journey), build (all targets), db:check both dialects (the two pre-existing journal-timestamp warnings from the reconstructed 05.2a snapshots remain), docs build, secret and license scans all passed. Local/emulated only; no deployed claim. Two route-test corrections during the batch: the milestone update schema's `dueDate` became optional, and the archive route passed `body.expectedRevision` rather than the body object.
+- Decisions and deviations: (1) Staff-only creation with an atomic first-administrator grant — the permission inventory has no deployment-scope target and no `project:create` rule, so creation is guarded by the staff-kind/active check, matching module 04's membership route. (2) Archive is 06.1a's destructive surface; projects carry no deleted marker and DATA-MODEL requires archive-before-controlled-deletion with retention durations owned by the retention workflow. (3) `taxonomy:manage` added to the security permission catalog (project target, write, maintainer role, non-sensitive) to carry the API-OPERATIONS maintainer-or-higher taxonomy rows — a catalog extension within the designed inventory, not a baseline change. (4) Taxonomy name keys normalize case and spacing only; display names keep the author's spelling.
+- Blockers/open questions: None new. The G1 audit-governance decision remains with the user.
+- Next actions: 06.2a — the Issue lifecycle on the module-02 repository (create/list/detail/edit with project-local number allocation, raw Markdown, taxonomy/assignment fields, revision checks), extending the repository contract where 06.2c's non-audit atomicity (timeline + outbox rows) requires it.
+- Next-session cautions: 06.1c's audit portion must not resume implicitly; archive is the only destructive project surface; taxonomy name keys are the uniqueness domain (display names may visually repeat).
 
 ### 2026-09-30 — Phase 03 re-scope ownership recorded
 
