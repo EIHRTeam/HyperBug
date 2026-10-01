@@ -1343,3 +1343,36 @@ export const oauthAccessTokens = table(
     ),
   ],
 );
+/** Deployment-level plugin registry: one row per installed plugin id. */
+export const pluginRegistry = table(
+  'plugin_registry',
+  {
+    id: text('id').primaryKey(),
+    version: text('version').notNull(),
+    state: text('state').notNull(),
+    manifest: json('manifest').notNull(),
+    registeredAt: instant('registered_at').notNull(),
+    updatedAt: instant('updated_at').notNull(),
+  },
+  (t) => [
+    check(
+      'plugin_registry_id',
+      sql`${t.id} ~ '^@[a-z0-9][a-z0-9-]{0,62}/[a-z0-9][a-z0-9-]{0,62}$'`,
+    ),
+    check(
+      'plugin_registry_version',
+      sql`length(${t.version}) BETWEEN 5 AND 64`,
+    ),
+    check(
+      'plugin_registry_state',
+      sql`${t.state} IN ('registered','enabled','disabled')`,
+    ),
+    validJson('plugin_registry_manifest', t.manifest),
+    validTime('plugin_registry_registered', t.registeredAt),
+    validTime('plugin_registry_updated', t.updatedAt),
+    check(
+      'plugin_registry_time_order',
+      sql`${t.updatedAt} >= ${t.registeredAt}`,
+    ),
+  ],
+);

@@ -92,6 +92,7 @@ const app = createApp({
   staffEnrollmentStore: abuse.staffEnrollmentStore,
   recoveryStore: abuse.recoveryStore,
   projectRoleStore: abuse.projectRoleStore,
+  pluginRegistry: abuse.pluginRegistryStore,
   accountAdministration: abuse.accountAdministration,
   auditAppend: abuse.auditAppend,
   passkey,

@@ -43,7 +43,7 @@ beforeAll(async () => {
     max: 2,
   });
   const migrations = await migrationStatements('postgres');
-  if (migrations.at(-2)?.name !== '0012_webauthn')
+  if (migrations.at(-3)?.name !== '0012_webauthn')
     throw new Error('WebAuthn migration missing');
   for (const migration of migrations) {
     const db = await pool.connect();

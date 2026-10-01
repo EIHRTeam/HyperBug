@@ -21,6 +21,7 @@ export const ROUTE_LABELS = [
   'account.token',
   'account.sessions',
   'admin.principal',
+  'admin.plugins',
   'project.members',
   'proof',
 ] as const;

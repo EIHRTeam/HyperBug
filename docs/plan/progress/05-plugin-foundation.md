@@ -11,7 +11,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
 - Completed implementation checklist IDs: 05.1a, 05.1b, 05.1c, 05.1d, 05.1e.
-- Active/next checklist group: 05.2a (registry/lifecycle validation and non-audited management endpoints).
+- Active/next checklist group: 05.2b (scoped configuration and storage interfaces). 05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended.
 - Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
@@ -21,7 +21,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
-| 05.2 | Implement Core integration | In progress (starting 05.2a) | — |
+| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done; audit portion suspended) | Session entries below |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 | 05.2 | Implement Core integration | Not started | None yet |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
@@ -152,3 +152,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.2 begins — 05.2a non-audit scope: registry/lifecycle validation and authorized (non-audited) plugin-management endpoints.
 - Next-session cautions: Do not emit module-05 audit events (05.2a/05.3d audit portions stay suspended); do not expand module 09 (05.2d only connects envelopes to the existing outbox).
+
+### 2026-10-01 — Intended batch 05.2a non-audit scope (recorded before implementation)
+
+- Scope and checklist IDs: 05.2a, **audit portion suspended**: implement registry/lifecycle validation and authorized plugin-management endpoints without module-05 audit events. Planned slice: application plugin-registry service/port, D1+PostgreSQL registry adapters with dual-dialect migration, Administrator-authorized Elysia management routes (register/validate/list/enable/disable/upgrade/uninstall with explicit data policy) following module 04's bearer/roles/recent-auth patterns, root wiring on both profiles, route/repository tests on workerd/D1 and PostgreSQL lanes. plugin-runtime stays 1.0.0 (its loading/hook machinery arrives with 05.2c/05.2f).
+- Progress: Starting now; entry recorded before implementation per protocol.
+- Change summary / Files / Verification: Pending.
+- Decisions and deviations: None yet.
+- Blockers/open questions: None.
+- Next actions: Survey the module-04 vertical-slice pattern, then implement.
+- Next-session cautions: None yet.
+
+### 2026-10-01 — Batch 05.2a non-audit scope complete (registry and management endpoints)
+
+- Scope and checklist IDs: 05.2a, **audit portion suspended — item stays unchecked**. Completed non-audit scope: registry/lifecycle validation and authorized plugin-management endpoints, with zero module-05 audit events (asserted in both new route suites).
+- Progress: The deployment-level plugin registry exists end to end. Application port `PluginRegistryStore` (+ record/view validation); D1 and PostgreSQL adapters with dual-dialect migration `0015_plugin_registry`/`0014_plugin_registry`; server routes `POST|GET /api/v1/admin/plugins`, `POST .../load|enable|disable|upgrade|uninstall` running the shared authorization guard anchored on an administrated project under `plugin:install` (sensitive ⇒ recent authentication enforced; password tokens answered 403 `REAUTHENTICATION_REQUIRED` in both suites); registry wiring in both production roots and the account-worker fixture; lifecycle decisions from plugin-api drive every operation (compat validation, id conflicts, strictly-increasing upgrades from non-enabled states, complete-configuration enable, explicit retain/delete uninstall policy). Plugin ids contain a slash, so item operations carry the id in the body.
+- Change summary: One vertical slice across application/database×2/server/contracts(+3 error codes, plugin DTOs)/observability(+`admin.plugins` label)/both roots/fixture; plugin-api granted to application, server and both database adapters in both boundary layers; snapshot reconstruction for the previously uncommitted drizzle meta files 0012–0014 (D1) / 0011–0013 (PG) so the new migrations contain only `plugin_registry` — this repaired a latent generation hazard where any new migration would have duplicated applied tables; migration-position assertions updated in five test files; two new route suites (workerd/D1 full matrix incl. step-up, invalid/incompatible manifests, duplicate, enable/disable/upgrade/uninstall, audit silence; PostgreSQL end-to-end incl. step-up and audit silence).
+- Files/artifacts: `packages/application/src/plugin-registry.ts`; `packages/database/{d1,postgres}/src/plugin-registry.ts` (+ schema table + migration 0015/0014 + reconstructed meta snapshots); `packages/server/src/plugin-management.ts` + `index.ts` + `errors.ts`; `packages/contracts/src/index.ts`; `packages/observability/src/index.ts`; `tooling/check-boundaries.mjs` + `.oxlintrc.json`; `packages/{server,database/d1,database-postgres}/package.json` + `pnpm-lock.yaml`; `apps/api-cloudflare/src/index.ts`; `apps/api-node/src/{index,abuse-admission}.ts`; `tests/fixtures/account-worker.ts`; `tests/workerd/plugin-route.test.ts`; `tests/postgres/plugin-registry-route.test.ts`; migration-position edits in `tests/{workerd/entry,postgres/account-route,postgres/oauth-route,postgres/passkey-route,postgres/recovery-route,postgres/repository}.test.ts`; `docs/API-CONVENTIONS.md`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 160/160, contract 1/1, node 50/50, workerd 129/129 (new plugin-route suite included), isolated PostgreSQL 18.6 69/69 (new plugin-registry-route suite included), build, db:check both dialects, docs build, secret and license scans all passed. Local/emulated evidence only; no deployed claim.
+- Decisions and deviations: (1) All 05.2a operations anchor to `plugin:install` with a project-type target because the shared resolver has no plugin-scoped facts loader yet; `plugin:configure` (resource type `plugin`) waits for that loader with the configuration interfaces in 05.2b. Role and recent-authentication requirements are identical. (2) The drizzle meta snapshot gap (uncommitted 0012–0014/0011–0013 snapshots from prior sessions) was repaired by reconstructing snapshots from the table-creation history; new migrations now diff correctly. (3) Lifecycle state is ordinary registry state; the suspended audit scope means no `plugin.*` events — asserted by both suites.
+- Blockers/open questions: None new. The wrangler/workers-types peer conflict remains latent (module 01).
+- Next actions: 05.2b — scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, namespace ownership (uses the maintenance migrations reference for namespaced schema).
+- Next-session cautions: 05.2a stays unchecked until its audit portion is resumed by user instruction; enable currently succeeds only for settings-free plugins by design until 05.2b lands; local D1 still has pending migrations beyond 0008 and the isolated `hyperbug-test-1` D1 is at 0011 — do not apply 0015 anywhere without an authorized target.

@@ -263,3 +263,40 @@ export const EchoSchema = Type.Object(
   { additionalProperties: false },
 );
 export type Echo = Static<typeof EchoSchema>;
+
+export const PluginStateSchema = Type.Union([
+  Type.Literal('registered'),
+  Type.Literal('enabled'),
+  Type.Literal('disabled'),
+]);
+export const PluginSummarySchema = Type.Object(
+  {
+    id: Type.String({
+      pattern: '^@[a-z0-9][a-z0-9-]{0,62}/[a-z0-9][a-z0-9-]{0,62}$',
+    }),
+    version: Type.String({ pattern: '^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-]+)?$' }),
+    state: PluginStateSchema,
+    registeredAt: Type.String(),
+    updatedAt: Type.String(),
+  },
+  { additionalProperties: false },
+);
+export type PluginSummary = Static<typeof PluginSummarySchema>;
+export const PluginRecordSchema = Type.Object(
+  {
+    id: Type.String(),
+    version: Type.String(),
+    state: PluginStateSchema,
+    /** The validated manifest, opaque JSON for API consumers. */
+    manifest: Type.Object({}, { additionalProperties: true }),
+    registeredAt: Type.String(),
+    updatedAt: Type.String(),
+  },
+  { additionalProperties: false },
+);
+export type PluginRecord = Static<typeof PluginRecordSchema>;
+export const PluginListSchema = Type.Object(
+  { plugins: Type.Array(PluginSummarySchema, { maxItems: 200 }) },
+  { additionalProperties: false },
+);
+export type PluginList = Static<typeof PluginListSchema>;

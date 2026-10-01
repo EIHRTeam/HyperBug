@@ -13,7 +13,7 @@ const allowed = {
   'plugin-sdk': ['plugin-api'],
   'plugin-runtime': ['plugin-api'],
   testing: ['contracts', 'domain', 'application'],
-  application: ['domain', 'contracts'],
+  application: ['domain', 'contracts', 'plugin-api'],
   server: [
     'application',
     'domain',
@@ -21,9 +21,10 @@ const allowed = {
     'security',
     'config',
     'observability',
+    'plugin-api',
   ],
-  'database-d1': ['domain', 'application', 'security'],
-  'database-postgres': ['domain', 'application', 'security'],
+  'database-d1': ['domain', 'application', 'security', 'plugin-api'],
+  'database-postgres': ['domain', 'application', 'security', 'plugin-api'],
 };
 const pure = new Set([
   'domain',

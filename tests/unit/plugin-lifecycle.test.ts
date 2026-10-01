@@ -39,7 +39,7 @@ describe('registration and upgrade decisions (§§10.2, 10.5)', () => {
         manifest,
         hostApiVersion: '1.2.0',
       }),
-    ).toEqual({ ok: true });
+    ).toMatchObject({ ok: true });
   });
 
   it('rejects registration when the host api version does not satisfy the range', () => {
@@ -73,7 +73,7 @@ describe('registration and upgrade decisions (§§10.2, 10.5)', () => {
         currentId: '@hyperbug/example',
         currentVersion: '1.2.0',
       }),
-    ).toEqual({ ok: true });
+    ).toMatchObject({ ok: true });
   });
 
   it('rejects upgrading an enabled plugin, a downgrade and an id change', () => {
@@ -112,7 +112,7 @@ describe('configuration and enable decisions (§10.3)', () => {
     for (const state of ['registered', 'disabled'] as const)
       expect(
         decideEnable({ state, manifest, configuration: complete }),
-      ).toEqual({ ok: true });
+      ).toMatchObject({ ok: true });
   });
 
   it('rejects enable from enabled and checks state legality', () => {
@@ -154,7 +154,7 @@ describe('configuration and enable decisions (§10.3)', () => {
       publicValues: { threshold: 1 },
       secretPresent: ['secret-key'],
     });
-    expect(decision).toEqual({ ok: true });
+    expect(decision).toMatchObject({ ok: true });
   });
 });
 

@@ -32,6 +32,9 @@ import {
   PrincipalStatusSchema,
   ProjectMemberRoleRequestSchema,
   ProjectMemberRoleSchema,
+  PluginListSchema,
+  PluginRecordSchema,
+  PluginSummarySchema,
   type RegistrationRequest,
   type RegistrationAccepted,
   type RegistrationChallenge,
@@ -53,9 +56,13 @@ import {
   type PrincipalStatus,
   type ProjectMemberRole,
   type ProjectMemberRoleRequest,
+  type PluginList,
+  type PluginRecord,
+  type PluginSummary,
 } from '@hyperbug/contracts';
 import type {
   AccountAdministrationStore,
+  PluginRegistryStore,
   AccountPasswordStore,
   AccountRecoveryStore,
   AccountRegistrationStore,
@@ -116,6 +123,16 @@ import {
 import { authenticateBearer } from './bearer-auth.ts';
 import { requireAuthorizedAction } from './authorization.ts';
 import {
+  disablePlugin,
+  enablePlugin,
+  listPlugins,
+  loadPlugin,
+  registerPlugin,
+  uninstallPlugin,
+  upgradePlugin,
+  type PluginManagementContext,
+} from './plugin-management.ts';
+import {
   authorizationPolicy,
   createDbAuthorizationResolver,
 } from './authorization-facts.ts';
@@ -163,6 +180,8 @@ export interface AppOptions {
   oauthCodeStore?: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   /** Staff project-role persistence for membership management. */
   projectRoleStore?: ProjectRoleStore | null;
+  /** Deployment-level plugin registry persistence for plugin management. */
+  pluginRegistry?: PluginRegistryStore | null;
   /** Principal/project directory and staff account administration. */
   accountAdministration?: AccountAdministrationStore | null;
   /** Append-only audit sink for the audited account/role mutations. */
@@ -273,6 +292,7 @@ export function createApp({
   oauthClients = [],
   oauthCodeStore = null,
   projectRoleStore = null,
+  pluginRegistry = null,
   accountAdministration = null,
   auditAppend = null,
   bootstrapState = null,
@@ -537,6 +557,18 @@ export function createApp({
   // @hyperbug/observability; the first hit wins and everything else falls back
   // to 'unmatched'. Derived from RouteLabel so a label outside the frozen list
   // cannot compile here.
+  const pluginIdPattern = /^@[a-z0-9][a-z0-9-]{0,62}\/[a-z0-9][a-z0-9-]{0,62}$/;
+  /** Plugin ids contain a slash, so item actions carry the id in the body. */
+  const pluginIdBodySchema = t.Object(
+    { id: t.String({ minLength: 3, maxLength: 128 }) },
+    { additionalProperties: false },
+  );
+  function pluginIdBody(body: { id: string }): string {
+    const id = body.id;
+    if (!pluginIdPattern.test(id)) throw new RequestFailure('NOT_FOUND');
+    return id;
+  }
+
   const routeLabelRules: readonly {
     readonly label: RouteLabel;
     /** null matches every method. */
@@ -595,6 +627,11 @@ export function createApp({
       methods: ['POST'],
       path: '/auth/token/revoke',
     },
+    {
+      label: 'admin.plugins',
+      methods: null,
+      prefix: '/api/v1/admin/plugins',
+    },
     { label: 'health.live', methods: ['GET'], path: '/health/live' },
     { label: 'health.ready', methods: ['GET'], path: '/health/ready' },
     { label: 'proof', methods: null, prefix: '/_proof' },
@@ -624,6 +661,14 @@ export function createApp({
     } catch {
       /* Diagnostic transport failure cannot alter an HTTP response. */
     }
+  };
+  const pluginManagement: PluginManagementContext = {
+    keyProvider: keyProvider ?? null,
+    tokenStore: oauthCodeStore,
+    authorizationResolver,
+    authorizationPolicy,
+    roleStore,
+    registry: pluginRegistry,
   };
   return new Elysia({ adapter, aot: true, normalize: false })
     .decorate('captcha', captchaGate)
@@ -1112,6 +1157,92 @@ export function createApp({
         response: {
           202: t.Unsafe<RegistrationAccepted>(RegistrationAcceptedSchema),
         },
+      },
+    )
+    .get(
+      '/api/v1/admin/plugins',
+      async ({ request }): Promise<PluginList> => ({
+        plugins: await listPlugins(request, pluginManagement),
+      }),
+      { response: t.Unsafe<PluginList>(PluginListSchema) },
+    )
+    .post(
+      '/api/v1/admin/plugins',
+      async ({ request, body, set }): Promise<PluginSummary> => {
+        const summary = await registerPlugin(
+          request,
+          pluginManagement,
+          body.manifest,
+        );
+        set.status = 201;
+        return summary;
+      },
+      {
+        body: t.Object(
+          { manifest: t.Object({}, { additionalProperties: true }) },
+          { additionalProperties: false },
+        ),
+        response: { 201: t.Unsafe<PluginSummary>(PluginSummarySchema) },
+      },
+    )
+    .post(
+      '/api/v1/admin/plugins/load',
+      async ({ request, body }): Promise<PluginRecord> =>
+        loadPlugin(request, pluginManagement, pluginIdBody(body)),
+      {
+        body: pluginIdBodySchema,
+        response: t.Unsafe<PluginRecord>(PluginRecordSchema),
+      },
+    )
+    .post(
+      '/api/v1/admin/plugins/enable',
+      async ({ request, body }): Promise<PluginSummary> =>
+        enablePlugin(request, pluginManagement, pluginIdBody(body)),
+      {
+        body: pluginIdBodySchema,
+        response: t.Unsafe<PluginSummary>(PluginSummarySchema),
+      },
+    )
+    .post(
+      '/api/v1/admin/plugins/disable',
+      async ({ request, body }): Promise<PluginSummary> =>
+        disablePlugin(request, pluginManagement, pluginIdBody(body)),
+      {
+        body: pluginIdBodySchema,
+        response: t.Unsafe<PluginSummary>(PluginSummarySchema),
+      },
+    )
+    .post(
+      '/api/v1/admin/plugins/upgrade',
+      async ({ request, body }): Promise<PluginSummary> =>
+        upgradePlugin(request, pluginManagement, body.id, body.manifest),
+      {
+        body: t.Object(
+          {
+            id: t.String({ minLength: 3, maxLength: 128 }),
+            manifest: t.Object({}, { additionalProperties: true }),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<PluginSummary>(PluginSummarySchema),
+      },
+    )
+    .post(
+      '/api/v1/admin/plugins/uninstall',
+      async ({ request, body, set }) => {
+        await uninstallPlugin(request, pluginManagement, body.id, body.policy);
+        set.status = 204;
+        return null;
+      },
+      {
+        body: t.Object(
+          {
+            id: t.String({ minLength: 3, maxLength: 128 }),
+            policy: t.Union([t.Literal('retain'), t.Literal('delete')]),
+          },
+          { additionalProperties: false },
+        ),
+        response: { 204: t.Null() },
       },
     )
     .get(

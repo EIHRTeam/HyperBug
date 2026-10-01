@@ -49,7 +49,9 @@ export interface PluginConfigurationInput {
   secretPresent: readonly string[];
 }
 
-export type LifecycleDecision = { ok: true } | { ok: false; errors: string[] };
+export type LifecycleDecision =
+  | { ok: true; manifest: PluginManifest }
+  | { ok: false; errors: string[] };
 
 /**
  * Decide a `register` or `upgrade` attempt (PLUGIN-SPEC §§10.2, 10.5): the
@@ -97,7 +99,7 @@ export function decideRegistration(input: {
         `upgrade version ${manifest.version} must be higher than ${input.currentVersion}`,
       );
   }
-  return errors.length ? { ok: false, errors } : { ok: true };
+  return errors.length ? { ok: false, errors } : { ok: true, manifest };
 }
 
 /**
@@ -162,5 +164,5 @@ export function checkConfiguration(
       errors.push(`secret setting ${setting.key} is not present`);
     }
   }
-  return errors.length ? { ok: false, errors } : { ok: true };
+  return errors.length ? { ok: false, errors } : { ok: true, manifest };
 }

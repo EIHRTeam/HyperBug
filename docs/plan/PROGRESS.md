@@ -870,3 +870,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new; G1 audit governance remains with the user.
 - Next actions: 05.2a non-audit scope — registry/lifecycle validation and authorized plugin-management endpoints without module-05 audit events.
 - Next-session cautions: Suspended audit portions (05.2a audited endpoints, 05.3d configuration audits) must remain unimplemented and unchecked; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batch: plugin registry and management endpoints (non-audit)
+
+- Scope and checklist IDs: 05.2a non-audit scope complete; **item unchecked with its audit portion suspended** (no `plugin.*` audit events exist, asserted in both new suites).
+- Progress: The deployment-level plugin registry is live on both profiles — application port, D1/PostgreSQL adapters with migrations 0015/0014, authorized management routes under the shared guard (anchored on an administrated project via `plugin:install`; recent authentication enforced and verified), full lifecycle validation from plugin-api decisions, and explicit retain/delete uninstall policy. A latent drizzle meta gap (uncommitted snapshots for migrations 0012–0014/0011–0013) was repaired so new migrations diff cleanly; without it any new migration would have duplicated applied tables.
+- Change summary: Vertical slice across application, both database adapters, server, contracts, observability and both roots; boundary extensions for plugin-api; two new route suites; migration-position updates in five existing suites; API-CONVENTIONS documentation of the new surface and its closed error codes.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format, unit 160/160, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build, db:check, docs build, secret and license scans passed. Local/emulated only.
+- Decisions and deviations: `plugin:configure` awaits a plugin-scoped facts loader with 05.2b; enable is settings-free-only until configuration lands; registry state is not audited pending the suspended scope.
+- Blockers/open questions: None new.
+- Next actions: 05.2b scoped configuration and storage interfaces.
+- Next-session cautions: Do not apply migrations 0015/0014 to any remote database without authorization; keep the root `SECURITY.md` draft uncommitted.

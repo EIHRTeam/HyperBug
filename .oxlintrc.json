@@ -166,9 +166,10 @@
                   "!./**",
                   "../**",
                   "!@hyperbug/domain",
-                  "!@hyperbug/contracts"
+                  "!@hyperbug/contracts",
+                  "!@hyperbug/plugin-api"
                 ],
-                "message": "packages/application may import only @hyperbug/domain and @hyperbug/contracts."
+                "message": "packages/application may import only @hyperbug/domain, @hyperbug/contracts and @hyperbug/plugin-api."
               }
             ]
           }
@@ -216,13 +217,14 @@
                   "!@hyperbug/domain",
                   "!@hyperbug/application",
                   "!@hyperbug/security",
+                  "!@hyperbug/plugin-api",
                   "!drizzle-orm",
                   "!drizzle-orm/**",
                   "!drizzle-kit",
                   "!pg",
                   "!@cloudflare/workers-types"
                 ],
-                "message": "database adapters may import only @hyperbug/domain, @hyperbug/application, @hyperbug/security and their own persistence libraries; persistence types stay out of the domain."
+                "message": "database adapters may import only @hyperbug/domain, @hyperbug/application, @hyperbug/security, @hyperbug/plugin-api and their own persistence libraries; persistence types stay out of the domain."
               }
             ]
           }
@@ -250,9 +252,10 @@
                   "!elysia",
                   "!elysia/**",
                   "!@simplewebauthn/server",
-                  "!@simplewebauthn/server/**"
+                  "!@simplewebauthn/server/**",
+                  "!@hyperbug/plugin-api"
                 ],
-                "message": "packages/server may import only the shared server-side packages, Elysia and the pinned WebAuthn verifier."
+                "message": "packages/server may import only the shared server-side packages, Elysia and the pinned WebAuthn verifier and @hyperbug/plugin-api."
               }
             ]
           }

@@ -29,6 +29,7 @@ import {
   createD1KeyRegistry,
   createD1OAuthStores,
   createD1PasskeyStores,
+  createD1PluginRegistryStore,
   createD1ProjectRoleStore,
   createD1RateCounterStore,
   createD1StaffEnrollmentStore,
@@ -104,6 +105,7 @@ if (oauthClients.length > 0 && (!env.DB || !keyProvider))
   throw new Error('Invalid OAuth client configuration');
 const oauthCodeStore = env.DB ? createD1OAuthStores(env.DB) : null;
 const projectRoleStore = env.DB ? createD1ProjectRoleStore(env.DB) : null;
+const pluginRegistry = env.DB ? createD1PluginRegistryStore(env.DB) : null;
 const accountAdministration = env.DB
   ? createD1AccountAdministration(env.DB)
   : null;
@@ -247,6 +249,7 @@ const app = createApp({
   oauthClients,
   oauthCodeStore,
   projectRoleStore,
+  pluginRegistry,
   accountAdministration,
   auditAppend: auditRepository?.append ?? null,
   bootstrapCode,

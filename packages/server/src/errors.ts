@@ -36,6 +36,12 @@ const failures = {
   PASSKEY_UNAVAILABLE: [503, 'Passkey authentication is unavailable.'],
   OAUTH_DENIED: [400, 'The authorization request is not permitted.'],
   OAUTH_UNAVAILABLE: [503, 'The authorization service is unavailable.'],
+  PLUGIN_INVALID: [400, 'The plugin manifest or request is invalid.'],
+  PLUGIN_STATE_CONFLICT: [
+    409,
+    'The plugin registry state does not allow this operation.',
+  ],
+  PLUGIN_UNAVAILABLE: [503, 'The plugin registry is unavailable.'],
   INTERNAL_ERROR: [500, 'An internal error occurred.'],
 } as const;
 
