@@ -10,8 +10,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
-- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b, 05.2c (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
-- Active/next checklist group: 05.2d (hook/event envelopes connected to the module-02 outbox model; no dispatch, no consumers).
+- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b, 05.2c, 05.2d (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
+- Active/next checklist group: 05.2e (build-time frontend extension descriptors and reviewed CSP merging; no remote JavaScript URL loading).
 - Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
@@ -21,7 +21,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
-| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done — audit suspended; 05.2b, 05.2c complete) | Session entries below |
+| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done — audit suspended; 05.2b–05.2d complete) | Session entries below |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 | 05.2 | Implement Core integration | Not started | None yet |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
@@ -218,3 +218,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.2d — connect hook/event envelopes to module 02's existing outbox model (envelope writes only; no dispatch, no side-effect consumers).
 - Next-session cautions: The catalog is Core-owned; adding a point is a spec version bump. Keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Intended batch 05.2d (recorded before implementation)
+
+- Scope and checklist IDs: 05.2d — connect hook/event envelopes to the outbox model; actual async dispatch and side-effect consumers stay with module 09. Planned decision (recorded before implementation): module 02's shared `outbox` table is project-scoped (`project_id NOT NULL` FK) and owned by modules 02/06/09, while plugin events are deployment-level — so 05.2d materializes the outbox **model** (at-least-once rows with `available_at`/`attempts`/`delivered_at` semantics) as module 05's own `plugin_event_outbox` table carrying §11.5 envelopes, without altering the shared table or adding any dispatch/consumer. Module 09 unifies dispatch later. Deliverables: dual-dialect table+migrations 0017/0016, application port, adapters, a server publish service that validates the envelope, requires an enabled plugin occupying an async catalog point, and writes the row; a fixture-only proof route exercises the chain (no production endpoint — publication is triggered by business actions that arrive with module 06); route/repository tests on both profiles including the disabled-plugin denial.
+- Progress: Starting now; entry recorded before implementation per protocol.
+- Change summary / Files / Verification: Pending.
+- Decisions and deviations: The outbox-model-not-shared-table decision above.
+- Blockers/open questions: None.
+- Next actions: Implement, verify, update this entry.
+- Next-session cautions: None yet.
+
+### 2026-10-01 — Batch 05.2d accepted (outbox-model event connection)
+
+- Scope and checklist IDs: 05.2d accepted — hook/event envelopes connected to the outbox model; actual async dispatch and side-effect consumers remain module 09's (not expanded).
+- Progress: `plugin_event_outbox` exists in both dialects (migrations `0017_plugin_event_outbox`/`0016_plugin_event_outbox`) materializing the outbox **model** (at-least-once rows, `available_at`, `attempts`, `delivered_at`) for deployment-level plugin events carrying §11.5 envelopes. The `publishPluginEvent` service validates the envelope, requires an enabled plugin that occupies an async catalog point per §13.2, and writes the row — publication is an internal trigger surface (decorated `pluginEventPublisher` for future business routes), exercised through a fixture-only proof route on workerd and directly on PostgreSQL; both suites prove the enabled-plugin publish lands an undelivered envelope row, and a disabled plugin, a sync point and an unknown plugin all refuse.
+- Change summary: Dual-dialect table+adapters, application `PluginEventOutboxStore` port, server publish service + decoration, both roots and fixture wiring, proof route, extended route suites, migration-position updates for 0017/0016.
+- Files/artifacts: `packages/application/src/plugin-events.ts`; `packages/database/{d1,postgres}/src/plugin-events.ts` + schema + migrations 0017/0016; `packages/server/src/{plugin-events,index}.ts`; `apps/api-{cloudflare,node}` roots; `tests/fixtures/account-worker.ts`; `tests/workerd/plugin-route.test.ts`; `tests/postgres/plugin-registry-route.test.ts`; migration-position edits in six suites; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 165/165, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build, db:check both dialects, docs build, secret and license scans all passed.
+- Decisions and deviations: As recorded before implementation, module 02's shared `outbox` table is project-scoped (`project_id NOT NULL` FK to projects) and owned by modules 02/06/09, while plugin events are deployment-level — 05.2d therefore materializes the outbox model as module 05's own table instead of altering the shared schema; module 09 unifies dispatch later. No dispatch, retry loop, consumer or scheduler exists here.
+- Blockers/open questions: None new.
+- Next actions: 05.2e — build-time frontend extension descriptors and reviewed CSP merging (no remote JavaScript URL loading; no SPA work).
+- Next-session cautions: Migrations at D1 0017 / PostgreSQL 0016. The proof publish route is fixture-only; production publication arrives with module 06's business actions.

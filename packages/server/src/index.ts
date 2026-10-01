@@ -135,6 +135,12 @@ import {
   upgradePlugin,
   type PluginManagementContext,
 } from './plugin-management.ts';
+import { publishPluginEvent } from './plugin-events.ts';
+export {
+  publishPluginEvent,
+  type PluginEventPublisherDependencies,
+} from './plugin-events.ts';
+import type { PluginEventOutboxStore } from '@hyperbug/application';
 import {
   authorizationPolicy,
   createDbAuthorizationResolver,
@@ -187,6 +193,8 @@ export interface AppOptions {
   pluginRegistry?: PluginRegistryStore | null;
   /** Namespaced plugin configuration persistence. */
   pluginSettings?: PluginSettingsStore | null;
+  /** Outbox-model persistence for async plugin hook events. */
+  pluginEventOutbox?: PluginEventOutboxStore | null;
   /** Principal/project directory and staff account administration. */
   accountAdministration?: AccountAdministrationStore | null;
   /** Append-only audit sink for the audited account/role mutations. */
@@ -299,6 +307,7 @@ export function createApp({
   projectRoleStore = null,
   pluginRegistry = null,
   pluginSettings = null,
+  pluginEventOutbox = null,
   accountAdministration = null,
   auditAppend = null,
   bootstrapState = null,
@@ -686,6 +695,22 @@ export function createApp({
     .decorate(
       'minimumLoginAdmission',
       minimumLoginAdmission ?? unavailableMinimumLoginAdmission,
+    )
+    .decorate(
+      'pluginEventPublisher',
+      pluginEventOutbox
+        ? {
+            publish: (input: {
+              pluginId: string;
+              point: string;
+              payload: unknown;
+            }) =>
+              publishPluginEvent(
+                { registry: pluginRegistry, events: pluginEventOutbox },
+                input,
+              ),
+          }
+        : null,
     )
     .onRequest(async ({ request, set }) => {
       starts.set(request, performance.now());

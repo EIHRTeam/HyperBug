@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { node } from '@elysia/node';
-import { createApp } from '@hyperbug/server';
+import { createApp, publishPluginEvent } from '@hyperbug/server';
 import { loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
 import { initialStandardPasswordPolicy } from '../../packages/security/src/standard-password.ts';
@@ -411,6 +411,69 @@ it('manages the plugin registry with step-up on PostgreSQL and emits no plugin a
     'SELECT COUNT(*)::int AS n FROM plugin_registry',
   );
   expect(row.rows[0]).toEqual({ n: 0 });
+
+  // 05.2d: envelope publication through the outbox model, disabled denial.
+  const notifierRegistered = await post(
+    '/api/v1/admin/plugins',
+    {
+      manifest: {
+        id: '@hyperbug/notifier',
+        version: '1.0.0',
+        trustTier: 'trusted-native',
+        apiVersion: '^1.0.0',
+        capabilities: ['notifications'],
+        extensionPoints: ['notifications:deliver'],
+        permissions: ['events:publish'],
+        settings: [],
+      },
+    },
+    { authorization: `Bearer ${token}` },
+  );
+  expect(notifierRegistered.status).toBe(201);
+  const notifierEnabled = await post(
+    '/api/v1/admin/plugins/enable',
+    { id: '@hyperbug/notifier' },
+    { authorization: `Bearer ${token}` },
+  );
+  expect(notifierEnabled.status).toBe(200);
+  const published = await publishPluginEvent(
+    {
+      registry: configured.pluginRegistryStore!,
+      events: configured.pluginEventOutbox!,
+    },
+    {
+      pluginId: '@hyperbug/notifier',
+      point: 'notifications:deliver',
+      payload: { subject: 'hello' },
+    },
+  );
+  const outboxRow = await pool.query(
+    'SELECT payload::text AS payload, delivered_at FROM plugin_event_outbox WHERE event_id = $1',
+    [published.eventId],
+  );
+  expect(JSON.parse(outboxRow.rows[0]?.payload ?? '{}')).toMatchObject({
+    hook: 'notifications:deliver',
+    pluginId: '@hyperbug/notifier',
+  });
+  expect(outboxRow.rows[0]?.delivered_at).toBeNull();
+  await post(
+    '/api/v1/admin/plugins/disable',
+    { id: '@hyperbug/notifier' },
+    { authorization: `Bearer ${token}` },
+  );
+  await expect(
+    publishPluginEvent(
+      {
+        registry: configured.pluginRegistryStore!,
+        events: configured.pluginEventOutbox!,
+      },
+      {
+        pluginId: '@hyperbug/notifier',
+        point: 'notifications:deliver',
+        payload: {},
+      },
+    ),
+  ).rejects.toMatchObject({ code: 'PLUGIN_STATE_CONFLICT' });
 
   const pluginAudits = await pool.query(
     "SELECT COUNT(*)::int AS n FROM audit_events WHERE action LIKE 'plugin.%'",

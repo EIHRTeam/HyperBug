@@ -94,6 +94,7 @@ const app = createApp({
   projectRoleStore: abuse.projectRoleStore,
   pluginRegistry: abuse.pluginRegistryStore,
   pluginSettings: abuse.pluginSettingsStore,
+  pluginEventOutbox: abuse.pluginEventOutbox,
   accountAdministration: abuse.accountAdministration,
   auditAppend: abuse.auditAppend,
   passkey,

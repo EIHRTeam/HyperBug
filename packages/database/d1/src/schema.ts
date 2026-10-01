@@ -1444,3 +1444,47 @@ export const pluginSettings = table(
     validTime('plugin_settings_updated', t.updatedAt),
   ],
 );
+/** Module 05 outbox-model event rows: §11.5 envelopes, at-least-once, dispatch is module 09's. */
+export const pluginEventOutbox = table(
+  'plugin_event_outbox',
+  {
+    eventId: id('event_id').primaryKey(),
+    pluginId: text('plugin_id').notNull(),
+    point: text('point').notNull(),
+    payloadVersion: integer('payload_version').notNull(),
+    payload: json('payload').notNull(),
+    createdAt: instant('created_at').notNull(),
+    availableAt: instant('available_at').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    deliveredAt: instant('delivered_at'),
+  },
+  (t) => [
+    index('plugin_event_pending').on(t.deliveredAt, t.availableAt, t.eventId),
+    index('plugin_event_plugin').on(t.pluginId, t.createdAt),
+    check(
+      'plugin_event_id_scope',
+      sql`length(${t.pluginId}) BETWEEN 3 AND 128 AND ${t.pluginId} LIKE '@%'`,
+    ),
+    check(
+      'plugin_event_point_bound',
+      sql`length(${t.point}) BETWEEN 3 AND 128`,
+    ),
+    check(
+      'plugin_event_attempts',
+      sql`${t.attempts} >= 0 AND ${t.attempts} <= 2147483647`,
+    ),
+    check(
+      'plugin_event_version',
+      sql`${t.payloadVersion} >= 1 AND ${t.payloadVersion} <= 2147483647`,
+    ),
+    validJson('plugin_event_payload', t.payload),
+    validTime('plugin_event_created', t.createdAt),
+    validTime('plugin_event_available', t.availableAt),
+    validTime('plugin_event_delivered', t.deliveredAt),
+    check(
+      'plugin_event_time_order',
+      sql`${t.availableAt} >= ${t.createdAt} AND (${t.deliveredAt} IS NULL OR ${t.deliveredAt} >= ${t.createdAt})`,
+    ),
+    validId('plugin_event_id', t.eventId),
+  ],
+);

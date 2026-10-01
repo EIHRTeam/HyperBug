@@ -462,6 +462,72 @@ it('manages the plugin registry with step-up on workerd/D1 and emits no plugin a
   });
   expect(gone.status).toBe(404);
 
+  // 05.2d: async event envelopes connect to the outbox model. An enabled
+  // notifier publishes; a disabled one is safely inert; sync points and
+  // unknown plugins refuse.
+  const notifierManifest = {
+    id: '@hyperbug/notifier',
+    version: '1.0.0',
+    trustTier: 'trusted-native',
+    apiVersion: '^1.0.0',
+    capabilities: ['notifications'],
+    extensionPoints: ['notifications:deliver'],
+    permissions: ['events:publish'],
+    settings: [],
+  };
+  const notifierRegistered = await call('/api/v1/admin/plugins', {
+    body: { manifest: notifierManifest },
+    token,
+  });
+  expect(notifierRegistered.status).toBe(201);
+  const notifierEnabled = await call('/api/v1/admin/plugins/enable', {
+    body: { id: '@hyperbug/notifier' },
+    token,
+  });
+  expect(notifierEnabled.status).toBe(200);
+  const published = await post('/_proof/publish-plugin-event', {
+    pluginId: '@hyperbug/notifier',
+    point: 'notifications:deliver',
+    payload: { subject: 'hello' },
+  });
+  expect(published.status).toBe(200);
+  const { eventId } = (await published.json()) as { eventId: string };
+  const outboxRow = await db
+    .prepare(
+      'SELECT payload, delivered_at FROM plugin_event_outbox WHERE event_id = ?',
+    )
+    .bind(eventId)
+    .first<{ payload: string; delivered_at: number | null }>();
+  expect(outboxRow?.delivered_at).toBeNull();
+  expect(JSON.parse(outboxRow?.payload ?? '{}')).toMatchObject({
+    hook: 'notifications:deliver',
+    pluginId: '@hyperbug/notifier',
+    payloadVersion: 1,
+  });
+  const notifierDisabled = await call('/api/v1/admin/plugins/disable', {
+    body: { id: '@hyperbug/notifier' },
+    token,
+  });
+  expect(notifierDisabled.status).toBe(200);
+  const deniedPublish = await post('/_proof/publish-plugin-event', {
+    pluginId: '@hyperbug/notifier',
+    point: 'notifications:deliver',
+    payload: { subject: 'nope' },
+  });
+  expect(deniedPublish.status).toBe(409);
+  const syncPoint = await post('/_proof/publish-plugin-event', {
+    pluginId: '@hyperbug/notifier',
+    point: 'captcha:verify-required',
+    payload: {},
+  });
+  expect(syncPoint.status).toBe(409);
+  const unknownPlugin = await post('/_proof/publish-plugin-event', {
+    pluginId: '@hyperbug/ghost',
+    point: 'notifications:deliver',
+    payload: {},
+  });
+  expect(unknownPlugin.status).toBe(409);
+
   // The suspended module-05 audit scope stays silent: registry operations
   // must not have emitted any plugin audit events.
   const pluginAudits = await db

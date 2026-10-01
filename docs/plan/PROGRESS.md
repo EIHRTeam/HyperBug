@@ -906,3 +906,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 05.2d outbox envelope connection.
 - Next-session cautions: Keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batch: outbox-model event connection
+
+- Scope and checklist IDs: 05.2d accepted. Module 09 is not expanded: no dispatch, retries or consumers.
+- Progress: `plugin_event_outbox` (both dialects, migrations 0017/0016) materializes the outbox model for deployment-level plugin events; `publishPluginEvent` validates §11.5 envelopes and writes rows only for enabled plugins occupying async catalog points, with a decorated internal publisher for module-06 business actions. Both profiles' suites prove the publish/denial matrix.
+- Change summary: Table+port+adapters, server service, root/fixture wiring, fixture-only proof route, extended suites, migration-position updates.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — full matrix green (unit 165, contract 1, node 50, workerd 129, postgres 69; lint/typecheck/format/build/db:check/docs/scans).
+- Decisions and deviations: Module 02's shared outbox is project-scoped; plugin events use module 05's own outbox-model table, unified with module 09's dispatch later.
+- Blockers/open questions: None new.
+- Next actions: 05.2e build-time frontend descriptors and CSP merging.
+- Next-session cautions: Keep the root `SECURITY.md` draft uncommitted; migrations at D1 0017 / PostgreSQL 0016.

@@ -77,7 +77,7 @@ beforeAll(async () => {
     max: 2,
   });
   const migrations = await migrationStatements('postgres');
-  if (migrations.at(-3)?.name !== '0013_oauth_codes')
+  if (migrations.at(-4)?.name !== '0013_oauth_codes')
     throw new Error('OAuth migration missing');
   for (const migration of migrations) {
     const db = await pool.connect();

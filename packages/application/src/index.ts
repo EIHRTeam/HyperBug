@@ -20,6 +20,7 @@ export * from './project-role-store.ts';
 export * from './account-administration.ts';
 export * from './plugin-registry.ts';
 export * from './plugin-settings.ts';
+export * from './plugin-events.ts';
 
 export interface MutationIdentity {
   mutationId: string;

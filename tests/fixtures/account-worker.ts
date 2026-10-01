@@ -4,6 +4,7 @@ import {
   createApp,
   parseBootstrapEnrollmentCode,
   parseOAuthClients,
+  publishPluginEvent,
 } from '@hyperbug/server';
 import { loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
@@ -18,6 +19,7 @@ import {
   createD1OAuthStores,
   createD1PasskeyStores,
   createD1PluginRegistryStore,
+  createD1PluginEventOutbox,
   createD1PluginSettingsStore,
   createD1ProjectRoleStore,
   createD1AccountRegistrationStore,
@@ -76,6 +78,7 @@ export default createApp({
   oauthClients: parseOAuthClients(env.HYPERBUG_TEST_OAUTH_CLIENTS),
   pluginRegistry: createD1PluginRegistryStore(env.DB),
   pluginSettings: createD1PluginSettingsStore(env.DB),
+  pluginEventOutbox: createD1PluginEventOutbox(env.DB),
   projectRoleStore: createD1ProjectRoleStore(env.DB),
   accountAdministration: createD1AccountAdministration(env.DB),
   auditAppend: createD1AuditRepository(env.DB).append,
@@ -90,4 +93,25 @@ export default createApp({
   .get('/_proof/observations', () =>
     observations.map((line) => JSON.parse(line)),
   )
+  // Test-only trigger for the internal plugin-event publication service; the
+  // production surface has no such endpoint (business actions own triggers).
+  .post('/_proof/publish-plugin-event', async ({ body, set }) => {
+    try {
+      const result = await publishPluginEvent(
+        {
+          registry: createD1PluginRegistryStore(env.DB),
+          events: createD1PluginEventOutbox(env.DB),
+        },
+        {
+          pluginId: String(body.pluginId),
+          point: String(body.point),
+          payload: body.payload ?? null,
+        },
+      );
+      return result;
+    } catch (error) {
+      set.status = error instanceof Error && 'code' in error ? 409 : 500;
+      return { error: String(error) };
+    }
+  })
   .compile();

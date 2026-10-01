@@ -30,6 +30,7 @@ import {
   createD1OAuthStores,
   createD1PasskeyStores,
   createD1PluginRegistryStore,
+  createD1PluginEventOutbox,
   createD1PluginSettingsStore,
   createD1ProjectRoleStore,
   createD1RateCounterStore,
@@ -108,6 +109,7 @@ const oauthCodeStore = env.DB ? createD1OAuthStores(env.DB) : null;
 const projectRoleStore = env.DB ? createD1ProjectRoleStore(env.DB) : null;
 const pluginRegistry = env.DB ? createD1PluginRegistryStore(env.DB) : null;
 const pluginSettings = env.DB ? createD1PluginSettingsStore(env.DB) : null;
+const pluginEventOutbox = env.DB ? createD1PluginEventOutbox(env.DB) : null;
 const accountAdministration = env.DB
   ? createD1AccountAdministration(env.DB)
   : null;
@@ -253,6 +255,7 @@ const app = createApp({
   projectRoleStore,
   pluginRegistry,
   pluginSettings,
+  pluginEventOutbox,
   accountAdministration,
   auditAppend: auditRepository?.append ?? null,
   bootstrapCode,
