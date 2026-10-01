@@ -48,8 +48,10 @@ it('exposes one Plugin API contract version through sdk and runtime re-exports',
   expect(apiVersionThroughRuntime).toBe(PLUGIN_API_VERSION);
 });
 
-it('keeps the contract dependency direction: api is a leaf, sdk and runtime depend only on it', () => {
-  expect(manifest('plugin-api').dependencies).toBeUndefined();
+it('keeps the contract dependency direction: api depends only on typebox, sdk and runtime only on api', () => {
+  expect(Object.keys(manifest('plugin-api').dependencies ?? {})).toEqual([
+    '@sinclair/typebox',
+  ]);
   expect(Object.keys(manifest('plugin-sdk').dependencies ?? {})).toEqual([
     '@hyperbug/plugin-api',
   ]);

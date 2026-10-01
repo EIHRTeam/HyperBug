@@ -38,6 +38,7 @@ const pure = new Set([
 ]);
 const externalAllowed = {
   contracts: ['@sinclair/typebox'],
+  'plugin-api': ['@sinclair/typebox'],
   domain: [],
   application: [],
   security: [],
@@ -111,8 +112,10 @@ export function checkBoundaries() {
       }
     } else if (/\.[cm]?[jt]s$/.test(file) && !file.endsWith('.d.ts')) {
       // Cover static imports/exports, side-effect imports, import() type expressions and require().
+      // Specifiers never contain whitespace, which keeps quoted string literals
+      // like the 'import' capability vocabulary from parsing as statements.
       for (const match of source.matchAll(
-        /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"]([^'"]+)['"]/g,
+        /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"]([^'"\s]+)['"]/g,
       )) {
         const failure = checkImport(file, match[1]);
         if (failure) failures.push(failure);

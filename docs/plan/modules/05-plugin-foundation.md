@@ -18,7 +18,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 ### Step 05.1 — Define the plugin specification
 
 - [x] **05.1a** Write `docs/PLUGIN-SPEC.md` and create `packages/plugin-api`, `plugin-sdk`, and `plugin-runtime` with separately versioned public contracts.
-- [ ] **05.1b** Define manifest ID/version/API compatibility, capabilities, configuration schemas, public versus secret settings, CSP origins, extension points, and namespaced data/migrations.
+- [x] **05.1b** Define manifest ID/version/API compatibility, capabilities, configuration schemas, public versus secret settings, CSP origins, extension points, and namespaced data/migrations.
 - [ ] **05.1c** Define lifecycle: register, validate compatibility, configure, enable, disable, upgrade, uninstall, and retain/delete plugin data through an explicit policy.
 - [ ] **05.1d** Define hook mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, and side-effect idempotency. Security-critical hooks fail closed; ordinary effects use durable async dispatch.
 - [ ] **05.1e** Separate trusted native code from isolated external services in the specification. For external services, define scoped/revocable capability APIs and signed/versioned events; defer an arbitrary code-hosting platform.

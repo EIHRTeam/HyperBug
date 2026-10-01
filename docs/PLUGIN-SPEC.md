@@ -1,6 +1,6 @@
 # HyperBug plugin specification (PLUGIN-SPEC)
 
-Specification version: **1.0.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
+Specification version: **1.1.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
 
 Status: MVP backend development ([module 05](plan/modules/05-plugin-foundation.md)). This frame is defined by checklist 05.1a; the manifest, lifecycle, hook and external-service chapters land with 05.1b–05.1e and Core integration with 05.2.
 
@@ -89,12 +89,64 @@ The frontend is a static application. Native frontend plugins integrate at build
 
 A conforming plugin: uses only the public SDK/API surface; carries a valid manifest; participates only in declared extension points; and keeps working when disabled. Module 05 delivers one minimal official example plugin and a failing/slow fixture using only the public SDK/API (05.2f), compatibility and negative-permission fixtures (05.3), and an English extension-author quickstart (05.3e). Local conformance fixtures are the MVP evidence — not production third-party dependencies.
 
+## 9. Manifests and compatibility
+
+The manifest is the single declaration a plugin makes about itself. It is data, not code: the runtime reads and validates it before any plugin code participates. `@hyperbug/plugin-api` carries it as a TypeBox schema (`PluginManifestSchema`) so the SDK validates at author time and the runtime validates at registration with identical rules. Manifest validation is additive across this specification's chapters: lifecycle states (05.1c) and hook declarations (05.1d) extend the same object.
+
+### 9.1 Identity and shape
+
+- `id` — scoped identifier `@vendor/name`, lowercase alphanumeric/kebab segments (pattern `^@[a-z0-9][a-z0-9-]{0,62}/[a-z0-9][a-z0-9-]{0,62}$`). Official plugins use `@hyperbug/<name>`. The id is immutable for the plugin's lifetime; a different id is a different plugin. It derives the data namespace (§9.7).
+- `version` — the plugin's own semver (exact `X.Y.Z`, optional prerelease, no build metadata). Upgrade ordering is defined by the lifecycle chapter (05.1c).
+- `trustTier` — `trusted-native` or `isolated-external` (§3).
+- Optional `displayName` (≤64 chars) and `description` (≤280 chars) are display metadata only.
+- Unknown fields are rejected (`additionalProperties: false`): manifests cannot smuggle undeclared declarations past validation.
+
+### 9.2 Plugin API compatibility
+
+`apiVersion` declares the Plugin API range the plugin requires: an exact version or a caret/tilde range (`^1.1.0`, `~1.1.0`, `1.1.0`). The full semver-range grammar is deliberately out of scope so hosts and authors share one small rule set, implemented once in `apiVersionSatisfies(range, version)`:
+
+- exact: equality including prerelease;
+- caret: same major, and when the major is `0` the same minor (and for `0.0.x`, the same patch) — npm semantics;
+- tilde: same major.minor;
+- a prerelease version satisfies only a range whose base has the same core version and the same prerelease.
+
+The host accepts a plugin only when its own `PLUGIN_API_VERSION` satisfies the manifest's `apiVersion`; otherwise registration fails with a compatibility error (tested by 05.3a). Core's version is irrelevant here (§4): manifests never reference it.
+
+### 9.3 Capabilities and extension points
+
+`capabilities` is a non-empty subset of the fixed vocabulary (PRODUCT §25): `authentication`, `sso`, `captcha`, `notifications`, `issue-actions`, `issue-metadata`, `integrations`, `import`, `export`, `search`, `settings.admin`, `settings.project`, `ui`. Unknown capability ids are rejected (tested by 05.3a). The concrete per-capability contracts — what a plugin may register, what Core guarantees, and which policy boundaries apply — are defined by module 05.2c; the vocabulary here only names the surfaces.
+
+`extensionPoints` lists the bounded points the plugin participates in, each referencing a declared capability as `capability:point-id` (for example `settings.admin:panel`, `issue-actions:menu`). A point whose capability prefix is not declared in `capabilities` fails validation. Core owns the set of existing point ids per capability; a plugin can only choose among them, never define new ones at runtime.
+
+### 9.4 Permissions
+
+`permissions` is a subset of `data:read`, `data:write`, `secrets:read`, `events:publish`, `events:subscribe`, `network:fetch`, `ui:extend` (SECURITY §38 least privilege; no blanket grant exists). For native plugins permissions are review and disclosure metadata — not a sandbox (§3.2); Core grants native plugin code nothing it does not already have as trusted code. For external plugins permissions are the inputs that scope revocable capability APIs (05.1e). Module 05.2c binds each permission to the capability APIs that actually check it; a permission nothing checks is a review finding.
+
+### 9.5 Configuration: public versus secret settings
+
+`settings` declares the plugin's configuration surface. Every setting has a `key` (lowercase kebab, unique within the plugin) and a kind:
+
+- **public** — declares `valueType` (`string` | `number` | `boolean`), may carry a `defaultValue`. Public settings are readable through the plugin configuration read API.
+- **secret** — write-only (SECURITY §121). The schema rejects `defaultValue` and `valueType` outright: a secret default would be a plaintext credential in the manifest. Secrets are obtained from the Secret Provider, updated through write-only APIs, and never returned in plaintext by any ordinary read; reads are redacted (implementation: module 05.2b).
+
+### 9.6 CSP origins
+
+`csp` optionally declares frontend origins as four explicit lists — `scriptOrigins`, `frameOrigins`, `connectOrigins`, `imageOrigins` — each an https origin without path or wildcard (≤8 entries). Origins are hints for Core's build-time review and merge (§7, SECURITY §123); a plugin never edits CSP itself, and undeclared origins must not appear in a merged policy. Merge rules and review arrive with module 05.2e.
+
+### 9.7 Namespaced data and migrations
+
+All plugin-owned persistent state lives in a namespace derived from the validated id: `@vendor/name` → `plugin_vendor_name` (`pluginDataNamespace`). The namespace prefixes plugin tables/objects/settings keys and namespaces plugin-published events (05.2d). Rules, following the database-migrations baseline:
+
+- Native plugins needing schema of their own use namespaced, reviewed migrations — additive within their namespace; they must not touch Core tables or another plugin's namespace. Each migration records the plugin id and version it belongs to (the migration model is implemented with module 05.2b; upgrade/retention behavior is tested by 05.3d).
+- External plugins never receive Core SQL access (TECH-STACK §44): they reach data through scoped storage under the same namespace.
+- Uninstall-time retention or deletion of namespaced data follows the explicit lifecycle policy (05.1c).
+
 ## Chapter status
 
 | Chapter | Content | Defined by |
 | --- | --- | --- |
-| §1–§8 | Frame: scope, components, trust, versioning, policy, performance, frontend, conformance | 05.1a (this version) |
-| Manifests and compatibility | Manifest ID/version/API compatibility, capabilities, configuration schemas, public vs secret settings, CSP origins, extension points, namespaced data/migrations | 05.1b |
+| §1–§8 | Frame: scope, components, trust, versioning, policy, performance, frontend, conformance | 05.1a |
+| §9 | Manifests and compatibility: identity, API ranges, capabilities, extension points, permissions, public/secret settings, CSP origins, namespaced data/migrations | 05.1b (this version) |
 | Lifecycle | Register, validate, configure, enable, disable, upgrade, uninstall, data retention | 05.1c |
 | Hook protocol | Hook mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, idempotency | 05.1d |
 | External service protocol | Scoped/revocable capability APIs, signed/versioned events | 05.1e |

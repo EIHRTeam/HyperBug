@@ -91,8 +91,14 @@
           {
             "patterns": [
               {
-                "group": ["*", "!./**", "../**"],
-                "message": "packages/plugin-api is the public contract: no imports outside itself and no external dependencies, so one contract serves both profiles."
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@sinclair/typebox",
+                  "!@sinclair/typebox/**"
+                ],
+                "message": "packages/plugin-api is the public contract: only @sinclair/typebox may be imported, so one contract serves both profiles."
               }
             ]
           }

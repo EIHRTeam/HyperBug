@@ -9,10 +9,10 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Status: In progress
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
-- Implementation started: Yes (2026-10-01, batch 05.1a).
-- Completed implementation checklist IDs: 05.1a.
-- Active/next checklist group: 05.1b (manifest/compatibility chapter of PLUGIN-SPEC).
-- Last updated: 2026-10-01 (batch 05.1a accepted).
+- Implementation started: Yes (2026-10-01, batches 05.1a–05.1b).
+- Completed implementation checklist IDs: 05.1a, 05.1b.
+- Active/next checklist group: 05.1c (lifecycle chapter).
+- Last updated: 2026-10-01 (batch 05.1b accepted).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
 
@@ -102,3 +102,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: A pre-existing peer conflict surfaced when the new workspace packages forced lockfile re-resolution: wrangler 4.144.0 (from the 964da20 audit upgrade) wants `@cloudflare/workers-types ^5.20260926.1` while the repo pins 5.20260917.1; `strictPeerDependencies: true` makes any future re-resolution fail this way (repeat installs with an up-to-date lockfile pass). Resolution belongs to module 01 dependency maintenance and needs a deliberate pin decision, not a silent change here.
 - Next actions: 05.1b — manifest ID/version/API compatibility, capabilities, configuration schemas, public vs secret settings, CSP origins, extension points, and namespaced data/migrations (extends PLUGIN-SPEC chapter "Manifests and compatibility"; use the hyperbug-maintenance database-migrations reference for the namespaced-migration design).
 - Next-session cautions: The root `SECURITY.md` draft stays uncommitted; the plugin packages are contract seeds only — do not import them into server/app code before 05.2 defines the runtime; the wrangler/workers-types peer conflict will reappear on the next dependency re-resolution.
+
+### 2026-10-01 — Batch 05.1b accepted (manifest schemas and compatibility)
+
+- Scope and checklist IDs: 05.1b accepted — manifest ID/version/API compatibility, capabilities, configuration schemas (public vs secret settings), CSP origins, extension points, and namespaced data/migrations, as PLUGIN-SPEC §9 plus TypeBox manifest schemas and pure compatibility/namespace helpers in `@hyperbug/plugin-api` and a `definePlugin` authoring helper in `@hyperbug/plugin-sdk`. Namespaced migrations are design-only here per the maintenance database-migrations reference; the migration model itself is implemented with 05.2b and tested by 05.3d.
+- Progress: PLUGIN-SPEC is at 1.1.0 with the full "Manifests and compatibility" chapter (identity/shape, simplified apiVersion range rules, capability and permission vocabularies, extension-point references, public vs secret settings, CSP origin declaration, namespace derivation and migration rules). `@hyperbug/plugin-api` 1.1.0 carries `PluginManifestSchema` (strict, `additionalProperties: false`), `validatePluginManifest` with semantic duplicate checks, `apiVersionSatisfies` and `pluginDataNamespace`; `@hyperbug/plugin-sdk` 1.1.0 adds `definePlugin`. plugin-runtime stays at 1.0.0 — the packages now demonstrate independent versioning in practice.
+- Change summary: New manifest module in plugin-api (identity split into `src/identity.ts`); SDK authoring entry; typebox allowance wired into both boundary layers; boundary-checker regex hardened so quoted string literals like the `'import'` capability no longer parse as import statements (with regression case); 18 new manifest/compatibility test cases plus boundary and package-coherence updates.
+- Files/artifacts: `docs/PLUGIN-SPEC.md`; `packages/plugin-api/{package.json,src/identity.ts,src/manifest.ts,src/index.ts}`; `packages/plugin-sdk/{package.json,src/index.ts}`; `tooling/check-boundaries.mjs`; `.oxlintrc.json`; `pnpm-lock.yaml`; `tests/unit/{plugin-manifest,plugin-packages,boundaries}.test.ts`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 135/135, contract 1/1, node 50/50, workerd 128/128, isolated PostgreSQL 18.6 68/68, build (all targets), db:check both dialects, docs build, secret scan and license scan all passed. Three initial test failures were fixed before acceptance (duplicate settings keys — TypeBox 0.34 does not enforce `uniqueItems` on these arrays, now checked semantically; malformed version input to `apiVersionSatisfies` now returns false instead of throwing; namespace kebab-to-underscore normalization).
+- Decisions and deviations: plugin-api's single external dependency is `@sinclair/typebox` 0.34.52 (mirrors packages/contracts), recorded in both boundary layers. Context7 lookup 2026-10-01 on `/sinclairzx81/typebox` confirmed the 0.34.x `@sinclair/typebox/value` API (`Value.Check`/`Value.Errors` iterator) and strict `Type.Object` options; noted future 1.0 import-path change as a maintenance gap. TypeBox's unenforced `uniqueItems` is a recorded tool-behavior finding, compensated in `validatePluginManifest`.
+- Blockers/open questions: None new; the pre-existing wrangler/workers-types peer conflict did not resurface (lockfile resolution was skipped because typebox 0.34.52 was already resolved for contracts), but it remains latent for the next re-resolution.
+- Next actions: 05.1c — lifecycle chapter (register, validate compatibility, configure, enable, disable, upgrade, uninstall, retain/delete policy) in PLUGIN-SPEC and the lifecycle state model in plugin-api.
+- Next-session cautions: Manifest validation is additive across chapters (lifecycle/hook declarations extend the same object); do not import plugin packages into Core yet (05.2); keep the root `SECURITY.md` draft uncommitted.

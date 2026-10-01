@@ -54,6 +54,18 @@ it('keeps the plugin contract packages on the boundary grid', () => {
       content: "import { readFileSync } from 'node:fs';",
       allowed: false,
     },
+    {
+      file: 'packages/plugin-api/src/boundary-fixture.ts',
+      content: "import { Type } from '@sinclair/typebox';",
+      allowed: true,
+    },
+    {
+      // The capability vocabulary contains the string literal 'import'; the
+      // checker must not parse quoted literals as import statements.
+      file: 'packages/plugin-api/src/boundary-fixture.ts',
+      content: "export const caps = ['import', 'export'] as const;",
+      allowed: true,
+    },
   ];
   for (const item of cases) {
     try {

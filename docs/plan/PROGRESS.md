@@ -822,3 +822,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: A pre-existing wrangler 4.144.0 ↔ pinned `@cloudflare/workers-types 5.20260917.1` peer conflict (from the 964da20 audit upgrade) surfaces whenever lockfile re-resolution runs under `strictPeerDependencies`; module 01 maintenance owns the pin decision.
 - Next actions: 05.1b (manifest ID/version/API compatibility, capabilities, configuration schemas, public vs secret settings, CSP origins, extension points, namespaced data/migrations), using the maintenance database-migrations reference.
 - Next-session cautions: Keep the root `SECURITY.md` draft uncommitted; do not import the contract packages into server/app code before 05.2; the peer conflict recurs on the next re-resolution.
+
+### 2026-10-01 — Module 05 batch: manifest schemas and compatibility
+
+- Scope and checklist IDs: 05.1b accepted (intended batch recorded before implementation). Hold boundaries unchanged.
+- Progress: PLUGIN-SPEC 1.1.0 gained the "Manifests and compatibility" chapter; `@hyperbug/plugin-api` 1.1.0 carries the strict manifest schema, semantic validation, simplified semver-range compatibility (`apiVersionSatisfies`) and namespace derivation (`pluginDataNamespace`); `@hyperbug/plugin-sdk` 1.1.0 adds `definePlugin`; plugin-runtime stays 1.0.0, so the contract packages now version independently in practice.
+- Change summary: Specification chapter, manifest module (plugin-api `src/manifest.ts` + `src/identity.ts` split), SDK authoring entry, typebox allowance in both boundary layers, boundary-checker hardening against quoted-string false positives (the `'import'` capability literal), and 18 new manifest/compatibility tests plus boundary and coherence updates.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format, unit 135/135, contract 1/1, node 50/50, workerd 128/128, isolated PostgreSQL 18.6 68/68, build, db:check, docs build, secret and license scans passed.
+- Decisions and deviations: TypeBox 0.34.52 is plugin-api's only external dependency (Context7 lookup 2026-10-01, `/sinclairzx81/typebox`; 1.0 import-path change recorded as a future maintenance gap). TypeBox does not enforce `uniqueItems` on these arrays; duplicates are rejected semantically in `validatePluginManifest`.
+- Blockers/open questions: The latent wrangler/workers-types peer conflict did not resurface this batch (resolution skipped; typebox already resolved) and remains a module 01 maintenance item.
+- Next actions: 05.1c lifecycle chapter and state model.
+- Next-session cautions: Do not import plugin packages into Core before 05.2; keep the root `SECURITY.md` draft uncommitted.

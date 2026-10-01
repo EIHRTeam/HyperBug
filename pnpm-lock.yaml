@@ -198,7 +198,11 @@ importers:
 
   packages/observability: {}
 
-  packages/plugin-api: {}
+  packages/plugin-api:
+    dependencies:
+      '@sinclair/typebox':
+        specifier: 0.34.52
+        version: 0.34.52
 
   packages/plugin-runtime:
     dependencies:
