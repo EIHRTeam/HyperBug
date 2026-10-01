@@ -9,10 +9,10 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Status: In progress
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
-- Implementation started: Yes (2026-10-01, batches 05.1a–05.1c).
-- Completed implementation checklist IDs: 05.1a, 05.1b, 05.1c.
-- Active/next checklist group: 05.1d (hook protocol chapter).
-- Last updated: 2026-10-01 (batch 05.1c accepted).
+- Implementation started: Yes (2026-10-01, batches 05.1a–05.1d).
+- Completed implementation checklist IDs: 05.1a, 05.1b, 05.1c, 05.1d.
+- Active/next checklist group: 05.1e (external service protocol).
+- Last updated: 2026-10-01 (batch 05.1d accepted).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
 
@@ -126,3 +126,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.1d — hook protocol chapter (mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, side-effect idempotency; security-critical hooks fail closed) in PLUGIN-SPEC and hook contract types in plugin-api.
 - Next-session cautions: Do not import plugin packages into Core before 05.2; `compareSemver` throws on malformed input by contract — callers validate versions first.
+
+### 2026-10-01 — Batch 05.1d accepted (hook protocol)
+
+- Scope and checklist IDs: 05.1d accepted (intended batch recorded before implementation) — hook mode, ordering, payload version/limits, deadlines, concurrency, failure semantics and side-effect idempotency.
+- Progress: PLUGIN-SPEC is at 1.3.0 with §11: `sync` mode restricted to results Core immediately depends on (authentication, authorization-related, required CAPTCHA) with `async` durable outbox dispatch for everything else; deterministic registry-order execution; payload versions owned by Core; ceilings fixed in the contract (65,536-byte sync payload, 3,000 ms deadline, 8 concurrent invocations per point); four explicit failure policies with the security-critical override (`effectiveFailurePolicy` forces `fail-closed`, implementing the 03.3f re-scope — a failing, timing-out or unavailable check denies and never silently disables verification); and `eventId`-based at-least-once idempotency. The documented non-preemption limitation for native CPU-bound code is part of §11.3 ahead of its 05.3c verification. `@hyperbug/plugin-api` 1.3.0 carries the constants, envelope schema (`isPluginHookEnvelope`) and policy helpers; `@hyperbug/plugin-sdk` 1.2.0 re-exports them.
+- Change summary: New `packages/plugin-api/src/hooks.ts`, index/SDK re-exports, version bumps, PLUGIN-SPEC §11, and 7 hook protocol test cases.
+- Files/artifacts: `docs/PLUGIN-SPEC.md`; `packages/plugin-api/{package.json,src/hooks.ts,src/identity.ts,src/index.ts}`; `packages/plugin-sdk/{package.json,src/index.ts}`; `tests/unit/plugin-hooks.test.ts`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`; `pnpm-lock.yaml`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 154/154, contract 1/1, node 50/50, workerd 128/128, isolated PostgreSQL 18.6 68/68, build, db:check both dialects, docs build, secret and license scans all passed.
+- Decisions and deviations: Tool-behavior finding (gap beyond the 2026-10-01 Context7 lookup): TypeBox 0.34's `Value.Check` rejects unregistered `format` annotations ("Unknown format 'uuid'"), so the envelope schema expresses uuid/date-time as self-contained patterns — the contract validates identically without a format registry. `packages/contracts` still uses `format` annotations at the HTTP layer; that latent difference is noted for module 06/10 awareness, not changed here. Async dispatch itself stays with module 09 per the hold; 05.2d only connects envelopes.
+- Blockers/open questions: None new.
+- Next actions: 05.1e — external service protocol chapter (trusted native vs isolated external separation, scoped/revocable capability APIs, signed/versioned events) and its contract types.
+- Next-session cautions: Do not import plugin packages into Core before 05.2; hook point catalogs and payload shapes arrive with 05.2c.

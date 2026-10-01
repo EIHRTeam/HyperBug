@@ -1,7 +1,7 @@
 // Author-facing Plugin SDK. Plugin code imports this package — never the host
 // runtime — so the contract surface authors see stays independently versioned
-// from Core. `definePlugin` is the single authoring entry: it validates the
-// manifest through the shared Plugin API schema and returns it typed.
+// from Core. `definePlugin` is the authoring entry for manifests; hook types
+// let hook implementations code against the same envelope the runtime sends.
 import {
   validatePluginManifest,
   type PluginManifest,
@@ -11,7 +11,7 @@ import {
 export const PLUGIN_SDK_PACKAGE = '@hyperbug/plugin-sdk' as const;
 
 /** Version of this package, independent of the Plugin API version. */
-export const PLUGIN_SDK_VERSION = '1.1.0' as const;
+export const PLUGIN_SDK_VERSION = '1.2.0' as const;
 
 /**
  * Declare a plugin. Throws with the manifest validation errors when the
@@ -52,6 +52,38 @@ export {
   type PluginPermission,
   type PluginSetting,
   apiVersionSatisfies,
+  compareSemver,
   pluginDataNamespace,
   validatePluginManifest,
+} from '@hyperbug/plugin-api';
+export {
+  PLUGIN_LIFECYCLE_STATES,
+  PLUGIN_LIFECYCLE_TRANSITIONS,
+  PLUGIN_UNINSTALL_POLICIES,
+  type LifecycleDecision,
+  type PluginConfigurationInput,
+  type PluginLifecycleOperation,
+  type PluginLifecycleState,
+  type PluginUninstallPolicy,
+  checkConfiguration,
+  decideEnable,
+  decideRegistration,
+} from '@hyperbug/plugin-api';
+export {
+  MAX_CONCURRENT_HOOK_INVOCATIONS,
+  PLUGIN_HOOK_ERROR_KINDS,
+  PLUGIN_HOOK_FAILURE_POLICIES,
+  PLUGIN_HOOK_MODES,
+  SYNC_HOOK_DEADLINE_CEILING_MS,
+  SYNC_HOOK_PAYLOAD_LIMIT_BYTES,
+  PluginHookEnvelopeSchema,
+  type PluginHookEnvelope,
+  type PluginHookErrorKind,
+  type PluginHookFailureAction,
+  type PluginHookFailurePolicy,
+  type PluginHookMode,
+  effectiveFailurePolicy,
+  hookFailureAction,
+  isPluginHookEnvelope,
+  isWithinSyncPayloadLimit,
 } from '@hyperbug/plugin-api';

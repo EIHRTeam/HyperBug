@@ -846,3 +846,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 05.1d hook protocol.
 - Next-session cautions: Do not import plugin packages into Core before 05.2; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batch: hook protocol
+
+- Scope and checklist IDs: 05.1d accepted (intended batch recorded before implementation). Hold boundaries unchanged.
+- Progress: PLUGIN-SPEC 1.3.0 gained §11 — sync mode only for authentication/authorization-related/required-CAPTCHA results with durable async outbox dispatch otherwise, deterministic ordering, contract-fixed ceilings (65,536-byte payload, 3,000 ms deadline, 8 concurrent invocations), four failure policies with the security-critical fail-closed override (03.3f re-scope), and eventId idempotency. plugin-api 1.3.0 / plugin-sdk 1.2.0 carry the contract.
+- Change summary: Hook contract module, envelope schema and policy helpers, specification chapter, 7 new tests.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format, unit 154/154, contract 1/1, node 50/50, workerd 128/128, isolated PostgreSQL 18.6 68/68, build, db:check, docs build, secret and license scans passed.
+- Decisions and deviations: TypeBox 0.34 `Value.Check` rejects unregistered `format` annotations — the hook envelope uses self-contained patterns so validation is registry-independent; the same latent difference in packages/contracts' HTTP-layer schemas is noted for later modules.
+- Blockers/open questions: None new.
+- Next actions: 05.1e external service protocol.
+- Next-session cautions: Do not import plugin packages into Core before 05.2; keep the root `SECURITY.md` draft uncommitted.

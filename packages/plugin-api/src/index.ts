@@ -49,3 +49,21 @@ export {
   decideEnable,
   decideRegistration,
 } from './lifecycle.ts';
+export {
+  MAX_CONCURRENT_HOOK_INVOCATIONS,
+  PLUGIN_HOOK_ERROR_KINDS,
+  PLUGIN_HOOK_FAILURE_POLICIES,
+  PLUGIN_HOOK_MODES,
+  SYNC_HOOK_DEADLINE_CEILING_MS,
+  SYNC_HOOK_PAYLOAD_LIMIT_BYTES,
+  PluginHookEnvelopeSchema,
+  type PluginHookEnvelope,
+  type PluginHookErrorKind,
+  type PluginHookFailureAction,
+  type PluginHookFailurePolicy,
+  type PluginHookMode,
+  effectiveFailurePolicy,
+  hookFailureAction,
+  isPluginHookEnvelope,
+  isWithinSyncPayloadLimit,
+} from './hooks.ts';

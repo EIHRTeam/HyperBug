@@ -1,6 +1,6 @@
 # HyperBug plugin specification (PLUGIN-SPEC)
 
-Specification version: **1.2.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
+Specification version: **1.3.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
 
 Status: MVP backend development ([module 05](plan/modules/05-plugin-foundation.md)). This frame is defined by checklist 05.1a; the manifest, lifecycle, hook and external-service chapters land with 05.1b–05.1e and Core integration with 05.2.
 
@@ -181,12 +181,45 @@ Registration validates the manifest (§9) and requires the host's Plugin API ver
 
 There is no default: the uninstall operation must state its policy. Deletion is irreversible; retention leaves data owned by an absent plugin and must not be readable by a different plugin id (namespace ownership is enforced by the storage interfaces, module 05.2b).
 
+## 11. Hook protocol
+
+Hooks are the only way plugin code runs. Core owns the extension points, their policies and their budgets; plugins implement them. The contract constants and types live in `@hyperbug/plugin-api` (`PLUGIN_HOOK_MODES`, `PLUGIN_HOOK_FAILURE_POLICIES`, the envelope schema and the ceiling constants).
+
+### 11.1 Mode (PERFORMANCE §48)
+
+- `sync` — the hook runs on the request path and the business result immediately depends on it. Sync hooks exist only where Core cannot answer without the plugin: authentication providers, authorization-related providers and required CAPTCHA verification. Every other effect — notifications, webhooks, analytics, external synchronization — uses `async`.
+- `async` — the effect is recorded and dispatched durably through the outbox model (module 02); the request path never waits for it. Actual dispatch consumers are completed by module 09 before side-effect consumers are enabled (05.2d connects the envelopes).
+
+### 11.2 Ordering
+
+Within one extension point, sync hooks run one at a time in a stable, deterministic order — registry order, the order in which enabled plugins were registered. There are no numeric priorities in MVP and no parallel invocations of hooks at the same point within one request.
+
+### 11.3 Payload version, limits, deadlines and concurrency (PERFORMANCE §47)
+
+- Every payload carries a `payloadVersion` owned by Core, incremented when a point's payload shape changes; plugins accept the versions they declare. Per-extension-point contracts (05.2c) pin the current version of each payload.
+- A serialized sync payload is at most `SYNC_HOOK_PAYLOAD_LIMIT_BYTES` (65,536); the runtime rejects an oversized payload before dispatch. Async envelopes ride the outbox's own bounded records.
+- Every sync invocation carries a deadline enforced by the runtime, at most `SYNC_HOOK_DEADLINE_CEILING_MS` (3,000 ms); points may declare tighter budgets. External-plugin calls always have a timeout (PERFORMANCE §49).
+- A single plugin holds at most `MAX_CONCURRENT_HOOK_INVOCATIONS` (8) concurrent invocations at one point in one isolate/process; excess invocations are shed before dispatch.
+- Wall-clock deadlines bound waiting, not native CPU: in-process native code cannot be securely preempted by a promise timeout. This limitation is documented and verified by 05.3c; the practical control for native plugins is review plus bounded request budgets, not preemption.
+
+### 11.4 Failure semantics (PERFORMANCE §49; the 03.3f re-scope)
+
+Each extension point has an explicit failure policy from `fail-closed` / `fail-request` / `enqueue-retry` / `continue-without-effect`, mapping to the runtime actions deny / fail-request / enqueue-retry / continue.
+
+**Security-critical points are `fail-closed` by Core decision.** A plugin cannot weaken them (`effectiveFailurePolicy` forces `fail-closed` regardless of what a plugin declares). A hook on a security-critical point that fails, times out, is cancelled or is unavailable denies the protected operation — it never silently disables verification. This is the fail-closed plugin-permission rule re-scoped from Phase 03's 03.3f and is verified by 05.2c/05.3 fixtures.
+
+Non-critical points use their declared policy; `continue-without-effect` records the skipped side effect rather than dropping it silently.
+
+### 11.5 Side-effect idempotency
+
+Every hook/event carries an `eventId` (UUID) and an `occurredAt` timestamp in the shared envelope (`PluginHookEnvelope`). Async dispatch is at-least-once; consumers deduplicate on `eventId` and must be idempotent per event. Retries are bounded with the outbox's retry semantics; dead effects are retained as recoverable failures, not silently discarded.
+
 ## Chapter status
 
 | Chapter | Content | Defined by |
 | --- | --- | --- |
 | §1–§8 | Frame: scope, components, trust, versioning, policy, performance, frontend, conformance | 05.1a |
 | §9 | Manifests and compatibility: identity, API ranges, capabilities, extension points, permissions, public/secret settings, CSP origins, namespaced data/migrations | 05.1b |
-| §10 | Lifecycle: states, register/validate, configure, enable, disable, upgrade, uninstall and explicit retain/delete policy | 05.1c (this version) |
-| Hook protocol | Hook mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, idempotency | 05.1d |
+| §10 | Lifecycle: states, register/validate, configure, enable, disable, upgrade, uninstall and explicit retain/delete policy | 05.1c |
+| §11 | Hook protocol: mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, idempotency | 05.1d (this version) |
 | External service protocol | Scoped/revocable capability APIs, signed/versioned events | 05.1e |
