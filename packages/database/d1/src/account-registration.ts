@@ -4,7 +4,7 @@ import {
   type AccountRegistrationStore,
   type AccountPasswordStore,
 } from '@hyperbug/application';
-import { parseStandardPasswordRecord } from '@hyperbug/security';
+import { parseAccountPasswordRecord } from '@hyperbug/security';
 
 function duplicateHandle(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
@@ -21,7 +21,7 @@ export function createD1AccountRegistrationStore(
     async register(input) {
       validateAccountRegistrationInput(input);
       const record = JSON.stringify(
-        parseStandardPasswordRecord(input.passwordRecord),
+        parseAccountPasswordRecord(input.passwordRecord),
       );
       try {
         await db.batch([
@@ -77,7 +77,7 @@ export function createD1AccountRegistrationStore(
       return {
         principalId: row.principal_id,
         identityId: row.identity_id,
-        record: parseStandardPasswordRecord(JSON.parse(row.record)),
+        record: parseAccountPasswordRecord(JSON.parse(row.record)),
         revision: row.revision,
       };
     },
@@ -102,7 +102,7 @@ export function createD1AccountRegistrationStore(
       return {
         principalId: row.principal_id,
         identityId: row.identity_id,
-        record: parseStandardPasswordRecord(JSON.parse(row.record)),
+        record: parseAccountPasswordRecord(JSON.parse(row.record)),
         revision: row.revision,
       };
     },
@@ -116,7 +116,7 @@ export function createD1AccountRegistrationStore(
         input.nowMs > 8640000000000000
       )
         throw new Error('Invalid credential replacement');
-      const record = parseStandardPasswordRecord(input.record);
+      const record = parseAccountPasswordRecord(input.record);
       const result = await db
         .prepare(
           "UPDATE password_credentials SET record = ?, revision = revision + 1, updated_at = max(updated_at, ?) WHERE identity_id = ? AND revision = ? AND EXISTS (SELECT 1 FROM identities i JOIN principals p ON p.id = i.principal_id WHERE i.id = password_credentials.identity_id AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active')",

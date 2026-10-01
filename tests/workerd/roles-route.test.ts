@@ -235,6 +235,18 @@ it('manages sessions, roles and suspension with step-up on workerd/D1', async ()
     .bind(projectId, staffPrincipalId, Date.now())
     .run();
 
+  const revokedSession = await db
+    .prepare(
+      "SELECT actor_id, target_id, result FROM audit_events WHERE action = 'session.revoked'",
+    )
+    .all<{ actor_id: string; target_id: string; result: string }>();
+  expect(revokedSession.results).toEqual([
+    {
+      actor_id: userPrincipalId,
+      target_id: listed.sessions[0]!.id,
+      result: 'success',
+    },
+  ]);
   const passwordGrant = await call(
     `/api/v1/projects/${projectId}/members/${userPrincipalId}`,
     { method: 'PUT', token: staffToken, body: { role: 'triage' } },
@@ -291,6 +303,24 @@ it('manages sessions, roles and suspension with step-up on workerd/D1', async ()
   );
   expect(selfReplace.status).toBe(200);
 
+  const grantedAudit = await db
+    .prepare(
+      "SELECT project_id, actor_id, target_id, metadata FROM audit_events WHERE action = 'role.granted'",
+    )
+    .all<{
+      project_id: string;
+      actor_id: string;
+      target_id: string;
+      metadata: string;
+    }>();
+  expect(grantedAudit.results).toHaveLength(1);
+  expect(JSON.parse(grantedAudit.results[0]!.metadata)).toEqual({
+    v: 1,
+    role: 'administrator',
+  });
+  expect(grantedAudit.results[0]?.project_id).toBe(projectId);
+  expect(grantedAudit.results[0]?.actor_id).toBe(staffPrincipalId);
+  expect(grantedAudit.results[0]?.target_id).toBe(staffPrincipalId);
   const suspended = await call(
     `/api/v1/admin/principals/${userPrincipalId}/suspend`,
     { method: 'POST', token: steppedToken, body: {} },
@@ -316,4 +346,41 @@ it('manages sessions, roles and suspension with step-up on workerd/D1', async ()
     { method: 'DELETE', token: steppedToken, body: {} },
   );
   expect(memberRemoved.status).toBe(204);
+
+  const suspendedAudit = await db
+    .prepare(
+      "SELECT project_id, actor_id, target_id FROM audit_events WHERE action = 'principal.suspended'",
+    )
+    .all<{ project_id: null; actor_id: string; target_id: string }>();
+  expect(suspendedAudit.results).toEqual([
+    {
+      project_id: null,
+      actor_id: staffPrincipalId,
+      target_id: userPrincipalId,
+    },
+  ]);
+  const activatedAudit = await db
+    .prepare(
+      "SELECT project_id, actor_id, target_id FROM audit_events WHERE action = 'principal.activated'",
+    )
+    .all<{ project_id: null; actor_id: string; target_id: string }>();
+  expect(activatedAudit.results).toEqual([
+    {
+      project_id: null,
+      actor_id: staffPrincipalId,
+      target_id: userPrincipalId,
+    },
+  ]);
+  const revokedRole = await db
+    .prepare(
+      "SELECT project_id, actor_id, target_id FROM audit_events WHERE action = 'role.revoked'",
+    )
+    .all<{ project_id: string; actor_id: string; target_id: string }>();
+  expect(revokedRole.results).toEqual([
+    {
+      project_id: projectId,
+      actor_id: staffPrincipalId,
+      target_id: staffPrincipalId,
+    },
+  ]);
 });

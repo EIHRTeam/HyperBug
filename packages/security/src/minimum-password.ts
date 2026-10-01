@@ -12,6 +12,10 @@ import {
   type ProvidedKey,
   type SecretContext,
 } from './crypto.ts';
+import {
+  parseStandardPasswordRecord,
+  type StandardPasswordRecord,
+} from './standard-password.ts';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -314,4 +318,97 @@ export async function createMinimumPasswordService(
   } finally {
     if (timer) clearTimeout(timer);
   }
+}
+
+/**
+ * Fixed binding context for account password records on this tier. The
+ * per-user random salt provides record uniqueness — exactly the binding
+ * strength of the standard Argon2id path — while this context separates the
+ * derivation from every other purpose of the same pepper. The identifier is
+ * a fixed namespace value, not a per-resource reference.
+ */
+const accountPasswordContext: SecretContext = Object.freeze({
+  resourceType: 'account',
+  resourceId: '0f1e2d3c-4b5a-4968-8776-6574a3b2c1d0',
+  field: 'verifier',
+  projectId: null,
+  schemaVersion: 1,
+});
+
+/** Either profile's stored credential record, opaque to the account routes. */
+export type AccountPasswordRecord =
+  | StandardPasswordRecord
+  | MinimumPasswordRecord;
+
+/**
+ * Parse either profile's stored credential record. The adapters use this on
+ * credential writes and reads; the verification paths keep their own
+ * per-algorithm parsers so a weaker verifier never sees a stronger record.
+ */
+export function parseAccountPasswordRecord(
+  value: unknown,
+): AccountPasswordRecord {
+  try {
+    return parseStandardPasswordRecord(value);
+  } catch {
+    return parseMinimumPasswordRecord(value);
+  }
+}
+
+export interface AccountPasswordVerification {
+  readonly verified: boolean;
+  /** Persist with an expected record revision after a successful login. */
+  readonly replacement: AccountPasswordRecord | null;
+}
+
+/**
+ * Profile-neutral account password port: the standard roots supply their
+ * Argon2id service directly (it is structurally compatible) and a minimum-tier
+ * root supplies the adapted peppered PBKDF2 service below.
+ */
+export interface AccountPasswordService {
+  hash(password: string, signal?: AbortSignal): Promise<AccountPasswordRecord>;
+  verify(
+    password: string,
+    stored: unknown,
+    signal?: AbortSignal,
+  ): Promise<AccountPasswordVerification>;
+}
+
+/**
+ * Adapt the context-bound minimum-tier service to the profile-neutral account
+ * port under the fixed account context. The source is either a constructed
+ * service or a loader: Workers global scope cannot perform the async D1 work
+ * of the pepper preflight, so a composition root passes a loader and the
+ * service is constructed (and its pepper proven) at first use. The wrapped
+ * service keeps its own concurrency bound; callers keep applying their
+ * response deadlines. A failed load is not memoized.
+ */
+export function adaptMinimumPasswordService(
+  source: MinimumPasswordService | (() => Promise<MinimumPasswordService>),
+): AccountPasswordService {
+  const load =
+    typeof source === 'function'
+      ? source
+      : async () => {
+          if (
+            !source ||
+            typeof source.hash !== 'function' ||
+            typeof source.verify !== 'function'
+          )
+            throw new CryptoFailure();
+          return source;
+        };
+  let service: Promise<MinimumPasswordService> | null = null;
+  const resolve = () =>
+    (service ??= load().catch((error: unknown) => {
+      service = null;
+      throw error;
+    }));
+  return Object.freeze({
+    hash: async (password: string) =>
+      (await resolve()).hash(password, accountPasswordContext),
+    verify: async (password: string, stored: unknown) =>
+      (await resolve()).verify(password, stored, accountPasswordContext),
+  });
 }

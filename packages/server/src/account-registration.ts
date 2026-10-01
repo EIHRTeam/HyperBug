@@ -1,6 +1,6 @@
 import type { AccountRegistrationStore } from '@hyperbug/application';
 import type { RegistrationRequest } from '@hyperbug/contracts';
-import type { StandardPasswordService } from '@hyperbug/security';
+import type { AccountPasswordService } from '@hyperbug/security';
 import type { BoundSensitiveActionAdmission } from './sensitive-admission.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
@@ -29,7 +29,7 @@ export async function registerAccount(input: {
   readonly request: Request;
   readonly body: RegistrationRequest;
   readonly admission: Pick<BoundSensitiveActionAdmission, 'require'>;
-  readonly password: StandardPasswordService | null;
+  readonly password: AccountPasswordService | null;
   readonly requestId?: string | null;
   readonly store: AccountRegistrationStore | null;
 }): Promise<{ accepted: true }> {

@@ -3,7 +3,7 @@ import {
   validateStaffEnrollmentInput,
   type StaffEnrollmentStore,
 } from '@hyperbug/application';
-import { parseStandardPasswordRecord } from '@hyperbug/security';
+import { parseAccountPasswordRecord } from '@hyperbug/security';
 
 function duplicateHandle(error: unknown): boolean {
   return (
@@ -33,7 +33,7 @@ export function createD1StaffEnrollmentStore(
     async enrollStaff(input) {
       validateStaffEnrollmentInput(input);
       const record = JSON.stringify(
-        parseStandardPasswordRecord(input.passwordRecord),
+        parseAccountPasswordRecord(input.passwordRecord),
       );
       try {
         await db.batch([

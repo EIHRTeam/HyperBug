@@ -5,16 +5,21 @@ import type {
 } from '@hyperbug/application';
 import type { RecoveryRequest } from '@hyperbug/contracts';
 import {
+  auditEvent,
   digestCredential,
   generateOpaqueCredential,
   verifyCredential,
+  type AccountPasswordService,
   type KeyProvider,
   type SecretContext,
-  type StandardPasswordService,
 } from '@hyperbug/security';
+import { appendRequiredAuditEvent, auditRequestId } from './audit-emit.ts';
 import { canonicalRegistrationHandle } from './account-registration.ts';
 import { currentAccountSession, requireAuthOrigin } from './account-session.ts';
-import type { BoundSensitiveActionAdmission } from './sensitive-admission.ts';
+import type {
+  AuditAppend,
+  BoundSensitiveActionAdmission,
+} from './sensitive-admission.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
@@ -50,6 +55,8 @@ export async function generateAccountRecoveryCodes(input: {
   readonly keyProvider: KeyProvider | null;
   readonly recoveryStore: AccountRecoveryStore | null;
   readonly sessionStore: AccountSessionStore | null;
+  readonly auditAppend: AuditAppend | null;
+  readonly requestId?: string | null;
   readonly nowMs: number;
 }): Promise<{ codes: string[] }> {
   const { request, keyProvider, recoveryStore, sessionStore, nowMs } = input;
@@ -79,7 +86,24 @@ export async function generateAccountRecoveryCodes(input: {
         nowMs,
       }),
     );
-  } catch {
+    await appendRequiredAuditEvent({
+      append: input.auditAppend,
+      event: auditEvent({
+        id: crypto.randomUUID(),
+        projectId: null,
+        actorId: session.principalId,
+        systemActor: null,
+        action: 'recovery.generated',
+        targetId: session.principalId,
+        result: 'success',
+        requestId: auditRequestId(input.requestId),
+        createdAt: nowMs,
+        metadata: { v: 1 },
+      }),
+      signal: request.signal,
+    });
+  } catch (error) {
+    if (error instanceof RequestFailure) throw error;
     throw new RequestFailure('RECOVERY_UNAVAILABLE');
   }
   return { codes };
@@ -95,11 +119,12 @@ export async function recoverAccount(input: {
   readonly request: Request;
   readonly body: RecoveryRequest;
   readonly admission: Pick<BoundSensitiveActionAdmission, 'require'>;
-  readonly password: StandardPasswordService | null;
+  readonly password: AccountPasswordService | null;
   readonly passwordStore: AccountPasswordStore | null;
   readonly recoveryStore: AccountRecoveryStore | null;
   readonly sessionStore: AccountSessionStore | null;
   readonly keyProvider: KeyProvider | null;
+  readonly auditAppend: AuditAppend | null;
   readonly requestId?: string | null;
 }): Promise<{ recovered: true }> {
   const {
@@ -199,6 +224,22 @@ export async function recoverAccount(input: {
     await withDeadline(request.signal, 1000, () =>
       sessionStore.revokeAllForPrincipal(credential.principalId, nowMs),
     );
+    await appendRequiredAuditEvent({
+      append: input.auditAppend,
+      event: auditEvent({
+        id: crypto.randomUUID(),
+        projectId: null,
+        actorId: credential.principalId,
+        systemActor: null,
+        action: 'account.recovered',
+        targetId: credential.principalId,
+        result: 'success',
+        requestId: auditRequestId(input.requestId),
+        createdAt: nowMs,
+        metadata: { v: 1 },
+      }),
+      signal: request.signal,
+    });
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
     throw new RequestFailure('RECOVERY_UNAVAILABLE');

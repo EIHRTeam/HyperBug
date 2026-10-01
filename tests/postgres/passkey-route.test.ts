@@ -103,6 +103,7 @@ beforeAll(async () => {
       registrationStore: configured.registrationStore,
       passwordStore: configured.passwordStore,
       sessionStore: configured.sessionStore,
+      auditAppend: configured.auditAppend,
       keyProvider: sessionKeys.provider,
       standardPassword: createNodeStandardPasswordService(
         config.deployment,
@@ -182,6 +183,19 @@ it('registers a passkey and completes discoverable passkey login', async () => {
   expect(stored.rowCount).toBe(1);
   expect((stored.rows[0] as { counter: number }).counter).toBe(0);
 
+  const passkeyIdentity = await pool.query(
+    "SELECT i.id, i.principal_id FROM identities i WHERE i.subject = 'passkeyuser' AND i.provider = 'local-password'",
+  );
+  const linkedAudit = await pool.query(
+    "SELECT actor_id, target_id, result, metadata FROM audit_events WHERE action = 'account.linked'",
+  );
+  expect(linkedAudit.rowCount).toBe(1);
+  expect(linkedAudit.rows[0]).toEqual({
+    actor_id: passkeyIdentity.rows[0]?.principal_id,
+    target_id: passkeyIdentity.rows[0]?.id,
+    result: 'success',
+    metadata: { v: 1, kind: 'passkey' },
+  });
   const loginOptions = await post('/auth/passkey/login/options', {});
   expect(loginOptions.status).toBe(200);
   const challenge = ((await loginOptions.json()) as { challenge: string })

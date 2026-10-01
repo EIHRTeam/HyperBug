@@ -102,6 +102,7 @@ beforeAll(async () => {
       bootstrapCode: enrollmentCode,
       staffEnrollmentStore: configured.staffEnrollmentStore,
       sessionStore: configured.sessionStore,
+      auditAppend: configured.auditAppend,
       keyProvider: sessionKeys.provider,
       bootstrapState: configured.staffEnrollmentStore
         ? async () =>
@@ -123,6 +124,7 @@ beforeAll(async () => {
       standardPassword: password,
       bootstrapCode: null,
       staffEnrollmentStore: configured.staffEnrollmentStore,
+      auditAppend: configured.auditAppend,
     }),
     0,
   );
@@ -208,6 +210,16 @@ it('enrolls the initial Staff administrator through the operator-channel code', 
   );
   expect(credential.rowCount).toBe(1);
 
+  const enrollmentAudit = await pool.query(
+    "SELECT system_actor, actor_id, result, target_id FROM audit_events WHERE action = 'account.enrolled'",
+  );
+  expect(enrollmentAudit.rowCount).toBe(1);
+  expect(enrollmentAudit.rows[0]).toEqual({
+    system_actor: 'core.identity',
+    actor_id: null,
+    result: 'success',
+    target_id: staff.rows[0]?.id,
+  });
   const ready = await (await fetch(new URL('/health/ready', base))).json();
   expect(ready.deployment.bootstrapPending).toBe(false);
 
@@ -301,7 +313,9 @@ it('publishes the unauthenticated instance capability document', async () => {
       passwordRegistration: true,
       passwordLogin: true,
       passkeys: false,
-      recoveryCodes: true,
+      // No recovery store is wired in this composition, so the recommended
+      // tier path reports truthfully as unavailable.
+      recoveryCodes: false,
       administratorAssistedRecovery: true,
     },
     limits: {

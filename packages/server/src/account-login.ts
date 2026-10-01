@@ -3,7 +3,7 @@ import type {
   AccountSessionStore,
 } from '@hyperbug/application';
 import type { LoginRequest } from '@hyperbug/contracts';
-import type { KeyProvider, StandardPasswordService } from '@hyperbug/security';
+import type { AccountPasswordService, KeyProvider } from '@hyperbug/security';
 import { verifyAccountPassword } from './account-password.ts';
 import { canonicalRegistrationHandle } from './account-registration.ts';
 import { issueSessionCookieFor } from './account-session.ts';
@@ -26,7 +26,7 @@ export async function loginAccount(input: {
   readonly request: Request;
   readonly body: LoginRequest;
   readonly admission: Pick<BoundSensitiveActionAdmission, 'require'>;
-  readonly passwordService: StandardPasswordService | null;
+  readonly passwordService: AccountPasswordService | null;
   readonly passwordStore: AccountPasswordStore | null;
   readonly keyProvider: KeyProvider | null;
   readonly requestId?: string | null;

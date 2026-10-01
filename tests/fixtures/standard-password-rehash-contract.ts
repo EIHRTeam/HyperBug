@@ -1,7 +1,9 @@
 import { verifyAccountPassword } from '../../packages/server/src/account-password.ts';
 import type {
+  AccountPasswordRecord,
   AccountPasswordStore,
   AccountRegistrationStore,
+  Argon2idCredentialRecord,
 } from '../../packages/application/src/account-registration.ts';
 import type { StandardPasswordService } from '../../packages/security/src/standard-password.ts';
 
@@ -143,20 +145,24 @@ export async function observeStandardPasswordRehash(input: {
   const afterWrong = await store.loadCredential(handle);
   if (!afterWrong) throw new Error('Credential vanished after denial');
 
+  // This contract exercises the standard Argon2id rehash path only.
+  const argon2 = (credential: AccountPasswordRecord) =>
+    credential as Argon2idCredentialRecord;
+
   return {
     initialLogin: initialLogin.outcome,
     initialRevision: initial.revision,
     initialParameters: {
-      memoryKiB: initial.record.memoryKiB,
-      passes: initial.record.passes,
-      parallelism: initial.record.parallelism,
+      memoryKiB: argon2(initial.record).memoryKiB,
+      passes: argon2(initial.record).passes,
+      parallelism: argon2(initial.record).parallelism,
     },
     rehashLogin: rehashLogin.outcome,
     rehashRevision: rehashed.revision,
     rehashedParameters: {
-      memoryKiB: rehashed.record.memoryKiB,
-      passes: rehashed.record.passes,
-      parallelism: rehashed.record.parallelism,
+      memoryKiB: argon2(rehashed.record).memoryKiB,
+      passes: argon2(rehashed.record).passes,
+      parallelism: argon2(rehashed.record).parallelism,
     },
     freshSalt: rehashed.record.salt !== initial.record.salt,
     freshVerifier: rehashed.record.verifier !== initial.record.verifier,

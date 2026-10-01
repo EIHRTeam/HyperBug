@@ -4,7 +4,7 @@ import {
   type AccountRegistrationStore,
   type AccountPasswordStore,
 } from '@hyperbug/application';
-import { parseStandardPasswordRecord } from '@hyperbug/security';
+import { parseAccountPasswordRecord } from '@hyperbug/security';
 
 /** One transaction keeps principal, identity and verifier inseparable. */
 export function createPostgresAccountRegistrationStore(
@@ -13,7 +13,7 @@ export function createPostgresAccountRegistrationStore(
   return {
     async register(input) {
       validateAccountRegistrationInput(input);
-      const record = parseStandardPasswordRecord(input.passwordRecord);
+      const record = parseAccountPasswordRecord(input.passwordRecord);
       const db = await pool.connect();
       try {
         await db.query('BEGIN');
@@ -62,7 +62,7 @@ export function createPostgresAccountRegistrationStore(
       return {
         principalId: row.principal_id,
         identityId: row.identity_id,
-        record: parseStandardPasswordRecord(row.record),
+        record: parseAccountPasswordRecord(row.record),
         revision: row.revision,
       };
     },
@@ -85,7 +85,7 @@ export function createPostgresAccountRegistrationStore(
       return {
         principalId: row.principal_id,
         identityId: row.identity_id,
-        record: parseStandardPasswordRecord(row.record),
+        record: parseAccountPasswordRecord(row.record),
         revision: row.revision,
       };
     },
@@ -99,7 +99,7 @@ export function createPostgresAccountRegistrationStore(
         input.nowMs > 8640000000000000
       )
         throw new Error('Invalid credential replacement');
-      const record = parseStandardPasswordRecord(input.record);
+      const record = parseAccountPasswordRecord(input.record);
       const result = await pool.query(
         "UPDATE password_credentials c SET record = $1, revision = c.revision + 1, updated_at = GREATEST(c.updated_at, $2) WHERE c.identity_id = $3 AND c.revision = $4 AND EXISTS (SELECT 1 FROM identities i JOIN principals p ON p.id = i.principal_id WHERE i.id = c.identity_id AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active')",
         [

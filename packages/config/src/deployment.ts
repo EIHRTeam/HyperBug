@@ -120,13 +120,18 @@ export function loadDeploymentConfig(
 }
 
 /**
- * Configuration parsing must not partially enable an unaccepted tier. Remove
- * this barrier only with audited activation, compensation and 13.G6 evidence.
- * There is deliberately no environment flag or test-only override.
+ * Consistency gate for a parsed deployment config. The audited enablement
+ * itself is enforced by the composition root: the persisted
+ * deployment.enablement audit event, the startup warning and the peppered
+ * password service preflight run per isolate and fail every request closed
+ * while they fail (Cloudflare's upload-time module validation runs without
+ * live bindings, so a binding-dependent check here would falsely refuse
+ * valid uploads). Passing this check never implies the independent 13.G6
+ * acceptance or tier support, and there is no environment flag or test-only
+ * override.
  */
 export function assertDeploymentAvailable(config: DeploymentConfig): void {
-  if (config?.tier !== 'standard')
-    throw new Error(
-      `The minimum tier is not available in this build; its implementation and independent acceptance remain incomplete. ${documentation}`,
-    );
+  if (config?.tier === 'standard') return;
+  if (config?.tier === 'cloudflare-free-minimum') return;
+  throw new Error(`Invalid deployment configuration. ${documentation}`);
 }

@@ -27,6 +27,12 @@ export interface SensitiveActionAdmission {
   require(intent: SensitiveActionIntent): Promise<void>;
 }
 
+/** Append-only audit sink shared by every audited server policy. */
+export type AuditAppend = (
+  event: AuditEvent,
+  signal: AbortSignal,
+) => Promise<void>;
+
 export interface SensitiveAdmissionDependencies {
   readonly provider: AbuseKeyProvider;
   readonly store: RateCounterStore;
@@ -34,9 +40,7 @@ export interface SensitiveAdmissionDependencies {
   /** Root-owned trusted client address; omit when provenance is unavailable. */
   readonly clientAddress?: (request: Request) => string | Promise<string>;
   /** Append-only audit sink for the audited provider-outage policy. */
-  readonly auditAppend?:
-    | ((event: AuditEvent, signal: AbortSignal) => Promise<void>)
-    | null;
+  readonly auditAppend?: AuditAppend | null;
 }
 
 export type BoundRateCheck =

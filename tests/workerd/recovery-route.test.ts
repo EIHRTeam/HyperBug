@@ -92,6 +92,19 @@ it('runs the recovery-code journey on workerd/D1', async () => {
   expect(stored.results).toHaveLength(10);
   expect(JSON.stringify(stored.results)).not.toContain(codes[0]!);
 
+  const recoverable = await db
+    .prepare(
+      "SELECT p.id FROM principals p JOIN identities i ON i.principal_id = p.id WHERE i.subject = 'recoverable'",
+    )
+    .first<{ id: string }>();
+  const generatedAudit = await db
+    .prepare(
+      "SELECT actor_id, system_actor, result FROM audit_events WHERE action = 'recovery.generated'",
+    )
+    .all<{ actor_id: string; system_actor: null; result: string }>();
+  expect(generatedAudit.results).toEqual([
+    { actor_id: recoverable?.id, system_actor: null, result: 'success' },
+  ]);
   const recovered = await post('/auth/recover', {
     handle: 'recoverable',
     recoveryCode: codes[0]!,
@@ -100,6 +113,14 @@ it('runs the recovery-code journey on workerd/D1', async () => {
   expect(recovered.status).toBe(200);
   expect(await recovered.json()).toEqual({ recovered: true });
 
+  const recoveredAudit = await db
+    .prepare(
+      "SELECT actor_id, system_actor, result FROM audit_events WHERE action = 'account.recovered'",
+    )
+    .all<{ actor_id: string; system_actor: null; result: string }>();
+  expect(recoveredAudit.results).toEqual([
+    { actor_id: recoverable?.id, system_actor: null, result: 'success' },
+  ]);
   const oldSession = await mf.dispatchFetch(`${authOrigin}/auth/session`, {
     headers: { cookie: pair },
   });
@@ -124,4 +145,11 @@ it('runs the recovery-code journey on workerd/D1', async () => {
   expect(await reuse.json()).toMatchObject({
     error: { code: 'RECOVERY_DENIED' },
   });
+
+  const auditTotals = await db
+    .prepare(
+      "SELECT count(*) AS total FROM audit_events WHERE action IN ('recovery.generated', 'account.recovered')",
+    )
+    .first<{ total: number }>();
+  expect(auditTotals?.total).toBe(2);
 });

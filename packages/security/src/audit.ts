@@ -75,9 +75,26 @@ const registryActions = [
   'finish-backup',
   'release-backup',
 ] as const;
+const accountActions = [
+  'account.enrolled',
+  'account.linked',
+  'account.recovered',
+  'recovery.generated',
+  'session.revoked',
+] as const;
+const administrationActions = [
+  'role.granted',
+  'role.revoked',
+  'principal.suspended',
+  'principal.activated',
+] as const;
+/** Runtime mirror of StaffRole for the closed role.granted metadata. */
+const staffRoles = ['triage', 'maintainer', 'administrator'] as const;
 export type AuditAction =
   | (typeof projectActions)[number]
   | `key-registry.${(typeof registryActions)[number]}`
+  | (typeof accountActions)[number]
+  | (typeof administrationActions)[number]
   | 'authorization.checked'
   | 'provider.outage'
   | 'deployment.enablement';
@@ -90,6 +107,7 @@ export interface AuditEvent {
     | 'core.authorization'
     | 'core.admission'
     | 'core.deployment'
+    | 'core.identity'
     | null;
   readonly action: AuditAction;
   readonly targetId: string;
@@ -251,6 +269,65 @@ export function auditEvent(input: unknown): AuditEvent {
           throw invalid();
       } else id(r.targetId);
       metadata = Object.freeze({ v: 1, generation: m.generation });
+    } else if (
+      typeof r.action === 'string' &&
+      (accountActions as readonly unknown[]).includes(r.action)
+    ) {
+      // Identity-lifetime events are deployment-wide and success-only: the
+      // generic denial paths of these journeys disclose nothing and stay
+      // rate-counter territory. Only the operator-channel enrollment is
+      // actor-less, attributed to the identity subsystem.
+      if (r.projectId !== null || r.result !== 'success') throw invalid();
+      id(r.targetId);
+      if (r.action === 'account.enrolled') {
+        if (r.actorId !== null || r.systemActor !== 'core.identity')
+          throw invalid();
+        record(r.metadata, ['v']);
+        metadata = Object.freeze({ v: 1 });
+      } else {
+        if (r.actorId === null || r.systemActor !== null) throw invalid();
+        if (r.action === 'account.linked') {
+          const linked = record(r.metadata, ['v', 'kind']);
+          if (linked.v !== 1 || linked.kind !== 'passkey') throw invalid();
+          metadata = Object.freeze({ v: 1, kind: 'passkey' });
+        } else {
+          record(r.metadata, ['v']);
+          metadata = Object.freeze({ v: 1 });
+        }
+      }
+    } else if (
+      typeof r.action === 'string' &&
+      (administrationActions as readonly unknown[]).includes(r.action)
+    ) {
+      // Authorized administration mutations: an authenticated actor, success
+      // only (denials belong to the authorization.checked trail), and project
+      // scope exactly for the role events.
+      if (
+        r.actorId === null ||
+        r.systemActor !== null ||
+        r.result !== 'success'
+      )
+        throw invalid();
+      id(r.targetId);
+      if (r.action === 'role.granted' || r.action === 'role.revoked') {
+        if (r.projectId === null) throw invalid();
+        if (r.action === 'role.granted') {
+          const granted = record(r.metadata, ['v', 'role']);
+          if (
+            granted.v !== 1 ||
+            !(staffRoles as readonly unknown[]).includes(granted.role)
+          )
+            throw invalid();
+          metadata = Object.freeze({ v: 1, role: granted.role as string });
+        } else {
+          record(r.metadata, ['v']);
+          metadata = Object.freeze({ v: 1 });
+        }
+      } else {
+        if (r.projectId !== null) throw invalid();
+        record(r.metadata, ['v']);
+        metadata = Object.freeze({ v: 1 });
+      }
     } else throw invalid();
     return Object.freeze({
       id: r.id,

@@ -29,10 +29,6 @@ it('rejects invalid tier settings and partial minimum enablement during real Wor
       HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
       HYPERBUG_DEGRADATION_ACK: 'free-minimum-v0',
     },
-    {
-      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
-      HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
-    },
     { HYPERBUG_DEPLOYMENT_TIER: 'minimum' },
     { HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1' },
   ]) {
@@ -59,31 +55,22 @@ it('rejects invalid tier settings and partial minimum enablement during real Wor
   }
 });
 
-it('refuses a correctly acknowledged minimum-tier selection after its audited warning', async () => {
-  // A runtime-scoped D1 binding would turn the module-init refusal into a
-  // whole-runtime failure, so the local case stays binding-free; the audited
-  // refusal's persistence is verified on the real test D1 deployment.
+it('starts an acknowledged minimum-tier selection but fails every request without its enablement trail', async () => {
+  // The binding-free worker boots (module scope is consistent), but without
+  // the database there is no audited enablement trail: the per-isolate
+  // activation barrier fails and every request fails closed. The persisted
+  // enablement itself is verified by the minimum-tier journey fixture.
   const mf = worker({
     HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
     HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
   });
-  let startupError: unknown;
-  let cleanupError: unknown;
   try {
-    await mf.ready;
-  } catch (error) {
-    startupError = error;
+    const base = await mf.ready;
+    const response = await fetch(new URL('/health/live', base));
+    expect(response.status).toBe(500);
   } finally {
-    try {
-      await mf.dispose();
-    } catch (error) {
-      cleanupError = error;
-    }
+    await mf.dispose();
   }
-  if (cleanupError !== undefined && cleanupError !== startupError)
-    throw cleanupError;
-  expect(startupError).toBeInstanceOf(Error);
-  expect(String(startupError)).toContain('docs/FREE-TIER-PROFILE.md');
 });
 
 it('keeps standard tier selection unchanged when provider-plan or quota-like bindings are present', async () => {

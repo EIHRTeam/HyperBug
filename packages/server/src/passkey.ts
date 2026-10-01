@@ -12,12 +12,17 @@ import type {
   PasskeyStore,
   WebauthnChallengeStore,
 } from '@hyperbug/application';
+import { auditEvent } from '@hyperbug/security';
 import {
   currentAccountSession,
   requireAuthOrigin,
   issueSessionCookieFor,
 } from './account-session.ts';
-import type { BoundSensitiveActionAdmission } from './sensitive-admission.ts';
+import { appendRequiredAuditEvent, auditRequestId } from './audit-emit.ts';
+import type {
+  AuditAppend,
+  BoundSensitiveActionAdmission,
+} from './sensitive-admission.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
@@ -152,9 +157,11 @@ export async function passkeyRegistrationVerify(input: {
   readonly request: Request;
   readonly body: { response: RegistrationResponseJSON };
   readonly relyingParty: PasskeyRelyingParty | null;
+  readonly auditAppend: AuditAppend | null;
+  readonly requestId?: string | null;
   readonly nowMs: number;
 }): Promise<{ registered: true }> {
-  const { request, relyingParty, body } = input;
+  const { request, relyingParty, body, auditAppend } = input;
   requireAuthOrigin(request);
   if (!relyingParty) throw new RequestFailure('PASSKEY_UNAVAILABLE');
   const session = await currentAccountSession({
@@ -202,6 +209,24 @@ export async function passkeyRegistrationVerify(input: {
       nowMs: input.nowMs,
     }),
   );
+  // Linking a credential to an account is the audited linking contract every
+  // later identity-linking surface (SSO) must reuse.
+  await appendRequiredAuditEvent({
+    append: auditAppend,
+    event: auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: session.principalId,
+      systemActor: null,
+      action: 'account.linked',
+      targetId: session.identityId,
+      result: 'success',
+      requestId: auditRequestId(input.requestId),
+      createdAt: input.nowMs,
+      metadata: { v: 1, kind: 'passkey' },
+    }),
+    signal: request.signal,
+  });
   return { registered: true };
 }
 

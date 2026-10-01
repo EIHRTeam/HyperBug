@@ -10,6 +10,8 @@ import {
   auditFixture,
   auditPolicy,
   auditNow,
+  auditActor,
+  auditProject,
 } from '../fixtures/audit-scenarios.ts';
 
 it('fails closed across authorization, storage, cancellation, overload and retention boundaries', async () => {
@@ -144,6 +146,101 @@ it('validates existing key-registry audit identities without exposing key materi
       'AUDIT_INVALID',
     );
 });
+it('validates identity-lifetime audit events with a closed catalog', () => {
+  const event = auditFixture();
+  const enrolled = {
+    ...event,
+    projectId: null,
+    actorId: null,
+    systemActor: 'core.identity',
+    action: 'account.enrolled',
+    targetId: crypto.randomUUID(),
+    result: 'success',
+    metadata: { v: 1 },
+  };
+  expect(auditEvent(enrolled)).toEqual(enrolled);
+  const attributed = {
+    ...enrolled,
+    actorId: auditActor,
+    systemActor: null,
+    targetId: crypto.randomUUID(),
+  };
+  for (const changes of [
+    { action: 'account.linked', metadata: { v: 1, kind: 'passkey' } },
+    { action: 'account.recovered', metadata: { v: 1 } },
+    { action: 'recovery.generated', metadata: { v: 1 } },
+    { action: 'session.revoked', metadata: { v: 1 } },
+  ]) {
+    const lifetime = { ...attributed, ...changes };
+    expect(auditEvent(lifetime)).toEqual(lifetime);
+  }
+  for (const changes of [
+    { systemActor: 'core.authorization' },
+    { actorId: auditActor },
+    { projectId: auditProject },
+    { result: 'failure' },
+    { metadata: { v: 1, kind: 'passkey' } },
+  ])
+    expect(() => auditEvent({ ...enrolled, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+  const linked = {
+    ...attributed,
+    action: 'account.linked',
+    metadata: { v: 1, kind: 'passkey' },
+  };
+  for (const changes of [
+    { actorId: null, systemActor: 'core.identity' },
+    { metadata: { v: 1, kind: 'password' } },
+    { metadata: { v: 1, kind: 'passkey', extra: 1 } },
+  ])
+    expect(() => auditEvent({ ...linked, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+});
+
+it('validates administration audit events with a closed catalog', () => {
+  const event = auditFixture();
+  const granted = {
+    ...event,
+    projectId: auditProject,
+    actorId: auditActor,
+    systemActor: null,
+    action: 'role.granted',
+    targetId: crypto.randomUUID(),
+    result: 'success',
+    metadata: { v: 1, role: 'maintainer' },
+  };
+  expect(auditEvent(granted)).toEqual(granted);
+  for (const changes of [
+    { action: 'role.revoked', metadata: { v: 1 } },
+    { action: 'principal.suspended', projectId: null, metadata: { v: 1 } },
+    { action: 'principal.activated', projectId: null, metadata: { v: 1 } },
+  ]) {
+    const administration = { ...granted, ...changes };
+    expect(auditEvent(administration)).toEqual(administration);
+  }
+  for (const changes of [
+    { projectId: null },
+    { metadata: { v: 1, role: 'SEEDED_SECRET' } },
+    { metadata: { v: 1 } },
+    { systemActor: 'core.identity' },
+  ])
+    expect(() => auditEvent({ ...granted, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+  const suspended = {
+    ...granted,
+    projectId: null,
+    action: 'principal.suspended',
+    metadata: { v: 1 },
+  };
+  for (const changes of [{ result: 'failure' }, { projectId: auditProject }])
+    expect(() => auditEvent({ ...suspended, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+});
+
 it('rejects invalid admission configuration before any work', () => {
   const repository = { append: async () => {}, list: async () => [] };
   const authorization = {

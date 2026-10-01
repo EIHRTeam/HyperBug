@@ -107,6 +107,22 @@ it('registers a passkey and signs in discoverably on workerd/D1', async () => {
   expect(verify.status).toBe(200);
   expect(await verify.json()).toEqual({ registered: true });
 
+  const db = await mf.getD1Database('DB');
+  const linkedAudit = await db
+    .prepare(
+      "SELECT actor_id, target_id, result, metadata FROM audit_events WHERE action = 'account.linked'",
+    )
+    .all<{
+      actor_id: string;
+      target_id: string;
+      result: string;
+      metadata: string;
+    }>();
+  expect(linkedAudit.results).toHaveLength(1);
+  expect(JSON.parse(linkedAudit.results[0]!.metadata)).toEqual({
+    v: 1,
+    kind: 'passkey',
+  });
   const loginOptions = await post('/auth/passkey/login/options', {});
   expect(loginOptions.status).toBe(200);
   const challenge = ((await loginOptions.json()) as { challenge: string })

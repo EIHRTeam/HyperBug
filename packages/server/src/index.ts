@@ -6,6 +6,10 @@ import {
 } from '@hyperbug/config';
 import type { Telemetry, RouteLabel } from '@hyperbug/observability';
 import {
+  auditEvent,
+  minimumTierPasswordLoginEnabled,
+} from '@hyperbug/security';
+import {
   HealthSchema,
   ReadinessSchema,
   InstanceDocumentSchema,
@@ -73,8 +77,10 @@ import { corsPolicy } from './cors.ts';
 import { createCaptchaGate, type CaptchaGate } from './captcha.ts';
 import {
   createBoundSensitiveActionAdmission,
+  type AuditAppend,
   type SensitiveAdmissionDependencies,
 } from './sensitive-admission.ts';
+import { appendRequiredAuditEvent } from './audit-emit.ts';
 import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 import { registerAccount } from './account-registration.ts';
 import { loginAccount } from './account-login.ts';
@@ -116,14 +122,15 @@ import {
 import {
   clearedSessionCookie,
   currentAccountSession,
+  issueSessionCookieFor,
   requireAuthOrigin,
   requireAuthReadOrigin,
   revokeAccountSession,
 } from './account-session.ts';
 import {
   CryptoFailure,
+  type AccountPasswordService,
   type KeyProvider,
-  type StandardPasswordService,
 } from '@hyperbug/security';
 
 export interface AppOptions {
@@ -137,7 +144,9 @@ export interface AppOptions {
   captchaSiteKey?: string | null;
   abuse?: SensitiveAdmissionDependencies | null;
   keyProvider?: KeyProvider | null;
-  standardPassword?: StandardPasswordService | null;
+  standardPassword?: AccountPasswordService | null;
+  /** Peppered PBKDF2 service; required by the minimum tier, refused otherwise. */
+  minimumPassword?: AccountPasswordService | null;
   registrationStore?: AccountRegistrationStore | null;
   passwordStore?: AccountPasswordStore | null;
   sessionStore?: AccountSessionStore | null;
@@ -156,6 +165,8 @@ export interface AppOptions {
   projectRoleStore?: ProjectRoleStore | null;
   /** Principal/project directory and staff account administration. */
   accountAdministration?: AccountAdministrationStore | null;
+  /** Append-only audit sink for the audited account/role mutations. */
+  auditAppend?: AuditAppend | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
   bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
@@ -251,6 +262,7 @@ export function createApp({
   abuse,
   keyProvider,
   standardPassword,
+  minimumPassword = null,
   registrationStore,
   passwordStore,
   sessionStore,
@@ -262,6 +274,7 @@ export function createApp({
   oauthCodeStore = null,
   projectRoleStore = null,
   accountAdministration = null,
+  auditAppend = null,
   bootstrapState = null,
   minimumLoginAdmission,
 }: AppOptions) {
@@ -271,10 +284,27 @@ export function createApp({
     degradationIds: Object.freeze([...config.deployment.degradationIds]),
     passwordHashPolicy: config.deployment.requiredPasswordAlgorithm,
   });
-  // Password capabilities are advertised only under the standard algorithm:
-  // the minimum tier's floor-disabled login must not present itself as usable.
-  const passwordCapable =
-    standardPassword != null && deployment.passwordHashPolicy === 'argon2id';
+  const tierSelected = deployment.tier === 'cloudflare-free-minimum';
+  // Exactly one profile's password service may be composed, matching the
+  // selected tier; the minimum tier's peppered service is mandatory because
+  // bootstrap enrollment and recovery still write credentials on that tier.
+  if (tierSelected && (!minimumPassword || standardPassword != null))
+    throw new Error('Invalid minimum-tier password composition');
+  if (!tierSelected && minimumPassword != null)
+    throw new Error('Invalid standard-tier password composition');
+  const accountPasswordService = tierSelected
+    ? minimumPassword
+    : (standardPassword ?? null);
+  // Password capabilities are advertised only under the standard algorithm,
+  // and on the minimum tier only when the reviewed parameter floor is met —
+  // the floor-disabled login must not present itself as usable.
+  const passwordCapable = tierSelected
+    ? minimumTierPasswordLoginEnabled
+    : accountPasswordService != null;
+  // Persistent account-surface notice for the reduced-capability tier.
+  const degradationNotice = tierSelected
+    ? 'This instance runs the Cloudflare Free minimum tier, a reduced-capability mode. Password sign-in is disabled on this instance; passkeys and single-use recovery codes are the sign-in path, and some capabilities are limited or unavailable.'
+    : null;
   const instanceDocument: InstanceDocument = Object.freeze({
     tier: deployment.tier,
     degradationIds: [...deployment.degradationIds],
@@ -285,7 +315,10 @@ export function createApp({
     authentication: {
       passwordRegistration: passwordCapable,
       passwordLogin: passwordCapable,
-      recoveryCodes: passwordCapable,
+      // Recovery codes are hash-policy-independent: they remain the
+      // recommended path on the minimum tier even while its password login
+      // is floor-disabled, so they follow the recovery-store wiring.
+      recoveryCodes: recoveryStore != null,
       passkeys: passkey != null,
       administratorAssistedRecovery: staffEnrollmentStore != null,
     },
@@ -465,6 +498,22 @@ export function createApp({
           : administration.activatePrincipal(targetId),
       );
       if (!applied) throw new RequestFailure('NOT_FOUND');
+      await appendRequiredAuditEvent({
+        append: auditAppend,
+        event: auditEvent({
+          id: crypto.randomUUID(),
+          projectId: null,
+          actorId: principal.principalId,
+          systemActor: null,
+          action: suspend ? 'principal.suspended' : 'principal.activated',
+          targetId,
+          result: 'success',
+          requestId: boundaryFor(request).requestId,
+          createdAt: Date.now(),
+          metadata: { v: 1 },
+        }),
+        signal: request.signal,
+      });
       return {
         principalId: targetId,
         status: suspend ? 'suspended' : 'active',
@@ -581,7 +630,7 @@ export function createApp({
     .decorate('captchaSiteKey', publicCaptchaSiteKey)
     .decorate('keyProvider', keyProvider ?? unavailableKeyProvider)
     .decorate('sensitiveAdmission', boundSensitiveAdmission)
-    .decorate('standardPassword', standardPassword ?? null)
+    .decorate('accountPassword', accountPasswordService)
     .decorate(
       'minimumLoginAdmission',
       minimumLoginAdmission ?? unavailableMinimumLoginAdmission,
@@ -849,6 +898,22 @@ export function createApp({
           throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
         }
         if (!revoked) throw new RequestFailure('NOT_FOUND');
+        await appendRequiredAuditEvent({
+          append: auditAppend,
+          event: auditEvent({
+            id: crypto.randomUUID(),
+            projectId: null,
+            actorId: principal.principalId,
+            systemActor: null,
+            action: 'session.revoked',
+            targetId: id,
+            result: 'success',
+            requestId: boundaryFor(request).requestId,
+            createdAt: Date.now(),
+            metadata: { v: 1 },
+          }),
+          signal: request.signal,
+        });
         set.status = 204;
         return null;
       },
@@ -917,6 +982,22 @@ export function createApp({
               nowMs: Date.now(),
             }),
           );
+          await appendRequiredAuditEvent({
+            append: auditAppend,
+            event: auditEvent({
+              id: crypto.randomUUID(),
+              projectId,
+              actorId: principal.principalId,
+              systemActor: null,
+              action: 'role.granted',
+              targetId: principalId,
+              result: 'success',
+              requestId: boundaryFor(request).requestId,
+              createdAt: Date.now(),
+              metadata: { v: 1, role: body.role },
+            }),
+            signal: request.signal,
+          });
         } catch (error) {
           if (error instanceof RequestFailure) throw error;
           throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
@@ -968,6 +1049,22 @@ export function createApp({
           throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
         }
         if (!removed) throw new RequestFailure('NOT_FOUND');
+        await appendRequiredAuditEvent({
+          append: auditAppend,
+          event: auditEvent({
+            id: crypto.randomUUID(),
+            projectId,
+            actorId: principal.principalId,
+            systemActor: null,
+            action: 'role.revoked',
+            targetId: principalId,
+            result: 'success',
+            requestId: boundaryFor(request).requestId,
+            createdAt: Date.now(),
+            metadata: { v: 1 },
+          }),
+          signal: request.signal,
+        });
         set.status = 204;
         return null;
       },
@@ -991,8 +1088,14 @@ export function createApp({
         body,
         set,
         sensitiveAdmission,
-        standardPassword: passwordService,
+        accountPassword: passwordService,
       }) => {
+        // A floor-disabled tier answers the password surface with the
+        // documented capability error before any admission or parsing work;
+        // a standard composition that lacks its password service stays an
+        // availability failure, not a capability statement.
+        if (!passwordCapable && tierSelected)
+          throw new RequestFailure('PASSWORD_CAPABILITY_DISABLED');
         const result = await registerAccount({
           request,
           body,
@@ -1023,12 +1126,14 @@ export function createApp({
     .post(
       '/auth/login',
       async ({ request, body, set, sensitiveAdmission }) => {
+        if (!passwordCapable && tierSelected)
+          throw new RequestFailure('PASSWORD_CAPABILITY_DISABLED');
         const { cookie } = await loginAccount({
           request,
           body,
           admission: sensitiveAdmission,
           requestId: boundaryFor(request).requestId,
-          passwordService: standardPassword ?? null,
+          passwordService: accountPasswordService,
           passwordStore: passwordStore ?? null,
           keyProvider: keyProvider ?? null,
           sessionStore: sessionStore ?? null,
@@ -1077,13 +1182,38 @@ export function createApp({
           request,
           body,
           admission: sensitiveAdmission,
-          password: standardPassword ?? null,
+          password: accountPasswordService,
           code: bootstrapCode,
           store: staffEnrollmentStore,
+          auditAppend,
           requestId: boundaryFor(request).requestId,
         });
         set.status = 201;
-        return result;
+        if (tierSelected) {
+          // The tier's password login is floor-disabled, so a bootstrapped
+          // administrator could never sign in; enrollment therefore completes
+          // by issuing the first-party session the operator uses to register
+          // a passkey and recovery codes immediately.
+          if (!passwordStore || !keyProvider || !sessionStore)
+            throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
+          const credential = await withDeadline(request.signal, 1000, () =>
+            passwordStore!.loadCredentialByIdentity(result.identityId),
+          );
+          if (!credential || credential.principalId !== result.principalId)
+            throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
+          set.headers['set-cookie'] = await issueSessionCookieFor({
+            account: {
+              principalId: result.principalId,
+              identityId: result.identityId,
+              credentialRevision: credential.revision,
+            },
+            provider: keyProvider,
+            store: sessionStore,
+            signal: request.signal,
+            nowMs: Date.now(),
+          });
+        }
+        return { enrolled: true as const };
       },
       {
         body: t.Unsafe<BootstrapEnrollRequest>(BootstrapEnrollRequestSchema),
@@ -1098,6 +1228,8 @@ export function createApp({
           keyProvider: keyProvider ?? null,
           recoveryStore: recoveryStore ?? null,
           sessionStore: sessionStore ?? null,
+          auditAppend,
+          requestId: boundaryFor(request).requestId,
           nowMs: Date.now(),
         }),
       {
@@ -1112,11 +1244,12 @@ export function createApp({
           request,
           body,
           admission: sensitiveAdmission,
-          password: standardPassword ?? null,
+          password: accountPasswordService,
           passwordStore: passwordStore ?? null,
           recoveryStore: recoveryStore ?? null,
           sessionStore: sessionStore ?? null,
           keyProvider: keyProvider ?? null,
+          auditAppend,
           requestId: boundaryFor(request).requestId,
         }),
       {
@@ -1141,6 +1274,8 @@ export function createApp({
           request,
           body: body as { response: never },
           relyingParty: passkey,
+          auditAppend,
+          requestId: boundaryFor(request).requestId,
           nowMs: Date.now(),
         }),
       {
@@ -1217,13 +1352,20 @@ export function createApp({
             })
           : null;
       if (session)
-        return authorizeConsentPage({ query, handle: null, error: null });
+        return authorizeConsentPage({
+          query,
+          handle: null,
+          error: null,
+          notice: degradationNotice,
+        });
       set.status = 200;
       return authorizeLoginPage({
         query,
         captchaRequired: captchaGate.enabled,
         captchaSiteKey: publicCaptchaSiteKey,
         error: null,
+        passwordSigninAvailable: passwordCapable,
+        notice: degradationNotice,
       });
     })
     .post(
@@ -1241,6 +1383,11 @@ export function createApp({
         } catch (error) {
           return authorizeValidationFailure(query, error);
         }
+        if (!passwordCapable && tierSelected)
+          return authorizeErrorPage(
+            'Password sign-in is disabled on this instance.',
+            403,
+          );
         const captchaToken =
           typeof fields.captchaToken === 'string' &&
           fields.captchaToken.length >= 1 &&
@@ -1259,7 +1406,7 @@ export function createApp({
             },
             admission: sensitiveAdmission,
             requestId: boundaryFor(request).requestId,
-            passwordService: standardPassword ?? null,
+            passwordService: accountPasswordService,
             passwordStore: passwordStore ?? null,
             keyProvider: keyProvider ?? null,
             sessionStore: sessionStore ?? null,
@@ -1273,6 +1420,8 @@ export function createApp({
             captchaRequired: captchaGate.enabled,
             captchaSiteKey: publicCaptchaSiteKey,
             error: loginFailure,
+            passwordSigninAvailable: passwordCapable,
+            notice: degradationNotice,
           });
         }
         const issued = await issueCodeForSession({
@@ -1323,6 +1472,8 @@ export function createApp({
             captchaRequired: captchaGate.enabled,
             captchaSiteKey: publicCaptchaSiteKey,
             error: 'Sign-in failed. Check your credentials.',
+            passwordSigninAvailable: passwordCapable,
+            notice: degradationNotice,
           });
         }
         const issued = await issueAuthorizationCode({
@@ -1401,7 +1552,10 @@ export {
 } from './account-lockout.ts';
 export { createSensitiveActionAdmission } from './sensitive-admission.ts';
 export { createBoundSensitiveActionAdmission } from './sensitive-admission.ts';
-export type { SensitiveAdmissionDependencies } from './sensitive-admission.ts';
+export type {
+  AuditAppend,
+  SensitiveAdmissionDependencies,
+} from './sensitive-admission.ts';
 export { createBoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 export type {
   BoundMinimumLoginAdmission,

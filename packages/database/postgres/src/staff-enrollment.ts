@@ -3,7 +3,7 @@ import {
   validateStaffEnrollmentInput,
   type StaffEnrollmentStore,
 } from '@hyperbug/application';
-import { parseStandardPasswordRecord } from '@hyperbug/security';
+import { parseAccountPasswordRecord } from '@hyperbug/security';
 
 /** One transaction keeps the single-shot Staff guard and the writes atomic. */
 export function createPostgresStaffEnrollmentStore(
@@ -12,7 +12,7 @@ export function createPostgresStaffEnrollmentStore(
   return {
     async enrollStaff(input) {
       validateStaffEnrollmentInput(input);
-      const record = parseStandardPasswordRecord(input.passwordRecord);
+      const record = parseAccountPasswordRecord(input.passwordRecord);
       const db = await pool.connect();
       try {
         await db.query('BEGIN');

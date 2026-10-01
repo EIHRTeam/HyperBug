@@ -7,12 +7,16 @@ import {
   parseOAuthClients,
   parsePasskeyConfiguration,
 } from '@hyperbug/server';
-import { assertDeploymentAvailable, loadConfig } from '@hyperbug/config';
+import { loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
 import { createCloudflareTurnstileVerifier } from './turnstile.ts';
 import {
-  deploymentEnablementAuditEvent,
+  adaptMinimumPasswordService,
+  auditEvent,
+  createMinimumPasswordService,
   initialStandardPasswordPolicy,
+  minimumTierPasswordPolicy,
+  type MinimumPasswordService,
 } from '@hyperbug/security';
 import { createCloudflareStandardPasswordService } from './standard-password.ts';
 import { createWorkerAbuseKeyProvider } from './abuse-keys.ts';
@@ -52,12 +56,13 @@ const standardPassword =
         initialStandardPasswordPolicy.maximum.memoryKiB,
       )
     : undefined;
+const auditRepository = env.DB ? createD1AuditRepository(env.DB) : null;
 const abuse = env.DB
   ? {
       provider: createWorkerAbuseKeyProvider(env.HYPERBUG_ABUSE_KEY_RING),
       store: createD1RateCounterStore(env.DB),
       limiter: createCloudflareVolumetricLimiter(env.ABUSE_VOLUMETRIC),
-      auditAppend: createD1AuditRepository(env.DB).append,
+      auditAppend: auditRepository?.append ?? null,
     }
   : null;
 const keyProvider = env.DB
@@ -128,33 +133,75 @@ const passkey =
         keyProvider,
       }
     : null;
-// A correctly acknowledged minimum-tier selection is warned about and its
-// enablement attempt audited before the fail-closed barrier refuses startup.
-// The refusal audit write is best-effort by design: a refused deployment
-// never runs far enough for a D1 write to land, so the observable refusal
-// trail is the deployment/startup failure itself. When activation is later
-// accepted under 13.G6, this branch is replaced by the enabled outcome.
-if (config.deployment.tier === 'cloudflare-free-minimum') {
+// A correctly acknowledged minimum-tier selection is activated through the
+// audited enablement contract: the startup warning, one persisted
+// deployment.enablement event (a deterministic id makes cold starts
+// idempotent — only the first request of the first isolate writes it) and
+// the peppered password service preflight through the loader-based adapter.
+const minimumTierEnabled = config.deployment.tier === 'cloudflare-free-minimum';
+const enablementEventId = '5ee1a0d2-7c3b-4f68-9a1d-2b4c5d6e7f80';
+if (minimumTierEnabled)
   console.warn(
-    `HyperBug minimum tier selected (acknowledged): degradations ${config.deployment.degradationIds.join(',')} active; tier password login is disabled (reviewed floor unmet); startup is refused until activation is accepted.`,
+    `HyperBug minimum tier enabled (acknowledged): degradations ${config.deployment.degradationIds.join(',')} active; tier password login is disabled (reviewed floor unmet); the tier runs without independent 13.G6 acceptance.`,
   );
-  if (env.DB) {
-    try {
-      await Promise.race([
-        createD1AuditRepository(env.DB).append(
-          deploymentEnablementAuditEvent('refused', Date.now()),
-          new AbortController().signal,
-        ),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('deadline')), 1000),
-        ),
-      ]);
-    } catch {
-      /* The audited-refusal write is best-effort; the barrier still throws. */
-    }
+const recordTierEnablement = async (): Promise<void> => {
+  const recorded = await env
+    .DB!.prepare('SELECT id FROM audit_events WHERE id = ?')
+    .bind(enablementEventId)
+    .first();
+  if (recorded !== null) return;
+  try {
+    await auditRepository!.append(
+      auditEvent({
+        id: enablementEventId,
+        projectId: null,
+        actorId: null,
+        systemActor: 'core.deployment',
+        action: 'deployment.enablement',
+        targetId: 'cloudflare-free-minimum',
+        result: 'success',
+        requestId: enablementEventId,
+        createdAt: Date.now(),
+        metadata: {
+          v: 1,
+          acknowledgement: 'free-minimum-v1',
+          outcome: 'enabled',
+        },
+      }),
+      new AbortController().signal,
+    );
+  } catch {
+    // A racing cold start may have written the same deterministic id.
+    const raced = await env
+      .DB!.prepare('SELECT id FROM audit_events WHERE id = ?')
+      .bind(enablementEventId)
+      .first();
+    if (raced === null)
+      throw new Error('The minimum tier enablement audit write failed');
   }
-  assertDeploymentAvailable(config.deployment);
-}
+};
+let minimumService: Promise<MinimumPasswordService> | null = null;
+const loadMinimumPasswordService = (): Promise<MinimumPasswordService> =>
+  (minimumService ??= (async () => {
+    // Runtime prerequisite check: the audited activation needs the database,
+    // its audit repository and the key provider. (Cloudflare's upload-time
+    // module validation runs without live bindings, so a module-scope check
+    // here would falsely refuse valid uploads; this runs per isolate.)
+    if (!env.DB || !auditRepository || !keyProvider)
+      throw new Error('The minimum tier requires its audited enablement trail');
+    await recordTierEnablement();
+    return createMinimumPasswordService(
+      keyProvider!,
+      minimumTierPasswordPolicy,
+    );
+  })().catch((error: unknown) => {
+    minimumService = null;
+    throw error;
+  }));
+const minimumPassword = minimumTierEnabled
+  ? adaptMinimumPasswordService(loadMinimumPasswordService)
+  : null;
+
 const app = createApp({
   adapter: CloudflareAdapter,
   config,
@@ -191,6 +238,7 @@ const app = createApp({
     : null,
   keyProvider,
   standardPassword: standardPassword ?? null,
+  minimumPassword,
   registrationStore: accountStore,
   passwordStore: accountStore,
   sessionStore: env.DB ? createD1AccountSessionStore(env.DB) : null,
@@ -200,6 +248,7 @@ const app = createApp({
   oauthCodeStore,
   projectRoleStore,
   accountAdministration,
+  auditAppend: auditRepository?.append ?? null,
   bootstrapCode,
   staffEnrollmentStore,
   bootstrapState: staffEnrollmentStore
@@ -207,8 +256,25 @@ const app = createApp({
     : null,
 }).compile();
 
+// The app is compiled during module initialization — workerd permits
+// dynamic code generation only in global scope — while the tier's audited
+// activation above needs async D1 work that global scope forbids, so it runs
+// once per isolate at the first request and every request waits for it. A
+// failed activation is not memoized and fails every request closed — the
+// effective startup gate; readiness stays unreachable while it fails.
+// Activation never implies the independent 13.G6 acceptance or tier support.
+let tierActivation: Promise<void> | null = null;
+const ensureTierActivated = (): Promise<void> =>
+  (tierActivation ??= loadMinimumPasswordService()
+    .then(() => undefined)
+    .catch((error: unknown) => {
+      tierActivation = null;
+      throw error;
+    }));
+
 export default {
-  fetch(request: Request) {
+  async fetch(request: Request) {
+    if (minimumTierEnabled) await ensureTierActivated();
     return app.fetch(request);
   },
   async scheduled(_controller: ScheduledController, bindings: Env) {

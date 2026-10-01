@@ -81,13 +81,31 @@ function errorRegion(error: string | null): string {
     : `<div id="form-error" aria-live="assertive" class="error" role="alert">${escapeHtml(error)}</div>`;
 }
 
+/** Persistent accessible notice for reduced-capability deployments. */
+function noticeRegion(notice: string | null): string {
+  return notice === null
+    ? ''
+    : `<div id="degradation-notice" class="notice" role="note">${escapeHtml(notice)}</div>`;
+}
+
 export function authorizeLoginPage(input: {
   readonly query: AuthorizeQuery;
   readonly captchaRequired: boolean;
   readonly captchaSiteKey: string | null;
   readonly error: string | null;
+  /** When false, the credential form becomes an explained non-actionable state. */
+  readonly passwordSigninAvailable: boolean;
+  /** Persistent degradation notice; null on standard deployments. */
+  readonly notice: string | null;
 }): Response {
-  const { query, captchaRequired, captchaSiteKey, error } = input;
+  const {
+    query,
+    captchaRequired,
+    captchaSiteKey,
+    error,
+    passwordSigninAvailable,
+    notice,
+  } = input;
   const captcha = captchaRequired
     ? `<div class="field">
 <label for="captchaToken">Verification</label>
@@ -99,12 +117,8 @@ export function authorizeLoginPage(input: {
     : // Turnstile's bootstrap loader is not SRI-pinnable (its bytes change on
       // Cloudflare's side); the exact-origin script-src pin above is the control.
       '';
-  return document(
-    'Sign in — HyperBug',
-    `<h1>Sign in to continue</h1>
-<p id="client-note" class="hint">The application <strong>${escapeHtml(query.client_id)}</strong> requests access to your HyperBug account.</p>
-${errorRegion(error)}
-<form method="POST" action="/auth/authorize/login">
+  const credentials = passwordSigninAvailable
+    ? `<form method="POST" action="/auth/authorize/login">
 ${hiddenFields(query)}
 <fieldset>
 <legend>Account credentials</legend>
@@ -121,8 +135,19 @@ ${hiddenFields(query)}
 ${captcha}
 </fieldset>
 <button type="submit">Sign in</button>
-</form>`,
-    captchaRequired,
+</form>`
+    : `<div id="signin-unavailable" class="notice" role="note">
+<p>Password sign-in is unavailable on this instance.</p>
+<p>Sign in through your application's passkey sign-in, or redeem a single-use recovery code.</p>
+</div>`;
+  return document(
+    'Sign in — HyperBug',
+    `<h1>Sign in to continue</h1>
+<p id="client-note" class="hint">The application <strong>${escapeHtml(query.client_id)}</strong> requests access to your HyperBug account.</p>
+${noticeRegion(notice)}
+${errorRegion(error)}
+${credentials}`,
+    captchaRequired && passwordSigninAvailable,
   );
 }
 
@@ -130,8 +155,9 @@ export function authorizeConsentPage(input: {
   readonly query: AuthorizeQuery;
   readonly handle: string | null;
   readonly error: string | null;
+  readonly notice: string | null;
 }): Response {
-  const { query, handle, error } = input;
+  const { query, handle, error, notice } = input;
   const scopes = query.scope
     .split(' ')
     .filter((token) => token.length > 0)
@@ -143,6 +169,7 @@ export function authorizeConsentPage(input: {
 <p>Signed in${handle === null ? '' : ` as <strong>${escapeHtml(handle)}</strong>`}.</p>
 <p>The application <strong>${escapeHtml(query.client_id)}</strong> asks for these scopes:</p>
 <ul>${scopes}</ul>
+${noticeRegion(notice)}
 ${errorRegion(error)}
 <form method="POST" action="/auth/authorize/consent">
 ${hiddenFields(query)}
@@ -152,7 +179,7 @@ ${hiddenFields(query)}
   );
 }
 
-export function authorizeErrorPage(message: string): Response {
+export function authorizeErrorPage(message: string, status = 400): Response {
   const response = document(
     'Request not permitted — HyperBug',
     `<h1>Authorization request not permitted</h1>
@@ -160,7 +187,7 @@ export function authorizeErrorPage(message: string): Response {
     false,
   );
   return new Response(response.body, {
-    status: 400,
+    status,
     headers: response.headers,
   });
 }

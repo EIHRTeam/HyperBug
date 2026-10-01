@@ -20,6 +20,10 @@ const failures = {
   CAPTCHA_DENIED: [403, 'Required challenge verification failed.'],
   CAPTCHA_UNAVAILABLE: [503, 'Required challenge verification is unavailable.'],
   REGISTRATION_UNAVAILABLE: [503, 'Account registration is unavailable.'],
+  PASSWORD_CAPABILITY_DISABLED: [
+    403,
+    'Password accounts are disabled on this deployment.',
+  ],
   BOOTSTRAP_UNAVAILABLE: [503, 'Initial enrollment is unavailable.'],
   BOOTSTRAP_FORBIDDEN: [403, 'Initial enrollment is not permitted.'],
   LOGIN_DENIED: [401, 'Invalid account credentials.'],
@@ -27,6 +31,7 @@ const failures = {
   AUTHENTICATION_UNAVAILABLE: [503, 'Authentication is unavailable.'],
   RECOVERY_DENIED: [403, 'Account recovery is not permitted.'],
   RECOVERY_UNAVAILABLE: [503, 'Account recovery is unavailable.'],
+  AUDIT_UNAVAILABLE: [503, 'The audit trail is unavailable.'],
   PASSKEY_DENIED: [403, 'Passkey verification is not permitted.'],
   PASSKEY_UNAVAILABLE: [503, 'Passkey authentication is unavailable.'],
   OAUTH_DENIED: [400, 'The authorization request is not permitted.'],

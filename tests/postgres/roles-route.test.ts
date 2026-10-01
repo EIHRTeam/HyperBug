@@ -219,6 +219,7 @@ beforeAll(async () => {
       oauthCodeStore: configured.oauthCodeStore,
       projectRoleStore: configured.projectRoleStore,
       accountAdministration: configured.accountAdministration,
+      auditAppend: configured.auditAppend,
       bootstrapCode: enrollmentCode,
       staffEnrollmentStore: configured.staffEnrollmentStore,
       passkey: passkeyConfig,
@@ -333,6 +334,15 @@ it('manages sessions, project roles and principal suspension end to end', async 
   );
   expect(removedAgain.status).toBe(404);
 
+  const revokedSession = await pool.query(
+    "SELECT actor_id, target_id, result FROM audit_events WHERE action = 'session.revoked'",
+  );
+  expect(revokedSession.rowCount).toBe(1);
+  expect(revokedSession.rows[0]).toEqual({
+    actor_id: user.principalId,
+    target_id: listed.sessions[0]!.id,
+    result: 'success',
+  });
   await pool.query(
     'INSERT INTO projects (id, slug, name, created_at, updated_at) VALUES ($1, $2, $3, $4, $4)',
     [projectId, 'roles-project', 'Roles Project', Date.now()],
@@ -485,6 +495,17 @@ it('manages sessions, project roles and principal suspension end to end', async 
   );
   expect((storedRole.rows[0] as { role: string }).role).toBe('administrator');
 
+  const grantedAudit = await pool.query(
+    "SELECT project_id, actor_id, target_id, result, metadata FROM audit_events WHERE action = 'role.granted'",
+  );
+  expect(grantedAudit.rowCount).toBe(1);
+  expect(grantedAudit.rows[0]).toEqual({
+    project_id: projectId,
+    actor_id: staff.principalId,
+    target_id: staff.principalId,
+    result: 'success',
+    metadata: { v: 1, role: 'administrator' },
+  });
   const unauthorized = await fetch(
     new URL(`/api/v1/projects/${projectId}/members/${staff.principalId}`, base),
     {
@@ -535,6 +556,25 @@ it('manages sessions, project roles and principal suspension end to end', async 
   });
   expect(restored.status).toBe(200);
 
+  const suspensionAudit = await pool.query(
+    "SELECT action, project_id, actor_id, target_id, result FROM audit_events WHERE action IN ('principal.suspended', 'principal.activated') ORDER BY action",
+  );
+  expect(suspensionAudit.rows).toEqual([
+    {
+      action: 'principal.activated',
+      project_id: null,
+      actor_id: staff.principalId,
+      target_id: user.principalId,
+      result: 'success',
+    },
+    {
+      action: 'principal.suspended',
+      project_id: null,
+      actor_id: staff.principalId,
+      target_id: user.principalId,
+      result: 'success',
+    },
+  ]);
   const memberRemoved = await fetch(
     new URL(`/api/v1/projects/${projectId}/members/${staff.principalId}`, base),
     {
@@ -548,6 +588,17 @@ it('manages sessions, project roles and principal suspension end to end', async 
     },
   );
   expect(memberRemoved.status).toBe(204);
+
+  const revokedRole = await pool.query(
+    "SELECT project_id, actor_id, target_id, result FROM audit_events WHERE action = 'role.revoked'",
+  );
+  expect(revokedRole.rowCount).toBe(1);
+  expect(revokedRole.rows[0]).toEqual({
+    project_id: projectId,
+    actor_id: staff.principalId,
+    target_id: staff.principalId,
+    result: 'success',
+  });
 });
 
 it('closes the 04.V3 role-behavior matrix', async () => {
@@ -622,6 +673,17 @@ it('closes the 04.V3 role-behavior matrix', async () => {
   );
   expect(grant.status).toBe(200);
 
+  const triageGrant = await pool.query(
+    "SELECT actor_id, target_id, metadata FROM audit_events WHERE action = 'role.granted' AND target_id = $1",
+    [triagePrincipalId],
+  );
+  expect(triageGrant.rows).toEqual([
+    {
+      actor_id: adminPrincipalId,
+      target_id: triagePrincipalId,
+      metadata: { v: 1, role: 'triage' },
+    },
+  ]);
   const otherProjectId = crypto.randomUUID();
   await pool.query(
     'INSERT INTO projects (id, slug, name, created_at, updated_at) VALUES ($1, $2, $3, $4, $4)',

@@ -14,6 +14,7 @@ import { createCloudflareVolumetricLimiter } from '../../apps/api-cloudflare/src
 import {
   createD1AccountAdministration,
   createD1AccountRecoveryStore,
+  createD1AuditRepository,
   createD1OAuthStores,
   createD1PasskeyStores,
   createD1ProjectRoleStore,
@@ -73,6 +74,7 @@ export default createApp({
   oauthClients: parseOAuthClients(env.HYPERBUG_TEST_OAUTH_CLIENTS),
   projectRoleStore: createD1ProjectRoleStore(env.DB),
   accountAdministration: createD1AccountAdministration(env.DB),
+  auditAppend: createD1AuditRepository(env.DB).append,
   oauthCodeStore: createD1OAuthStores(env.DB),
   keyProvider: env.HYPERBUG_KEY_RING
     ? createWorkerKeyProvider(

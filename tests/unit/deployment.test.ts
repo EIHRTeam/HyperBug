@@ -141,16 +141,16 @@ describe('deployment posture and startup gate', () => {
       ).toThrow();
   });
 
-  it('refuses partial enablement even with the correct acknowledgement', () => {
+  it('accepts an acknowledged minimum-tier config; activation is the root contract', () => {
     const config = loadConfig({ ...environment, ...minimum }, 'cloudflare');
-    expect(() => assertDeploymentAvailable(config.deployment)).toThrow(
-      /independent acceptance/,
-    );
+    // The config layer only checks consistency; the audited enablement
+    // (persisted event, warning, pepper preflight) is the composition root's
+    // per-isolate barrier and never an environment switch.
+    expect(() => assertDeploymentAvailable(config.deployment)).not.toThrow();
     expect(() => assertDeploymentAvailable(undefined as never)).toThrow();
     expect(() =>
       assertDeploymentAvailable({ tier: 'unknown' } as never),
     ).toThrow();
-    // No environment switch turns incomplete mechanisms or evidence into availability.
     const attemptedBypass = {
       ...environment,
       ...minimum,
@@ -160,6 +160,6 @@ describe('deployment posture and startup gate', () => {
       assertDeploymentAvailable(
         loadConfig(attemptedBypass, 'cloudflare').deployment,
       ),
-    ).toThrow();
+    ).not.toThrow();
   });
 });

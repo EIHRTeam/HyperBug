@@ -124,6 +124,14 @@ it('enrolls the initial Staff administrator on workerd/D1 once, then closes', as
     .first();
   expect(credential).toBeTruthy();
 
+  const enrollmentAudit = await db
+    .prepare(
+      "SELECT system_actor, actor_id, result FROM audit_events WHERE action = 'account.enrolled'",
+    )
+    .all<{ system_actor: string; actor_id: null; result: string }>();
+  expect(enrollmentAudit.results).toEqual([
+    { system_actor: 'core.identity', actor_id: null, result: 'success' },
+  ]);
   const ready = (await (
     await armed.dispatchFetch(`${authOrigin}/health/ready`)
   ).json()) as { deployment: { bootstrapPending: boolean } };

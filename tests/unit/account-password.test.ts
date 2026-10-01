@@ -1,5 +1,8 @@
 import { expect, it } from 'vitest';
-import type { AccountPasswordStore } from '@hyperbug/application';
+import type {
+  AccountPasswordRecord,
+  AccountPasswordStore,
+} from '@hyperbug/application';
 import type {
   StandardPasswordRecord,
   StandardPasswordService,
@@ -22,7 +25,7 @@ const identityId = '00000000-0000-4000-8000-000000000002';
 function fixture() {
   const events: string[] = [];
   let revision = 1;
-  let currentRecord = record;
+  let currentRecord: AccountPasswordRecord = record;
   let active = true;
   let exists = true;
   let stale = false;

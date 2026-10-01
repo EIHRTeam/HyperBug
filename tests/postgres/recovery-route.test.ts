@@ -93,6 +93,7 @@ beforeAll(async () => {
       passwordStore: configured.passwordStore,
       sessionStore: configured.sessionStore,
       recoveryStore: configured.recoveryStore,
+      auditAppend: configured.auditAppend,
       keyProvider: sessionKeys.provider,
       standardPassword: createNodeStandardPasswordService(
         config.deployment,
@@ -159,6 +160,18 @@ it('generates, redeems and rotates single-use recovery codes end to end', async 
   expect(stored.rowCount).toBe(10);
   expect(JSON.stringify(stored.rows)).not.toContain(codes[0]!);
 
+  const recoverable = await pool.query(
+    "SELECT p.id FROM principals p JOIN identities i ON i.principal_id = p.id WHERE i.subject = 'recoverable'",
+  );
+  const generatedAudit = await pool.query(
+    "SELECT actor_id, system_actor, result FROM audit_events WHERE action = 'recovery.generated'",
+  );
+  expect(generatedAudit.rowCount).toBe(1);
+  expect(generatedAudit.rows[0]).toEqual({
+    actor_id: recoverable.rows[0]?.id,
+    system_actor: null,
+    result: 'success',
+  });
   const wrongCode = await fetch(new URL('/auth/recover', base), {
     method: 'POST',
     headers: { 'content-type': 'application/json', origin: base },
@@ -187,6 +200,13 @@ it('generates, redeems and rotates single-use recovery codes end to end', async 
     error: { code: wrongBody.error?.code, message: wrongBody.error?.message },
   });
 
+  expect(
+    (
+      await pool.query(
+        "SELECT count(*)::int AS total FROM audit_events WHERE action IN ('recovery.generated', 'account.recovered')",
+      )
+    ).rows[0]?.total,
+  ).toBe(1);
   const recovered = await fetch(new URL('/auth/recover', base), {
     method: 'POST',
     headers: { 'content-type': 'application/json', origin: base },
@@ -199,6 +219,15 @@ it('generates, redeems and rotates single-use recovery codes end to end', async 
   expect(recovered.status).toBe(200);
   expect(await recovered.json()).toEqual({ recovered: true });
 
+  const recoveredAudit = await pool.query(
+    "SELECT actor_id, system_actor, result FROM audit_events WHERE action = 'account.recovered'",
+  );
+  expect(recoveredAudit.rowCount).toBe(1);
+  expect(recoveredAudit.rows[0]).toEqual({
+    actor_id: recoverable.rows[0]?.id,
+    system_actor: null,
+    result: 'success',
+  });
   const oldSession = await fetch(new URL('/auth/session', base), {
     headers: { cookie: pair },
   });

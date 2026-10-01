@@ -14,7 +14,10 @@ import {
   createPostgresRateCounterStore,
   createPostgresStaffEnrollmentStore,
 } from '@hyperbug/database-postgres';
-import type { SensitiveAdmissionDependencies } from '@hyperbug/server';
+import type {
+  AuditAppend,
+  SensitiveAdmissionDependencies,
+} from '@hyperbug/server';
 import type { KeyProvider, KeyRegistry } from '@hyperbug/security';
 import type {
   AccountAdministrationStore,
@@ -59,6 +62,8 @@ export interface NodeAbuseAdmission {
     | (import('@hyperbug/application').PasskeyStore &
         import('@hyperbug/application').WebauthnChallengeStore)
     | null;
+  /** Append-only audit sink sharing this database's pool. */
+  readonly auditAppend: AuditAppend | null;
   /** Trusted maintenance call; the runtime also schedules it every five minutes. */
   purgeExpiredRateCounters(nowMs: number): Promise<number>;
   ready(signal: AbortSignal): Promise<boolean>;
@@ -99,6 +104,7 @@ export function configureNodeAbuseAdmission(
       projectRoleStore: null,
       accountAdministration: null,
       passkeyStores: null,
+      auditAppend: null,
       purgeExpiredRateCounters: async () => {
         throw new Error('Rate counter cleanup unavailable');
       },
@@ -190,6 +196,7 @@ export function configureNodeAbuseAdmission(
     keyProviderFile === undefined
       ? null
       : createNodeKeyProvider(keyProviderFile, keyRegistry);
+  const auditAppend = createPostgresAuditRepository(pool).append;
   return Object.freeze({
     abuse: provider
       ? Object.freeze({
@@ -201,7 +208,7 @@ export function configureNodeAbuseAdmission(
             maxKeys: 10000,
           }),
           clientAddress: nodeSocketClientAddress,
-          auditAppend: createPostgresAuditRepository(pool).append,
+          auditAppend,
         })
       : null,
     keyRegistry,
@@ -215,6 +222,7 @@ export function configureNodeAbuseAdmission(
     projectRoleStore: createPostgresProjectRoleStore(pool),
     accountAdministration: createPostgresAccountAdministration(pool),
     passkeyStores: createPostgresPasskeyStores(pool),
+    auditAppend,
     purgeExpiredRateCounters: cleanup.run,
     async ready(signal: AbortSignal): Promise<boolean> {
       if (signal.aborted || !provider || !keyProvider) return false;

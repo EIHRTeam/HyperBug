@@ -1,5 +1,5 @@
 import type { AccountPasswordStore } from '@hyperbug/application';
-import type { StandardPasswordService } from '@hyperbug/security';
+import type { AccountPasswordService } from '@hyperbug/security';
 import { canonicalRegistrationHandle } from './account-registration.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
@@ -14,7 +14,7 @@ export interface VerifiedAccountPassword {
 export async function verifyAccountPassword(input: {
   readonly handle: string;
   readonly password: string;
-  readonly service: StandardPasswordService | null;
+  readonly service: AccountPasswordService | null;
   readonly store: AccountPasswordStore | null;
   readonly signal: AbortSignal;
   readonly nowMs: number;

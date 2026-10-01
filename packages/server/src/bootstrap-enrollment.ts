@@ -1,10 +1,14 @@
 import type { StaffEnrollmentStore } from '@hyperbug/application';
 import type { BootstrapEnrollRequest } from '@hyperbug/contracts';
-import type { StandardPasswordService } from '@hyperbug/security';
+import { auditEvent, type AccountPasswordService } from '@hyperbug/security';
+import { appendRequiredAuditEvent, auditRequestId } from './audit-emit.ts';
 import { canonicalRegistrationHandle } from './account-registration.ts';
 import { requireAuthOrigin } from './account-session.ts';
 import { constantTimeEquals } from './oauth.ts';
-import type { BoundSensitiveActionAdmission } from './sensitive-admission.ts';
+import type {
+  AuditAppend,
+  BoundSensitiveActionAdmission,
+} from './sensitive-admission.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
@@ -30,7 +34,10 @@ export function parseBootstrapEnrollmentCode(value: unknown): string | null {
 
 /**
  * Single-shot initial Staff enrollment through the operator-channel code.
- * No session is issued; the administrator then signs in through /auth/login.
+ * On the standard profiles no session is issued; the administrator then
+ * signs in through /auth/login. On the minimum tier, where the reviewed
+ * floor disables password login, the composition root issues the first
+ * session from the returned facts so the operator can register a passkey.
  * Wrong code, occupied handle or an existing active Staff administrator all
  * answer the same generic denial so the endpoint reveals none of them.
  */
@@ -38,12 +45,14 @@ export async function enrollInitialStaff(input: {
   readonly request: Request;
   readonly body: BootstrapEnrollRequest;
   readonly admission: Pick<BoundSensitiveActionAdmission, 'require'>;
-  readonly password: StandardPasswordService | null;
+  readonly password: AccountPasswordService | null;
   readonly code: string | null;
   readonly store: StaffEnrollmentStore | null;
+  readonly auditAppend: AuditAppend | null;
   readonly requestId?: string | null;
-}): Promise<{ enrolled: true }> {
-  const { request, body, admission, password, code, store } = input;
+}): Promise<{ enrolled: true; principalId: string; identityId: string }> {
+  const { request, body, admission, password, code, store, auditAppend } =
+    input;
   requireAuthOrigin(request);
   if (!password || !code || !store)
     throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
@@ -69,16 +78,19 @@ export async function enrollInitialStaff(input: {
     presented !== null && (await constantTimeEquals(presented, code));
   if (!matches || request.signal.aborted)
     throw new RequestFailure('BOOTSTRAP_FORBIDDEN');
+  let facts: { principalId: string; identityId: string };
   try {
     const passwordRecord = await withDeadline(request.signal, 5000, (signal) =>
       password.hash(body.password, signal),
     );
     if (request.signal.aborted)
       throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
+    const principalId = crypto.randomUUID();
+    const identityId = crypto.randomUUID();
     const outcome = await withDeadline(request.signal, 5000, () =>
       store.enrollStaff({
-        principalId: crypto.randomUUID(),
-        identityId: crypto.randomUUID(),
+        principalId,
+        identityId,
         handle,
         passwordRecord,
         nowMs,
@@ -86,9 +98,27 @@ export async function enrollInitialStaff(input: {
     );
     if (outcome?.status !== 'enrolled')
       throw new RequestFailure('BOOTSTRAP_FORBIDDEN');
+    // The operator-channel enrollment is the one audited account creation.
+    await appendRequiredAuditEvent({
+      append: auditAppend,
+      event: auditEvent({
+        id: crypto.randomUUID(),
+        projectId: null,
+        actorId: null,
+        systemActor: 'core.identity',
+        action: 'account.enrolled',
+        targetId: principalId,
+        result: 'success',
+        requestId: auditRequestId(input.requestId),
+        createdAt: nowMs,
+        metadata: { v: 1 },
+      }),
+      signal: request.signal,
+    });
+    facts = { principalId, identityId };
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
     throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
   }
-  return { enrolled: true };
+  return { enrolled: true, ...facts };
 }

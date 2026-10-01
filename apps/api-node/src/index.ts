@@ -93,6 +93,7 @@ const app = createApp({
   recoveryStore: abuse.recoveryStore,
   projectRoleStore: abuse.projectRoleStore,
   accountAdministration: abuse.accountAdministration,
+  auditAppend: abuse.auditAppend,
   passkey,
   oauthClients,
   oauthCodeStore: abuse.oauthCodeStore,

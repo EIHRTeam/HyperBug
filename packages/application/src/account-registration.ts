@@ -1,7 +1,12 @@
 import { assertId, assertInstant } from '@hyperbug/domain';
 
-/** Structural application port shape; the security service validates its record. */
-export interface AccountPasswordRecord {
+/**
+ * Structural application port shapes; the security service validates its
+ * record. The union covers both deployment profiles' credential records —
+ * Argon2id on the standard profiles and peppered PBKDF2 on the Cloudflare
+ * Free minimum tier — and the stores treat them as opaque JSON.
+ */
+export interface Argon2idCredentialRecord {
   readonly v: 1;
   readonly alg: 'Argon2id';
   readonly memoryKiB: number;
@@ -10,6 +15,27 @@ export interface AccountPasswordRecord {
   readonly salt: string;
   readonly verifier: string;
 }
+
+export interface Pbkdf2CredentialRecord {
+  readonly v: 1;
+  readonly alg: 'PBKDF2-HMAC-SHA256';
+  readonly iterations: number;
+  /**
+   * Versioned pepper key reference, structurally mirrored from security;
+   * the security record validates the closed purpose set on every use.
+   */
+  readonly key: {
+    readonly purpose: string;
+    readonly id: string;
+    readonly version: number;
+  };
+  readonly salt: string;
+  readonly verifier: string;
+}
+
+export type AccountPasswordRecord =
+  | Argon2idCredentialRecord
+  | Pbkdf2CredentialRecord;
 
 export interface AccountRegistrationInput {
   principalId: string;

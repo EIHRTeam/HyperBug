@@ -109,6 +109,11 @@ export const fixtureTargets = [
     entry: 'tests/fixtures/account-worker.ts',
     outDir: 'dist/account-worker',
   },
+  {
+    name: 'minimum-tier-worker',
+    entry: 'tests/fixtures/minimum-tier-worker.ts',
+    outDir: 'dist/minimum-tier-worker',
+  },
 ] as const;
 
 /** Fixture output directories, for the Miniflare module discovery helper. */
