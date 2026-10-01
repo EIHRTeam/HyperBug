@@ -39,10 +39,10 @@ Deliver the complete MVP issue-tracking API on both profiles. Public APIs, datab
 
 ## Verification and acceptance
 
-- [ ] **06.V1** Run the HTTP workflow: project → create → list → comment → react → label/assign/type/milestone → close → reopen → timeline, on both deployments.
-- [ ] **06.V2** Test all principal classes, own-versus-others editing, cross-project IDs, removed assignees/taxonomy, hidden/moderated content, and direct API access.
-- [ ] **06.V3** Test concurrent creates/edits/reactions, duplicate requests, rollback after event failure, and timeline pagination under equal timestamps.
-- [ ] **06.V4** Compare query counts and indexed plans for representative list/detail fixtures, including large discussions; verify bounds and safe cache isolation.
+- [x] **06.V1** Run the HTTP workflow: project → create → list → comment → react → label/assign/type/milestone → close → reopen → timeline, on both deployments. Accepted 2026-10-01: the ordered journey passes on workerd/D1 and Node/PostgreSQL with the full merged-timeline action sequence, strictly increasing revisions 1–7, cursor exhaustion and `Cache-Control: no-store` asserted.
+- [x] **06.V2** Test all principal classes, own-versus-others editing, cross-project IDs, removed assignees/taxonomy, hidden/moderated content, and direct API access. Accepted 2026-10-01: the full workerd matrix (104 assertions) plus a PostgreSQL spot-check; verification exposed and fixed the hidden-issue sub-resource leak (timeline/comments/reactions now inherit the issue's own moderation).
+- [x] **06.V3** Test concurrent creates/edits/reactions, duplicate requests, rollback after event failure, and timeline pagination under equal timestamps. Accepted 2026-10-01 on both profiles with stability reruns; verification exposed and fixed the D1 batch-race error mapping (lost races now answer the stable `REVISION_CONFLICT`).
+- [x] **06.V4** Compare query counts and indexed plans for representative list/detail fixtures, including large discussions; verify bounds and safe cache isolation. Accepted 2026-10-01: statement counts are fixed and limit-independent on both profiles (issue list 1, relations 2, detail 3, merged timeline 1, comments 1, reaction counts 1), PostgreSQL plans confirmed indexed under representative filler volumes (no Seq Scan), page bounds and limit+1 over-fetch behavior verified, and cache isolation is asserted by the V1 journeys' `Cache-Control: no-store` checks.
 
 ## Source coverage
 

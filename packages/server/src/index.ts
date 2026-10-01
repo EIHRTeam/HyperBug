@@ -914,6 +914,7 @@ export function createApp({
     comments: commentStore,
     reactions: reactionStore,
     timeline: timelineStore,
+    issues: issueRepository,
     admission: boundSensitiveAdmission,
   };
   return new Elysia({ adapter, aot: true, normalize: false })

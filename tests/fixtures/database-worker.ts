@@ -14,6 +14,9 @@ import {
   createD1Repository,
   createD1KeyRegistry,
   createD1AuditRepository,
+  createD1CommentStore,
+  createD1ReactionStore,
+  createD1TimelineStore,
 } from '@hyperbug/database-d1';
 import { createD1RateCounterStore } from '@hyperbug/database-d1';
 import { createD1AccountLockoutStore } from '@hyperbug/database-d1';
@@ -25,9 +28,11 @@ import type {
 import { abuseSubjectDigest } from '../../packages/security/src/rate-limit.ts';
 import { DomainError } from '@hyperbug/domain';
 import type {
+  CommentQuery,
   CreateIssueIntent,
   EditIssueIntent,
   IssueListQuery,
+  TimelineQuery,
 } from '@hyperbug/application';
 
 type Message =
@@ -68,6 +73,16 @@ type Message =
   | {
       method: 'relations';
       input: { projectId: string; issueIds: string[] };
+    }
+  | { method: 'commentList'; input: CommentQuery }
+  | { method: 'timelineList'; input: TimelineQuery }
+  | {
+      method: 'reactionIssueCounts';
+      input: { projectId: string; issueIds: string[] };
+    }
+  | {
+      method: 'reactionCommentCounts';
+      input: { projectId: string; commentIds: string[] };
     }
   | { method: 'rateIncrement'; input: RateCounterWrite }
   | { method: 'ratePurge'; input: { nowMs: number; limit: number } }
@@ -113,6 +128,9 @@ export default {
     const lockouts = createD1AccountLockoutStore(
       measured as unknown as D1Database,
     );
+    const comments = createD1CommentStore(measured as unknown as D1Database);
+    const reactions = createD1ReactionStore(measured as unknown as D1Database);
+    const timeline = createD1TimelineStore(measured as unknown as D1Database);
     const signal = request.signal;
     const message = (await request.json()) as Message;
     try {
@@ -212,6 +230,33 @@ export default {
         case 'listIssues':
           value = await repository.listIssues(message.input);
           break;
+        case 'commentList':
+          value = await comments.listByIssue(message.input);
+          break;
+        case 'timelineList':
+          value = await timeline.timeline(message.input);
+          break;
+        case 'reactionIssueCounts':
+        case 'reactionCommentCounts': {
+          // The store returns ReadonlyMaps; the JSON transport needs entries.
+          const grouped =
+            message.method === 'reactionIssueCounts'
+              ? await reactions.issueCounts(
+                  message.input.projectId,
+                  message.input.issueIds,
+                )
+              : await reactions.commentCounts(
+                  message.input.projectId,
+                  message.input.commentIds,
+                );
+          value = Object.fromEntries(
+            [...grouped.entries()].map(([id, summaries]) => [
+              id,
+              summaries.map((summary) => ({ ...summary })),
+            ]),
+          );
+          break;
+        }
         case 'rateIncrement':
           value = await rateCounters.increment(message.input);
           break;

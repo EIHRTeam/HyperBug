@@ -32,6 +32,7 @@ export interface DiscussionContext extends ProjectContext {
   readonly comments: CommentStore | null;
   readonly reactions: ReactionStore | null;
   readonly timeline: TimelineStore | null;
+  readonly issues: import('@hyperbug/application').IssueRepository | null;
   readonly admission: Pick<BoundSensitiveActionAdmission, 'requireRate'> | null;
 }
 
@@ -284,6 +285,29 @@ async function mayModerate(
   } catch {
     return false;
   }
+}
+
+/**
+ * Every issue sub-resource inherits the issue's own visibility: a hidden
+ * issue answers 404 for every audience that cannot see the issue itself,
+ * and a deleted issue answers 404 for everyone. Moderators reach the
+ * sub-resources of hidden issues exactly like the issue detail.
+ */
+async function requireVisibleIssue(
+  request: Request,
+  context: DiscussionContext,
+  principal: BearerPrincipal | null,
+  projectId: string,
+  issueId: string,
+): Promise<void> {
+  if (!context.issues) throw new RequestFailure('ISSUE_UNAVAILABLE');
+  const moderator = principal
+    ? await mayModerate(request, context, principal, projectId, issueId)
+    : false;
+  const issue = await withDeadline(request.signal, storeTimeoutMs, () =>
+    context.issues!.getIssue(projectId, issueId, { includeHidden: moderator }),
+  );
+  if (!issue) throw new RequestFailure('NOT_FOUND');
 }
 
 /** GET /api/v1/projects/:projectId/issues/:issueId/comments/:commentId */
@@ -662,6 +686,7 @@ export async function issueTimeline(
   const includeHidden = principal
     ? await mayModerate(request, context, principal, projectId, issueId)
     : false;
+  await requireVisibleIssue(request, context, principal, projectId, issueId);
   await requirePermission(
     request,
     context,

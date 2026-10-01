@@ -457,7 +457,7 @@ export function createD1TimelineStore(db: D1Database): TimelineStore {
       const commentFilter =
         query.includeHidden === true
           ? "CASE WHEN moderation = 'visible' AND deleted_at IS NULL THEN body ELSE NULL END AS body, moderation, deleted_at"
-          : "NULL AS body, 'visible' AS moderation, NULL AS deleted_at";
+          : 'body, moderation, deleted_at';
       const commentWhere =
         query.includeHidden === true
           ? 'TRUE'

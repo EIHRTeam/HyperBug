@@ -459,6 +459,18 @@ export function createD1Repository(db: D1Database): IssueRepository {
       // A competing identical request may have won the unique receipt scope.
       const concurrentReplay = await receipt(intent, operation);
       if (concurrentReplay) return concurrentReplay;
+      // A conditional mutation whose pre-read passed but whose batch lost a
+      // race (the timeline witness stays NULL) classifies by the row's
+      // current existence: a lost revision/state race, never a raw failure.
+      if (operation !== 'issue.create') {
+        const loser = await db
+          .prepare('SELECT id FROM issues WHERE project_id = ? AND id = ?')
+          .bind(intent.projectId, intent.id)
+          .first();
+        throw new DomainError(
+          loser === null ? 'NOT_FOUND' : 'REVISION_CONFLICT',
+        );
+      }
       throw error;
     }
     const result = await receipt(intent, operation);

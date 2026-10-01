@@ -461,7 +461,7 @@ export function createPostgresTimelineStore(pool: Pool): TimelineStore {
       const commentProjection =
         query.includeHidden === true
           ? "CASE WHEN moderation = 'visible' AND deleted_at IS NULL THEN body ELSE NULL END AS body, moderation, deleted_at AS deleted"
-          : "NULL AS body, 'visible' AS moderation, NULL AS deleted";
+          : 'body, moderation, deleted_at AS deleted';
       const commentWhere =
         query.includeHidden === true
           ? 'TRUE'
