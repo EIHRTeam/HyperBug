@@ -241,6 +241,85 @@ it('validates administration audit events with a closed catalog', () => {
     );
 });
 
+it('validates plugin administration audit events with a closed catalog', () => {
+  const event = auditFixture();
+  const registered = {
+    ...event,
+    projectId: null,
+    actorId: auditActor,
+    systemActor: null,
+    action: 'plugin.registered',
+    targetId: '@hyperbug/example',
+    result: 'success',
+    metadata: { v: 1, version: '1.0.0' },
+  };
+  expect(auditEvent(registered)).toEqual(registered);
+  for (const changes of [
+    { action: 'plugin.upgraded', metadata: { v: 1, version: '1.2.0' } },
+    { action: 'plugin.enabled', metadata: { v: 1 } },
+    { action: 'plugin.disabled', metadata: { v: 1 } },
+    {
+      action: 'plugin.uninstalled',
+      metadata: { v: 1, version: '1.2.0', policy: 'retain' },
+    },
+    {
+      action: 'plugin.uninstalled',
+      metadata: { v: 1, version: '1.2.0', policy: 'delete' },
+    },
+    {
+      action: 'plugin.configured',
+      metadata: { v: 1, publicCount: 2, secretCount: 1 },
+    },
+    {
+      action: 'plugin.configured',
+      metadata: { v: 1, publicCount: 0, secretCount: 0 },
+    },
+  ]) {
+    const pluginEvent = { ...registered, ...changes };
+    expect(auditEvent(pluginEvent)).toEqual(pluginEvent);
+  }
+  for (const changes of [
+    { projectId: auditProject },
+    { actorId: null },
+    { systemActor: 'core.identity' },
+    { result: 'failure' },
+    { targetId: crypto.randomUUID() },
+    { targetId: 'hyperbug/example' },
+    { metadata: { v: 1, version: 'not-semver' } },
+    { metadata: { v: 1 } },
+    { metadata: { v: 1, version: '1.0.0', secret: 'SEEDED_SECRET' } },
+    { action: 'plugin.removed' },
+  ])
+    expect(() => auditEvent({ ...registered, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+  const configured = {
+    ...registered,
+    action: 'plugin.configured',
+    metadata: { v: 1, publicCount: 1, secretCount: 1 },
+  };
+  for (const changes of [
+    { metadata: { v: 1, publicCount: -1, secretCount: 1 } },
+    { metadata: { v: 1, publicCount: 1, secretCount: 129 } },
+    { metadata: { v: 1, publicCount: 1, secretCount: 1, apiKey: 'SEEDED' } },
+  ])
+    expect(() => auditEvent({ ...configured, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+  const uninstalled = {
+    ...registered,
+    action: 'plugin.uninstalled',
+    metadata: { v: 1, version: '1.2.0', policy: 'retain' },
+  };
+  for (const changes of [
+    { metadata: { v: 1, version: '1.2.0', policy: 'reset' } },
+    { metadata: { v: 1, version: '1.2.0' } },
+  ])
+    expect(() => auditEvent({ ...uninstalled, ...changes })).toThrow(
+      'AUDIT_INVALID',
+    );
+});
+
 it('rejects invalid admission configuration before any work', () => {
   const repository = { append: async () => {}, list: async () => [] };
   const authorization = {

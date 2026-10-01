@@ -685,6 +685,7 @@ export function createApp({
     roleStore,
     registry: pluginRegistry,
     settings: pluginSettings,
+    auditAppend,
   };
   return new Elysia({ adapter, aot: true, normalize: false })
     .decorate('captcha', captchaGate)
@@ -1205,6 +1206,7 @@ export function createApp({
           request,
           pluginManagement,
           body.manifest,
+          boundaryFor(request).requestId,
         );
         set.status = 201;
         return summary;
@@ -1229,10 +1231,16 @@ export function createApp({
     .post(
       '/api/v1/admin/plugins/configure',
       async ({ request, body }): Promise<PluginSummary> =>
-        configurePlugin(request, pluginManagement, pluginIdBody(body), {
-          values: body.values,
-          secrets: body.secrets,
-        }),
+        configurePlugin(
+          request,
+          pluginManagement,
+          pluginIdBody(body),
+          {
+            values: body.values,
+            secrets: body.secrets,
+          },
+          boundaryFor(request).requestId,
+        ),
       {
         body: t.Object(
           {
@@ -1284,7 +1292,12 @@ export function createApp({
     .post(
       '/api/v1/admin/plugins/enable',
       async ({ request, body }): Promise<PluginSummary> =>
-        enablePlugin(request, pluginManagement, pluginIdBody(body)),
+        enablePlugin(
+          request,
+          pluginManagement,
+          pluginIdBody(body),
+          boundaryFor(request).requestId,
+        ),
       {
         body: pluginIdBodySchema,
         response: t.Unsafe<PluginSummary>(PluginSummarySchema),
@@ -1293,7 +1306,12 @@ export function createApp({
     .post(
       '/api/v1/admin/plugins/disable',
       async ({ request, body }): Promise<PluginSummary> =>
-        disablePlugin(request, pluginManagement, pluginIdBody(body)),
+        disablePlugin(
+          request,
+          pluginManagement,
+          pluginIdBody(body),
+          boundaryFor(request).requestId,
+        ),
       {
         body: pluginIdBodySchema,
         response: t.Unsafe<PluginSummary>(PluginSummarySchema),
@@ -1302,7 +1320,13 @@ export function createApp({
     .post(
       '/api/v1/admin/plugins/upgrade',
       async ({ request, body }): Promise<PluginSummary> =>
-        upgradePlugin(request, pluginManagement, body.id, body.manifest),
+        upgradePlugin(
+          request,
+          pluginManagement,
+          body.id,
+          body.manifest,
+          boundaryFor(request).requestId,
+        ),
       {
         body: t.Object(
           {
@@ -1317,7 +1341,13 @@ export function createApp({
     .post(
       '/api/v1/admin/plugins/uninstall',
       async ({ request, body, set }) => {
-        await uninstallPlugin(request, pluginManagement, body.id, body.policy);
+        await uninstallPlugin(
+          request,
+          pluginManagement,
+          body.id,
+          body.policy,
+          boundaryFor(request).requestId,
+        );
         set.status = 204;
         return null;
       },

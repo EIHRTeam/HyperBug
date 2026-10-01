@@ -88,6 +88,14 @@ const administrationActions = [
   'principal.suspended',
   'principal.activated',
 ] as const;
+const pluginActions = [
+  'plugin.registered',
+  'plugin.enabled',
+  'plugin.disabled',
+  'plugin.upgraded',
+  'plugin.uninstalled',
+  'plugin.configured',
+] as const;
 /** Runtime mirror of StaffRole for the closed role.granted metadata. */
 const staffRoles = ['triage', 'maintainer', 'administrator'] as const;
 export type AuditAction =
@@ -95,6 +103,7 @@ export type AuditAction =
   | `key-registry.${(typeof registryActions)[number]}`
   | (typeof accountActions)[number]
   | (typeof administrationActions)[number]
+  | (typeof pluginActions)[number]
   | 'authorization.checked'
   | 'provider.outage'
   | 'deployment.enablement';
@@ -325,6 +334,65 @@ export function auditEvent(input: unknown): AuditEvent {
         }
       } else {
         if (r.projectId !== null) throw invalid();
+        record(r.metadata, ['v']);
+        metadata = Object.freeze({ v: 1 });
+      }
+    } else if (
+      typeof r.action === 'string' &&
+      (pluginActions as readonly unknown[]).includes(r.action)
+    ) {
+      // Deployment-level plugin administration by an authenticated actor,
+      // success only (denials belong to the authorization.checked trail) and
+      // never any setting value: configure records counts, not contents.
+      // Plugin ids and versions are mirrored from PLUGIN-SPEC §9's patterns
+      // so the security package stays free of a plugin-api dependency.
+      if (
+        r.projectId !== null ||
+        r.actorId === null ||
+        r.systemActor !== null ||
+        r.result !== 'success'
+      )
+        throw invalid();
+      if (
+        typeof r.targetId !== 'string' ||
+        !/^@[a-z0-9][a-z0-9-]{0,62}\/[a-z0-9][a-z0-9-]{0,62}$/.test(r.targetId)
+      )
+        throw invalid();
+      if (r.action === 'plugin.registered' || r.action === 'plugin.upgraded') {
+        const m = record(r.metadata, ['v', 'version']);
+        if (
+          m.v !== 1 ||
+          typeof m.version !== 'string' ||
+          !/^\d+\.\d+\.\d+(-[0-9A-Za-z-]+)?$/.test(m.version) ||
+          m.version.length > 64
+        )
+          throw invalid();
+        metadata = Object.freeze({ v: 1, version: m.version });
+      } else if (r.action === 'plugin.uninstalled') {
+        const m = record(r.metadata, ['v', 'version', 'policy']);
+        if (
+          m.v !== 1 ||
+          typeof m.version !== 'string' ||
+          !/^\d+\.\d+\.\d+(-[0-9A-Za-z-]+)?$/.test(m.version) ||
+          (m.policy !== 'retain' && m.policy !== 'delete')
+        )
+          throw invalid();
+        metadata = Object.freeze({
+          v: 1,
+          version: m.version,
+          policy: m.policy,
+        });
+      } else if (r.action === 'plugin.configured') {
+        const m = record(r.metadata, ['v', 'publicCount', 'secretCount']);
+        if (m.v !== 1) throw invalid();
+        integer(m.publicCount, 0, 128);
+        integer(m.secretCount, 0, 128);
+        metadata = Object.freeze({
+          v: 1,
+          publicCount: m.publicCount,
+          secretCount: m.secretCount,
+        });
+      } else {
         record(r.metadata, ['v']);
         metadata = Object.freeze({ v: 1 });
       }

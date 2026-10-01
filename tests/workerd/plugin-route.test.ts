@@ -7,10 +7,11 @@ import { abuseKeyFixture } from '../fixtures/abuse-key-fixture.ts';
 import { cryptoFixture } from '../fixtures/crypto-scenarios.ts';
 import { createFakeAuthenticator } from '../fixtures/fake-authenticator.ts';
 
-// 05.2a non-audit scope: the deployment-level plugin registry and its
-// management endpoints on workerd/D1. Plugin administration is sensitive
-// administration — recent authentication is enforced — and the suspended
-// module-05 audit scope must stay silent (no plugin.* audit events).
+// 05.2a audited scope (resumed 2026-10-01): the deployment-level plugin
+// registry and its management endpoints on workerd/D1. Plugin administration
+// is sensitive administration — recent authentication is enforced — and every
+// registry mutation appends its plugin.* audit event after the authoritative
+// write; denials append nothing and no setting value enters the trail.
 const wasmPath = 'apps/api-cloudflare/src/vendor/libsodium-sumo-0.8.4.wasm';
 const authOrigin = 'https://auth.poc.example';
 const redirectUri = 'https://app.poc.example/oauth/callback';
@@ -185,7 +186,7 @@ afterAll(async () => {
   await mf?.dispose();
 });
 
-it('manages the plugin registry with step-up on workerd/D1 and emits no plugin audit events', async () => {
+it('manages the plugin registry with step-up on workerd/D1 and appends the audited registry trail', async () => {
   const db = await mf.getD1Database('DB');
 
   // Acceptance: Core security is fully active with zero plugins installed —
@@ -560,7 +561,15 @@ it('manages the plugin registry with step-up on workerd/D1 and emits no plugin a
     error: { code: 'FORBIDDEN' },
   });
 
-  // 05.3d non-audit scope: uninstall retain keeps namespaced configuration.
+  // The forbidden attempt appended nothing: only successful mutations audit.
+  const deniedAudits = await db
+    .prepare(
+      "SELECT COUNT(*) AS n FROM audit_events WHERE action LIKE 'plugin.%'",
+    )
+    .first<{ n: number }>();
+  expect(deniedAudits?.n).toBe(13);
+
+  // 05.3d: uninstall retain keeps namespaced configuration.
   const configdAgain = await call('/api/v1/admin/plugins', {
     body: { manifest: configuredManifest },
     token,
@@ -583,12 +592,74 @@ it('manages the plugin registry with step-up on workerd/D1 and emits no plugin a
     .first<{ n: number }>();
   expect(retainedRow?.n).toBeGreaterThan(0);
 
-  // The suspended module-05 audit scope stays silent: registry operations
-  // must not have emitted any plugin audit events.
-  const pluginAudits = await db
+  // 05.2a audited scope: every successful registry mutation appends its
+  // plugin.* event after the authoritative write — action, target and closed
+  // metadata only, never any setting value — and reads/denials stay silent.
+  const auditRows = await db
     .prepare(
-      "SELECT COUNT(*) AS n FROM audit_events WHERE action LIKE 'plugin.%'",
+      "SELECT action, target_id AS targetId, actor_id AS actorId, metadata FROM audit_events WHERE action LIKE 'plugin.%'",
     )
-    .first<{ n: number }>();
-  expect(pluginAudits?.n).toBe(0);
+    .all<{
+      action: string;
+      targetId: string;
+      actorId: string;
+      metadata: string;
+    }>();
+  expect(auditRows.results).toHaveLength(16);
+  expect(new Set(auditRows.results.map((row) => row.actorId))).toEqual(
+    new Set([staffPrincipalId]),
+  );
+  expect(JSON.stringify(auditRows.results)).not.toContain('super-secret-value');
+  expect(JSON.stringify(auditRows.results)).not.toContain('kept-value');
+  const actual = auditRows.results
+    .map((row) =>
+      JSON.stringify([row.action, row.targetId, JSON.parse(row.metadata)]),
+    )
+    .sort();
+  expect(actual).toEqual(
+    [
+      ['plugin.registered', '@hyperbug/sample', { v: 1, version: '1.0.0' }],
+      ['plugin.registered', '@hyperbug/configd', { v: 1, version: '1.0.0' }],
+      [
+        'plugin.configured',
+        '@hyperbug/configd',
+        { v: 1, publicCount: 1, secretCount: 0 },
+      ],
+      [
+        'plugin.configured',
+        '@hyperbug/configd',
+        { v: 1, publicCount: 0, secretCount: 1 },
+      ],
+      ['plugin.enabled', '@hyperbug/configd', { v: 1 }],
+      ['plugin.enabled', '@hyperbug/sample', { v: 1 }],
+      ['plugin.disabled', '@hyperbug/sample', { v: 1 }],
+      ['plugin.upgraded', '@hyperbug/sample', { v: 1, version: '1.1.0' }],
+      [
+        'plugin.uninstalled',
+        '@hyperbug/sample',
+        { v: 1, version: '1.1.0', policy: 'retain' },
+      ],
+      [
+        'plugin.uninstalled',
+        '@hyperbug/configd',
+        { v: 1, version: '1.0.0', policy: 'delete' },
+      ],
+      ['plugin.registered', '@hyperbug/notifier', { v: 1, version: '1.0.0' }],
+      ['plugin.enabled', '@hyperbug/notifier', { v: 1 }],
+      ['plugin.disabled', '@hyperbug/notifier', { v: 1 }],
+      ['plugin.registered', '@hyperbug/configd', { v: 1, version: '1.0.0' }],
+      [
+        'plugin.configured',
+        '@hyperbug/configd',
+        { v: 1, publicCount: 0, secretCount: 1 },
+      ],
+      [
+        'plugin.uninstalled',
+        '@hyperbug/configd',
+        { v: 1, version: '1.0.0', policy: 'retain' },
+      ],
+    ]
+      .map((entry) => JSON.stringify(entry))
+      .sort(),
+  );
 });

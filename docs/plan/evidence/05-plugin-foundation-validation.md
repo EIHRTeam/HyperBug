@@ -1,6 +1,6 @@
 # Module 05 validation evidence
 
-Collected 2026-10-01 on Node 24.21.0 local (workerd/Miniflare D1 and isolated PostgreSQL 18.6 lanes). No deployed claim is made; `hyperbug-test-1` and staging/production were untouched.
+Collected 2026-10-01 on Node 24.21.0 local (workerd/Miniflare D1 and isolated PostgreSQL 18.6 lanes). No deployed claim is made; `hyperbug-test-1` and staging/production were untouched. The 05.2a/05.3d audit portions were resumed and closed by explicit user instruction on 2026-10-01 (see the [suspension register](../AUDIT-SUSPENSION.md)).
 
 ## Acceptance evidence mapping
 
@@ -12,27 +12,28 @@ Collected 2026-10-01 on Node 24.21.0 local (workerd/Miniflare D1 and isolated Po
 | Compatibility fixtures pass | `tests/unit/plugin-manifest.test.ts` (api range semantics), incompatible-range and non-increasing-upgrade route denials on both profiles |
 | Negative-permission fixtures pass | `tests/unit/plugin-negative-fixtures.test.ts`; password-assurance `REAUTHENTICATION_REQUIRED` and non-administrator `FORBIDDEN` denials on both profiles; redacted secret reads (envelope stored, plaintext never returned) |
 | Core security remains active with zero plugins installed | The workerd plugin suite asserts `/health/ready` 200 before any plugin exists; all other account/role/session suites run on compositions with zero registered plugins throughout |
+| Registry mutations are audited (05.2a/05.3d, resumed 2026-10-01) | Closed catalog in `packages/security/src/audit.ts` (`plugin.registered`/`enabled`/`disabled`/`upgraded`/`uninstalled`/`configured`) with the unit block in `tests/unit/audit.test.ts`; both route suites assert the full emitted event set after the authoritative writes (workerd 16 events, PostgreSQL 12), the actor attribution, the uninstall policy/version metadata, configure's public/secret counts, zero events after a forbidden attempt, and that no setting value ever enters the trail |
 
 ## Verification matrix (final batch state)
 
 - `corepack pnpm lint` (oxlint + boundary checker) — pass
 - `corepack pnpm typecheck` (root + both Cloudflare projects) — pass
 - `corepack pnpm format:check` — pass
-- unit 186/186, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69
+- unit 188/188 (includes the plugin audit catalog block), contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69
 - `corepack pnpm build` (all targets) — pass
-- `corepack pnpm db:check` (D1 + PostgreSQL) — pass
+- `corepack pnpm db:check` (D1 + PostgreSQL) — pass (pre-existing journal-timestamp warnings from the reconstructed 05.2a snapshots remain non-fatal)
 - `corepack pnpm docs:build` — pass
 - `corepack pnpm scan:secrets`, `corepack pnpm scan:licenses` — pass
 
 ## Deliverable inventory
 
-- `docs/PLUGIN-SPEC.md` 1.6.0 (§1–§14) with ADR 0010; `docs/EXTENDING-PLUGINS.md` quickstart
-- `@hyperbug/plugin-api` 1.6.0, `@hyperbug/plugin-sdk` 1.5.0, `@hyperbug/plugin-runtime` 1.1.0 (independently versioned)
+- `docs/PLUGIN-SPEC.md` 1.6.1 (§1–§14, incl. §10.7 registry audit) with ADR 0010; `docs/EXTENDING-PLUGINS.md` quickstart
+- `@hyperbug/plugin-api` 1.6.1, `@hyperbug/plugin-sdk` 1.5.0, `@hyperbug/plugin-runtime` 1.1.0 (independently versioned)
 - Registry, settings and event tables in both dialects (D1 migrations 0015–0017; PostgreSQL 0014–0016)
-- Management/configuration endpoints on both production roots; bounded sync executor; two SDK-authored plugin fixtures
+- Management/configuration endpoints on both production roots with audited mutations (`plugin.*` append-after-write, `AUDIT_UNAVAILABLE` fail-closed); bounded sync executor; two SDK-authored plugin fixtures
 
-## Suspended remainders (explicit)
+## Closed audit remainders and standing notes
 
-- 05.2a audited plugin-management endpoints and 05.3d configuration audits stay suspended and unchecked under the standing audit suspension; no `plugin.*` audit events exist (asserted in both route suites).
+- The 05.2a audited-endpoint portion and the 05.3d configuration-audit portion were resumed by user instruction on 2026-10-01 and are closed with the evidence above; module 05 has no suspended remainders. Later modules' audit portions remain suspended under the [suspension register](../AUDIT-SUSPENSION.md).
 - Reconstructed drizzle meta snapshots for D1 0012–0014 / PostgreSQL 0011–0013 repaired a latent generation hazard from prior sessions.
 - The latent wrangler 4.144.0 ↔ pinned `@cloudflare/workers-types` peer conflict (module 01 maintenance) resurfaces on dependency re-resolution.

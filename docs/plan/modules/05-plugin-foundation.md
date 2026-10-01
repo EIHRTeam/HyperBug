@@ -11,7 +11,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 
 **Deferred Phase 03 scope owned here (2026-09-30 re-scope):** 03.3f's fail-closed plugin-permission failure handling is implemented with 05.2c when this module's runtime resumes; a plugin-permission check that fails, times out or is unavailable must deny without silently disabling verification.
 
-**Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
+**Execution override (2026-09-21, module-05 audit portions lifted 2026-10-01): [Audit suspension](../AUDIT-SUSPENSION.md). The module's own audit portions (05.2a audited endpoints, 05.3d configuration audits) were resumed and closed by explicit user instruction on 2026-10-01; later modules' audit portions remain suspended under the register.**
 
 ## Ordered checklist
 
@@ -25,7 +25,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 
 ### Step 05.2 — Implement Core integration
 
-- [ ] **05.2a** **Audit portion suspended — no audit for now.** Implement registry/lifecycle validation and authorized, audited plugin-management endpoints.
+- [x] **05.2a** Implement registry/lifecycle validation and authorized, audited plugin-management endpoints. (The audit portion was resumed by user instruction on 2026-10-01 and closed with the audited registry trail; see the [suspension register](../AUDIT-SUSPENSION.md).)
 - [x] **05.2b** Implement scoped configuration and storage interfaces, secret-provider access, write-only secret updates, redacted reads, and namespace ownership.
 - [x] **05.2c** Define authentication/SSO, CAPTCHA, notifications, issue actions/metadata, search, import/export, and settings extension contracts with their Core policy boundaries, including the fail-closed plugin-permission failure handling re-scoped from 03.3f (2026-09-30).
 - [x] **05.2d** Connect hook/event envelopes to the outbox model; complete actual async dispatch in module 09 before enabling side-effect consumers.
@@ -37,7 +37,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 - [x] **05.3a** Test incompatible versions, malformed manifests, unknown capabilities, missing secrets, invalid configuration, and disabled-plugin behavior.
 - [x] **05.3b** Test permissions and object authorization at every plugin-facing API boundary, including cross-project access and unauthorized secret reads.
 - [x] **05.3c** Verify timeout/error behavior and bounded hook invocation. Document that in-process CPU-bound native code cannot be securely preempted by a promise timeout.
-- [ ] **05.3d** **Audit portion suspended — no audit for now.** Test upgrade/data-retention handling, namespaced migrations, configuration audits, and contract compatibility across both runtimes.
+- [x] **05.3d** Test upgrade/data-retention handling, namespaced migrations, configuration audits, and contract compatibility across both runtimes. (The configuration-audit portion was resumed by user instruction on 2026-10-01; see the [suspension register](../AUDIT-SUSPENSION.md).)
 - [x] **05.3e** Publish an English extension-author quickstart stating that installing native code means trusting it.
 
 ## Acceptance evidence

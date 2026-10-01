@@ -1,6 +1,6 @@
 # HyperBug plugin specification (PLUGIN-SPEC)
 
-Specification version: **1.6.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
+Specification version: **1.6.1** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
 
 Status: MVP backend development ([module 05](plan/modules/05-plugin-foundation.md)). This frame is defined by checklist 05.1a; the manifest, lifecycle, hook and external-service chapters land with 05.1b–05.1e and Core integration with 05.2.
 
@@ -180,6 +180,10 @@ Registration validates the manifest (§9) and requires the host's Plugin API ver
 - `delete` — namespaced data is deleted through a bounded, reviewed procedure scoped strictly to the plugin's namespace (§9.7).
 
 There is no default: the uninstall operation must state its policy. Deletion is irreversible; retention leaves data owned by an absent plugin and must not be readable by a different plugin id (namespace ownership is enforced by the storage interfaces, module 05.2b).
+
+### 10.7 Registry audit (host-side)
+
+Every registry mutation is audited as the sensitive administration it is (§5; SECURITY §§39, 110–116): `register`, `configure`, `enable`, `disable`, `upgrade` and `uninstall` each append a deployment-level `plugin.*` audit event after the authoritative registry write succeeds — `plugin.registered` and `plugin.upgraded` carry the resulting version, `plugin.uninstalled` carries the operator's explicit retain/delete policy and the uninstalled version, `plugin.configured` carries public/secret write counts only, and `plugin.enabled`/`plugin.disabled` carry no extra data. Denied operations append nothing (denials live in the authorization trail), and no setting key or value ever enters the audit metadata. A deployment whose audit sink is missing, or whose bounded append fails after a committed mutation, fails the request closed without compensating the write; the crash window between the committed write and the append is the recorded limit of this trail.
 
 ## 11. Hook protocol
 

@@ -26,11 +26,14 @@ import type {
   KeyProvider,
 } from '@hyperbug/security';
 import {
+  auditEvent,
   CryptoFailure,
   encryptSecret,
   type SecretContext,
 } from '@hyperbug/security';
 import { authenticateBearer, type BearerPrincipal } from './bearer-auth.ts';
+import { appendRequiredAuditEvent, auditRequestId } from './audit-emit.ts';
+import type { AuditAppend } from './sensitive-admission.ts';
 import { requireAuthorizedAction } from './authorization.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
@@ -44,6 +47,7 @@ export interface PluginManagementContext {
   readonly roleStore: ProjectRoleStore | null;
   readonly registry: PluginRegistryStore | null;
   readonly settings: PluginSettingsStore | null;
+  readonly auditAppend: AuditAppend | null;
 }
 
 const storeTimeoutMs = 1_000;
@@ -146,8 +150,9 @@ export async function registerPlugin(
   request: Request,
   context: PluginManagementContext,
   manifestInput: unknown,
+  requestId: string | null,
 ): Promise<PluginRegistryView> {
-  await requirePluginAdministrator(request, context);
+  const principal = await requirePluginAdministrator(request, context);
   const decision = decideRegistration({
     kind: 'register',
     manifest: manifestInput,
@@ -170,6 +175,22 @@ export async function registerPlugin(
     }),
   );
   if (outcome === 'conflict') throw new RequestFailure('PLUGIN_STATE_CONFLICT');
+  await appendRequiredAuditEvent({
+    append: context.auditAppend,
+    event: auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: principal.principalId,
+      systemActor: null,
+      action: 'plugin.registered',
+      targetId: decision.manifest.id,
+      result: 'success',
+      requestId: auditRequestId(requestId),
+      createdAt: nowMs,
+      metadata: { v: 1, version: decision.manifest.version },
+    }),
+    signal: request.signal,
+  });
   return pluginRegistryView({
     id: decision.manifest.id,
     version: decision.manifest.version,
@@ -215,8 +236,9 @@ export async function enablePlugin(
   request: Request,
   context: PluginManagementContext,
   id: string,
+  requestId: string | null,
 ): Promise<PluginRegistryView> {
-  await requirePluginAdministrator(request, context);
+  const principal = await requirePluginAdministrator(request, context);
   const record = await loadRecord(context, request, id);
   const configuration = await storedConfiguration(
     context,
@@ -240,6 +262,22 @@ export async function enablePlugin(
     }),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
+  await appendRequiredAuditEvent({
+    append: context.auditAppend,
+    event: auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: principal.principalId,
+      systemActor: null,
+      action: 'plugin.enabled',
+      targetId: id,
+      result: 'success',
+      requestId: auditRequestId(requestId),
+      createdAt: Date.now(),
+      metadata: { v: 1 },
+    }),
+    signal: request.signal,
+  });
   return pluginRegistryView(updated);
 }
 
@@ -248,8 +286,9 @@ export async function disablePlugin(
   request: Request,
   context: PluginManagementContext,
   id: string,
+  requestId: string | null,
 ): Promise<PluginRegistryView> {
-  await requirePluginAdministrator(request, context);
+  const principal = await requirePluginAdministrator(request, context);
   const record = await loadRecord(context, request, id);
   if (record.state !== 'enabled')
     throw new RequestFailure('PLUGIN_STATE_CONFLICT');
@@ -264,6 +303,22 @@ export async function disablePlugin(
     }),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
+  await appendRequiredAuditEvent({
+    append: context.auditAppend,
+    event: auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: principal.principalId,
+      systemActor: null,
+      action: 'plugin.disabled',
+      targetId: id,
+      result: 'success',
+      requestId: auditRequestId(requestId),
+      createdAt: Date.now(),
+      metadata: { v: 1 },
+    }),
+    signal: request.signal,
+  });
   return pluginRegistryView(updated);
 }
 
@@ -273,8 +328,9 @@ export async function upgradePlugin(
   context: PluginManagementContext,
   id: string,
   manifestInput: unknown,
+  requestId: string | null,
 ): Promise<PluginRegistryView> {
-  await requirePluginAdministrator(request, context);
+  const principal = await requirePluginAdministrator(request, context);
   const record = await loadRecord(context, request, id);
   const decision = decideRegistration({
     kind: 'upgrade',
@@ -297,6 +353,22 @@ export async function upgradePlugin(
     }),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
+  await appendRequiredAuditEvent({
+    append: context.auditAppend,
+    event: auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: principal.principalId,
+      systemActor: null,
+      action: 'plugin.upgraded',
+      targetId: id,
+      result: 'success',
+      requestId: auditRequestId(requestId),
+      createdAt: Date.now(),
+      metadata: { v: 1, version: decision.manifest.version },
+    }),
+    signal: request.signal,
+  });
   return pluginRegistryView(updated);
 }
 
@@ -306,9 +378,10 @@ export async function uninstallPlugin(
   context: PluginManagementContext,
   id: string,
   policyInput: unknown,
+  requestId: string | null,
 ): Promise<void> {
-  await requirePluginAdministrator(request, context);
-  await loadRecord(context, request, id);
+  const principal = await requirePluginAdministrator(request, context);
+  const record = await loadRecord(context, request, id);
   // PLUGIN-SPEC §10.6: no default — the operator states the policy. Namespaced
   // data handling beyond the registry entry arrives with the storage
   // interfaces (05.2b); today the registry entry itself is the plugin's data.
@@ -318,6 +391,26 @@ export async function uninstallPlugin(
     registry(context).remove(id),
   );
   if (!removed) throw new RequestFailure('NOT_FOUND');
+  await appendRequiredAuditEvent({
+    append: context.auditAppend,
+    event: auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: principal.principalId,
+      systemActor: null,
+      action: 'plugin.uninstalled',
+      targetId: id,
+      result: 'success',
+      requestId: auditRequestId(requestId),
+      createdAt: Date.now(),
+      metadata: {
+        v: 1,
+        version: record.version,
+        policy: policyInput,
+      },
+    }),
+    signal: request.signal,
+  });
   if (policyInput === 'delete' && context.settings)
     await withDeadline(request.signal, storeTimeoutMs, () =>
       settings(context).removeAll(id),
@@ -335,8 +428,9 @@ export async function configurePlugin(
   context: PluginManagementContext,
   id: string,
   input: { values?: unknown; secrets?: unknown },
+  requestId: string | null,
 ): Promise<PluginRegistryView> {
-  await requirePluginAdministrator(request, context);
+  const principal = await requirePluginAdministrator(request, context);
   const record = await loadRecord(context, request, id);
   const declared = new Map(record.manifest.settings.map((s) => [s.key, s]));
   const values = input.values ?? {};
@@ -430,6 +524,28 @@ export async function configurePlugin(
       ),
     ),
   );
+  // Configuration audit carries counts only — no setting key or value ever
+  // enters the audit trail (SECURITY §110–116 redaction baseline).
+  await appendRequiredAuditEvent({
+    append: context.auditAppend,
+    event: auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: principal.principalId,
+      systemActor: null,
+      action: 'plugin.configured',
+      targetId: id,
+      result: 'success',
+      requestId: auditRequestId(requestId),
+      createdAt: nowMs,
+      metadata: {
+        v: 1,
+        publicCount: writes.filter((write) => write.kind === 'public').length,
+        secretCount: writes.filter((write) => write.kind === 'secret').length,
+      },
+    }),
+    signal: request.signal,
+  });
   return pluginRegistryView(record);
 }
 

@@ -6,13 +6,13 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Complete (2026-10-01; 05.2a's audited-endpoint portion and 05.3d's configuration-audit portion stay suspended and unchecked as explicit deferred remainders — module 03/04 precedent)
+- Status: Complete (2026-10-01; the 05.2a audited-endpoint portion and the 05.3d configuration-audit portion were resumed and closed by explicit user instruction on 2026-10-01 — no suspended remainders remain in this module)
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
-- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b–05.2f, 05.3a, 05.3b, 05.3c, 05.3e. Suspended and unchecked: 05.2a (audit portion) and 05.3d (configuration-audit portion).
-- Active/next checklist group: None — module complete; the suspended audit portions await the G1 governance decision.
-- Last updated: 2026-10-01 (module complete; acceptance evidence recorded).
+- Completed implementation checklist IDs: 05.1a–05.1e, 05.2a–05.2f, 05.3a–05.3e (all items).
+- Active/next checklist group: None — module complete with no deferred remainders.
+- Last updated: 2026-10-01 (audit portions resumed and closed; acceptance evidence updated).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
 
@@ -21,10 +21,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
-| 05.2 | Implement Core integration | Complete except 05.2a's suspended audit portion (non-audit scope done) | Session entries below |
-| 05.3 | Verify lifecycle and compatibility | Complete (05.3a–05.3c, 05.3e; 05.3d non-audit scope done, audit portion suspended) | Session entries below |
-| 05.2 | Implement Core integration | Not started | None yet |
-| 05.3 | Verify lifecycle and compatibility | Complete (05.3a–05.3c, 05.3e; 05.3d non-audit scope done, audit portion suspended) | Session entries below |
+| 05.2 | Implement Core integration | Complete (2026-10-01; 05.2a audit portion resumed and closed the same day) | Session entries below |
+| 05.3 | Verify lifecycle and compatibility | Complete (2026-10-01; 05.3d configuration-audit portion resumed and closed the same day) | Session entries below |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
@@ -318,3 +316,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: The G1 audit-governance decision (resume vs deferral+ADR) remains with the user and now covers this module's two suspended portions plus modules 06–09's.
 - Next actions: None for module 05. Awaiting user direction; module 06 is the next executable module but is not started here.
 - Next-session cautions: Do not resume the suspended audit portions implicitly; keep the root `SECURITY.md` draft uncommitted; migrations are at D1 0017 / PostgreSQL 0016 with no remote applications.
+
+### 2026-10-01 — Intended batch: Module 05 audit portions (recorded before implementation)
+
+- Scope and checklist IDs: 05.2a audited-endpoint portion and 05.3d configuration-audit portion, resumed by the user's explicit instruction to continue the Module 05 audit and close the remaining checks (suspension-register resume entry recorded with this batch). Audit portions of modules 06–16 remain suspended. Planned slice: `plugin.*` events in the closed audit catalog (`plugin.registered`/`plugin.enabled`/`plugin.disabled`/`plugin.upgraded`/`plugin.uninstalled`/`plugin.configured` — deployment-level, authenticated actor, success-only, plugin-id `targetId`, per-action metadata: version on register/upgrade/uninstall, retain/delete policy on uninstall, public/secret counts on configure, never any setting value), append-after-write through `appendRequiredAuditEvent` on every plugin-management mutation (denials append nothing; a missing sink or failed bounded append answers `AUDIT_UNAVAILABLE` without compensating the write), a closed-catalog unit block, both route suites asserting the emitted events in place of the audit-silence assertions, a PLUGIN-SPEC §10 registry-audit subsection (spec and plugin-api 1.6.1) and an API-CONVENTIONS update.
+- Progress: Starting now; entry recorded before implementation per protocol.
+- Change summary / Files / Verification: Pending.
+- Decisions and deviations: None yet.
+- Blockers/open questions: None.
+- Next actions: Implement, verify, update this entry.
+- Next-session cautions: None yet.
+
+### 2026-10-01 — Batch accepted: Module 05 audit portions closed (05.2a and 05.3d complete)
+
+- Scope and checklist IDs: **05.2a and 05.3d accepted** — the audited-endpoint and configuration-audit portions were resumed by the user's explicit instruction to continue the Module 05 audit and close the remaining checks, and are now implemented and verified on both local profiles. **Module 05 has no suspended remainders; every checklist item is complete.** Audit portions of modules 06–16 remain suspended under the [suspension register](../AUDIT-SUSPENSION.md).
+- Progress: The closed audit catalog gained the module 05 plugin-administration events (`plugin.registered`, `plugin.enabled`, `plugin.disabled`, `plugin.upgraded`, `plugin.uninstalled`, `plugin.configured`) — deployment-level, attributed to the acting administrator, success-only (denials stay in the authorization trail), with per-action metadata: version on register/upgrade/uninstall, the explicit retain/delete policy on uninstall, and public/secret write counts on configure; no setting key or value ever enters the metadata. Every plugin-management mutation appends its event after the authoritative registry write through `appendRequiredAuditEvent` (a missing sink or failed bounded append fails with `AUDIT_UNAVAILABLE` 503 without compensating the write), wired through the shared `PluginManagementContext` so both production roots and both route fixtures emit the trail. Both route suites now assert the full emitted event set (workerd 16 events, PostgreSQL 12) including actor attribution, uninstall policy/version, configure counts, zero events after a forbidden non-administrator attempt, and the absence of both written secret values from the trail; the audit unit suite gained a closed-catalog block for the six actions and their rejection matrix.
+- Change summary: `pluginActions` catalog + validation branch in `packages/security/src/audit.ts`; `auditAppend` on `PluginManagementContext` and append-after-write in all six mutation handlers in `packages/server/src/plugin-management.ts`; requestId threading from the routes in `packages/server/src/index.ts`; catalog unit block in `tests/unit/audit.test.ts`; both route suites' audit-silence assertions replaced by the full event-set assertions; PLUGIN-SPEC 1.6.1 §10.7 (registry audit, host-side) with plugin-api 1.6.1; API-CONVENTIONS audited-registry paragraph; suspension-register resume entry; checklist/status/evidence finalization.
+- Files/artifacts: `packages/security/src/audit.ts`; `packages/server/src/{plugin-management,index}.ts`; `packages/plugin-api/{package.json,src/identity.ts}`; `tests/unit/audit.test.ts`; `tests/workerd/plugin-route.test.ts`; `tests/postgres/plugin-registry-route.test.ts`; `docs/PLUGIN-SPEC.md`; `docs/API-CONVENTIONS.md`; `docs/plan/AUDIT-SUSPENSION.md`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`; `docs/plan/evidence/05-plugin-foundation-validation.md`; `docs/plan/EXECUTION.md`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 188/188 (new plugin catalog block included), contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build (all targets), db:check both dialects (pre-existing non-fatal journal-timestamp warnings from the reconstructed 05.2a snapshots remain), docs build, secret and license scans all passed. Two pre-acceptance corrections: the PostgreSQL event comparison needed a key-order-independent canonical form (jsonb normalizes object keys), and a lint no-shadow rename. Local/emulated evidence only; no deployed claim.
+- Decisions and deviations: (1) The catalog mirrors PLUGIN-SPEC §9's plugin-id and semver patterns inline in `audit.ts` rather than importing plugin-api, keeping the security package dependency-free of plugin contracts. (2) `plugin.uninstalled` is appended after the registry removal but before the namespaced settings deletion, so the audited decision is recorded even if the ancillary cleanup fails — the registry entry is uninstall's authoritative write. (3) `plugin.configured` records counts only (public/secret), never keys or values, extending the SECURITY §§110–116 redaction baseline to the plugin trail. (4) PLUGIN-SPEC/plugin-api moved to 1.6.1 (patch): host-side audit documentation with no contract change; sdk/runtime stay 1.5.0/1.1.0.
+- Blockers/open questions: None new. The G1 audit-governance decision remains with the user, now covering modules 06–09's suspended audit portions only.
+- Next actions: None for module 05 — module complete with no remainders. Module 06 is the next executable module per the plan's order, awaiting user direction.
+- Next-session cautions: Later modules' audit portions must not resume implicitly; keep the root `SECURITY.md` draft uncommitted; migrations are at D1 0017 / PostgreSQL 0016 with no remote applications; the postgres evidence file `03-postgres-audit-query.json` regenerates its measurements whenever the postgres lane runs — do not commit unrelated measurement drift with plugin batches.

@@ -17,10 +17,12 @@ import { migrationStatements } from '../fixtures/migrations.ts';
 import { postgresNodeBindings } from '../fixtures/postgres-node-bindings.ts';
 import { createFakeAuthenticator } from '../fixtures/fake-authenticator.ts';
 
-// 05.2a non-audit scope on the Node/PostgreSQL profile: the plugin registry
-// and its management endpoints run the identical shared route surface against
-// the PostgreSQL adapter, with recent-authentication enforcement and no
-// module-05 audit events.
+// 05.2a audited scope (resumed 2026-10-01) on the Node/PostgreSQL profile:
+// the plugin registry and its management endpoints run the identical shared
+// route surface against the PostgreSQL adapter, with recent-authentication
+// enforcement; every registry mutation appends its plugin.* audit event after
+// the authoritative write, denials append nothing, and no setting value
+// enters the trail.
 const databaseName = 'hyperbug_plugin_route_test';
 const redirectUri = 'http://localhost:5173/oauth/callback';
 const clients = [
@@ -237,7 +239,7 @@ afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 });
 
-it('manages the plugin registry with step-up on PostgreSQL and emits no plugin audit events', async () => {
+it('manages the plugin registry with step-up on PostgreSQL and appends the audited registry trail', async () => {
   const enrolled = await post('/auth/bootstrap/enroll', {
     enrollmentCode,
     handle: 'rootadmin',
@@ -501,7 +503,13 @@ it('manages the plugin registry with step-up on PostgreSQL and emits no plugin a
     error: { code: 'FORBIDDEN' },
   });
 
-  // 05.3d non-audit scope: retain keeps namespaced configuration.
+  // The forbidden attempt appended nothing: only successful mutations audit.
+  const deniedAudits = await pool.query(
+    "SELECT COUNT(*)::int AS n FROM audit_events WHERE action LIKE 'plugin.%'",
+  );
+  expect(deniedAudits.rows[0]).toEqual({ n: 9 });
+
+  // 05.3d: uninstall retain keeps namespaced configuration.
   const sampleAgain = await post(
     '/api/v1/admin/plugins',
     { manifest: pluginManifest },
@@ -525,8 +533,65 @@ it('manages the plugin registry with step-up on PostgreSQL and emits no plugin a
   );
   expect(retainedRow.rows[0]?.n).toBe(1);
 
-  const pluginAudits = await pool.query(
-    "SELECT COUNT(*)::int AS n FROM audit_events WHERE action LIKE 'plugin.%'",
+  // 05.2a audited scope: every successful registry mutation appends its
+  // plugin.* event after the authoritative write — action, target and closed
+  // metadata only, never any setting value — and reads/denials stay silent.
+  const auditRows = await pool.query(
+    'SELECT action, target_id AS "targetId", actor_id AS "actorId", metadata FROM audit_events WHERE action LIKE \'plugin.%\'',
   );
-  expect(pluginAudits.rows[0]).toEqual({ n: 0 });
+  expect(auditRows.rows).toHaveLength(12);
+  expect(new Set(auditRows.rows.map((auditRow) => auditRow.actorId))).toEqual(
+    new Set([staffPrincipalId]),
+  );
+  expect(JSON.stringify(auditRows.rows)).not.toContain('super-secret-value');
+  expect(JSON.stringify(auditRows.rows)).not.toContain('kept-value');
+  // jsonb normalizes object keys to alphabetical order, so compare through a
+  // key-order-independent canonical form.
+  const canonical = (value: unknown) =>
+    JSON.stringify(value, (_key, inner) =>
+      inner && typeof inner === 'object' && !Array.isArray(inner)
+        ? Object.fromEntries(
+            Object.entries(inner).sort(([a], [b]) => a.localeCompare(b)),
+          )
+        : inner,
+    );
+  const actual = auditRows.rows
+    .map((auditRow) =>
+      canonical([auditRow.action, auditRow.targetId, auditRow.metadata]),
+    )
+    .sort();
+  expect(actual).toEqual(
+    [
+      ['plugin.registered', '@hyperbug/sample', { v: 1, version: '1.0.0' }],
+      [
+        'plugin.configured',
+        '@hyperbug/sample',
+        { v: 1, publicCount: 0, secretCount: 1 },
+      ],
+      ['plugin.enabled', '@hyperbug/sample', { v: 1 }],
+      ['plugin.disabled', '@hyperbug/sample', { v: 1 }],
+      ['plugin.upgraded', '@hyperbug/sample', { v: 1, version: '1.1.0' }],
+      [
+        'plugin.uninstalled',
+        '@hyperbug/sample',
+        { v: 1, version: '1.1.0', policy: 'delete' },
+      ],
+      ['plugin.registered', '@hyperbug/notifier', { v: 1, version: '1.0.0' }],
+      ['plugin.enabled', '@hyperbug/notifier', { v: 1 }],
+      ['plugin.disabled', '@hyperbug/notifier', { v: 1 }],
+      ['plugin.registered', '@hyperbug/sample', { v: 1, version: '1.0.0' }],
+      [
+        'plugin.configured',
+        '@hyperbug/sample',
+        { v: 1, publicCount: 0, secretCount: 1 },
+      ],
+      [
+        'plugin.uninstalled',
+        '@hyperbug/sample',
+        { v: 1, version: '1.0.0', policy: 'retain' },
+      ],
+    ]
+      .map((entry) => canonical(entry))
+      .sort(),
+  );
 });
