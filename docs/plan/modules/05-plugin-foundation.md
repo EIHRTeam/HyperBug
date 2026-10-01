@@ -21,7 +21,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 - [x] **05.1b** Define manifest ID/version/API compatibility, capabilities, configuration schemas, public versus secret settings, CSP origins, extension points, and namespaced data/migrations.
 - [x] **05.1c** Define lifecycle: register, validate compatibility, configure, enable, disable, upgrade, uninstall, and retain/delete plugin data through an explicit policy.
 - [x] **05.1d** Define hook mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, and side-effect idempotency. Security-critical hooks fail closed; ordinary effects use durable async dispatch.
-- [ ] **05.1e** Separate trusted native code from isolated external services in the specification. For external services, define scoped/revocable capability APIs and signed/versioned events; defer an arbitrary code-hosting platform.
+- [x] **05.1e** Separate trusted native code from isolated external services in the specification. For external services, define scoped/revocable capability APIs and signed/versioned events; defer an arbitrary code-hosting platform.
 
 ### Step 05.2 — Implement Core integration
 

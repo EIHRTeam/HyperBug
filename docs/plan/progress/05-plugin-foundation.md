@@ -9,10 +9,10 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Status: In progress
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
-- Implementation started: Yes (2026-10-01, batches 05.1a–05.1d).
-- Completed implementation checklist IDs: 05.1a, 05.1b, 05.1c, 05.1d.
-- Active/next checklist group: 05.1e (external service protocol).
-- Last updated: 2026-10-01 (batch 05.1d accepted).
+- Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
+- Completed implementation checklist IDs: 05.1a, 05.1b, 05.1c, 05.1d, 05.1e.
+- Active/next checklist group: 05.2a (registry/lifecycle validation and non-audited management endpoints).
+- Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
 
@@ -20,7 +20,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 05.1 | Define the plugin specification | In progress (05.1a) | Session entries below |
+| 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
+| 05.2 | Implement Core integration | In progress (starting 05.2a) | — |
+| 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 | 05.2 | Implement Core integration | Not started | None yet |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 
@@ -138,3 +140,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.1e — external service protocol chapter (trusted native vs isolated external separation, scoped/revocable capability APIs, signed/versioned events) and its contract types.
 - Next-session cautions: Do not import plugin packages into Core before 05.2; hook point catalogs and payload shapes arrive with 05.2c.
+
+### 2026-10-01 — Batch 05.1e accepted (external service protocol); step 05.1 complete
+
+- Scope and checklist IDs: 05.1e accepted (intended batch recorded before implementation) — separate trusted native code from isolated external services; scoped/revocable capability APIs and signed/versioned events for external services; arbitrary code hosting explicitly deferred. **Step 05.1 is complete.**
+- Progress: PLUGIN-SPEC is at 1.4.0 with §12: three channels (`capability-api`, `signed-webhook`, `service-binding`), capability grants bound to plugin id/channel/declared permissions/narrow expiry that are revoked on disable, uninstall, rotation or compromise and never act as Core sessions (Core still checks object-level authorization on every call), bounded delivery with deadlines/retry budgets/circuit breaking, and signed versioned events — signature version 1, HMAC-SHA256 over canonical envelope bytes, `eventId` dedup plus a 5-minute freshness window, failing closed on signature failure. `@hyperbug/plugin-api` 1.4.0 carries the channels, constants, `CapabilityGrantSchema` and `SignedPluginEventSchema` with checkers; `@hyperbug/plugin-sdk` 1.3.0 re-exports them.
+- Change summary: New `packages/plugin-api/src/external.ts`, index/SDK re-exports, version bumps, PLUGIN-SPEC §12, and 6 external-protocol test cases.
+- Files/artifacts: `docs/PLUGIN-SPEC.md`; `packages/plugin-api/{package.json,src/external.ts,src/identity.ts,src/index.ts}`; `packages/plugin-sdk/{package.json,src/index.ts}`; `tests/unit/plugin-external.test.ts`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`; `pnpm-lock.yaml`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 160/160, contract 1/1, node 50/50, workerd 128/128, isolated PostgreSQL 18.6 68/68, build, db:check both dialects, docs build, secret and license scans all passed. Two test-authoring mistakes were corrected before acceptance: a misspelled constant name (FRESHINESS→FRESHNESS) that surfaced as an unresolved export, and a tampering case that expected structural validation to detect a re-signed pluginId (it cannot — that is the signature's job); the case now uses a structurally invalid envelope.
+- Decisions and deviations: Grant/signing mechanisms reuse the platform HMAC/key-lifecycle patterns from [CRYPTOGRAPHY](../../CRYPTOGRAPHY.md) at implementation time (05.2); only the protocol vocabulary is fixed here. Deferred code hosting remains deferred; no native-code sandboxing claim exists anywhere in the specification.
+- Blockers/open questions: None new.
+- Next actions: 05.2 begins — 05.2a non-audit scope: registry/lifecycle validation and authorized (non-audited) plugin-management endpoints.
+- Next-session cautions: Do not emit module-05 audit events (05.2a/05.3d audit portions stay suspended); do not expand module 09 (05.2d only connects envelopes to the existing outbox).

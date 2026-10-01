@@ -858,3 +858,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 05.1e external service protocol.
 - Next-session cautions: Do not import plugin packages into Core before 05.2; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batch: external service protocol; step 05.1 complete
+
+- Scope and checklist IDs: 05.1e accepted (intended batch recorded before implementation). With 05.1a–05.1e all accepted, **step 05.1 (plugin specification) is complete**: PLUGIN-SPEC 1.4.0 covers the frame, manifests/compatibility, lifecycle, hook protocol and external service protocol, backed by `@hyperbug/plugin-api` 1.4.0 / `@hyperbug/plugin-sdk` 1.3.0 / `@hyperbug/plugin-runtime` 1.0.0.
+- Progress: §12 fixes the external channels (capability-api, signed-webhook, service-binding), scoped revocable capability grants (never Core sessions; Core still checks object-level authorization), bounded delivery, and signed versioned events (HMAC-SHA256 v1, eventId dedup + 5-minute freshness, fail-closed on signature failure). Arbitrary code hosting stays deferred.
+- Change summary: External protocol module in plugin-api, re-exports, version bumps, specification §12, 6 new tests.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format, unit 160/160, contract 1/1, node 50/50, workerd 128/128, isolated PostgreSQL 18.6 68/68, build, db:check, docs build, secret and license scans passed.
+- Decisions and deviations: Two test-authoring errors fixed pre-acceptance (a misspelled constant name surfacing as an unresolved export; a tampering case corrected to a structurally invalid envelope since re-signing is the signature's domain). Grant/signing implementation reuses module-03 crypto patterns when 05.2 lands.
+- Blockers/open questions: None new; G1 audit governance remains with the user.
+- Next actions: 05.2a non-audit scope — registry/lifecycle validation and authorized plugin-management endpoints without module-05 audit events.
+- Next-session cautions: Suspended audit portions (05.2a audited endpoints, 05.3d configuration audits) must remain unimplemented and unchecked; keep the root `SECURITY.md` draft uncommitted.

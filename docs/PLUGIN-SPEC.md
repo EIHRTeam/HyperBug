@@ -1,6 +1,6 @@
 # HyperBug plugin specification (PLUGIN-SPEC)
 
-Specification version: **1.3.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
+Specification version: **1.4.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
 
 Status: MVP backend development ([module 05](plan/modules/05-plugin-foundation.md)). This frame is defined by checklist 05.1a; the manifest, lifecycle, hook and external-service chapters land with 05.1b–05.1e and Core integration with 05.2.
 
@@ -214,6 +214,30 @@ Non-critical points use their declared policy; `continue-without-effect` records
 
 Every hook/event carries an `eventId` (UUID) and an `occurredAt` timestamp in the shared envelope (`PluginHookEnvelope`). Async dispatch is at-least-once; consumers deduplicate on `eventId` and must be idempotent per event. Retries are bounded with the outbox's retry semantics; dead effects are retained as recoverable failures, not silently discarded.
 
+## 12. External service protocol
+
+This chapter fixes how **isolated external** plugins (§3.3) talk to Core and what Core guarantees them. Native plugins are unaffected: they compile into both profile bundles as trusted application code and use the in-process hook protocol (§11). An arbitrary code-hosting platform — running untrusted plugin code inside Core's process boundary — remains deferred (§3.4); nothing in this specification may be read as sandboxing native code.
+
+### 12.1 Channels
+
+External plugins communicate only through (`EXTERNAL_PLUGIN_CHANNELS`; SECURITY §119):
+
+- `capability-api` — the external service calls Core's plugin capability API over HTTPS, authenticated by a scoped token;
+- `signed-webhook` — Core pushes signed, versioned events (§12.4) to an endpoint the plugin declared for delivery;
+- `service-binding` — a private service binding within one Cloudflare deployment, subject to the same grant and signing rules.
+
+### 12.2 Scoped and revocable capability APIs
+
+Every external-plugin credential is a **capability grant** (`CapabilityGrantSchema`): per-plugin, bound to the plugin id, channel, the manifest's declared permissions (§9.4) and a narrow expiry; keyed by `keyId` for rotation. A grant is never a Core session, carries no principal identity, and is revoked on disable (§10.4), uninstall (§10.6), key rotation or suspected compromise. Core checks object-level authorization on every capability call — a valid grant is authentication of the plugin, never authorization of the operation. External plugins reach data only through capability APIs and scoped storage (§9.7); they never receive Core SQL access (TECH-STACK §44).
+
+### 12.3 Bounded delivery
+
+All external calls carry deadlines and timeouts (§11.3; PERFORMANCE §49). Non-critical integrations support retry budgets and circuit breaking so provider failures cannot pile up requests or exhaust resources (PERFORMANCE §50). Webhook delivery is at-least-once with bounded retries; exhausted deliveries are retained as recoverable failures.
+
+### 12.4 Signed, versioned events
+
+Event delivery to an external plugin wraps the §11.5 envelope in a signature block (`SignedPluginEventSchema`): `signatureVersion` (currently `1`), algorithm (`hmac-sha256` over the canonical envelope bytes with the per-plugin delivery key, following the platform HMAC mechanisms in [CRYPTOGRAPHY](CRYPTOGRAPHY.md)), `keyId` for rotation, and a fixed-length hex signature. Receivers verify the signature **and** both replay bounds: deduplicate on `eventId` and reject deliveries whose `occurredAt` lies outside the freshness window (`SIGNED_EVENT_FRESHNESS_WINDOW_MS`, 5 minutes). Freshness bounds replay; it does not replace deduplication. Signature verification failure fails closed — the event is discarded, never processed unsigned.
+
 ## Chapter status
 
 | Chapter | Content | Defined by |
@@ -221,5 +245,5 @@ Every hook/event carries an `eventId` (UUID) and an `occurredAt` timestamp in th
 | §1–§8 | Frame: scope, components, trust, versioning, policy, performance, frontend, conformance | 05.1a |
 | §9 | Manifests and compatibility: identity, API ranges, capabilities, extension points, permissions, public/secret settings, CSP origins, namespaced data/migrations | 05.1b |
 | §10 | Lifecycle: states, register/validate, configure, enable, disable, upgrade, uninstall and explicit retain/delete policy | 05.1c |
-| §11 | Hook protocol: mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, idempotency | 05.1d (this version) |
-| External service protocol | Scoped/revocable capability APIs, signed/versioned events | 05.1e |
+| §11 | Hook protocol: mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, idempotency | 05.1d |
+| §12 | External service protocol: channels, scoped/revocable capability grants, bounded delivery, signed versioned events | 05.1e (this version) |

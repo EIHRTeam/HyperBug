@@ -11,7 +11,7 @@ import {
 export const PLUGIN_SDK_PACKAGE = '@hyperbug/plugin-sdk' as const;
 
 /** Version of this package, independent of the Plugin API version. */
-export const PLUGIN_SDK_VERSION = '1.2.0' as const;
+export const PLUGIN_SDK_VERSION = '1.3.0' as const;
 
 /**
  * Declare a plugin. Throws with the manifest validation errors when the
@@ -86,4 +86,18 @@ export {
   hookFailureAction,
   isPluginHookEnvelope,
   isWithinSyncPayloadLimit,
+} from '@hyperbug/plugin-api';
+export {
+  EXTERNAL_PLUGIN_CHANNELS,
+  PLUGIN_EVENT_SIGNATURE_ALGORITHM,
+  PLUGIN_EVENT_SIGNATURE_VERSION,
+  SIGNED_EVENT_FRESHNESS_WINDOW_MS,
+  CapabilityGrantSchema,
+  SignedPluginEventSchema,
+  type CapabilityGrant,
+  type ExternalPluginChannel,
+  type SignedPluginEvent,
+  isCapabilityGrant,
+  isSignedPluginEvent,
+  isWithinSignedEventFreshness,
 } from '@hyperbug/plugin-api';

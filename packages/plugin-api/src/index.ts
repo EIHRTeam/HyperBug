@@ -67,3 +67,17 @@ export {
   isPluginHookEnvelope,
   isWithinSyncPayloadLimit,
 } from './hooks.ts';
+export {
+  EXTERNAL_PLUGIN_CHANNELS,
+  PLUGIN_EVENT_SIGNATURE_ALGORITHM,
+  PLUGIN_EVENT_SIGNATURE_VERSION,
+  SIGNED_EVENT_FRESHNESS_WINDOW_MS,
+  CapabilityGrantSchema,
+  SignedPluginEventSchema,
+  type CapabilityGrant,
+  type ExternalPluginChannel,
+  type SignedPluginEvent,
+  isCapabilityGrant,
+  isSignedPluginEvent,
+  isWithinSignedEventFreshness,
+} from './external.ts';
