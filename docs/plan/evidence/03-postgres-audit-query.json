@@ -1,0 +1,152 @@
+{
+  "kind": "local indexed project-audit traversal; not deployed or plan-tier acceptance",
+  "dialect": "postgres",
+  "events": 4000,
+  "pages": 39,
+  "pageSize": 100,
+  "traversalWallMs": 31.861291000000165,
+  "plan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Limit",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 21,
+            "Total Cost": 21.01,
+            "Plan Rows": 5,
+            "Plan Width": 232,
+            "Actual Startup Time": 0.014,
+            "Actual Total Time": 0.019,
+            "Actual Rows": 100,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Shared Hit Blocks": 6,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Sort",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Startup Cost": 21,
+                "Total Cost": 21.01,
+                "Plan Rows": 5,
+                "Plan Width": 232,
+                "Actual Startup Time": 0.014,
+                "Actual Total Time": 0.016,
+                "Actual Rows": 100,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Sort Key": [
+                  "created_at DESC",
+                  "id DESC"
+                ],
+                "Sort Method": "quicksort",
+                "Sort Space Used": 50,
+                "Sort Space Type": "Memory",
+                "Shared Hit Blocks": 6,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Heap Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Relation Name": "audit_events",
+                    "Alias": "audit_events",
+                    "Startup Cost": 4.33,
+                    "Total Cost": 20.94,
+                    "Plan Rows": 5,
+                    "Plan Width": 232,
+                    "Actual Startup Time": 0.005,
+                    "Actual Total Time": 0.008,
+                    "Actual Rows": 100,
+                    "Actual Loops": 1,
+                    "Disabled": false,
+                    "Recheck Cond": "((project_id = '1213c615-2d7f-4b31-a417-3894d795ba60'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, '5f202932-2b68-4a5c-bd66-f778c547f926'::uuid)))",
+                    "Rows Removed by Index Recheck": 0,
+                    "Exact Heap Blocks": 3,
+                    "Lossy Heap Blocks": 0,
+                    "Shared Hit Blocks": 6,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Index Scan",
+                        "Parent Relationship": "Outer",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Index Name": "audit_project_order",
+                        "Startup Cost": 0,
+                        "Total Cost": 4.33,
+                        "Plan Rows": 5,
+                        "Plan Width": 0,
+                        "Actual Startup Time": 0.003,
+                        "Actual Total Time": 0.003,
+                        "Actual Rows": 100,
+                        "Actual Loops": 1,
+                        "Disabled": false,
+                        "Index Cond": "((project_id = '1213c615-2d7f-4b31-a417-3894d795ba60'::uuid) AND (ROW(created_at, id) < ROW('1800000000100'::bigint, '5f202932-2b68-4a5c-bd66-f778c547f926'::uuid)))",
+                        "Index Searches": 1,
+                        "Shared Hit Blocks": 3,
+                        "Shared Read Blocks": 0,
+                        "Shared Dirtied Blocks": 0,
+                        "Shared Written Blocks": 0,
+                        "Local Hit Blocks": 0,
+                        "Local Read Blocks": 0,
+                        "Local Dirtied Blocks": 0,
+                        "Local Written Blocks": 0,
+                        "Temp Read Blocks": 0,
+                        "Temp Written Blocks": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.013,
+          "Triggers": [],
+          "Execution Time": 0.025
+        }
+      ]
+    }
+  ]
+}

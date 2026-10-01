@@ -1,0 +1,17 @@
+{
+  "name": "@hyperbug/database-postgres",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@hyperbug/application": "workspace:*",
+    "@hyperbug/domain": "workspace:*",
+    "@hyperbug/plugin-api": "workspace:*",
+    "@hyperbug/security": "workspace:*",
+    "drizzle-orm": "0.45.2",
+    "pg": "8.23.0"
+  }
+}

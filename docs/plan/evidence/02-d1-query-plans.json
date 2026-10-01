@@ -1,0 +1,37 @@
+{
+  "profile": "d1",
+  "fixture": {
+    "projects": 2,
+    "issuesPerProject": 2000,
+    "equalTimestampGroup": 20,
+    "openFraction": 0.25
+  },
+  "listStatements": 1,
+  "detailStatements": 1,
+  "cursorStatements": 1,
+  "listRows": 40,
+  "listPlan": [
+    {
+      "id": 7,
+      "parent": 0,
+      "notused": 100,
+      "detail": "SEARCH issues USING INDEX issue_project_state_created (project_id=? AND state=?)"
+    }
+  ],
+  "detailPlan": [
+    {
+      "id": 3,
+      "parent": 0,
+      "notused": 39,
+      "detail": "SEARCH issues USING INDEX issue_project_id (project_id=? AND id=?)"
+    }
+  ],
+  "cursorPlan": [
+    {
+      "id": 7,
+      "parent": 0,
+      "notused": 81,
+      "detail": "SEARCH issues USING INDEX issue_project_state_created (project_id=? AND state=? AND (created_at,id)<(?,?))"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "kind": "local indexed project-audit traversal; not deployed or plan-tier acceptance",
+  "dialect": "d1",
+  "events": 4000,
+  "pages": 39,
+  "pageSize": 100,
+  "traversalWallMs": 194.0551660000001,
+  "plan": [
+    {
+      "id": 7,
+      "parent": 0,
+      "notused": 51,
+      "detail": "SEARCH audit_events USING INDEX audit_project_order (project_id=? AND (created_at,id)<(?,?))"
+    }
+  ]
+}

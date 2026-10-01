@@ -1,0 +1,12 @@
+{
+  "name": "@hyperbug/plugin-sdk",
+  "version": "1.5.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@hyperbug/plugin-api": "workspace:*"
+  }
+}

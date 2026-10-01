@@ -141,3 +141,25 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Vim files
+*.swp
+*.swo
+*~
+*.un~
+
+# Local temporary files
+tmp/
+
+# macOS system
+.DS_Store
+_MACOSX
+
+# Windows system
+desktop.ini
+
+# HyperBug local runtime state
+.wrangler/
+.dev.vars
+.dev.vars.*
+.local/

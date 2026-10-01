@@ -1,0 +1,15 @@
+{
+  "name": "@hyperbug/api-cloudflare",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@hyperbug/config": "workspace:*",
+    "@hyperbug/database-d1": "workspace:*",
+    "@hyperbug/observability": "workspace:*",
+    "@hyperbug/security": "workspace:*",
+    "@hyperbug/server": "workspace:*",
+    "elysia": "1.4.30",
+    "libsodium-sumo": "0.8.4"
+  }
+}

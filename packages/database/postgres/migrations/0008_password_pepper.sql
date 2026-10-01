@@ -1,0 +1,2 @@
+ALTER TABLE "key_versions" DROP CONSTRAINT "key_purpose";--> statement-breakpoint
+ALTER TABLE "key_versions" ADD CONSTRAINT "key_purpose" CHECK ("key_versions"."purpose" IN ('token-hmac','blind-index','envelope-kek','password-pepper'));
