@@ -188,6 +188,12 @@ afterAll(async () => {
 it('manages the plugin registry with step-up on workerd/D1 and emits no plugin audit events', async () => {
   const db = await mf.getD1Database('DB');
 
+  // Acceptance: Core security is fully active with zero plugins installed —
+  // health, admission and the account surface answer normally before any
+  // plugin exists.
+  const zeroPluginReady = await call('/health/ready');
+  expect(zeroPluginReady.status).toBe(200);
+
   const enrolled = await post('/auth/bootstrap/enroll', {
     enrollmentCode,
     handle: 'rootadmin',

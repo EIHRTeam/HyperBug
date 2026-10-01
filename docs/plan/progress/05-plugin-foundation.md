@@ -6,13 +6,13 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress
+- Status: Complete (2026-10-01; 05.2a's audited-endpoint portion and 05.3d's configuration-audit portion stay suspended and unchecked as explicit deferred remainders — module 03/04 precedent)
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
-- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b–05.2f, 05.3a, 05.3b, 05.3c (05.2a stays unchecked with its audit portion suspended; 05.3d's non-audit scope is complete, its configuration-audit portion stays suspended).
-- Active/next checklist group: 05.3e (English extension-author quickstart stating that installing native code means trusting it); then the module acceptance evidence.
-- Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
+- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b–05.2f, 05.3a, 05.3b, 05.3c, 05.3e. Suspended and unchecked: 05.2a (audit portion) and 05.3d (configuration-audit portion).
+- Active/next checklist group: None — module complete; the suspended audit portions await the G1 governance decision.
+- Last updated: 2026-10-01 (module complete; acceptance evidence recorded).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
 
@@ -22,9 +22,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
 | 05.2 | Implement Core integration | Complete except 05.2a's suspended audit portion (non-audit scope done) | Session entries below |
-| 05.3 | Verify lifecycle and compatibility | In progress (05.3a–05.3c complete; 05.3d non-audit scope done, audit portion suspended) | Session entries below |
+| 05.3 | Verify lifecycle and compatibility | Complete (05.3a–05.3c, 05.3e; 05.3d non-audit scope done, audit portion suspended) | Session entries below |
 | 05.2 | Implement Core integration | Not started | None yet |
-| 05.3 | Verify lifecycle and compatibility | In progress (05.3a–05.3c complete; 05.3d non-audit scope done, audit portion suspended) | Session entries below |
+| 05.3 | Verify lifecycle and compatibility | Complete (05.3a–05.3c, 05.3e; 05.3d non-audit scope done, audit portion suspended) | Session entries below |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
@@ -306,3 +306,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.3e — the English extension-author quickstart.
 - Next-session cautions: 05.3d stays unchecked until its configuration-audit portion is resumed; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Batch 05.3e accepted; Module 05 complete
+
+- Scope and checklist IDs: 05.3e accepted. **Module 05 is Complete**: every non-suspended checklist item (05.1a–05.1e, 05.2b–05.2f, 05.3a–05.3c, 05.3e) is implemented and verified on both local profiles; 05.2a's audited-endpoint portion and 05.3d's configuration-audit portion stay suspended and unchecked as explicit deferred remainders; 05.2a/05.3d non-audit scopes are complete.
+- Progress: The English extension-author quickstart (`docs/EXTENDING-PLUGINS.md`) opens with the required trust statement verbatim — "Installing a Native Plugin means trusting its code." — then walks the public SDK path: minimal plugin, lifecycle from the operator side, write-only secrets, bounded hooks and the external-service channels. The acceptance evidence is recorded in [05 validation evidence](../evidence/05-plugin-foundation-validation.md): the example plugin loads and participates in a bounded extension point and disables safely on both profiles, compatibility and negative-permission fixtures pass, and Core security stays active with zero plugins (asserted explicitly). The workerd plugin suite gained that zero-plugin readiness assertion before anything registers.
+- Change summary: Quickstart document, documentation indexes, zero-plugin acceptance assertion, acceptance-evidence file, checklist/status finalization.
+- Files/artifacts: `docs/EXTENDING-PLUGINS.md`; `docs/README.md`; `docs/plan/README.md`; `tests/workerd/plugin-route.test.ts`; `docs/plan/evidence/05-plugin-foundation-validation.md`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`.
+- Verification: Node 24.21.0 local — unit 186/186, contract 1/1, node 50/50, workerd 129/129 (zero-plugin assertion included), isolated PostgreSQL 18.6 69/69; lint/boundaries, typecheck matrix, format:check, docs build (secret/license scans unchanged in this batch, latest run 05.3a-c). Local/emulated evidence only.
+- Decisions and deviations: None new; the suspended audit portions follow the module 03/04 precedent of explicit deferred remainders.
+- Blockers/open questions: The G1 audit-governance decision (resume vs deferral+ADR) remains with the user and now covers this module's two suspended portions plus modules 06–09's.
+- Next actions: None for module 05. Awaiting user direction; module 06 is the next executable module but is not started here.
+- Next-session cautions: Do not resume the suspended audit portions implicitly; keep the root `SECURITY.md` draft uncommitted; migrations are at D1 0017 / PostgreSQL 0016 with no remote applications.
