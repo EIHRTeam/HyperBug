@@ -7,9 +7,9 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@hyperbug/domain": "workspace:*",
     "@hyperbug/application": "workspace:*",
+    "@hyperbug/domain": "workspace:*",
     "@hyperbug/security": "workspace:*",
-    "drizzle-orm": "0.45.2"
+    "drizzle-orm": "0.45.3"
   }
 }
