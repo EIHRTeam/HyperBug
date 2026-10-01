@@ -11,7 +11,7 @@ import {
 export const PLUGIN_SDK_PACKAGE = '@hyperbug/plugin-sdk' as const;
 
 /** Version of this package, independent of the Plugin API version. */
-export const PLUGIN_SDK_VERSION = '1.3.0' as const;
+export const PLUGIN_SDK_VERSION = '1.4.0' as const;
 
 /**
  * Declare a plugin. Throws with the manifest validation errors when the
@@ -100,4 +100,12 @@ export {
   isCapabilityGrant,
   isSignedPluginEvent,
   isWithinSignedEventFreshness,
+} from '@hyperbug/plugin-api';
+export {
+  PLUGIN_HOOK_POINTS,
+  type PluginHookPointDefinition,
+  type PluginHookPointName,
+  pluginHookPoint,
+  pluginMayOccupyPoint,
+  pointFailurePolicy,
 } from '@hyperbug/plugin-api';

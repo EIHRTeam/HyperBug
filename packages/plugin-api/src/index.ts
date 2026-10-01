@@ -81,3 +81,11 @@ export {
   isSignedPluginEvent,
   isWithinSignedEventFreshness,
 } from './external.ts';
+export {
+  PLUGIN_HOOK_POINTS,
+  type PluginHookPointDefinition,
+  type PluginHookPointName,
+  pluginHookPoint,
+  pluginMayOccupyPoint,
+  pointFailurePolicy,
+} from './extension-points.ts';

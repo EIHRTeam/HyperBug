@@ -894,3 +894,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 05.2c extension contracts with Core policy boundaries and the re-scoped fail-closed plugin-permission handling.
 - Next-session cautions: Migrations at D1 0016 / PostgreSQL 0015, apply only to authorized targets; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batch: extension-point catalog
+
+- Scope and checklist IDs: 05.2c accepted. Hold boundaries unchanged; module 09 not expanded.
+- Progress: PLUGIN-SPEC 1.5.0 §13 fixes the closed extension-point catalog — twelve points, sync restricted to the three security-critical verifications plus non-critical issue-metadata validation, payload versions Core-owned, per-capability policy boundaries, participation rules (capability declared, point exists, sync reserved for trusted-native), and forced fail-closed on security-critical points (03.3f re-scope). plugin-api 1.5.0 / sdk 1.4.0 carry the catalog.
+- Change summary: Extension-point module, re-exports, version bumps, specification chapter, 5 new tests.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — full matrix green (unit 165, contract 1, node 50, workerd 129, postgres 69; lint/typecheck/format/build/db:check/docs/scans).
+- Decisions and deviations: External plugins cannot occupy in-process sync points; async points are envelope-only until module 09.
+- Blockers/open questions: None new.
+- Next actions: 05.2d outbox envelope connection.
+- Next-session cautions: Keep the root `SECURITY.md` draft uncommitted.

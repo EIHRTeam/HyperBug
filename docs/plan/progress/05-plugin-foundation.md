@@ -10,8 +10,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
-- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
-- Active/next checklist group: 05.2c (extension contracts and the re-scoped fail-closed plugin-permission handling).
+- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b, 05.2c (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
+- Active/next checklist group: 05.2d (hook/event envelopes connected to the module-02 outbox model; no dispatch, no consumers).
 - Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
@@ -21,7 +21,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
-| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done — audit portion suspended; 05.2b complete) | Session entries below |
+| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done — audit suspended; 05.2b, 05.2c complete) | Session entries below |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 | 05.2 | Implement Core integration | Not started | None yet |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
@@ -196,3 +196,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.2c — extension contracts per capability with Core policy boundaries, including the fail-closed plugin-permission failure handling re-scoped from 03.3f.
 - Next-session cautions: Migrations are at D1 0016 / PostgreSQL 0015; local D1 has pending 0009+ and the isolated test D1 sits at 0011 — apply only against authorized targets. Keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Intended batch 05.2c (recorded before implementation)
+
+- Scope and checklist IDs: 05.2c — define authentication/SSO, CAPTCHA, notifications, issue actions/metadata, search, import/export, and settings extension contracts with their Core policy boundaries, including the fail-closed plugin-permission failure handling re-scoped from 03.3f (2026-09-30): a plugin-permission check that fails, times out or is unavailable denies without silently disabling verification. Planned: PLUGIN-SPEC §13 (extension-point catalog per capability: point ids, sync/async mode, payload version, security-critical classification with forced fail-closed, policy boundaries per capability) plus the catalog types/helpers in plugin-api and the point-policy table the runtime enforces. Module 09 boundary: async points only define envelopes; no dispatch, no consumers.
+- Progress: Starting now; entry recorded before implementation per protocol.
+- Change summary / Files / Verification: Pending.
+- Decisions and deviations: None yet.
+- Blockers/open questions: None.
+- Next actions: Implement, verify, update this entry.
+- Next-session cautions: None yet.
+
+### 2026-10-01 — Batch 05.2c accepted (extension-point catalog)
+
+- Scope and checklist IDs: 05.2c accepted — extension contracts for authentication/SSO, CAPTCHA, notifications, issue actions/metadata, search, import/export and settings with Core policy boundaries, including the fail-closed plugin-permission handling re-scoped from 03.3f.
+- Progress: PLUGIN-SPEC is at 1.5.0 with §13: the closed Core-owned extension-point catalog (`PLUGIN_HOOK_POINTS` in plugin-api 1.5.0, re-exported by sdk 1.4.0) — twelve points across the eight capability surfaces, modes fixed to the PERFORMANCE §48 minimum (the three security-critical verification points plus `issue-metadata:validate` are sync; everything else is async-envelope-only until module 09), payload versions owned by Core, per-capability policy boundaries (plugins supply mechanisms, never whether Core policy runs), and participation rules (`pluginMayOccupyPoint`): declared-capability requirement, unknown-point rejection, and in-process sync points reserved for trusted-native plugins. `pointFailurePolicy` forces fail-closed on every security-critical point regardless of declaration — the 03.3f re-scope's contract form: a failing, timing-out or unavailable check denies, never silently disabling verification.
+- Change summary: New `packages/plugin-api/src/extension-points.ts`, index/SDK re-exports, version bumps, PLUGIN-SPEC §13 + chapter-status row, 5 new catalog tests.
+- Files/artifacts: `packages/plugin-api/{package.json,src/extension-points.ts,src/identity.ts,src/index.ts}`; `packages/plugin-sdk/{package.json,src/index.ts}`; `tests/unit/plugin-extension-points.test.ts`; `docs/PLUGIN-SPEC.md`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`; `pnpm-lock.yaml`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 165/165, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build, db:check both dialects, docs build, secret and license scans all passed.
+- Decisions and deviations: `issue-metadata:validate` is sync but not security-critical (an invalid metadata check fails the request rather than denying a security decision); external plugins cannot occupy any in-process sync point — module 16's external sync needs arrive through §12 channels. Async points define envelopes only; module 09 is not expanded.
+- Blockers/open questions: None new.
+- Next actions: 05.2d — connect hook/event envelopes to module 02's existing outbox model (envelope writes only; no dispatch, no side-effect consumers).
+- Next-session cautions: The catalog is Core-owned; adding a point is a spec version bump. Keep the root `SECURITY.md` draft uncommitted.
