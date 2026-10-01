@@ -26,6 +26,9 @@ export const ROUTE_LABELS = [
   'project.read',
   'project.manage',
   'project.taxonomy',
+  'issue.read',
+  'issue.write',
+  'issue.triage',
   'proof',
 ] as const;
 

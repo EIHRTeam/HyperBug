@@ -10,9 +10,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 05 complete (2026-10-01; audit remainders closed by the parallel session in commit db90248).
 - Implementation started: Yes (2026-10-01).
-- Completed implementation checklist IDs: 06.1a, 06.1b.
-- Active/next checklist group: 06.2 (06.2a next: the Issue lifecycle on the module-02 repository).
-- Last updated: 2026-10-01 (06.1a + 06.1b accepted; step 06.1 delivered except 06.1c's suspended audit portion).
+- Completed implementation checklist IDs: 06.1a, 06.1b, 06.2a, 06.2b, 06.2d, 06.2e.
+- Active/next checklist group: 06.3 (06.3a comments next).
+- Last updated: 2026-10-01 (06.2 lifecycle accepted; 06.2c non-audit scope delivered, audit portion suspended).
 - Blocking issues discovered: None during planning; prerequisite completion is still required.
 - Evidence: Planning documents only; no implementation or runtime validation yet.
 
@@ -21,7 +21,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 06.1 | Implement project and taxonomy services | 06.1a/06.1b accepted 2026-10-01; 06.1c non-audit scope delivered, audit portion suspended | [06 batch entry](#2026-10-01--batch-061a--061b-accepted-project-and-taxonomy-services) |
-| 06.2 | Implement the Issue lifecycle | Not started | None yet |
+| 06.2 | Implement the Issue lifecycle | 06.2a/b/d/e accepted 2026-10-01; 06.2c non-audit scope delivered, audit portion suspended | [06.2 batch entry](#2026-10-01--batch-062-accepted-issue-lifecycle-triage-projections-cache-spec) |
 | 06.3 | Implement discussion and timeline | Not started | None yet |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
@@ -78,6 +78,18 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Module prerequisites and acceptance remain open.
 - Next actions: Keep Module 06 untouched during the feature hold.
 - Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-10-01 — Batch 06.2 accepted (issue lifecycle, triage, projections, cache spec)
+
+- Scope and checklist IDs: 06.2a, 06.2b, 06.2d and 06.2e accepted; 06.2c's non-audit scope accepted (atomic mutation/timeline/outbox writes, idempotency receipts, stable conflicts) while its audit portion stays suspended — the item stays unchecked. Intended batch recorded above before implementation.
+- Progress: The full issue lifecycle is live on both profiles. The module-02 repository contract grew taxonomy-bearing creation, six triage mutation operations (close/reopen/labels/assignees/type/milestone), batched relation hydration and moderation-aware reads; every mutation writes its aggregate row, timeline event and outbox row in one atomic operation with a 24-hour idempotency receipt, bumps the aggregate revision (the one-timeline-event-per-revision uniqueness makes the revision the event sequence), and treats a same-value set operation as a no-op without an event. Routes: create/list/detail/edit, close/reopen, and the four triage set operations, with `issue-create`-category rate admission on principal+project dimensions (provisional local budgets: principal 60/hour, project 1200/hour; production numbers stay a staging-milestone measurement), the Idempotency-Key header contract, own-content editing with the moderation lock, hidden/redacted rows visible only through `issue:moderate`, and list projections that exclude the Markdown body and hydrate relations in two bounded queries. The 06.2e cache-eligibility specification is recorded in API-CONVENTIONS: today everything stays no-store; only anonymous-public representations could ever become eligible, keyed and invalidated by the aggregate revision, with personalized/private/moderated classes permanently ineligible. No `issue.*` audit event exists (suspension respected, asserted in both route suites).
+- Change summary: Application contract extension (eight intents, cardinality bounds, per-operation validation); both repository adapters rewritten around the extended mutate core (D1 batch / PostgreSQL transaction) with in-transaction reference checks; `requireRate` on the bound admission (rate-only path for authenticated route classes); the issues server module; contract schemas; `IDEMPOTENCY_*`/`INVALID_CURSOR`/`ISSUE_*` error codes; eleven routes and three route labels; both roots and the fixture wired with the repository; route journeys on both profiles; API-CONVENTIONS documentation.
+- Files/artifacts: `packages/application/src/index.ts`; `packages/database/d1/src/index.ts`; `packages/database/postgres/src/index.ts`; `packages/server/src/{issues,sensitive-admission,errors,index}.ts`; `packages/contracts/src/index.ts`; `packages/observability/src/index.ts`; `apps/api-node/src/{abuse-admission,index}.ts`; `apps/api-cloudflare/src/index.ts`; `tests/fixtures/{account-worker,database-worker,repository-contract,migration-contract}.ts`; `tests/workerd/{repository,issue-route}.test.ts`; `tests/postgres/issue-route.test.ts`; `tests/unit/pagination.test.ts`; `docs/API-CONVENTIONS.md`; `docs/plan/modules/06-issue-core.md`; this record.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check (296 files), unit 197/197, contract 1/1, node 50/50, workerd 131/131 (including the 13-event lifecycle journey with timeline/outbox/receipt assertions), isolated PostgreSQL 18.6 71/71, build, db:check both dialects, docs build, secret and license scans all passed. Local/emulated only. Corrections during the batch: the create guard target must be the project (not an issue-typed id), a replayed idempotent create answers with the original aggregate id, and same-value set operations were verified as no-ops rather than revision bumps.
+- Decisions and deviations: (1) Every mutation bumps the aggregate revision — required by the schema's one-timeline-event-per-revision uniqueness and it makes the revision a total event order. (2) Same-value set operations are no-ops without events (no receipt is written; the speculative insert rolls back). (3) Idempotency-Key is optional: without the header a one-shot receipt still participates in the atomic write but no retry can match it. (4) `issue:read` list collections target the project (`project:read`) while detail reads target the issue; hidden rows additionally require `issue:moderate`. (5) Close only from open and reopen only from closed answer `REVISION_CONFLICT` — stable conflicts, no arbitrary state machine. (6) The rate-only `requireRate` admission path carries authenticated route classes without a CAPTCHA leg; CAPTCHA remains tied to the account surfaces.
+- Blockers/open questions: None new. The G1 audit-governance decision remains with the user.
+- Next actions: 06.3a/06.3b — comments with permalinks/history/moderation and Issue/Comment reactions, then the merged timeline (06.3c) and bounds/events (06.3d), contracts (06.3e).
+- Next-session cautions: 06.2c's audit portion must not resume implicitly; the repository's mutate core is shared by all eight operations — extend it, do not fork it; the provisional rate budgets are local-only numbers.
 
 ### 2026-10-01 — Batch 06.1a + 06.1b accepted (project and taxonomy services)
 

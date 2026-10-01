@@ -16,12 +16,19 @@ import {
   issuePageOptions,
   issuePage,
   replayReceipt,
+  type CloseIssueIntent,
   type CreateIssueIntent,
   type EditIssueIntent,
   type IssueListQuery,
+  type IssueMutationIntent,
+  type IssueOperation,
   type IssueRepository,
   type MutationIdentity,
   type MutationOutcome,
+  type SetIssueAssigneesIntent,
+  type SetIssueLabelsIntent,
+  type SetIssueMilestoneIntent,
+  type SetIssueTypeIntent,
 } from '@hyperbug/application';
 interface IssueRow {
   id: string;
@@ -89,9 +96,34 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
       intent,
     );
   }
+
+  /** The mutation snapshot every operation's receipt replays. */
+  function outcomeOf(row: IssueRow): MutationOutcome {
+    return {
+      result: {
+        id: row.id,
+        projectId: row.project_id,
+        number: row.number,
+        revision: Number(row.revision),
+        createdAt: Number(row.created_at),
+        updatedAt: Number(row.updated_at),
+      },
+      replayed: false,
+    };
+  }
+
+  /**
+   * One atomic mutation per operation: the receipt insert, the conditional
+   * aggregate write, the relation writes, the timeline event at the new
+   * aggregate revision and the outbox row commit together, or nothing does.
+   * Idempotent no-ops (same value already stored) return the current
+   * snapshot without an event. Reference checks run inside the transaction;
+   * taxonomy references must exist in this project, assignees must hold a
+   * current project role, and a selected issue type must be enabled.
+   */
   async function mutate(
-    intent: CreateIssueIntent | EditIssueIntent,
-    operation: 'issue.create' | 'issue.edit',
+    intent: IssueMutationIntent,
+    operation: IssueOperation,
   ): Promise<MutationOutcome> {
     validateIntent(intent, operation);
     const replay = await receipt(pool, intent, operation);
@@ -112,31 +144,46 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
           intent.expiresAt,
         ],
       );
+      const project = await db.query<{ status: string }>(
+        'SELECT status FROM projects WHERE id = $1',
+        [intent.projectId],
+      );
+      if (project.rows[0]?.status !== 'active')
+        throw new DomainError('NOT_FOUND');
       let row: IssueRow | undefined;
-      if ('expectedRevision' in intent) {
-        const updated = await db.query<IssueRow>(
-          `UPDATE issues SET title = $1, body = $2, revision = revision + 1, updated_at = greatest(updated_at, $3), last_mutation_id = $4 WHERE project_id = $5 AND id = $6 AND revision = $7 AND EXISTS (SELECT 1 FROM projects WHERE id = $5 AND status = 'active') RETURNING ${issueColumns}`,
-          [
-            intent.title,
-            intent.body,
-            intent.now,
-            intent.mutationId,
-            intent.projectId,
-            intent.id,
-            intent.expectedRevision,
-          ],
-        );
-        row = updated.rows[0];
-        if (!row) {
-          const existing = await db.query(
-            'SELECT id FROM issues WHERE project_id = $1 AND id = $2',
-            [intent.projectId, intent.id],
+      let metadata: Record<string, unknown> = { v: 1 };
+      if (operation === 'issue.create') {
+        const create = intent as CreateIssueIntent;
+        if (create.typeId !== null) {
+          const type = await db.query(
+            'SELECT 1 FROM issue_types WHERE project_id = $1 AND id = $2 AND enabled = 1',
+            [create.projectId, create.typeId],
           );
-          throw new DomainError(
-            existing.rowCount ? 'REVISION_CONFLICT' : 'NOT_FOUND',
-          );
+          if (type.rowCount === 0) throw new DomainError('INVALID_INPUT');
         }
-      } else {
+        if (create.milestoneId !== null) {
+          const milestone = await db.query(
+            'SELECT 1 FROM milestones WHERE project_id = $1 AND id = $2',
+            [create.projectId, create.milestoneId],
+          );
+          if (milestone.rowCount === 0) throw new DomainError('INVALID_INPUT');
+        }
+        if (create.labelIds.length > 0) {
+          const labels = await db.query<{ id: string }>(
+            'SELECT id FROM labels WHERE project_id = $1 AND id = ANY($2::uuid[])',
+            [create.projectId, [...create.labelIds]],
+          );
+          if (labels.rowCount !== create.labelIds.length)
+            throw new DomainError('INVALID_INPUT');
+        }
+        if (create.assigneeIds.length > 0) {
+          const members = await db.query<{ principal_id: string }>(
+            'SELECT principal_id FROM project_roles WHERE project_id = $1 AND principal_id = ANY($2::uuid[])',
+            [create.projectId, [...create.assigneeIds]],
+          );
+          if (members.rowCount !== create.assigneeIds.length)
+            throw new DomainError('INVALID_INPUT');
+        }
         const allocated = await db.query<{ number: number }>(
           "UPDATE projects SET next_issue_number = next_issue_number + 1 WHERE id = $1 AND status = 'active' RETURNING next_issue_number - 1 AS number",
           [intent.projectId],
@@ -144,39 +191,227 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
         const number = allocated.rows[0]?.number;
         if (number === undefined) throw new DomainError('NOT_FOUND');
         const inserted = await db.query<IssueRow>(
-          `INSERT INTO issues (id, project_id, number, title, body, author_id, created_at, updated_at, last_mutation_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $7, $8) RETURNING ${issueColumns}`,
+          `INSERT INTO issues (id, project_id, number, title, body, type_id, milestone_id, author_id, created_at, updated_at, last_mutation_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10) RETURNING ${issueColumns}`,
           [
-            intent.id,
-            intent.projectId,
+            create.id,
+            create.projectId,
             number,
-            intent.title,
-            intent.body,
-            intent.principalId,
-            intent.now,
-            intent.mutationId,
+            create.title,
+            create.body,
+            create.typeId,
+            create.milestoneId,
+            create.principalId,
+            create.now,
+            create.mutationId,
           ],
         );
         row = inserted.rows[0];
+        // Sequential by design: one transaction client cannot run parallel
+        // statements, and the bounded cardinality (20 labels, 10 assignees)
+        // keeps the loop short.
+        for (const labelId of create.labelIds) {
+          // eslint-disable-next-line no-await-in-loop
+          await db.query(
+            'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES ($1, $2, $3)',
+            [create.projectId, create.id, labelId],
+          );
+        }
+        for (const assigneeId of create.assigneeIds) {
+          // eslint-disable-next-line no-await-in-loop
+          await db.query(
+            'INSERT INTO issue_assignees (project_id, issue_id, principal_id) VALUES ($1, $2, $3)',
+            [create.projectId, create.id, assigneeId],
+          );
+        }
+        metadata = { v: 1 };
+      } else {
+        const current = await db.query<IssueRow>(
+          `SELECT ${issueColumns} FROM issues WHERE project_id = $1 AND id = $2 FOR UPDATE`,
+          [intent.projectId, intent.id],
+        );
+        const existing = current.rows[0];
+        if (!existing) throw new DomainError('NOT_FOUND');
+        // validateIntent guarantees every non-create intent is conditional.
+        const conditional = intent as EditIssueIntent;
+        if (Number(existing.revision) !== conditional.expectedRevision)
+          throw new DomainError('REVISION_CONFLICT');
+        const sets =
+          operation === 'issue.labels' || operation === 'issue.assignees';
+        if (sets) {
+          const oldIds = (
+            await db.query<{ label_id: string } | { principal_id: string }>(
+              operation === 'issue.labels'
+                ? 'SELECT label_id FROM issue_labels WHERE project_id = $1 AND issue_id = $2'
+                : 'SELECT principal_id FROM issue_assignees WHERE project_id = $1 AND issue_id = $2',
+              [intent.projectId, intent.id],
+            )
+          ).rows.map((r) => ('label_id' in r ? r.label_id : r.principal_id));
+          const setIntent = intent as
+            | SetIssueLabelsIntent
+            | SetIssueAssigneesIntent;
+          const newIds = (
+            'labelIds' in setIntent ? setIntent.labelIds : setIntent.assigneeIds
+          ) as readonly string[];
+          const added = newIds.filter((id) => !oldIds.includes(id));
+          const removed = oldIds.filter((id) => !newIds.includes(id));
+          if (added.length === 0 && removed.length === 0) {
+            // No mutation: roll the speculative receipt back and return the
+            // current snapshot without an event.
+            await db.query('ROLLBACK');
+            return outcomeOf(existing);
+          }
+          if (operation === 'issue.labels') {
+            const labels = await db.query<{ id: string }>(
+              'SELECT id FROM labels WHERE project_id = $1 AND id = ANY($2::uuid[])',
+              [intent.projectId, [...newIds]],
+            );
+            if (labels.rowCount !== newIds.length)
+              throw new DomainError('INVALID_INPUT');
+          } else {
+            const members = await db.query<{ principal_id: string }>(
+              'SELECT principal_id FROM project_roles WHERE project_id = $1 AND principal_id = ANY($2::uuid[])',
+              [intent.projectId, [...newIds]],
+            );
+            if (members.rowCount !== newIds.length)
+              throw new DomainError('INVALID_INPUT');
+          }
+          metadata = { v: 1, added: added.length, removed: removed.length };
+        } else if (operation === 'issue.type') {
+          const typeIntent = intent as SetIssueTypeIntent;
+          if (typeIntent.typeId !== null) {
+            const type = await db.query(
+              'SELECT 1 FROM issue_types WHERE project_id = $1 AND id = $2 AND enabled = 1',
+              [intent.projectId, typeIntent.typeId],
+            );
+            if (type.rowCount === 0) throw new DomainError('INVALID_INPUT');
+          }
+          if ((existing.type_id ?? null) === typeIntent.typeId) {
+            await db.query('ROLLBACK');
+            return outcomeOf(existing);
+          }
+          metadata = { v: 1, typeId: typeIntent.typeId };
+        } else if (operation === 'issue.milestone') {
+          const milestoneIntent = intent as SetIssueMilestoneIntent;
+          if (milestoneIntent.milestoneId !== null) {
+            const milestone = await db.query(
+              'SELECT 1 FROM milestones WHERE project_id = $1 AND id = $2',
+              [intent.projectId, milestoneIntent.milestoneId],
+            );
+            if (milestone.rowCount === 0)
+              throw new DomainError('INVALID_INPUT');
+          }
+          if ((existing.milestone_id ?? null) === milestoneIntent.milestoneId) {
+            await db.query('ROLLBACK');
+            return outcomeOf(existing);
+          }
+          metadata = { v: 1, milestoneId: milestoneIntent.milestoneId };
+        } else if (operation === 'issue.close') {
+          if (existing.state !== 'open')
+            throw new DomainError('REVISION_CONFLICT');
+          metadata = { v: 1, reason: (intent as CloseIssueIntent).reason };
+        } else if (operation === 'issue.reopen') {
+          if (existing.state !== 'closed')
+            throw new DomainError('REVISION_CONFLICT');
+        }
+        const assignments: { text: string; values: unknown[] }[] = [];
+        if (operation === 'issue.edit') {
+          const edit = intent as EditIssueIntent;
+          assignments.push({
+            text: 'title = $1, body = $2',
+            values: [edit.title, edit.body],
+          });
+        } else if (operation === 'issue.close') {
+          const close = intent as CloseIssueIntent;
+          assignments.push({
+            text: "state = 'closed', close_reason = $1, closed_at = $2",
+            values: [close.reason, intent.now],
+          });
+        } else if (operation === 'issue.reopen') {
+          assignments.push({
+            text: "state = 'open', close_reason = NULL, closed_at = NULL",
+            values: [],
+          });
+        } else if (operation === 'issue.type') {
+          assignments.push({
+            text: 'type_id = $1',
+            values: [(intent as SetIssueTypeIntent).typeId],
+          });
+        } else if (operation === 'issue.milestone') {
+          assignments.push({
+            text: 'milestone_id = $1',
+            values: [(intent as SetIssueMilestoneIntent).milestoneId],
+          });
+        } else if (operation === 'issue.labels') {
+          assignments.push({ text: '', values: [] });
+        } else if (operation === 'issue.assignees') {
+          assignments.push({ text: '', values: [] });
+        }
+        const assignment = assignments[0];
+        const valueCount = assignment?.values.length ?? 0;
+        const setClause =
+          (assignment && assignment.text ? `${assignment.text}, ` : '') +
+          `revision = revision + 1, updated_at = GREATEST(updated_at, $${valueCount + 1}), last_mutation_id = $${valueCount + 2}`;
+        const updated = await db.query<IssueRow>(
+          `UPDATE issues SET ${setClause} WHERE project_id = $${valueCount + 3} AND id = $${valueCount + 4} AND revision = $${valueCount + 5} RETURNING ${issueColumns}`,
+          [
+            ...(assignment?.values ?? []),
+            intent.now,
+            intent.mutationId,
+            intent.projectId,
+            intent.id,
+            (intent as EditIssueIntent).expectedRevision,
+          ],
+        );
+        row = updated.rows[0];
+        if (!row) throw new DomainError('REVISION_CONFLICT');
+        if (operation === 'issue.labels') {
+          await db.query(
+            'DELETE FROM issue_labels WHERE project_id = $1 AND issue_id = $2',
+            [intent.projectId, intent.id],
+          );
+          // eslint-disable-next-line no-await-in-loop
+          for (const labelId of (intent as SetIssueLabelsIntent).labelIds) {
+            // eslint-disable-next-line no-await-in-loop
+            await db.query(
+              'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES ($1, $2, $3)',
+              [intent.projectId, intent.id, labelId],
+            );
+          }
+        } else if (operation === 'issue.assignees') {
+          await db.query(
+            'DELETE FROM issue_assignees WHERE project_id = $1 AND issue_id = $2',
+            [intent.projectId, intent.id],
+          );
+          for (const principalId of (intent as SetIssueAssigneesIntent)
+            .assigneeIds) {
+            // eslint-disable-next-line no-await-in-loop
+            await db.query(
+              'INSERT INTO issue_assignees (project_id, issue_id, principal_id) VALUES ($1, $2, $3)',
+              [intent.projectId, intent.id, principalId],
+            );
+          }
+        }
       }
       if (!row) throw new Error('Mutation returned no aggregate');
       const result = {
         id: row.id,
         projectId: row.project_id,
         number: row.number,
-        revision: row.revision,
+        revision: Number(row.revision),
         createdAt: Number(row.created_at),
         updatedAt: Number(row.updated_at),
       };
       await db.query(
-        "INSERT INTO timeline_events (id, project_id, issue_id, aggregate_revision, actor_id, action, created_at, metadata) VALUES ($1, $2, $3, $4, $5, $6, $7, '{}'::jsonb)",
+        'INSERT INTO timeline_events (id, project_id, issue_id, aggregate_revision, actor_id, action, created_at, metadata) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)',
         [
           intent.mutationId,
           intent.projectId,
           intent.id,
-          row.revision,
+          Number(row.revision),
           intent.principalId,
           operation,
           intent.now,
+          JSON.stringify(metadata),
         ],
       );
       if (intent.auditAction)
@@ -210,15 +445,9 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
       await db.query('COMMIT');
       return { result, replayed: false };
     } catch (error) {
-      await db.query('ROLLBACK');
+      await db.query('ROLLBACK').catch(() => {});
       const concurrentReplay = await receipt(db, intent, operation);
       if (concurrentReplay) return concurrentReplay;
-      const project = await db.query<{ status: string }>(
-        'SELECT status FROM projects WHERE id = $1',
-        [intent.projectId],
-      );
-      if (project.rows[0]?.status !== 'active')
-        throw new DomainError('NOT_FOUND');
       throw error;
     } finally {
       db.release();
@@ -227,11 +456,19 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
   return {
     createIssue: (intent) => mutate(intent, 'issue.create'),
     editIssue: (intent) => mutate(intent, 'issue.edit'),
-    async getIssue(projectId, id) {
+    closeIssue: (intent) => mutate(intent, 'issue.close'),
+    reopenIssue: (intent) => mutate(intent, 'issue.reopen'),
+    setIssueLabels: (intent) => mutate(intent, 'issue.labels'),
+    setIssueAssignees: (intent) => mutate(intent, 'issue.assignees'),
+    setIssueType: (intent) => mutate(intent, 'issue.type'),
+    setIssueMilestone: (intent) => mutate(intent, 'issue.milestone'),
+    async getIssue(projectId, id, options) {
       assertId(projectId);
       assertId(id);
+      const hidden =
+        options?.includeHidden === true ? '' : " AND moderation = 'visible'";
       const { rows } = await pool.query<IssueRow>(
-        `SELECT ${issueColumns} FROM issues WHERE project_id = $1 AND id = $2`,
+        `SELECT ${issueColumns} FROM issues WHERE project_id = $1 AND id = $2 AND deleted_at IS NULL${hidden}`,
         [projectId, id],
       );
       return rows[0] ? toIssue(rows[0]) : null;
@@ -239,7 +476,8 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
     async listIssues(query: IssueListQuery) {
       const { limit, cursor } = issuePageOptions(query);
       const values: (string | number)[] = [query.projectId];
-      let where = 'project_id = $1';
+      let where = 'project_id = $1 AND deleted_at IS NULL';
+      if (query.includeHidden !== true) where += " AND moderation = 'visible'";
       if (query.state !== undefined) {
         values.push(query.state);
         where += ` AND state = $${values.length}`;
@@ -254,6 +492,34 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
         values,
       );
       return issuePage(query, rows.map(toListItem));
+    },
+    async relations(projectId, issueIds) {
+      assertId(projectId);
+      if (issueIds.length === 0 || issueIds.length > 101)
+        throw new DomainError('INVALID_INPUT');
+      const labels = new Map<string, string[]>();
+      const assignees = new Map<string, string[]>();
+      for (const id of issueIds) {
+        assertId(id);
+        labels.set(id, []);
+        assignees.set(id, []);
+      }
+      const labelRows = await pool
+        .query<{ issue_id: string; label_id: string }>(
+          'SELECT issue_id, label_id FROM issue_labels WHERE project_id = $1 AND issue_id = ANY($2::uuid[])',
+          [projectId, [...issueIds]],
+        )
+        .then((result) => result.rows);
+      for (const row of labelRows) labels.get(row.issue_id)?.push(row.label_id);
+      const assigneeRows = await pool
+        .query<{ issue_id: string; principal_id: string }>(
+          'SELECT issue_id, principal_id FROM issue_assignees WHERE project_id = $1 AND issue_id = ANY($2::uuid[])',
+          [projectId, [...issueIds]],
+        )
+        .then((result) => result.rows);
+      for (const row of assigneeRows)
+        assignees.get(row.issue_id)?.push(row.principal_id);
+      return { labels, assignees };
     },
   };
 }

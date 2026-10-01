@@ -44,6 +44,10 @@ export function repositoryContract(get: () => RepositoryHarness) {
       expiresAt: now + 86400000,
       title: 'A bounded issue',
       body: 'Private body must not enter receipts or events.',
+      typeId: null,
+      milestoneId: null,
+      labelIds: [],
+      assigneeIds: [],
       auditAction: 'issue.created',
       ...overrides,
     });
@@ -120,7 +124,7 @@ export function repositoryContract(get: () => RepositoryHarness) {
         code: 'INVALID_INPUT',
       });
       await expect(
-        get().repository.editIssue(intent() as EditIssueIntent),
+        get().repository.editIssue(intent() as unknown as EditIssueIntent),
       ).rejects.toMatchObject({ code: 'INVALID_INPUT' });
       await expect(get().repository.editIssue(edit)).rejects.toMatchObject({
         code: 'INVALID_INPUT',

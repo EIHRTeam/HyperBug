@@ -36,10 +36,27 @@ export interface MutationIdentity {
   /** Required security audit action chosen by the authorized application service. */
   auditAction?: 'issue.created' | 'issue.edited';
 }
+/** Bounded taxonomy cardinality on every write path (06.3d bound, fixed now). */
+export const maxIssueLabels = 20;
+export const maxIssueAssignees = 10;
+const closeReasonValues = [
+  'completed',
+  'not_planned',
+  'duplicate',
+  'invalid',
+  'cannot_reproduce',
+] as const;
+export const closeReasons: readonly (typeof closeReasonValues)[number][] =
+  closeReasonValues;
+
 export interface CreateIssueIntent extends MutationIdentity {
   id: string;
   title: string;
   body: string;
+  typeId: string | null;
+  milestoneId: string | null;
+  labelIds: readonly string[];
+  assigneeIds: readonly string[];
 }
 export interface EditIssueIntent extends MutationIdentity {
   id: string;
@@ -47,6 +64,53 @@ export interface EditIssueIntent extends MutationIdentity {
   title: string;
   body: string;
 }
+export interface CloseIssueIntent extends MutationIdentity {
+  id: string;
+  expectedRevision: number;
+  reason: Issue['closeReason'];
+}
+export interface ReopenIssueIntent extends MutationIdentity {
+  id: string;
+  expectedRevision: number;
+}
+export interface SetIssueLabelsIntent extends MutationIdentity {
+  id: string;
+  expectedRevision: number;
+  labelIds: readonly string[];
+}
+export interface SetIssueAssigneesIntent extends MutationIdentity {
+  id: string;
+  expectedRevision: number;
+  assigneeIds: readonly string[];
+}
+export interface SetIssueTypeIntent extends MutationIdentity {
+  id: string;
+  expectedRevision: number;
+  typeId: string | null;
+}
+export interface SetIssueMilestoneIntent extends MutationIdentity {
+  id: string;
+  expectedRevision: number;
+  milestoneId: string | null;
+}
+export type IssueMutationIntent =
+  | CreateIssueIntent
+  | EditIssueIntent
+  | CloseIssueIntent
+  | ReopenIssueIntent
+  | SetIssueLabelsIntent
+  | SetIssueAssigneesIntent
+  | SetIssueTypeIntent
+  | SetIssueMilestoneIntent;
+export type IssueOperation =
+  | 'issue.create'
+  | 'issue.edit'
+  | 'issue.close'
+  | 'issue.reopen'
+  | 'issue.labels'
+  | 'issue.assignees'
+  | 'issue.type'
+  | 'issue.milestone';
 export interface MutationOutcome {
   result: MutationResult;
   replayed: boolean;
@@ -56,25 +120,63 @@ export interface IssueListQuery {
   state?: IssueState;
   limit?: number;
   after?: string;
+  /** Moderators only: hidden/redacted issues otherwise never leave the store. */
+  includeHidden?: boolean;
 }
 export interface IssuePage {
   items: IssueListItem[];
   nextCursor: string | null;
 }
+/** Batched per-issue relations for one page; never one query per item. */
+export interface IssueRelations {
+  readonly labels: ReadonlyMap<string, readonly string[]>;
+  readonly assignees: ReadonlyMap<string, readonly string[]>;
+}
 export interface IssueRepository {
   createIssue(intent: CreateIssueIntent): Promise<MutationOutcome>;
   editIssue(intent: EditIssueIntent): Promise<MutationOutcome>;
-  getIssue(projectId: string, id: string): Promise<Issue | null>;
+  closeIssue(intent: CloseIssueIntent): Promise<MutationOutcome>;
+  reopenIssue(intent: ReopenIssueIntent): Promise<MutationOutcome>;
+  setIssueLabels(intent: SetIssueLabelsIntent): Promise<MutationOutcome>;
+  setIssueAssignees(intent: SetIssueAssigneesIntent): Promise<MutationOutcome>;
+  setIssueType(intent: SetIssueTypeIntent): Promise<MutationOutcome>;
+  setIssueMilestone(intent: SetIssueMilestoneIntent): Promise<MutationOutcome>;
+  /** One issue read; hidden/redacted rows return null unless included. */
+  getIssue(
+    projectId: string,
+    id: string,
+    options?: { includeHidden?: boolean },
+  ): Promise<Issue | null>;
   listIssues(query: IssueListQuery): Promise<IssuePage>;
+  /** Labels and assignees for at most one page of issues, in two queries. */
+  relations(
+    projectId: string,
+    issueIds: readonly string[],
+  ): Promise<IssueRelations>;
+}
+
+function checkedIdList(
+  values: readonly string[],
+  maximum: number,
+): readonly string[] {
+  if (!Array.isArray(values) || values.length > maximum)
+    throw new DomainError('INVALID_INPUT');
+  const seen = new Set<string>();
+  for (const value of values) {
+    assertId(value);
+    if (seen.has(value)) throw new DomainError('INVALID_INPUT');
+    seen.add(value);
+  }
+  return values;
 }
 
 export function validateIntent(
-  intent: CreateIssueIntent | EditIssueIntent,
-  operation: 'issue.create' | 'issue.edit' = 'expectedRevision' in intent
-    ? 'issue.edit'
-    : 'issue.create',
+  intent: IssueMutationIntent,
+  operation: IssueOperation,
 ) {
-  if ('expectedRevision' in intent !== (operation === 'issue.edit'))
+  const conditional =
+    'expectedRevision' in intent && intent.expectedRevision !== undefined;
+  if (conditional === (operation === 'issue.create'))
     throw new DomainError('INVALID_INPUT');
   for (const id of [
     intent.id,
@@ -102,8 +204,58 @@ export function validateIntent(
       (operation === 'issue.create' ? 'issue.created' : 'issue.edited')
   )
     throw new DomainError('INVALID_INPUT');
-  validateContent(intent.title, intent.body);
-  if ('expectedRevision' in intent) assertRevision(intent.expectedRevision);
+  switch (operation) {
+    case 'issue.create':
+    case 'issue.edit': {
+      const typed = intent as CreateIssueIntent | EditIssueIntent;
+      validateContent(typed.title, typed.body);
+      if (operation === 'issue.create') {
+        const create = typed as CreateIssueIntent;
+        if (create.typeId !== null) assertId(create.typeId);
+        if (create.milestoneId !== null) assertId(create.milestoneId);
+        checkedIdList(create.labelIds, maxIssueLabels);
+        checkedIdList(create.assigneeIds, maxIssueAssignees);
+      } else {
+        assertRevision((typed as EditIssueIntent).expectedRevision);
+      }
+      break;
+    }
+    case 'issue.close': {
+      const close = intent as CloseIssueIntent;
+      assertRevision(close.expectedRevision);
+      if (close.reason === null || !closeReasonValues.includes(close.reason))
+        throw new DomainError('INVALID_INPUT');
+      break;
+    }
+    case 'issue.reopen': {
+      assertRevision((intent as ReopenIssueIntent).expectedRevision);
+      break;
+    }
+    case 'issue.labels': {
+      const labels = intent as SetIssueLabelsIntent;
+      assertRevision(labels.expectedRevision);
+      checkedIdList(labels.labelIds, maxIssueLabels);
+      break;
+    }
+    case 'issue.assignees': {
+      const assignees = intent as SetIssueAssigneesIntent;
+      assertRevision(assignees.expectedRevision);
+      checkedIdList(assignees.assigneeIds, maxIssueAssignees);
+      break;
+    }
+    case 'issue.type': {
+      const typed = intent as SetIssueTypeIntent;
+      assertRevision(typed.expectedRevision);
+      if (typed.typeId !== null) assertId(typed.typeId);
+      break;
+    }
+    case 'issue.milestone': {
+      const typed = intent as SetIssueMilestoneIntent;
+      assertRevision(typed.expectedRevision);
+      if (typed.milestoneId !== null) assertId(typed.milestoneId);
+      break;
+    }
+  }
 }
 
 interface IssueCursor {

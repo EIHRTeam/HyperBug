@@ -47,6 +47,16 @@ import {
   MilestoneUpdateRequestSchema,
   MilestoneListSchema,
   MilestoneDocumentSchema,
+  IssueDocumentSchema,
+  IssuePageSchema,
+  CreateIssueRequestSchema,
+  EditIssueRequestSchema,
+  IssueCloseRequestSchema,
+  IssueRevisionRequestSchema,
+  IssueSetLabelsRequestSchema,
+  IssueSetAssigneesRequestSchema,
+  IssueSetTypeRequestSchema,
+  IssueSetMilestoneRequestSchema,
   PluginListSchema,
   PluginRecordSchema,
   PluginSummarySchema,
@@ -86,6 +96,16 @@ import {
   type MilestoneUpdateRequest,
   type MilestoneList,
   type MilestoneDocument,
+  type IssueDocument,
+  type IssuePage,
+  type CreateIssueRequest,
+  type EditIssueRequest,
+  type IssueCloseRequest,
+  type IssueRevisionRequest,
+  type IssueSetLabelsRequest,
+  type IssueSetAssigneesRequest,
+  type IssueSetTypeRequest,
+  type IssueSetMilestoneRequest,
   type PluginList,
   type PluginRecord,
   type PluginSummary,
@@ -102,6 +122,7 @@ import type {
   OAuthCodeStore,
   ProjectRoleStore,
   ProjectStore,
+  IssueRepository,
   StaffEnrollmentStore,
   TaxonomyStore,
 } from '@hyperbug/application';
@@ -176,6 +197,19 @@ import {
   type ProjectContext,
 } from './projects.ts';
 import {
+  closeIssue,
+  createIssue,
+  editIssue,
+  listIssues,
+  readIssue,
+  reopenIssue,
+  setIssueAssignees,
+  setIssueLabels,
+  setIssueMilestone,
+  setIssueType,
+  type IssueContext,
+} from './issues.ts';
+import {
   createIssueType,
   createLabel,
   createMilestone,
@@ -246,6 +280,8 @@ export interface AppOptions {
   projectStore?: ProjectStore | null;
   /** Per-project label/type/milestone persistence. */
   taxonomyStore?: TaxonomyStore | null;
+  /** Project-scoped issue persistence (the module-02 repository). */
+  issueRepository?: IssueRepository | null;
   /** Deployment-level plugin registry persistence for plugin management. */
   pluginRegistry?: PluginRegistryStore | null;
   /** Namespaced plugin configuration persistence. */
@@ -364,6 +400,7 @@ export function createApp({
   projectRoleStore = null,
   projectStore = null,
   taxonomyStore = null,
+  issueRepository = null,
   pluginRegistry = null,
   pluginSettings = null,
   pluginEventOutbox = null,
@@ -701,6 +738,24 @@ export function createApp({
       infix: '/milestones',
     },
     {
+      label: 'issue.triage',
+      methods: ['POST', 'PUT'],
+      prefix: '/api/v1/projects/',
+      infix: '/issues/',
+    },
+    {
+      label: 'issue.write',
+      methods: ['POST', 'PATCH'],
+      prefix: '/api/v1/projects/',
+      infix: '/issues',
+    },
+    {
+      label: 'issue.read',
+      methods: ['GET'],
+      prefix: '/api/v1/projects/',
+      infix: '/issues',
+    },
+    {
       label: 'project.manage',
       methods: ['POST'],
       path: '/api/v1/projects',
@@ -784,6 +839,11 @@ export function createApp({
     administration,
     projects: projectStore,
     taxonomy: taxonomyStore,
+  };
+  const issueContext: IssueContext = {
+    ...projectContext,
+    issues: issueRepository,
+    admission: boundSensitiveAdmission,
   };
   return new Elysia({ adapter, aot: true, normalize: false })
     .decorate('captcha', captchaGate)
@@ -1539,6 +1599,269 @@ export function createApp({
         return null;
       },
       { body: t.Object({}, { additionalProperties: false }) },
+    )
+    .post(
+      '/api/v1/projects/:projectId/issues',
+      async ({ request, params, body, set }): Promise<IssueDocument> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        const view = await createIssue(
+          request,
+          issueContext,
+          projectId,
+          boundaryFor(request).requestId,
+          {
+            title: body.title,
+            body: body.body,
+            typeId: body.typeId,
+            milestoneId: body.milestoneId,
+            labelIds: body.labelIds,
+            assigneeIds: body.assigneeIds,
+          },
+        );
+        set.status = 201;
+        return view as IssueDocument;
+      },
+      {
+        body: t.Unsafe<CreateIssueRequest>(CreateIssueRequestSchema),
+        response: { 201: t.Unsafe<IssueDocument>(IssueDocumentSchema) },
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issues',
+      async ({ request, params, query }): Promise<IssuePage> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return (await listIssues(request, issueContext, projectId, {
+          state: query.state,
+          limit: query.limit === undefined ? undefined : Number(query.limit),
+          cursor: query.cursor,
+        })) as IssuePage;
+      },
+      {
+        query: t.Object(
+          {
+            state: t.Optional(
+              t.Union([t.Literal('open'), t.Literal('closed')]),
+            ),
+            limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
+            cursor: t.Optional(t.String({ maxLength: 1024 })),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<IssuePage>(IssuePageSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/issues/:issueId',
+      async ({ request, params }): Promise<IssueDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await readIssue(
+          request,
+          issueContext,
+          projectId,
+          issueId,
+        )) as IssueDocument;
+      },
+      { response: t.Unsafe<IssueDocument>(IssueDocumentSchema) },
+    )
+    .patch(
+      '/api/v1/projects/:projectId/issues/:issueId',
+      async ({ request, params, body }): Promise<IssueDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await editIssue(
+          request,
+          issueContext,
+          projectId,
+          issueId,
+          boundaryFor(request).requestId,
+          {
+            expectedRevision: body.expectedRevision,
+            title: body.title,
+            body: body.body,
+          },
+        )) as IssueDocument;
+      },
+      {
+        body: t.Unsafe<EditIssueRequest>(EditIssueRequestSchema),
+        response: t.Unsafe<IssueDocument>(IssueDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/issues/:issueId/close',
+      async ({ request, params, body }): Promise<IssueDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await closeIssue(
+          request,
+          issueContext,
+          projectId,
+          issueId,
+          boundaryFor(request).requestId,
+          { expectedRevision: body.expectedRevision, reason: body.reason },
+        )) as IssueDocument;
+      },
+      {
+        body: t.Unsafe<IssueCloseRequest>(IssueCloseRequestSchema),
+        response: t.Unsafe<IssueDocument>(IssueDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/issues/:issueId/reopen',
+      async ({ request, params, body }): Promise<IssueDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await reopenIssue(
+          request,
+          issueContext,
+          projectId,
+          issueId,
+          boundaryFor(request).requestId,
+          { expectedRevision: body.expectedRevision },
+        )) as IssueDocument;
+      },
+      {
+        body: t.Unsafe<IssueRevisionRequest>(IssueRevisionRequestSchema),
+        response: t.Unsafe<IssueDocument>(IssueDocumentSchema),
+      },
+    )
+    .put(
+      '/api/v1/projects/:projectId/issues/:issueId/labels',
+      async ({ request, params, body }): Promise<IssueDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await setIssueLabels(
+          request,
+          issueContext,
+          projectId,
+          issueId,
+          boundaryFor(request).requestId,
+          { expectedRevision: body.expectedRevision, labelIds: body.labelIds },
+        )) as IssueDocument;
+      },
+      {
+        body: t.Unsafe<IssueSetLabelsRequest>(IssueSetLabelsRequestSchema),
+        response: t.Unsafe<IssueDocument>(IssueDocumentSchema),
+      },
+    )
+    .put(
+      '/api/v1/projects/:projectId/issues/:issueId/assignees',
+      async ({ request, params, body }): Promise<IssueDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await setIssueAssignees(
+          request,
+          issueContext,
+          projectId,
+          issueId,
+          boundaryFor(request).requestId,
+          {
+            expectedRevision: body.expectedRevision,
+            assigneeIds: body.assigneeIds,
+          },
+        )) as IssueDocument;
+      },
+      {
+        body: t.Unsafe<IssueSetAssigneesRequest>(
+          IssueSetAssigneesRequestSchema,
+        ),
+        response: t.Unsafe<IssueDocument>(IssueDocumentSchema),
+      },
+    )
+    .put(
+      '/api/v1/projects/:projectId/issues/:issueId/type',
+      async ({ request, params, body }): Promise<IssueDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await setIssueType(
+          request,
+          issueContext,
+          projectId,
+          issueId,
+          boundaryFor(request).requestId,
+          { expectedRevision: body.expectedRevision, typeId: body.typeId },
+        )) as IssueDocument;
+      },
+      {
+        body: t.Unsafe<IssueSetTypeRequest>(IssueSetTypeRequestSchema),
+        response: t.Unsafe<IssueDocument>(IssueDocumentSchema),
+      },
+    )
+    .put(
+      '/api/v1/projects/:projectId/issues/:issueId/milestone',
+      async ({ request, params, body }): Promise<IssueDocument> => {
+        const { projectId, issueId } = params;
+        if (
+          projectId === undefined ||
+          !uuidPattern.test(projectId) ||
+          issueId === undefined ||
+          !uuidPattern.test(issueId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await setIssueMilestone(
+          request,
+          issueContext,
+          projectId,
+          issueId,
+          boundaryFor(request).requestId,
+          {
+            expectedRevision: body.expectedRevision,
+            milestoneId: body.milestoneId,
+          },
+        )) as IssueDocument;
+      },
+      {
+        body: t.Unsafe<IssueSetMilestoneRequest>(
+          IssueSetMilestoneRequestSchema,
+        ),
+        response: t.Unsafe<IssueDocument>(IssueDocumentSchema),
+      },
     )
     .get(
       '/api/v1/accounts/register',

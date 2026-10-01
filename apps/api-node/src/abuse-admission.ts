@@ -16,6 +16,7 @@ import {
   createPostgresProjectRoleStore,
   createPostgresProjectStore,
   createPostgresRateCounterStore,
+  createPostgresRepository,
   createPostgresStaffEnrollmentStore,
   createPostgresTaxonomyStore,
 } from '@hyperbug/database-postgres';
@@ -37,6 +38,7 @@ import type {
   PluginSettingsStore,
   ProjectRoleStore,
   ProjectStore,
+  IssueRepository,
   StaffEnrollmentStore,
   TaxonomyStore,
 } from '@hyperbug/application';
@@ -68,6 +70,7 @@ export interface NodeAbuseAdmission {
   readonly oauthCodeStore: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   readonly projectRoleStore: ProjectRoleStore | null;
   readonly projectStore: ProjectStore | null;
+  readonly issueRepository: IssueRepository | null;
   readonly taxonomyStore: TaxonomyStore | null;
   readonly pluginRegistryStore: PluginRegistryStore | null;
   readonly pluginSettingsStore: PluginSettingsStore | null;
@@ -118,6 +121,7 @@ export function configureNodeAbuseAdmission(
       oauthCodeStore: null,
       projectRoleStore: null,
       projectStore: null,
+      issueRepository: null,
       taxonomyStore: null,
       pluginRegistryStore: null,
       pluginSettingsStore: null,
@@ -241,6 +245,7 @@ export function configureNodeAbuseAdmission(
     oauthCodeStore: createPostgresOAuthStores(pool),
     projectRoleStore: createPostgresProjectRoleStore(pool),
     projectStore: createPostgresProjectStore(pool),
+    issueRepository: createPostgresRepository(pool),
     taxonomyStore: createPostgresTaxonomyStore(pool),
     pluginRegistryStore: createPostgresPluginRegistryStore(pool),
     pluginSettingsStore: createPostgresPluginSettingsStore(pool),

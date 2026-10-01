@@ -88,7 +88,9 @@ beforeAll(async () => {
       | 'lockoutGet'
       | 'lockoutFailure'
       | 'lockoutClear'
-      | 'lockoutPurge',
+      | 'lockoutPurge'
+      | 'mutateIssue'
+      | 'relations',
     input: unknown,
   ): Promise<T> {
     const response = await fetch(base, {
@@ -148,8 +150,23 @@ beforeAll(async () => {
   const repository: IssueRepository = {
     createIssue: (input) => call('createIssue', input),
     editIssue: (input) => call('editIssue', input),
-    getIssue: (projectId, id) => call('getIssue', { projectId, id }),
+    closeIssue: (input) =>
+      call('mutateIssue', { operation: 'close', intent: input }),
+    reopenIssue: (input) =>
+      call('mutateIssue', { operation: 'reopen', intent: input }),
+    setIssueLabels: (input) =>
+      call('mutateIssue', { operation: 'labels', intent: input }),
+    setIssueAssignees: (input) =>
+      call('mutateIssue', { operation: 'assignees', intent: input }),
+    setIssueType: (input) =>
+      call('mutateIssue', { operation: 'type', intent: input }),
+    setIssueMilestone: (input) =>
+      call('mutateIssue', { operation: 'milestone', intent: input }),
+    getIssue: (projectId, id, options) =>
+      call('getIssue', { projectId, id, options }),
     listIssues: (input) => call('listIssues', input),
+    relations: (projectId, issueIds) =>
+      call('relations', { projectId, issueIds: [...issueIds] }),
   };
   const migrations = await migrationStatements('d1');
   const foundation = migrations[0];

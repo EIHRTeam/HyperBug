@@ -46,6 +46,17 @@ const failures = {
     409,
     'The resource was changed concurrently. Retry with the current revision.',
   ],
+  IDEMPOTENCY_CONFLICT: [
+    409,
+    'The idempotency key was reused with a different request payload.',
+  ],
+  IDEMPOTENCY_EXPIRED: [
+    409,
+    'The idempotency receipt has expired. Use a new key.',
+  ],
+  INVALID_CURSOR: [400, 'The pagination cursor is invalid.'],
+  ISSUE_INVALID: [400, 'The issue request is invalid.'],
+  ISSUE_UNAVAILABLE: [503, 'The issue service is unavailable.'],
   PROJECT_INVALID: [400, 'The project request is invalid.'],
   PROJECT_CONFLICT: [409, 'The project slug is already in use.'],
   PROJECT_UNAVAILABLE: [503, 'The project service is unavailable.'],

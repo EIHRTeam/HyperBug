@@ -3,6 +3,7 @@ import {
   issuePage,
   issuePageOptions,
   validateIntent,
+  type EditIssueIntent,
 } from '@hyperbug/application';
 import type { Issue } from '@hyperbug/domain';
 const projectId = '00000000-0000-4000-8000-000000000001';
@@ -69,16 +70,21 @@ describe('bounded versioned pagination', () => {
       now: 1000,
       expiresAt: 2000,
       requestId: projectId,
+      labelIds: [],
+      assigneeIds: [],
     };
-    expect(() => validateIntent(intent)).not.toThrow();
-    expect(() => validateIntent({ ...intent, title: '  ' })).toThrow(
-      'INVALID_INPUT',
-    );
-    expect(() => validateIntent({ ...intent, expiresAt: 1000 })).toThrow(
-      'INVALID_INPUT',
-    );
-    expect(() => validateIntent({ ...intent, expectedRevision: 0 })).toThrow(
-      'INVALID_INPUT',
-    );
+    expect(() => validateIntent(intent, 'issue.create')).not.toThrow();
+    expect(() =>
+      validateIntent({ ...intent, title: '  ' }, 'issue.create'),
+    ).toThrow('INVALID_INPUT');
+    expect(() =>
+      validateIntent({ ...intent, expiresAt: 1000 }, 'issue.create'),
+    ).toThrow('INVALID_INPUT');
+    expect(() =>
+      validateIntent(
+        { ...intent, expectedRevision: 0 } as unknown as EditIssueIntent,
+        'issue.edit',
+      ),
+    ).toThrow('INVALID_INPUT');
   });
 });

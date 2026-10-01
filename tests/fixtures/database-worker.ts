@@ -43,8 +43,32 @@ type Message =
   | { method: 'registryGet'; input: string }
   | { method: 'createIssue'; input: CreateIssueIntent }
   | { method: 'editIssue'; input: EditIssueIntent }
-  | { method: 'getIssue'; input: { projectId: string; id: string } }
+  | {
+      method: 'mutateIssue';
+      input: {
+        operation:
+          | 'close'
+          | 'reopen'
+          | 'labels'
+          | 'assignees'
+          | 'type'
+          | 'milestone';
+        intent: unknown;
+      };
+    }
+  | {
+      method: 'getIssue';
+      input: {
+        projectId: string;
+        id: string;
+        options?: { includeHidden?: boolean };
+      };
+    }
   | { method: 'listIssues'; input: IssueListQuery }
+  | {
+      method: 'relations';
+      input: { projectId: string; issueIds: string[] };
+    }
   | { method: 'rateIncrement'; input: RateCounterWrite }
   | { method: 'ratePurge'; input: { nowMs: number; limit: number } }
   | { method: 'lockoutGet'; input: { subject: RateSubject; nowMs: number } }
@@ -145,10 +169,44 @@ export default {
         case 'editIssue':
           value = await repository.editIssue(message.input);
           break;
+        case 'mutateIssue': {
+          const intent = message.input.intent as EditIssueIntent;
+          switch (message.input.operation) {
+            case 'close':
+              value = await repository.closeIssue(intent as never);
+              break;
+            case 'reopen':
+              value = await repository.reopenIssue(intent as never);
+              break;
+            case 'labels':
+              value = await repository.setIssueLabels(intent as never);
+              break;
+            case 'assignees':
+              value = await repository.setIssueAssignees(intent as never);
+              break;
+            case 'type':
+              value = await repository.setIssueType(intent as never);
+              break;
+            case 'milestone':
+              value = await repository.setIssueMilestone(intent as never);
+              break;
+          }
+          break;
+        }
+        case 'relations':
+          value = await repository.relations(
+            message.input.projectId,
+            message.input.issueIds,
+          );
+          break;
         case 'getIssue':
           value = await repository.getIssue(
             message.input.projectId,
             message.input.id,
+            'options' in message.input
+              ? ((message.input as { options?: { includeHidden?: boolean } })
+                  .options ?? {})
+              : undefined,
           );
           break;
         case 'listIssues':

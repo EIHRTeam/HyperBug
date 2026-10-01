@@ -987,3 +987,14 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new; the G1 audit-governance decision remains with the user.
 - Next actions: 06.2a — the Issue lifecycle on the module-02 repository.
 - Next-session cautions: 06.1c's audit portion must not resume implicitly; taxonomy name keys are the uniqueness domain; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 06 batch: issue lifecycle, triage, projections, cache spec
+
+- Scope and checklist IDs: 06.2a, 06.2b, 06.2d and 06.2e accepted; 06.2c's non-audit scope accepted (atomic mutation/timeline/outbox writes, idempotency, stable conflicts) with its audit portion suspended and the item unchecked. Intended batch recorded in the module record before implementation.
+- Progress: The full issue lifecycle is live on both profiles — taxonomy-bearing creation with atomic project-local number allocation, list/detail with body-free list projections and two-query relation hydration, own-content editing with the moderation lock, close-with-reason/reopen and the four triage set operations with the one-event-per-revision timeline, 24-hour idempotency receipts honoring the Idempotency-Key header, `issue-create`-category rate admission on principal+project dimensions, and the 06.2e cache-eligibility specification (everything stays no-store; only anonymous-public representations could ever become eligible, revision-keyed).
+- Change summary: Module-02 repository contract extended to eight mutation operations and rewritten in both adapters around one atomic mutate core; rate-only admission path; issues server module, contracts, routes, labels; both roots and fixture wired; both-profile lifecycle journeys; API-CONVENTIONS documentation. See the [module 06 session entry](progress/06-issue-core.md) for the full file list.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 197/197, contract 1/1, node 50/50, workerd 131/131, isolated PostgreSQL 18.6 71/71, build, db:check both dialects, docs build, secret and license scans all passed. Local/emulated only.
+- Decisions and deviations: Revision = total event order (schema-mandated); same-value set operations are no-ops without events; Idempotency-Key optional with one-shot receipts; hidden rows require `issue:moderate`; close/reopen are single-step transitions answering stable conflicts; provisional rate budgets are local-only. Rationale in the module record.
+- Blockers/open questions: None new; the G1 audit-governance decision remains with the user.
+- Next actions: 06.3a/06.3b — comments and reactions.
+- Next-session cautions: 06.2c's audit portion must not resume implicitly; the shared mutate core serves all eight operations; keep the root `SECURITY.md` draft uncommitted.

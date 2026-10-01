@@ -34,6 +34,7 @@ import {
   createD1PluginSettingsStore,
   createD1ProjectRoleStore,
   createD1ProjectStore,
+  createD1Repository,
   createD1RateCounterStore,
   createD1StaffEnrollmentStore,
   createD1TaxonomyStore,
@@ -110,6 +111,7 @@ if (oauthClients.length > 0 && (!env.DB || !keyProvider))
 const oauthCodeStore = env.DB ? createD1OAuthStores(env.DB) : null;
 const projectRoleStore = env.DB ? createD1ProjectRoleStore(env.DB) : null;
 const projectStore = env.DB ? createD1ProjectStore(env.DB) : null;
+const issueRepository = env.DB ? createD1Repository(env.DB) : null;
 const taxonomyStore = env.DB ? createD1TaxonomyStore(env.DB) : null;
 const pluginRegistry = env.DB ? createD1PluginRegistryStore(env.DB) : null;
 const pluginSettings = env.DB ? createD1PluginSettingsStore(env.DB) : null;
@@ -258,6 +260,7 @@ const app = createApp({
   oauthCodeStore,
   projectRoleStore,
   projectStore,
+  issueRepository,
   taxonomyStore,
   pluginRegistry,
   pluginSettings,

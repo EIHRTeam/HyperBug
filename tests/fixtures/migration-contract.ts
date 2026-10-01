@@ -26,6 +26,10 @@ export async function seedPreviousSchema(harness: RepositoryHarness) {
     expiresAt: now + 86400000,
     title: 'Existing Issue',
     body: 'Existing Unicode content 🌱',
+    typeId: null,
+    milestoneId: null,
+    labelIds: [],
+    assigneeIds: [],
     auditAction: 'issue.created' as const,
   };
   // Frozen 0000 writer fixture: upgrades must not depend on current adapter columns.

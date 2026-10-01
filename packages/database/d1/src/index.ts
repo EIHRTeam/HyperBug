@@ -24,12 +24,19 @@ import {
   issuePageOptions,
   issuePage,
   replayReceipt,
+  type CloseIssueIntent,
   type CreateIssueIntent,
   type EditIssueIntent,
   type IssueListQuery,
+  type IssueMutationIntent,
+  type IssueOperation,
   type IssueRepository,
   type MutationIdentity,
   type MutationOutcome,
+  type SetIssueAssigneesIntent,
+  type SetIssueLabelsIntent,
+  type SetIssueMilestoneIntent,
+  type SetIssueTypeIntent,
 } from '@hyperbug/application';
 
 interface IssueRow {
@@ -95,13 +102,37 @@ export function createD1Repository(db: D1Database): IssueRepository {
       intent,
     );
   }
+
+  const placeholders = (count: number) =>
+    Array.from({ length: count }, () => '?').join(', ');
+
+  /**
+   * One atomic mutation per operation through a single D1 batch: the receipt
+   * insert, the conditional aggregate write, the relation writes, the
+   * timeline event at the new aggregate revision and the outbox row commit
+   * together. Reference checks run before the batch (taxonomy references in
+   * this project, assignees holding a current role, enabled issue types) and
+   * the schema's foreign keys remain the integrity backstop. Idempotent
+   * no-ops return the current snapshot without writing anything.
+   */
   async function mutate(
-    intent: CreateIssueIntent | EditIssueIntent,
-    operation: 'issue.create' | 'issue.edit',
+    intent: IssueMutationIntent,
+    operation: IssueOperation,
   ): Promise<MutationOutcome> {
     validateIntent(intent, operation);
     const replay = await receipt(intent, operation);
     if (replay) return replay;
+    const snapshotOf = (row: IssueRow): MutationOutcome => ({
+      result: {
+        id: row.id,
+        projectId: row.project_id,
+        number: row.number,
+        revision: row.revision,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      },
+      replayed: false,
+    });
     const statements = [
       db
         .prepare(
@@ -118,25 +149,50 @@ export function createD1Repository(db: D1Database): IssueRepository {
           intent.expiresAt,
         ),
     ];
-    if ('expectedRevision' in intent) {
-      statements.push(
-        db
+    let metadata = '{}';
+    if (operation === 'issue.create') {
+      const create = intent as CreateIssueIntent;
+      const project = await db
+        .prepare('SELECT status FROM projects WHERE id = ?')
+        .bind(create.projectId)
+        .first<{ status: string }>();
+      if (project?.status !== 'active') throw new DomainError('NOT_FOUND');
+      if (create.typeId !== null) {
+        const type = await db
           .prepare(
-            'UPDATE issues SET title = ?, body = ?, revision = revision + 1, updated_at = max(updated_at, ?), last_mutation_id = ? WHERE project_id = ? AND id = ? AND revision = ? AND EXISTS (SELECT 1 FROM projects WHERE id = ? AND status = ?)',
+            'SELECT 1 FROM issue_types WHERE project_id = ? AND id = ? AND enabled = 1',
           )
-          .bind(
-            intent.title,
-            intent.body,
-            intent.now,
-            intent.mutationId,
-            intent.projectId,
-            intent.id,
-            intent.expectedRevision,
-            intent.projectId,
-            'active',
-          ),
-      );
-    } else {
+          .bind(create.projectId, create.typeId)
+          .first();
+        if (type === null) throw new DomainError('INVALID_INPUT');
+      }
+      if (create.milestoneId !== null) {
+        const milestone = await db
+          .prepare('SELECT 1 FROM milestones WHERE project_id = ? AND id = ?')
+          .bind(create.projectId, create.milestoneId)
+          .first();
+        if (milestone === null) throw new DomainError('INVALID_INPUT');
+      }
+      if (create.labelIds.length > 0) {
+        const labels = await db
+          .prepare(
+            `SELECT COUNT(*) AS count FROM labels WHERE project_id = ? AND id IN (${placeholders(create.labelIds.length)})`,
+          )
+          .bind(create.projectId, ...create.labelIds)
+          .first<{ count: number }>();
+        if ((labels?.count ?? 0) !== create.labelIds.length)
+          throw new DomainError('INVALID_INPUT');
+      }
+      if (create.assigneeIds.length > 0) {
+        const members = await db
+          .prepare(
+            `SELECT COUNT(*) AS count FROM project_roles WHERE project_id = ? AND principal_id IN (${placeholders(create.assigneeIds.length)})`,
+          )
+          .bind(create.projectId, ...create.assigneeIds)
+          .first<{ count: number }>();
+        if ((members?.count ?? 0) !== create.assigneeIds.length)
+          throw new DomainError('INVALID_INPUT');
+      }
       statements.push(
         db
           .prepare(
@@ -147,18 +203,189 @@ export function createD1Repository(db: D1Database): IssueRepository {
       statements.push(
         db
           .prepare(
-            "INSERT INTO issues (id, project_id, number, title, body, author_id, created_at, updated_at, last_mutation_id) VALUES (?, ?, (SELECT next_issue_number - 1 FROM projects WHERE id = ? AND status = 'active'), ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO issues (id, project_id, number, title, body, type_id, milestone_id, author_id, created_at, updated_at, last_mutation_id) VALUES (?, ?, (SELECT next_issue_number - 1 FROM projects WHERE id = ? AND status = 'active'), ?, ?, ?, ?, ?, ?, ?, ?)",
           )
           .bind(
-            intent.id,
-            intent.projectId,
-            intent.projectId,
-            intent.title,
-            intent.body,
-            intent.principalId,
-            intent.now,
+            create.id,
+            create.projectId,
+            create.projectId,
+            create.title,
+            create.body,
+            create.typeId,
+            create.milestoneId,
+            create.principalId,
+            create.now,
+            create.now,
+            create.mutationId,
+          ),
+      );
+      for (const labelId of create.labelIds)
+        statements.push(
+          db
+            .prepare(
+              'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES (?, ?, ?)',
+            )
+            .bind(create.projectId, create.id, labelId),
+        );
+      for (const assigneeId of create.assigneeIds)
+        statements.push(
+          db
+            .prepare(
+              'INSERT INTO issue_assignees (project_id, issue_id, principal_id) VALUES (?, ?, ?)',
+            )
+            .bind(create.projectId, create.id, assigneeId),
+        );
+      metadata = '{}';
+    } else {
+      const conditional = intent as EditIssueIntent;
+      const project = await db
+        .prepare('SELECT status FROM projects WHERE id = ?')
+        .bind(intent.projectId)
+        .first<{ status: string }>();
+      if (project?.status !== 'active') throw new DomainError('NOT_FOUND');
+      const current = await db
+        .prepare(
+          `SELECT ${issueColumns} FROM issues WHERE project_id = ? AND id = ?`,
+        )
+        .bind(intent.projectId, intent.id)
+        .first<IssueRow>();
+      if (current === null) throw new DomainError('NOT_FOUND');
+      if (current.revision !== conditional.expectedRevision)
+        throw new DomainError('REVISION_CONFLICT');
+      if (operation === 'issue.labels' || operation === 'issue.assignees') {
+        const isLabels = operation === 'issue.labels';
+        const oldIds = (
+          await db
+            .prepare(
+              isLabels
+                ? 'SELECT label_id AS value FROM issue_labels WHERE project_id = ? AND issue_id = ?'
+                : 'SELECT principal_id AS value FROM issue_assignees WHERE project_id = ? AND issue_id = ?',
+            )
+            .bind(intent.projectId, intent.id)
+            .all<{ value: string }>()
+        ).results.map((row) => row.value);
+        const newIds = isLabels
+          ? (intent as SetIssueLabelsIntent).labelIds
+          : (intent as SetIssueAssigneesIntent).assigneeIds;
+        const added = newIds.filter((id) => !oldIds.includes(id));
+        const removed = oldIds.filter((id) => !newIds.includes(id));
+        if (added.length === 0 && removed.length === 0)
+          return snapshotOf(current);
+        if (newIds.length > 0) {
+          const reference = isLabels
+            ? await db
+                .prepare(
+                  `SELECT COUNT(*) AS count FROM labels WHERE project_id = ? AND id IN (${placeholders(newIds.length)})`,
+                )
+                .bind(intent.projectId, ...newIds)
+                .first<{ count: number }>()
+            : await db
+                .prepare(
+                  `SELECT COUNT(*) AS count FROM project_roles WHERE project_id = ? AND principal_id IN (${placeholders(newIds.length)})`,
+                )
+                .bind(intent.projectId, ...newIds)
+                .first<{ count: number }>();
+          if ((reference?.count ?? 0) !== newIds.length)
+            throw new DomainError('INVALID_INPUT');
+        }
+        metadata = JSON.stringify({
+          v: 1,
+          added: added.length,
+          removed: removed.length,
+        });
+        statements.push(
+          db
+            .prepare(
+              isLabels
+                ? 'DELETE FROM issue_labels WHERE project_id = ? AND issue_id = ?'
+                : 'DELETE FROM issue_assignees WHERE project_id = ? AND issue_id = ?',
+            )
+            .bind(intent.projectId, intent.id),
+        );
+        for (const value of newIds)
+          statements.push(
+            db
+              .prepare(
+                isLabels
+                  ? 'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES (?, ?, ?)'
+                  : 'INSERT INTO issue_assignees (project_id, issue_id, principal_id) VALUES (?, ?, ?)',
+              )
+              .bind(intent.projectId, intent.id, value),
+          );
+      } else if (operation === 'issue.type') {
+        const typeIntent = intent as SetIssueTypeIntent;
+        if (typeIntent.typeId !== null) {
+          const type = await db
+            .prepare(
+              'SELECT 1 FROM issue_types WHERE project_id = ? AND id = ? AND enabled = 1',
+            )
+            .bind(intent.projectId, typeIntent.typeId)
+            .first();
+          if (type === null) throw new DomainError('INVALID_INPUT');
+        }
+        if ((current.type_id ?? null) === typeIntent.typeId)
+          return snapshotOf(current);
+        metadata = JSON.stringify({ v: 1, typeId: typeIntent.typeId });
+      } else if (operation === 'issue.milestone') {
+        const milestoneIntent = intent as SetIssueMilestoneIntent;
+        if (milestoneIntent.milestoneId !== null) {
+          const milestone = await db
+            .prepare('SELECT 1 FROM milestones WHERE project_id = ? AND id = ?')
+            .bind(intent.projectId, milestoneIntent.milestoneId)
+            .first();
+          if (milestone === null) throw new DomainError('INVALID_INPUT');
+        }
+        if ((current.milestone_id ?? null) === milestoneIntent.milestoneId)
+          return snapshotOf(current);
+        metadata = JSON.stringify({
+          v: 1,
+          milestoneId: milestoneIntent.milestoneId,
+        });
+      } else if (operation === 'issue.close') {
+        if (current.state !== 'open')
+          throw new DomainError('REVISION_CONFLICT');
+        metadata = JSON.stringify({
+          v: 1,
+          reason: (intent as CloseIssueIntent).reason,
+        });
+      } else if (operation === 'issue.reopen') {
+        if (current.state !== 'closed')
+          throw new DomainError('REVISION_CONFLICT');
+        metadata = '{}';
+      }
+      let assignment = '';
+      const assignmentValues: unknown[] = [];
+      if (operation === 'issue.edit') {
+        const edit = intent as EditIssueIntent;
+        assignment = ', title = ?, body = ?';
+        assignmentValues.push(edit.title, edit.body);
+      } else if (operation === 'issue.close') {
+        const close = intent as CloseIssueIntent;
+        assignment = ', state = ?, close_reason = ?, closed_at = ?';
+        assignmentValues.push('closed', close.reason, intent.now);
+      } else if (operation === 'issue.reopen') {
+        assignment = ", state = 'open', close_reason = NULL, closed_at = NULL";
+      } else if (operation === 'issue.type') {
+        assignment = ', type_id = ?';
+        assignmentValues.push((intent as SetIssueTypeIntent).typeId);
+      } else if (operation === 'issue.milestone') {
+        assignment = ', milestone_id = ?';
+        assignmentValues.push((intent as SetIssueMilestoneIntent).milestoneId);
+      }
+      statements.push(
+        db
+          .prepare(
+            'UPDATE issues SET revision = revision + 1, updated_at = max(updated_at, ?), last_mutation_id = ?' +
+              assignment +
+              ' WHERE project_id = ? AND id = ? AND revision = ?',
+          )
+          .bind(
             intent.now,
             intent.mutationId,
+            ...assignmentValues,
+            intent.projectId,
+            intent.id,
+            conditional.expectedRevision,
           ),
       );
     }
@@ -167,7 +394,7 @@ export function createD1Repository(db: D1Database): IssueRepository {
     statements.push(
       db
         .prepare(
-          "INSERT INTO timeline_events (id, project_id, issue_id, aggregate_revision, actor_id, action, created_at, metadata) VALUES (?, ?, ?, (SELECT revision FROM issues WHERE project_id = ? AND id = ? AND last_mutation_id = ?), ?, ?, ?, '{}')",
+          'INSERT INTO timeline_events (id, project_id, issue_id, aggregate_revision, actor_id, action, created_at, metadata) VALUES (?, ?, ?, (SELECT revision FROM issues WHERE project_id = ? AND id = ? AND last_mutation_id = ?), ?, ?, ?, ?)',
         )
         .bind(
           intent.mutationId,
@@ -179,6 +406,7 @@ export function createD1Repository(db: D1Database): IssueRepository {
           intent.principalId,
           operation,
           intent.now,
+          metadata,
         ),
     );
     if (intent.auditAction)
@@ -231,22 +459,6 @@ export function createD1Repository(db: D1Database): IssueRepository {
       // A competing identical request may have won the unique receipt scope.
       const concurrentReplay = await receipt(intent, operation);
       if (concurrentReplay) return concurrentReplay;
-      const project = await db
-        .prepare('SELECT status FROM projects WHERE id = ?')
-        .bind(intent.projectId)
-        .first<{ status: string }>();
-      if (project?.status !== 'active') throw new DomainError('NOT_FOUND');
-      if (
-        'expectedRevision' in intent &&
-        error instanceof Error &&
-        error.message.includes('timeline_events.aggregate_revision')
-      ) {
-        const issue = await db
-          .prepare('SELECT id FROM issues WHERE project_id = ? AND id = ?')
-          .bind(intent.projectId, intent.id)
-          .first();
-        throw new DomainError(issue ? 'REVISION_CONFLICT' : 'NOT_FOUND');
-      }
       throw error;
     }
     const result = await receipt(intent, operation);
@@ -256,12 +468,20 @@ export function createD1Repository(db: D1Database): IssueRepository {
   return {
     createIssue: (intent) => mutate(intent, 'issue.create'),
     editIssue: (intent) => mutate(intent, 'issue.edit'),
-    async getIssue(projectId, id) {
+    closeIssue: (intent) => mutate(intent, 'issue.close'),
+    reopenIssue: (intent) => mutate(intent, 'issue.reopen'),
+    setIssueLabels: (intent) => mutate(intent, 'issue.labels'),
+    setIssueAssignees: (intent) => mutate(intent, 'issue.assignees'),
+    setIssueType: (intent) => mutate(intent, 'issue.type'),
+    setIssueMilestone: (intent) => mutate(intent, 'issue.milestone'),
+    async getIssue(projectId, id, options) {
       assertId(projectId);
       assertId(id);
+      const hidden =
+        options?.includeHidden === true ? '' : " AND moderation = 'visible'";
       const row = await db
         .prepare(
-          `SELECT ${issueColumns} FROM issues WHERE project_id = ? AND id = ?`,
+          `SELECT ${issueColumns} FROM issues WHERE project_id = ? AND id = ? AND deleted_at IS NULL${hidden}`,
         )
         .bind(projectId, id)
         .first<IssueRow>();
@@ -270,7 +490,8 @@ export function createD1Repository(db: D1Database): IssueRepository {
     async listIssues(query: IssueListQuery) {
       const { limit, cursor } = issuePageOptions(query);
       const values: (string | number)[] = [query.projectId];
-      let where = 'project_id = ?';
+      let where = 'project_id = ? AND deleted_at IS NULL';
+      if (query.includeHidden !== true) where += " AND moderation = 'visible'";
       if (query.state !== undefined) {
         where += ' AND state = ?';
         values.push(query.state);
@@ -286,6 +507,38 @@ export function createD1Repository(db: D1Database): IssueRepository {
         .bind(...values, limit + 1)
         .all<IssueRow>();
       return issuePage(query, rows.results.map(toListItem));
+    },
+    async relations(projectId, issueIds) {
+      assertId(projectId);
+      if (issueIds.length === 0 || issueIds.length > 101)
+        throw new DomainError('INVALID_INPUT');
+      const labels = new Map<string, string[]>();
+      const assignees = new Map<string, string[]>();
+      for (const id of issueIds) {
+        assertId(id);
+        labels.set(id, []);
+        assignees.set(id, []);
+      }
+      const labelRows = (
+        await db
+          .prepare(
+            `SELECT issue_id, label_id FROM issue_labels WHERE project_id = ? AND issue_id IN (${placeholders(issueIds.length)})`,
+          )
+          .bind(projectId, ...issueIds)
+          .all<{ issue_id: string; label_id: string }>()
+      ).results;
+      for (const row of labelRows) labels.get(row.issue_id)?.push(row.label_id);
+      const assigneeRows = (
+        await db
+          .prepare(
+            `SELECT issue_id, principal_id FROM issue_assignees WHERE project_id = ? AND issue_id IN (${placeholders(issueIds.length)})`,
+          )
+          .bind(projectId, ...issueIds)
+          .all<{ issue_id: string; principal_id: string }>()
+      ).results;
+      for (const row of assigneeRows)
+        assignees.get(row.issue_id)?.push(row.principal_id);
+      return { labels, assignees };
     },
   };
 }

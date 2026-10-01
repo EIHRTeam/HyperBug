@@ -60,6 +60,10 @@ export type BoundSensitiveActionIntent = Omit<
 
 export interface BoundSensitiveActionAdmission {
   require(intent: BoundSensitiveActionIntent): Promise<void>;
+  /** Rate admission without a CAPTCHA leg: authenticated route classes. */
+  requireRate(
+    intent: Omit<BoundSensitiveActionIntent, 'captchaAction'>,
+  ): Promise<void>;
   /** Shed registration requests before JSON parsing, using only trusted IP. */
   preparseRegistration(request: Request): Promise<void>;
   /** Shed login requests before JSON parsing, using only trusted IP. */
@@ -165,6 +169,9 @@ export function createBoundSensitiveActionAdmission(
       require: async () => {
         throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
       },
+      requireRate: async () => {
+        throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
+      },
       preparseRegistration: async () => {
         throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
       },
@@ -233,6 +240,42 @@ export function createBoundSensitiveActionAdmission(
       preparse(request, 'login', '/auth/session'),
     preparseLogout: (request: Request) =>
       preparse(request, 'login', '/auth/logout'),
+    requireRate: async (
+      intent: Omit<BoundSensitiveActionIntent, 'captchaAction'>,
+    ) => {
+      try {
+        if (!intent?.request || !Array.isArray(intent.checks))
+          throw new Error('Missing trusted request');
+        const needsIp = intent.checks.some(
+          (check) => check?.dimension === 'ip',
+        );
+        if (needsIp && !clientAddress)
+          throw new Error('Client address unavailable');
+        const ip = needsIp
+          ? await withDeadline(intent.signal, intent.timeoutMs, () =>
+              Promise.resolve(clientAddress!(intent.request)),
+            )
+          : null;
+        const checks = intent.checks.map((check) =>
+          check?.dimension === 'ip'
+            ? { ...check, canonicalSubject: ip! }
+            : check,
+        );
+        await requireSensitiveRateAdmission({
+          provider,
+          store,
+          ...(limiter !== undefined ? { limiter } : {}),
+          category: intent.category,
+          checks,
+          nowMs: intent.nowMs,
+          signal: intent.signal,
+          timeoutMs: intent.timeoutMs,
+        });
+      } catch (error) {
+        if (error instanceof RequestFailure) throw error;
+        throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
+      }
+    },
     require: async (intent: BoundSensitiveActionIntent) => {
       try {
         if (!intent?.request || !Array.isArray(intent.checks))

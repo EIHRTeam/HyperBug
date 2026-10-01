@@ -499,3 +499,141 @@ export const MilestoneListSchema = Type.Object(
   { additionalProperties: false },
 );
 export type MilestoneList = Static<typeof MilestoneListSchema>;
+
+const IssueModerationSchema = Type.Union([
+  Type.Literal('visible'),
+  Type.Literal('hidden'),
+  Type.Literal('redacted'),
+]);
+const IssueStateSchema = Type.Union([
+  Type.Literal('open'),
+  Type.Literal('closed'),
+]);
+const CloseReasonSchema = Type.Union([
+  Type.Literal('completed'),
+  Type.Literal('not_planned'),
+  Type.Literal('duplicate'),
+  Type.Literal('invalid'),
+  Type.Literal('cannot_reproduce'),
+]);
+const IssueBaseSchema = {
+  id: Type.String({ format: 'uuid' }),
+  projectId: Type.String({ format: 'uuid' }),
+  number: Type.Integer({ minimum: 1 }),
+  title: Type.String({ minLength: 1, maxLength: 200 }),
+  state: IssueStateSchema,
+  closeReason: Type.Union([Type.Null(), CloseReasonSchema]),
+  typeId: Type.Union([Type.Null(), Type.String({ format: 'uuid' })]),
+  milestoneId: Type.Union([Type.Null(), Type.String({ format: 'uuid' })]),
+  moderation: IssueModerationSchema,
+  authorId: Type.String({ format: 'uuid' }),
+  revision: Type.Integer({ minimum: 1 }),
+  createdAt: Type.String(canonicalInstant),
+  updatedAt: Type.String(canonicalInstant),
+  closedAt: Type.Union([Type.Null(), Type.String(canonicalInstant)]),
+  labelIds: Type.Array(Type.String({ format: 'uuid' }), { maxItems: 20 }),
+  assigneeIds: Type.Array(Type.String({ format: 'uuid' }), { maxItems: 10 }),
+};
+export const IssueDocumentSchema = Type.Object(
+  {
+    ...IssueBaseSchema,
+    body: Type.String({ maxLength: 32768 }),
+  },
+  { additionalProperties: false },
+);
+export type IssueDocument = Static<typeof IssueDocumentSchema>;
+export const IssueSummarySchema = Type.Object(
+  {
+    ...IssueBaseSchema,
+    /** List projections never carry the Markdown body. */
+    body: Type.Null(),
+  },
+  { additionalProperties: false },
+);
+export type IssueSummary = Static<typeof IssueSummarySchema>;
+export const IssuePageSchema = Type.Object(
+  {
+    items: Type.Array(IssueSummarySchema, { maxItems: 100 }),
+    nextCursor: Type.Union([Type.Null(), Type.String({ maxLength: 1024 })]),
+  },
+  { additionalProperties: false },
+);
+export type IssuePage = Static<typeof IssuePageSchema>;
+export const CreateIssueRequestSchema = Type.Object(
+  {
+    title: Type.String({ minLength: 1, maxLength: 200 }),
+    body: Type.String({ maxLength: 32768 }),
+    typeId: Type.Optional(
+      Type.Union([Type.Null(), Type.String({ format: 'uuid' })]),
+    ),
+    milestoneId: Type.Optional(
+      Type.Union([Type.Null(), Type.String({ format: 'uuid' })]),
+    ),
+    labelIds: Type.Optional(
+      Type.Array(Type.String({ format: 'uuid' }), { maxItems: 20 }),
+    ),
+    assigneeIds: Type.Optional(
+      Type.Array(Type.String({ format: 'uuid' }), { maxItems: 10 }),
+    ),
+  },
+  { additionalProperties: false },
+);
+export type CreateIssueRequest = Static<typeof CreateIssueRequestSchema>;
+export const EditIssueRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    title: Type.String({ minLength: 1, maxLength: 200 }),
+    body: Type.String({ maxLength: 32768 }),
+  },
+  { additionalProperties: false },
+);
+export type EditIssueRequest = Static<typeof EditIssueRequestSchema>;
+export const IssueCloseRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    reason: CloseReasonSchema,
+  },
+  { additionalProperties: false },
+);
+export type IssueCloseRequest = Static<typeof IssueCloseRequestSchema>;
+export const IssueRevisionRequestSchema = Type.Object(
+  { expectedRevision: Type.Integer({ minimum: 1 }) },
+  { additionalProperties: false },
+);
+export type IssueRevisionRequest = Static<typeof IssueRevisionRequestSchema>;
+export const IssueSetLabelsRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    labelIds: Type.Array(Type.String({ format: 'uuid' }), { maxItems: 20 }),
+  },
+  { additionalProperties: false },
+);
+export type IssueSetLabelsRequest = Static<typeof IssueSetLabelsRequestSchema>;
+export const IssueSetAssigneesRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    assigneeIds: Type.Array(Type.String({ format: 'uuid' }), { maxItems: 10 }),
+  },
+  { additionalProperties: false },
+);
+export type IssueSetAssigneesRequest = Static<
+  typeof IssueSetAssigneesRequestSchema
+>;
+export const IssueSetTypeRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    typeId: Type.Union([Type.Null(), Type.String({ format: 'uuid' })]),
+  },
+  { additionalProperties: false },
+);
+export type IssueSetTypeRequest = Static<typeof IssueSetTypeRequestSchema>;
+export const IssueSetMilestoneRequestSchema = Type.Object(
+  {
+    expectedRevision: Type.Integer({ minimum: 1 }),
+    milestoneId: Type.Union([Type.Null(), Type.String({ format: 'uuid' })]),
+  },
+  { additionalProperties: false },
+);
+export type IssueSetMilestoneRequest = Static<
+  typeof IssueSetMilestoneRequestSchema
+>;

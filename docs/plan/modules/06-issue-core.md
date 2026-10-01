@@ -23,11 +23,11 @@ Deliver the complete MVP issue-tracking API on both profiles. Public APIs, datab
 
 ### Step 06.2 — Implement the Issue lifecycle
 
-- [ ] **06.2a** Implement create/list/detail/edit Issue with project-local number allocation, raw Markdown, author, type, labels, assignees, milestone, timestamps, and revision checks.
-- [ ] **06.2b** Implement Open/Closed, close reasons, reopen, ownership rules, and triage actions without adding arbitrary workflow states.
-- [ ] **06.2c** **Audit portion suspended — no audit for now.** Keep mutations, required timeline/audit records, and outbox events atomically consistent. Validate idempotency and return stable conflict errors.
-- [ ] **06.2d** Implement batched relation loading and explicit projections so list/detail endpoints avoid N+1 and unnecessary private data.
-- [ ] **06.2e** Specify cache eligibility and invalidation/version changes for public representations; keep personalized and permission-sensitive responses out of shared caches.
+- [x] **06.2a** Implement create/list/detail/edit Issue with project-local number allocation, raw Markdown, author, type, labels, assignees, milestone, timestamps, and revision checks. Accepted 2026-10-01: the module-02 repository contract extended with taxonomy-bearing creation, eight mutation operations with idempotency receipts, batched relation hydration and moderation-aware reads, exposed through the shared routes on both profiles.
+- [x] **06.2b** Implement Open/Closed, close reasons, reopen, ownership rules, and triage actions without adding arbitrary workflow states. Accepted 2026-10-01: close-with-reason/reopen under `issue:close`, labels/type/milestone under `issue:triage`, assignees under `issue:assign` (current project membership required), own-content editing with the moderation lock, two states only.
+- [ ] **06.2c** **Audit portion suspended — no audit for now.** Keep mutations, required timeline/audit records, and outbox events atomically consistent. Validate idempotency and return stable conflict errors. Non-audit scope accepted 2026-10-01: every mutation writes its aggregate row, timeline event and outbox row in one atomic transaction with a 24-hour idempotency receipt; same-value set operations are no-ops without events; `REVISION_CONFLICT`/`IDEMPOTENCY_CONFLICT`/`IDEMPOTENCY_EXPIRED` are stable closed errors. The audit-record portion stays suspended and the item stays unchecked.
+- [x] **06.2d** Implement batched relation loading and explicit projections so list/detail endpoints avoid N+1 and unnecessary private data. Accepted 2026-10-01: list projections exclude the Markdown body; labels/assignees hydrate in two bounded queries per page through `relations()`; detail keeps canonical Markdown only.
+- [x] **06.2e** Specify cache eligibility and invalidation/version changes for public representations; keep personalized and permission-sensitive responses out of shared caches. Accepted 2026-10-01: the cache-eligibility specification in API-CONVENTIONS fixes today's all-no-store baseline, the future anonymous-public eligibility class, the revision-derived invalidation/version contract and the permanently ineligible classes; no shared cache is enabled.
 
 ### Step 06.3 — Implement discussion and timeline
 
