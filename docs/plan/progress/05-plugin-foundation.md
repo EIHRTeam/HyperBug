@@ -9,10 +9,10 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Status: In progress
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
-- Implementation started: Yes (2026-10-01, batches 05.1a–05.1b).
-- Completed implementation checklist IDs: 05.1a, 05.1b.
-- Active/next checklist group: 05.1c (lifecycle chapter).
-- Last updated: 2026-10-01 (batch 05.1b accepted).
+- Implementation started: Yes (2026-10-01, batches 05.1a–05.1c).
+- Completed implementation checklist IDs: 05.1a, 05.1b, 05.1c.
+- Active/next checklist group: 05.1d (hook protocol chapter).
+- Last updated: 2026-10-01 (batch 05.1c accepted).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
 
@@ -114,3 +114,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new; the pre-existing wrangler/workers-types peer conflict did not resurface (lockfile resolution was skipped because typebox 0.34.52 was already resolved for contracts), but it remains latent for the next re-resolution.
 - Next actions: 05.1c — lifecycle chapter (register, validate compatibility, configure, enable, disable, upgrade, uninstall, retain/delete policy) in PLUGIN-SPEC and the lifecycle state model in plugin-api.
 - Next-session cautions: Manifest validation is additive across chapters (lifecycle/hook declarations extend the same object); do not import plugin packages into Core yet (05.2); keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Batch 05.1c accepted (lifecycle model)
+
+- Scope and checklist IDs: 05.1c accepted (intended batch recorded before implementation) — lifecycle definition: register, validate compatibility, configure, enable, disable, upgrade, uninstall, and retain/delete plugin data through an explicit policy.
+- Progress: PLUGIN-SPEC is at 1.2.0 with the lifecycle chapter (§10): three registry states (`registered`/`enabled`/`disabled`), register with compatibility validation and id-conflict rejection, configure/enable with complete-configuration rules, safe disable, upgrade restricted to non-enabled states with strictly increasing versions and unchanged ids, and uninstall with an explicit operator `retain`/`delete` choice over namespaced data (no default). `@hyperbug/plugin-api` 1.2.0 carries the pure model (`PLUGIN_LIFECYCLE_STATES`, `PLUGIN_LIFECYCLE_TRANSITIONS`, `decideRegistration`, `decideEnable`, `checkConfiguration`, `compareSemver`); the SDK is unchanged at 1.1.0 because lifecycle is host-facing.
+- Change summary: New `packages/plugin-api/src/lifecycle.ts`, re-exports in the package index, exported `compareSemver` in manifest.ts, PLUGIN-SPEC §10, and 12 lifecycle/decision test cases.
+- Files/artifacts: `docs/PLUGIN-SPEC.md`; `packages/plugin-api/{package.json,src/lifecycle.ts,src/manifest.ts,src/identity.ts,src/index.ts}`; `tests/unit/plugin-lifecycle.test.ts`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`; `pnpm-lock.yaml` (workspace manifest sync only).
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 147/147, contract 1/1, node 50/50, workerd 128/128, isolated PostgreSQL 18.6 68/68, build, db:check both dialects, docs build, secret and license scans all passed.
+- Decisions and deviations: Lifecycle rules live in the contract package as pure functions so registry (05.2a), conformance fixtures (05.2f) and negative tests (05.3a/05.3d) share one definition. Uninstall data deletion stays design-only here; its bounded procedure is implemented with the storage interfaces (05.2b) and tested by 05.3d. No audit events are defined or emitted — lifecycle state is ordinary registry state, and the suspended 05.2a/05.3d audit portions remain untouched.
+- Blockers/open questions: None new.
+- Next actions: 05.1d — hook protocol chapter (mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, side-effect idempotency; security-critical hooks fail closed) in PLUGIN-SPEC and hook contract types in plugin-api.
+- Next-session cautions: Do not import plugin packages into Core before 05.2; `compareSemver` throws on malformed input by contract — callers validate versions first.

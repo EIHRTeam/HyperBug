@@ -32,6 +32,20 @@ export {
   type PluginPermission,
   type PluginSetting,
   apiVersionSatisfies,
+  compareSemver,
   pluginDataNamespace,
   validatePluginManifest,
 } from './manifest.ts';
+export {
+  PLUGIN_LIFECYCLE_STATES,
+  PLUGIN_LIFECYCLE_TRANSITIONS,
+  PLUGIN_UNINSTALL_POLICIES,
+  type LifecycleDecision,
+  type PluginConfigurationInput,
+  type PluginLifecycleOperation,
+  type PluginLifecycleState,
+  type PluginUninstallPolicy,
+  checkConfiguration,
+  decideEnable,
+  decideRegistration,
+} from './lifecycle.ts';

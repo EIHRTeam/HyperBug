@@ -1,6 +1,6 @@
 # HyperBug plugin specification (PLUGIN-SPEC)
 
-Specification version: **1.1.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
+Specification version: **1.2.0** — carried by [`@hyperbug/plugin-api`](../packages/plugin-api/package.json); this document's version follows that package's version, not Core's.
 
 Status: MVP backend development ([module 05](plan/modules/05-plugin-foundation.md)). This frame is defined by checklist 05.1a; the manifest, lifecycle, hook and external-service chapters land with 05.1b–05.1e and Core integration with 05.2.
 
@@ -141,12 +141,52 @@ All plugin-owned persistent state lives in a namespace derived from the validate
 - External plugins never receive Core SQL access (TECH-STACK §44): they reach data through scoped storage under the same namespace.
 - Uninstall-time retention or deletion of namespaced data follows the explicit lifecycle policy (05.1c).
 
+## 10. Lifecycle
+
+A plugin's registry entry moves through a small state machine owned by Core (implemented by the registry in module 05.2; the rules live in `@hyperbug/plugin-api` as `PLUGIN_LIFECYCLE_STATES`, `PLUGIN_LIFECYCLE_TRANSITIONS` and the pure decision helpers). All lifecycle administration is sensitive administration: Administrator with recent re-authentication (§5; SECURITY §39).
+
+### 10.1 States
+
+| State | Meaning | Participation |
+| --- | --- | --- |
+| `registered` | Manifest accepted and recorded; never enabled, or no complete configuration yet | None |
+| `enabled` | Configuration complete and the plugin activated | Hooks and extension points active, bounded by §6 |
+| `disabled` | Turned off from `enabled`; configuration and data retained | None — in-flight invocations finish or hit their deadline; no new invocations |
+
+### 10.2 Register and compatibility validation
+
+Registration validates the manifest (§9) and requires the host's Plugin API version to satisfy the manifest's `apiVersion` range; a failure rejects registration with the reasons. An id that already exists in the registry is a conflict — registration never overwrites. Registration alone changes no Core behavior: with zero enabled plugins, Core runs exactly as documented (§5).
+
+### 10.3 Configure and enable
+
+- `configure` writes setting values: public values through the configuration API, secret values through write-only secret updates (§9.5; mechanism in module 05.2b). Configuration changes are legal in `registered` and `disabled`.
+- `enable` is legal from `registered` and `disabled` and requires complete configuration: every public setting has a value of its declared type or a declared default, every secret setting is present in the secret provider, and unknown keys are rejected. Enable decisions are pure over the supplied facts (`decideEnable`), so the same completeness rule governs configuration validation (05.3a fixtures) and runtime registration.
+
+### 10.4 Disable
+
+`disable` is legal from `enabled`. Disabling is safe by construction: the runtime stops scheduling new invocations, in-flight invocations run to their deadline (§11 bounds them), and no Core policy depends on a disabled plugin — Core policy never delegates to plugins in the first place (§5). Configuration and namespaced data are retained.
+
+### 10.5 Upgrade
+
+- Upgrades apply to `registered` and `disabled` entries only; an enabled plugin must be disabled first. This makes every upgrade an explicit, reviewable operator action.
+- An upgrade keeps the plugin id, validates the new manifest, and requires a strictly higher version than the registry records (`compareSemver`); downgrades and re-registrations of the same version are rejected.
+- The new manifest's `apiVersion` must satisfy the host. Namespaced migrations follow §9.7; upgrade/data-retention handling is verified by 05.3d.
+
+### 10.6 Uninstall and data policy
+
+`uninstall` is legal from any state. It removes the registry entry and stops all participation. Namespaced data is handled through an **explicit operator choice** between:
+
+- `retain` — namespaced data stays for a future reinstall (a reinstall starts at `registered` with its own compatibility validation);
+- `delete` — namespaced data is deleted through a bounded, reviewed procedure scoped strictly to the plugin's namespace (§9.7).
+
+There is no default: the uninstall operation must state its policy. Deletion is irreversible; retention leaves data owned by an absent plugin and must not be readable by a different plugin id (namespace ownership is enforced by the storage interfaces, module 05.2b).
+
 ## Chapter status
 
 | Chapter | Content | Defined by |
 | --- | --- | --- |
 | §1–§8 | Frame: scope, components, trust, versioning, policy, performance, frontend, conformance | 05.1a |
-| §9 | Manifests and compatibility: identity, API ranges, capabilities, extension points, permissions, public/secret settings, CSP origins, namespaced data/migrations | 05.1b (this version) |
-| Lifecycle | Register, validate, configure, enable, disable, upgrade, uninstall, data retention | 05.1c |
+| §9 | Manifests and compatibility: identity, API ranges, capabilities, extension points, permissions, public/secret settings, CSP origins, namespaced data/migrations | 05.1b |
+| §10 | Lifecycle: states, register/validate, configure, enable, disable, upgrade, uninstall and explicit retain/delete policy | 05.1c (this version) |
 | Hook protocol | Hook mode, ordering, payload version/limits, deadlines, concurrency, failure semantics, idempotency | 05.1d |
 | External service protocol | Scoped/revocable capability APIs, signed/versioned events | 05.1e |

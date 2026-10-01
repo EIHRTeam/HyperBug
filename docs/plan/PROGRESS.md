@@ -834,3 +834,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: The latent wrangler/workers-types peer conflict did not resurface this batch (resolution skipped; typebox already resolved) and remains a module 01 maintenance item.
 - Next actions: 05.1c lifecycle chapter and state model.
 - Next-session cautions: Do not import plugin packages into Core before 05.2; keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batch: lifecycle model
+
+- Scope and checklist IDs: 05.1c accepted (intended batch recorded before implementation). Hold boundaries unchanged.
+- Progress: PLUGIN-SPEC 1.2.0 gained the lifecycle chapter — registered/enabled/disabled states, compatibility-validated registration with id-conflict rejection, complete-configuration enable, safe disable, non-enabled upgrades with strictly increasing versions, and uninstall with an explicit retain/delete policy over namespaced data. `@hyperbug/plugin-api` 1.2.0 carries the pure decision model; SDK unchanged (lifecycle is host-facing).
+- Change summary: Lifecycle module in plugin-api, exported `compareSemver`, specification §10, 12 new lifecycle test cases.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format, unit 147/147, contract 1/1, node 50/50, workerd 128/128, isolated PostgreSQL 18.6 68/68, build, db:check, docs build, secret and license scans passed.
+- Decisions and deviations: Lifecycle rules are pure contract functions shared by registry, fixtures and tests; uninstall deletion stays design-only until the storage interfaces land (05.2b) and is verified by 05.3d. No audit events defined or emitted (suspension respected).
+- Blockers/open questions: None new.
+- Next actions: 05.1d hook protocol.
+- Next-session cautions: Do not import plugin packages into Core before 05.2; keep the root `SECURITY.md` draft uncommitted.

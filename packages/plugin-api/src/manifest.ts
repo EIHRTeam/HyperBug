@@ -288,6 +288,21 @@ function compareCore(left: SemverParts, right: SemverParts): number {
 }
 
 /**
+ * Compare two exact semver versions (the §9.1 grammar): negative when `left`
+ * is lower, zero when equal, positive when higher. Prereleases order below
+ * their release. Throws on input outside the grammar.
+ */
+export function compareSemver(left: string, right: string): number {
+  const leftParts = parseSemver(left);
+  const rightParts = parseSemver(right);
+  if (leftParts === null || rightParts === null)
+    throw new TypeError('not a semver version');
+  const core = compareCore(leftParts, rightParts);
+  if (core !== 0) return core;
+  return comparePrerelease(leftParts, rightParts);
+}
+
+/**
  * Whether `version` satisfies an exact/caret/tilde `range` under PLUGIN-SPEC
  * §9.2's simplified rules: caret stays inside the leftmost non-zero segment
  * (npm semantics), tilde stays inside the minor version, and a prerelease
