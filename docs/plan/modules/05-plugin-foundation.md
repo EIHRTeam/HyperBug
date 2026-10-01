@@ -30,7 +30,7 @@ Make plugin boundaries a real, versioned part of the backend before building fea
 - [x] **05.2c** Define authentication/SSO, CAPTCHA, notifications, issue actions/metadata, search, import/export, and settings extension contracts with their Core policy boundaries, including the fail-closed plugin-permission failure handling re-scoped from 03.3f (2026-09-30).
 - [x] **05.2d** Connect hook/event envelopes to the outbox model; complete actual async dispatch in module 09 before enabling side-effect consumers.
 - [x] **05.2e** Define build-time frontend extension descriptors and reviewed CSP merging. Do not implement remote JavaScript URL loading.
-- [ ] **05.2f** Provide one minimal official example plugin and a failing/slow plugin fixture that use only the public SDK/API.
+- [x] **05.2f** Provide one minimal official example plugin and a failing/slow plugin fixture that use only the public SDK/API.
 
 ### Step 05.3 — Verify lifecycle and compatibility
 

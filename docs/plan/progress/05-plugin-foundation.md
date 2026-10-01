@@ -10,8 +10,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
 - Implementation started: Yes (2026-10-01, batches 05.1a–05.1e).
-- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b–05.2e (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
-- Active/next checklist group: 05.2f (minimal official example plugin and failing/slow fixture using only the public SDK/API).
+- Completed implementation checklist IDs: 05.1a–05.1e, 05.2b–05.2f (05.2a's non-audit scope is complete; the item stays unchecked with its audit portion suspended).
+- Active/next checklist group: 05.3a (incompatible versions, malformed manifests, unknown capabilities, missing secrets, invalid configuration, disabled-plugin behavior).
 - Last updated: 2026-10-01 (batch 05.1e accepted; step 05.1 complete).
 - Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
 - Evidence: See the session entries below.
@@ -21,7 +21,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 05.1 | Define the plugin specification | Complete (2026-10-01) | Session entries below; PLUGIN-SPEC 1.4.0 |
-| 05.2 | Implement Core integration | In progress (05.2a non-audit scope done — audit suspended; 05.2b–05.2e complete) | Session entries below |
+| 05.2 | Implement Core integration | Complete except 05.2a's suspended audit portion (non-audit scope done) | Session entries below |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 | 05.2 | Implement Core integration | Not started | None yet |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
@@ -262,3 +262,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new.
 - Next actions: 05.2f — one minimal official example plugin and a failing/slow plugin fixture using only the public SDK/API (this activates `@hyperbug/plugin-runtime`'s first real host machinery).
 - Next-session cautions: Keep the root `SECURITY.md` draft uncommitted; the merge is data-only — never a runtime CSP mechanism.
+
+### 2026-10-01 — Intended batch 05.2f (recorded before implementation)
+
+- Scope and checklist IDs: 05.2f — one minimal official example plugin and a failing/slow plugin fixture using only the public SDK/API. Planned: `@hyperbug/plugin-runtime` 1.1.0 gains its first real host machinery — a bounded sync-hook executor that validates a module's manifest and point participation (§13.2), refuses non-enabled plugins (§10.4), races the handler against the §11.3 deadline, and maps error/timeout outcomes through the effective failure policy (fail-closed on security-critical points). Example plugins live as SDK-authored fixtures (`tests/fixtures/plugins/`) — plugins are trusted code compiled into the application, so a dedicated package directory is unnecessary until official plugins ship (module 16); the 05.3e quickstart will publish the same code. Runtime stays plugin-api-only: registry state is supplied by the caller, keeping infrastructure out.
+- Progress: Starting now; entry recorded before implementation per protocol.
+- Change summary / Files / Verification: Pending.
+- Decisions and deviations: The fixture-location decision above.
+- Blockers/open questions: None.
+- Next actions: Implement, verify, update this entry.
+- Next-session cautions: None yet.
+
+### 2026-10-01 — Batch 05.2f accepted (example plugin and failing/slow fixture)
+
+- Scope and checklist IDs: 05.2f accepted — one minimal official example plugin and a failing/slow plugin fixture using only the public SDK/API.
+- Progress: `@hyperbug/plugin-runtime` 1.1.0 gains its first real host machinery: module validation (manifest-valid, trusted-native only, every hook at a §13.2-legal declared point) and the bounded sync-hook executor — enabled-only invocation (§10.4), envelope delivery with catalog payload versions, deadline race (§11.3, with an injectable timer), and error/timeout mapping through the effective failure policy so security-critical points deny (fail-closed, the 03.3f re-scope) while non-critical points fail-request. The example plugin (`@hyperbug/example-notifier`, SDK `definePlugin` + one notification hook) and the failing/slow fixture (`@acme/failing-captcha`: throwing and stalling CAPTCHA handlers) are SDK-authored fixtures; installing native code still means trusting it.
+- Change summary: Runtime executor + module validation, two SDK-only plugin fixtures, 7 new runtime tests (success delivery, disabled no-invoke, throwing deny, stalling deny with injected timer, async-point/invalid-deadline refusal, external/undeclared module rejection).
+- Files/artifacts: `packages/plugin-runtime/{package.json,src/index.ts}`; `tests/fixtures/plugins/{example-notifier,failing-slow}.ts`; `tests/unit/plugin-runtime.test.ts`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`; `pnpm-lock.yaml`.
+- Verification: Node 24.21.0 local — lint/boundaries, typecheck matrix, format:check, unit 177/177, contract 1/1, node 50/50, workerd 129/129, isolated PostgreSQL 18.6 69/69, build, db:check both dialects, docs build, secret and license scans all passed.
+- Decisions and deviations: As recorded before implementation, example plugins live as SDK-authored fixtures (plugins compile into the application; a dedicated package directory waits for module 16's official plugins) and the runtime stays plugin-api-only — registry state is caller-supplied, keeping persistence infrastructure out of the contract package. Step 05.2 is now complete except 05.2a's suspended audit portion.
+- Blockers/open questions: None new.
+- Next actions: 05.3a — negative fixtures: incompatible versions, malformed manifests, unknown capabilities, missing secrets, invalid configuration, disabled-plugin behavior.
+- Next-session cautions: The runtime executor covers sync points; async participation goes through the 05.2d outbox path. Keep the root `SECURITY.md` draft uncommitted.

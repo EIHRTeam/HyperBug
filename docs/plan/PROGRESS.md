@@ -930,3 +930,15 @@ Update this file whenever module/gate status, scope, or major blockers change. E
 - Blockers/open questions: None new.
 - Next actions: 05.2f example plugin and failing/slow fixture.
 - Next-session cautions: Keep the root `SECURITY.md` draft uncommitted.
+
+### 2026-10-01 — Module 05 batch: example plugin and runtime executor
+
+- Scope and checklist IDs: 05.2f accepted. **Step 05.2 is complete except 05.2a's suspended audit portion (its non-audit scope is done and evidenced).**
+- Progress: `@hyperbug/plugin-runtime` 1.1.0 hosts its first machinery — module validation and the bounded sync-hook executor with deadline racing and fail-closed error mapping (03.3f re-scope); the minimal official example plugin and the failing/slow CAPTCHA fixture are authored against the public SDK only.
+- Change summary: Runtime executor, two SDK-only fixtures, 7 new tests.
+- Files/artifacts: See the [module 05 session entry](progress/05-plugin-foundation.md).
+- Verification: Node 24.21.0 local — full matrix green (unit 177, contract 1, node 50, workerd 129, postgres 69; lint/typecheck/format/build/db:check/docs/scans).
+- Decisions and deviations: Fixtures host the example plugins; runtime stays plugin-api-only with caller-supplied registry state.
+- Blockers/open questions: None new.
+- Next actions: 05.3a negative fixtures.
+- Next-session cautions: Keep the root `SECURITY.md` draft uncommitted.
