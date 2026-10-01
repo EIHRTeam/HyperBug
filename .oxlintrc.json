@@ -84,6 +84,54 @@
       }
     },
     {
+      "files": ["packages/plugin-api/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**"],
+                "message": "packages/plugin-api is the public contract: no imports outside itself and no external dependencies, so one contract serves both profiles."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/plugin-sdk/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**", "!@hyperbug/plugin-api"],
+                "message": "packages/plugin-sdk may import only @hyperbug/plugin-api; the SDK re-exports the contract without host dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/plugin-runtime/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**", "!@hyperbug/plugin-api"],
+                "message": "packages/plugin-runtime currently may import only @hyperbug/plugin-api; Core integration dependencies arrive with module 05.2."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": ["packages/observability/**/*.ts"],
       "rules": {
         "no-restricted-imports": [

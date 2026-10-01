@@ -17,6 +17,7 @@ Engineering specifications, plans, and session records remain in English:
 - [Documentation site development and GitHub Pages setup](development/DOCUMENTATION.md)
 - [API conventions](API-CONVENTIONS.md) and [permissions](API-OPERATIONS.md)
 - [Authentication flows](AUTH-FLOWS.md)
+- [Plugin specification](PLUGIN-SPEC.md)
 - [Implementation plan](plan/README.md) and [current progress](plan/PROGRESS.md)
 
 VitePress builds only `docs/site/`; repository references are linked from the site and are not included in its navigation or search index.

@@ -19,7 +19,7 @@ Module 00 has now created and validated the [development](../../.agents/skills/h
 
 ## Specification index
 
-Module 07 policies and the optional deployment-tier specification live in these English specifications rather than in this plan:
+Cross-module specifications and accepted direction records live in these English specifications rather than in this plan:
 
 | Specification | Scope | Owner |
 | --- | --- | --- |
@@ -33,6 +33,7 @@ Module 07 policies and the optional deployment-tier specification live in these 
 | [OUTBOUND-SECURITY](../OUTBOUND-SECURITY.md) | Fixed HTTPS destination catalog, bounded fetch mechanism and pending runtime egress checks | 03.3e |
 | [RATE-LIMITING](../RATE-LIMITING.md), [ADR 0008](../decisions/0008-rate-limit-consistency.md) | Sensitive primary counters, approximate volumetric limits and privacy/retention boundaries | 03.3c–03.3d |
 | [ADR 0009](../decisions/0009-standard-password-login.md) | Standard-profile password login may open after functional account/provider implementation; independent audit and further performance characterization do not gate enablement | 03.2e/03.V5, 04.1d |
+| [PLUGIN-SPEC](../PLUGIN-SPEC.md), [ADR 0010](../decisions/0010-plugin-execution-model-and-contracts.md) | Trusted plugin execution model, independently versioned Plugin API/SDK/runtime contract packages, policy invariants and deferred untrusted code hosting | 05.1–05.2 |
 
 ## Module index
 

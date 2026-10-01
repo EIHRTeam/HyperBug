@@ -38,6 +38,15 @@ importers:
       '@hyperbug/observability':
         specifier: workspace:*
         version: link:packages/observability
+      '@hyperbug/plugin-api':
+        specifier: workspace:*
+        version: link:packages/plugin-api
+      '@hyperbug/plugin-runtime':
+        specifier: workspace:*
+        version: link:packages/plugin-runtime
+      '@hyperbug/plugin-sdk':
+        specifier: workspace:*
+        version: link:packages/plugin-sdk
       '@hyperbug/server':
         specifier: workspace:*
         version: link:packages/server
@@ -188,6 +197,20 @@ importers:
   packages/domain: {}
 
   packages/observability: {}
+
+  packages/plugin-api: {}
+
+  packages/plugin-runtime:
+    dependencies:
+      '@hyperbug/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+
+  packages/plugin-sdk:
+    dependencies:
+      '@hyperbug/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
 
   packages/security: {}
 

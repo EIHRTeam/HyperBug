@@ -6,21 +6,21 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Not started
+- Status: In progress
 - Delivery scope: MVP backend
 - Prerequisites: 04 complete; event/outbox contracts from 02.
-- Implementation started: No.
-- Completed implementation checklist IDs: None.
-- Active/next checklist group: 05.1, after prerequisites are satisfied.
-- Last updated: 2026-09-30 (plan amendment recording re-scoped Phase 03 ownership; no implementation).
-- Blocking issues discovered: None during planning; prerequisite completion is still required.
-- Evidence: Planning documents only; no implementation or runtime validation yet.
+- Implementation started: Yes (2026-10-01, batch 05.1a).
+- Completed implementation checklist IDs: 05.1a.
+- Active/next checklist group: 05.1b (manifest/compatibility chapter of PLUGIN-SPEC).
+- Last updated: 2026-10-01 (batch 05.1a accepted).
+- Blocking issues discovered: None for this module; a pre-existing wrangler/workers-types peer conflict (see the 2026-10-01 entry) will surface on future dependency re-resolution and belongs to module 01 maintenance.
+- Evidence: See the session entries below.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 05.1 | Define the plugin specification | Not started | None yet |
+| 05.1 | Define the plugin specification | In progress (05.1a) | Session entries below |
 | 05.2 | Implement Core integration | Not started | None yet |
 | 05.3 | Verify lifecycle and compatibility | Not started | None yet |
 
@@ -90,3 +90,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None introduced; prerequisite module 04 is in progress.
 - Next actions: Unchanged — begin 05.1 after module 04 completes; implement the re-scoped plugin-permission failure handling with 05.2c.
 - Next-session cautions: The re-scope adds scope to 05.2c; it does not resume suspended audit work or the plugin runtime early.
+
+### 2026-10-01 — Module 05 start; batch 05.1a accepted
+
+- Scope and checklist IDs: 05.1a accepted (intended batch recorded before implementation per the session-start protocol). The 2026-10-01 user instruction releases Module 05 from the 2026-09-28 feature hold; every other part of that hold remains in force (audit portions of 05.2a/05.3d suspended, no Module 09 expansion, no SPA, no untrusted code hosting, Free tier untouched).
+- Progress: `docs/PLUGIN-SPEC.md` exists as the versioned specification frame (scope, components, trust model, versioning, Core policy boundaries, performance/failure baseline, frontend constraints, conformance, chapter-status table for 05.1b–05.1e). `@hyperbug/plugin-api`, `@hyperbug/plugin-sdk` and `@hyperbug/plugin-runtime` exist as workspace packages, each independently semver'd at 1.0.0, exported through root devDependencies, and wired into `tooling/check-boundaries.mjs` (allowed/pure maps) and `.oxlintrc.json` (`no-restricted-imports` overrides). ADR 0010 records the plugin execution model and contract direction before the public contract was embedded.
+- Change summary: New specification + ADR + three contract packages (version/identity/trust-tier seeds only; manifest and hook types arrive with 05.1b+); boundary policy for the new packages; version-coherence and boundary-grid tests; documentation index links (docs README, plan README specification index).
+- Files/artifacts: `docs/PLUGIN-SPEC.md`; `docs/decisions/0010-plugin-execution-model-and-contracts.md`; `packages/plugin-api/{package.json,src/index.ts}`; `packages/plugin-sdk/{package.json,src/index.ts}`; `packages/plugin-runtime/{package.json,src/index.ts}`; `tooling/check-boundaries.mjs`; `.oxlintrc.json`; `package.json`; `pnpm-lock.yaml`; `tests/unit/plugin-packages.test.ts`; `tests/unit/boundaries.test.ts`; `docs/README.md`; `docs/plan/README.md`; `docs/plan/modules/05-plugin-foundation.md`; this record; `docs/plan/PROGRESS.md`.
+- Verification: Node 24.21.0 local — `corepack pnpm lint` (oxlint + boundary checker) passed; `corepack pnpm typecheck` (root + both Cloudflare projects) passed; `corepack pnpm format:check` passed (252 files); unit 117/117 and contract 1/1 (includes 4 new contract-version tests and the extended boundary-grid case); node 50/50; workerd 128/128; isolated PostgreSQL 18.6 68/68; `corepack pnpm build` (all targets) passed; `corepack pnpm db:check` both dialects passed; `corepack pnpm docs:build` passed; `corepack pnpm scan:secrets` passed; `corepack pnpm scan:licenses` passed (no new external dependency added).
+- Decisions and deviations: [ADR 0010](../../decisions/0010-plugin-execution-model-and-contracts.md) — trusted native plugins are trusted application code (manifest permissions are review/least-privilege metadata, not a sandbox), isolated external plugins use scoped capabilities with no arbitrary Core SQL, untrusted code hosting stays deferred, and the three contract packages are separately versioned with the spec version following `@hyperbug/plugin-api`. No Context7 lookup: the batch added no new library/SDK/API dependency or usage question; all patterns mirror existing repository tooling.
+- Blockers/open questions: A pre-existing peer conflict surfaced when the new workspace packages forced lockfile re-resolution: wrangler 4.144.0 (from the 964da20 audit upgrade) wants `@cloudflare/workers-types ^5.20260926.1` while the repo pins 5.20260917.1; `strictPeerDependencies: true` makes any future re-resolution fail this way (repeat installs with an up-to-date lockfile pass). Resolution belongs to module 01 dependency maintenance and needs a deliberate pin decision, not a silent change here.
+- Next actions: 05.1b — manifest ID/version/API compatibility, capabilities, configuration schemas, public vs secret settings, CSP origins, extension points, and namespaced data/migrations (extends PLUGIN-SPEC chapter "Manifests and compatibility"; use the hyperbug-maintenance database-migrations reference for the namespaced-migration design).
+- Next-session cautions: The root `SECURITY.md` draft stays uncommitted; the plugin packages are contract seeds only — do not import them into server/app code before 05.2 defines the runtime; the wrangler/workers-types peer conflict will reappear on the next dependency re-resolution.

@@ -27,6 +27,49 @@ it('rejects forbidden package, relative and client imports in the real checker',
   ).not.toThrow();
 });
 
+it('keeps the plugin contract packages on the boundary grid', () => {
+  const cases = [
+    {
+      file: 'packages/plugin-runtime/src/boundary-fixture.ts',
+      content: "import { PLUGIN_API_VERSION } from '@hyperbug/plugin-api';",
+      allowed: true,
+    },
+    {
+      file: 'packages/plugin-sdk/src/boundary-fixture.ts',
+      content: "import { PLUGIN_API_VERSION } from '@hyperbug/plugin-api';",
+      allowed: true,
+    },
+    {
+      file: 'packages/plugin-api/src/boundary-fixture.ts',
+      content: "import type { SomeType } from '@hyperbug/domain';",
+      allowed: false,
+    },
+    {
+      file: 'packages/plugin-sdk/src/boundary-fixture.ts',
+      content: "import { createApp } from '@hyperbug/server';",
+      allowed: false,
+    },
+    {
+      file: 'packages/plugin-api/src/boundary-fixture.ts',
+      content: "import { readFileSync } from 'node:fs';",
+      allowed: false,
+    },
+  ];
+  for (const item of cases) {
+    try {
+      writeFileSync(item.file, item.content);
+      const run = () =>
+        execFileSync(process.execPath, ['tooling/check-boundaries.mjs'], {
+          stdio: 'pipe',
+        });
+      if (item.allowed) expect(run).not.toThrow();
+      else expect(run).toThrow();
+    } finally {
+      unlinkSync(item.file);
+    }
+  }
+});
+
 it('permits security ports in persistence while keeping security independent of adapters', () => {
   const cases = [
     {

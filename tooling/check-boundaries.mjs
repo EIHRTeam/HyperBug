@@ -9,6 +9,9 @@ const allowed = {
   security: [],
   config: [],
   observability: [],
+  'plugin-api': [],
+  'plugin-sdk': ['plugin-api'],
+  'plugin-runtime': ['plugin-api'],
   testing: ['contracts', 'domain', 'application'],
   application: ['domain', 'contracts'],
   server: [
@@ -29,6 +32,9 @@ const pure = new Set([
   'security',
   'config',
   'observability',
+  'plugin-api',
+  'plugin-sdk',
+  'plugin-runtime',
 ]);
 const externalAllowed = {
   contracts: ['@sinclair/typebox'],
