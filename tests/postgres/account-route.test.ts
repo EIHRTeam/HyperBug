@@ -58,27 +58,36 @@ beforeAll(async () => {
     max: 2,
   });
   const migrations = await migrationStatements('postgres');
-  const registrationMigration = migrations.at(-8);
-  if (registrationMigration?.name !== '0009_password_credentials')
-    throw new Error('Registration migration missing');
+  const registrationMigration = migrations.find(
+    (entry) => entry.name === '0009_password_credentials',
+  );
+  if (!registrationMigration) throw new Error('Registration migration missing');
   registrationStatements = registrationMigration.statements;
-  const sessionMigration = migrations.at(-7);
-  if (sessionMigration?.name !== '0010_authorization_sessions')
+  const sessionMigration = migrations.find(
+    (migration) => migration.name === '0010_authorization_sessions',
+  );
+  if (!sessionMigration)
     throw new Error('Authorization session migration missing');
   sessionStatements = sessionMigration.statements;
-  const recoveryMigration = migrations.at(-6);
-  if (recoveryMigration?.name !== '0011_recovery_codes')
-    throw new Error('Recovery migration missing');
+  const recoveryMigration = migrations.find(
+    (migration) => migration.name === '0011_recovery_codes',
+  );
+  if (!recoveryMigration) throw new Error('Recovery migration missing');
   recoveryStatements = recoveryMigration.statements;
-  const webauthnMigration = migrations.at(-5);
-  if (webauthnMigration?.name !== '0012_webauthn')
-    throw new Error('WebAuthn migration missing');
+  const webauthnMigration = migrations.find(
+    (migration) => migration.name === '0012_webauthn',
+  );
+  if (!webauthnMigration) throw new Error('WebAuthn migration missing');
   webauthnStatements = webauthnMigration.statements;
-  const oauthMigration = migrations.at(-4);
-  if (oauthMigration?.name !== '0013_oauth_codes')
-    throw new Error('OAuth migration missing');
+  const oauthMigration = migrations.find(
+    (migration) => migration.name === '0013_oauth_codes',
+  );
+  if (!oauthMigration) throw new Error('OAuth migration missing');
   oauthStatements = oauthMigration.statements;
-  for (const migration of migrations.slice(0, -8)) {
+  for (const migration of migrations.slice(
+    0,
+    migrations.findIndex((entry) => entry.name === '0009_password_credentials'),
+  )) {
     const db = await pool.connect();
     try {
       await db.query('BEGIN');

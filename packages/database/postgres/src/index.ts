@@ -624,3 +624,5 @@ export {
   createPostgresTimelineStore,
 } from './comments.ts';
 export { createPostgresUploadIntentStore } from './upload-intents.ts';
+export { createPostgresUploadLegacyInventoryStore } from './upload-legacy-inventory.ts';
+export { createPostgresUploadLegacyRecoveryStore } from './upload-legacy-recovery.ts';

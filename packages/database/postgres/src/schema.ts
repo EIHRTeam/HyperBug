@@ -969,6 +969,52 @@ export const uploadMultipartSessions = table(
 );
 
 // Explicit operator recovery ledger; no current lifecycle/association is fabricated.
+export const uploadLegacyRecoveries = table(
+  'upload_legacy_recoveries',
+  {
+    intentId: id('intent_id').primaryKey(),
+    projectId: id('project_id').notNull(),
+    principalId: id('principal_id')
+      .notNull()
+      .references(() => principals.id),
+    decisionId: id('decision_id').notNull().unique(),
+    decision: json('decision').notNull(),
+    state: text('state').notNull(),
+    revision: integer('revision').notNull().default(1),
+    leaseId: id('lease_id'),
+    leaseExpiresAt: instant('lease_expires_at'),
+    createdAt: instant('created_at').notNull(),
+    releasedAt: instant('released_at'),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.projectId, t.intentId],
+      foreignColumns: [uploadIntents.projectId, uploadIntents.id],
+      name: 'legacy_recovery_intent_fk',
+    }),
+    validId('legacy_recovery_decision', t.decisionId),
+    validId('legacy_recovery_lease', t.leaseId),
+    revisionCheck('legacy_recovery_revision', t.revision),
+    validTime('legacy_recovery_created', t.createdAt),
+    validTime('legacy_recovery_lease_time', t.leaseExpiresAt),
+    check(
+      'legacy_recovery_state',
+      sql`(${t.state} = 'deleting' AND ${t.releasedAt} IS NULL AND ${t.leaseId} IS NOT NULL) OR (${t.state} = 'released' AND ${t.releasedAt} IS NOT NULL)`,
+    ),
+    check(
+      'legacy_recovery_lease_pair',
+      sql`(${t.leaseId} IS NULL AND ${t.leaseExpiresAt} IS NULL) OR (${t.leaseId} IS NOT NULL AND ${t.leaseExpiresAt} IS NOT NULL)`,
+    ),
+    check(
+      'legacy_recovery_release_time',
+      sql`${t.releasedAt} IS NULL OR (${t.releasedAt} BETWEEN ${t.createdAt} AND 8640000000000000 AND cast(${t.releasedAt} as bigint) = ${t.releasedAt})`,
+    ),
+    check(
+      'legacy_recovery_payload',
+      sql`jsonb_typeof(${t.decision}) = 'object' AND octet_length(${t.decision}::text) BETWEEN 1 AND 8192`,
+    ),
+    index('legacy_recovery_project_lookup').on(t.projectId, t.intentId),
+  ],
 );
 export const attachments = table(
   'attachments',
