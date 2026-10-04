@@ -248,8 +248,20 @@ it('enforces the cross-project and removed-reference negatives on Node/PostgreSQ
       })
     ).status,
   ).toBe(202);
+  expect(
+    (
+      await post('/api/v1/accounts/register', {
+        handle: 'pgoutsider',
+        password: 'long-functional-password',
+      })
+    ).status,
+  ).toBe(202);
   const staffToken = await loginToken('rootadmin', 'operator-password-1');
   const authorToken = await loginToken('pgauthor', 'long-functional-password');
+  const outsiderToken = await loginToken(
+    'pgoutsider',
+    'long-functional-password',
+  );
   const staffPrincipalId = (
     (await (await call('/api/v1/account', { token: staffToken })).json()) as {
       principalId: string;
@@ -575,6 +587,7 @@ it('enforces the cross-project and removed-reference negatives on Node/PostgreSQ
     call,
     projectId: projectA.id,
     authorToken,
+    outsiderToken,
     staffToken,
     hideIssue: async (id) => {
       await pool.query(

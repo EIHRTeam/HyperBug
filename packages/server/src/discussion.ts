@@ -108,6 +108,22 @@ async function requireAdmission(
   });
 }
 
+/**
+ * A moderated or deleted comment exists only for moderators and its own
+ * author; anyone else gets the same 404 as for a missing comment, so the
+ * permission outcome cannot reveal it.
+ */
+function requireCommentKnown(
+  record: CommentRecord,
+  principal: BearerPrincipal,
+  moderator: boolean,
+): void {
+  const publicVisible =
+    record.moderation === 'visible' && record.deletedAt === null;
+  if (!moderator && !publicVisible && record.authorId !== principal.principalId)
+    throw new RequestFailure('NOT_FOUND');
+}
+
 function checkedBody(value: unknown): string {
   if (typeof value !== 'string') throw new RequestFailure('ISSUE_INVALID');
   const length = [...value].length;
@@ -377,7 +393,13 @@ export async function editComment(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-  await requireIssueAccess(request, context, principal, projectId, issueId);
+  const moderator = await requireIssueAccess(
+    request,
+    context,
+    principal,
+    projectId,
+    issueId,
+  );
   const current = await loadComment(
     request,
     context,
@@ -386,6 +408,7 @@ export async function editComment(
     commentId,
     true,
   );
+  requireCommentKnown(current, principal, moderator);
   const ownVisible =
     current.authorId === principal.principalId &&
     current.moderation === 'visible' &&
@@ -453,7 +476,13 @@ export async function deleteComment(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-  await requireIssueAccess(request, context, principal, projectId, issueId);
+  const moderator = await requireIssueAccess(
+    request,
+    context,
+    principal,
+    projectId,
+    issueId,
+  );
   const current = await loadComment(
     request,
     context,
@@ -462,6 +491,7 @@ export async function deleteComment(
     commentId,
     true,
   );
+  requireCommentKnown(current, principal, moderator);
   // A tombstoned comment is no longer deletable by anyone; idempotent
   // re-deletion answers the closed 404.
   if (current.deletedAt !== null) throw new RequestFailure('NOT_FOUND');
@@ -498,7 +528,23 @@ export async function moderateComment(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-  await requireIssueAccess(request, context, principal, projectId, issueId);
+  const moderator = await requireIssueAccess(
+    request,
+    context,
+    principal,
+    projectId,
+    issueId,
+  );
+  // The comment must belong to the addressed issue, not merely the project.
+  const current = await loadComment(
+    request,
+    context,
+    projectId,
+    issueId,
+    commentId,
+    true,
+  );
+  requireCommentKnown(current, principal, moderator);
   await requirePermission(
     request,
     context,
@@ -508,8 +554,6 @@ export async function moderateComment(
     issueId,
     'issue',
   );
-  // The comment must belong to the addressed issue, not merely the project.
-  await loadComment(request, context, projectId, issueId, commentId, true);
   const moderation =
     input.moderation === 'visible' ||
     input.moderation === 'hidden' ||
@@ -541,7 +585,22 @@ export async function commentHistory(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-  await requireIssueAccess(request, context, principal, projectId, issueId);
+  const moderator = await requireIssueAccess(
+    request,
+    context,
+    principal,
+    projectId,
+    issueId,
+  );
+  const current = await loadComment(
+    request,
+    context,
+    projectId,
+    issueId,
+    commentId,
+    true,
+  );
+  requireCommentKnown(current, principal, moderator);
   await requirePermission(
     request,
     context,
@@ -551,7 +610,6 @@ export async function commentHistory(
     issueId,
     'issue',
   );
-  await loadComment(request, context, projectId, issueId, commentId, true);
   const page = await withDeadline(request.signal, storeTimeoutMs, () =>
     comments(context).history(projectId, commentId),
   );

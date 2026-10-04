@@ -81,6 +81,10 @@ Cross-module record for the remediation of two review reports supplied by the us
   - **Old handlers fail it.** With the previous `discussion.ts`, the matrix fails because history through another issue answers 200.
   - **Related suites pass:** workerd discussion/journey/queries/concurrency, PostgreSQL negatives/discussion/journey/queries, unit 345.
   - **Static checks:** typecheck, lint and format pass.
+- Focused security review (Sonnet subagent, commit `aff2790`): no critical or high findings. Two follow-ups applied:
+  - **Existence oracle closed.** Edit and delete loaded the comment with hidden rows included before the permission check, so a non-moderator could tell a moderated comment from a missing one by 403 versus 404. Both now use the shared `requireCommentKnown` rule: a moderated or deleted comment exists only for moderators and its own author, so everyone else gets the same 404. Moderation and history also order the parent and comment checks before the moderator permission check.
+  - **Matrix coverage widened.** The shared contract now covers a non-author, non-moderator User, anonymous, hidden and redacted comments on a visible issue, comment-reaction removal, cross-issue addressing on all comment routes, moderator read and write access to a hidden parent, and deleted-parent writes.
+  - Low-severity note left as-is: the comment store's `moderate`, `remove` and `history` scope by project and comment, not issue. The handler binds the comment to the addressed issue first and a comment's issue is immutable, so no action can land on another issue's comment.
 - Notes:
   - Authenticated callers that previously skipped the moderator lookup (comment create, reactions) now perform it. B6 removes the repeated authorization reads per request.
   - No shared cache is enabled for these resources.

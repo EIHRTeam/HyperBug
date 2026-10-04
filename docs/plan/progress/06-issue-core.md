@@ -301,3 +301,5 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None.
 - Next actions: B3 instance roles and token-bound assurance (Module 04 owner); B6 removes the duplicate authorization reads this check adds for authenticated writers.
 - Next-session cautions: New issue sub-resources must call `requireIssueAccess`. The resolver's resource facts remain a stub, so routes own object visibility.
+
+- 2026-10-05 review follow-up (commit `aff2790` reviewed by a Sonnet subagent): no critical or high findings. The comment edit/delete existence oracle is closed through the shared `requireCommentKnown` rule (a moderated or deleted comment is 404 for everyone but moderators and its author), moderation and history order the parent and comment checks before the moderator permission check, and the shared matrix now covers a non-moderator outsider, anonymous, hidden and redacted comments on a visible issue, comment-reaction removal, cross-issue addressing on every comment route, moderator writes to a hidden parent, and deleted-parent writes. Re-verified on workerd and PostgreSQL.

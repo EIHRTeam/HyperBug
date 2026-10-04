@@ -1099,6 +1099,7 @@ it('enforces the 06.V2 negatives matrix on workerd/D1', async () => {
     call,
     projectId: projectA.id,
     authorToken,
+    outsiderToken: otherToken,
     staffToken,
     hideIssue: async (id) => {
       await db
