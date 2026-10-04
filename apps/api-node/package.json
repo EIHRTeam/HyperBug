@@ -11,6 +11,7 @@
     "@hyperbug/database-postgres": "workspace:*",
     "@hyperbug/observability": "workspace:*",
     "@elysia/node": "1.4.6",
-    "pg": "8.23.0"
+    "pg": "8.23.0",
+    "@hyperbug/blob-s3": "workspace:*"
   }
 }

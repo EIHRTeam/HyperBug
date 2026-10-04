@@ -91,6 +91,11 @@ export const cloudflareWasmAssets = [
  */
 export const fixtureTargets = [
   {
+    name: 'blob-worker',
+    entry: 'tests/fixtures/blob-worker.ts',
+    outDir: 'dist/blob-worker',
+  },
+  {
     name: 'scanner-worker',
     entry: 'tests/fixtures/scanner-worker.ts',
     outDir: 'dist/scanner-worker',
