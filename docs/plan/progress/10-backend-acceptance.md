@@ -135,3 +135,12 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Selected config/audit/provider/activation 36, Minimum journey 7, real PostgreSQL 18.6 account/upgrade journey 1 and final admission 19 passed; typecheck/lint/boundaries/docs pass. Bundle and denylist sizes recorded, initial fixture failures corrected. Local evidence only, no Argon2id performance or independent review claim.
 - Decisions/blockers: Authorized Minimum-only offline-strength deviation disclosed; historical v1 audit rows preserved. G1/G2 now require all three profiles and stay closed; additional real-Free 13.G6 open. Actual CPU/startup remains B15.
 - Next actions/cautions: Commit B8 then B9 risk-tiered limits. Preserve scoped key/concurrency bounds, one-use permits, stronger-hash refusal, expected credential revision, append-only histories, protected files and remaining holds.
+
+### 2026-10-05 — Review remediation B9 risk-tiered limits
+
+- Scope/checklist IDs: Approved B9 correction to 03.3c/d and 06 content admission, with 10 acceptance dependencies; later audit suspended.
+- Progress/change summary: Closed category policy preserves identity all-version counters; content requires approximate principal/project shedding and one primary current-version principal counter. Rotation's content reset is disclosed in ADR 0008.
+- Files/artifacts: Security policy/providers, RATE-LIMITING, ADR 0008 and shared actual-store HTTP fixture; [B9 evidence](../evidence/2026-10-05-review-remediation.md#b9-risk-tiered-content-admission-2026-10-05).
+- Verification: Unit 17, D1 content/issue 2 and PostgreSQL 18.6 content/issue 2 passed; typecheck/lint/boundaries/scoped format/diff pass. One counter, rotation, identity continuity, 429 and approximate-outage no-write verified. Initial fixture corrections recorded.
+- Decisions/blockers: No schema/deployment or blocker; approximate project shedding is not a durable quota. Production budgets remain B15. No independent review claim; gates unchanged.
+- Next actions/cautions: Commit B9, then B10 explicit cache policy. Preserve identity all-version limits, mandatory content shedding, trusted IDs, primary fail-closed behavior and protected drafts.

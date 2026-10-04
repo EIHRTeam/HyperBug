@@ -324,3 +324,12 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Both focused D1/workerd and real PostgreSQL 18.6 suites **9 passed each**, plus token-assurance unit **3 passed**, no skips. Measured anonymous list **5→4**, Staff list **11→7** database statements with the in-memory test key source; no unmeasured production count claim. Role removal/suspension/private visibility changes take effect on new requests; B2 negatives and existing query/index plans pass. Typecheck/lint/boundaries/scoped format/diff and documentation build pass.
 - Decisions/blockers: Actual authenticated count supersedes the plan's rough ~5 estimate. No schema/deployment/ADR/permission change or blocker. Gates unchanged; production key overhead and real-Free limits remain B7/B15.
 - Next actions/cautions: Commit B6, then B7 imported key reuse/per-purpose registry/request snapshots with immediate revocation. Keep cache lifetime at one Request, separate decisions/credentials, and retain authoritative project seed provenance. Preserve protected files and historical evidence.
+
+### 2026-10-05 — Review remediation B9 risk-tiered limits
+
+- Scope/checklist IDs: Approved B9 correction to 03.3c/d and 06 content admission, with 10 acceptance dependencies; later audit suspended.
+- Progress/change summary: Closed category policy preserves identity all-version counters; content requires approximate principal/project shedding and one primary current-version principal counter. Rotation's content reset is disclosed in ADR 0008.
+- Files/artifacts: Security policy/providers, RATE-LIMITING, ADR 0008 and shared actual-store HTTP fixture; [B9 evidence](../evidence/2026-10-05-review-remediation.md#b9-risk-tiered-content-admission-2026-10-05).
+- Verification: Unit 17, D1 content/issue 2 and PostgreSQL 18.6 content/issue 2 passed; typecheck/lint/boundaries/scoped format/diff pass. One counter, rotation, identity continuity, 429 and approximate-outage no-write verified. Initial fixture corrections recorded.
+- Decisions/blockers: No schema/deployment or blocker; approximate project shedding is not a durable quota. Production budgets remain B15. No independent review claim; gates unchanged.
+- Next actions/cautions: Commit B9, then B10 explicit cache policy. Preserve identity all-version limits, mandatory content shedding, trusted IDs, primary fail-closed behavior and protected drafts.

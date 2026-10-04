@@ -12,6 +12,22 @@ export const rateCategories = [
 ] as const;
 export type RateCategory = (typeof rateCategories)[number];
 
+/** Closed Core policy; routes/plugins cannot choose a cheaper tier. */
+export const rateAdmissionTiers: Readonly<
+  Record<RateCategory, 'identity' | 'content' | 'existing'>
+> = Object.freeze({
+  login: 'identity',
+  'password-reset': 'identity',
+  registration: 'identity',
+  'api-token-create': 'identity',
+  'issue-create': 'content',
+  'comment-create': 'content',
+  reaction: 'content',
+  search: 'existing',
+  'attachment-upload': 'existing',
+  'webhook-configure': 'existing',
+});
+
 export const rateDimensions = [
   'ip',
   'account',

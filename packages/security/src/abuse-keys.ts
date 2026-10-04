@@ -3,6 +3,8 @@ import { secretDocumentDigest, type SecretKeySource } from './key-provider.ts';
 import {
   abuseSubjectDigest,
   checkSensitiveRateLimits,
+  checkSensitiveRateLimitVersions,
+  rateAdmissionTiers,
   hasRequiredRateDimensions,
   rateCategories,
   rateDimensions,
@@ -279,6 +281,9 @@ export async function checkSensitiveRateAdmissionWithSubjects(
   if (dimensions.size < 2 || !hasRequiredRateDimensions(category, dimensions))
     return unavailableWithSubjects;
 
+  const content = rateAdmissionTiers[category] === 'content';
+  if (content && (!limiter || snapshot.length !== 2 || dimensions.size !== 2))
+    return unavailableWithSubjects;
   try {
     const keys = await provider.active(signal);
     if (
@@ -289,7 +294,9 @@ export async function checkSensitiveRateAdmissionWithSubjects(
       keys.length * snapshot.length > 16
     )
       return unavailableWithSubjects;
-    const keySnapshot = keys.map(({ version, key }) => ({ version, key }));
+    const keySnapshot = (content ? keys.slice(0, 1) : keys).map(
+      ({ version, key }) => ({ version, key }),
+    );
     const derived = await Promise.all(
       snapshot.map(async (check) => ({
         rule: check.rule,
@@ -309,7 +316,7 @@ export async function checkSensitiveRateAdmissionWithSubjects(
     if (signal.aborted) return unavailableWithSubjects;
     if (limiter !== undefined) {
       // Approximate shedding uses only the current key. Primary counters below
-      // still consume every active version after an approximate allowance.
+      // consume every active version for identity/existing categories; content uses current principal only.
       const digests = Array.from(
         new Set(derived.map((check) => check.subjects[0]!.digest)),
       );
@@ -341,7 +348,18 @@ export async function checkSensitiveRateAdmissionWithSubjects(
           subjectsByCheck: null,
         };
     }
-    const decision = await checkSensitiveRateLimits(store, derived, nowMs);
+    const principalIndex = snapshot.findIndex(
+      (check) => check.dimension === 'principal',
+    );
+    const principal = derived[principalIndex];
+    const decision = content
+      ? await checkSensitiveRateLimitVersions(
+          store,
+          principal!.subjects,
+          principal!.rule,
+          nowMs,
+        )
+      : await checkSensitiveRateLimits(store, derived, nowMs);
     if (signal.aborted) return unavailableWithSubjects;
     if (!decision.allowed) return { ...decision, subjectsByCheck: null };
     return {

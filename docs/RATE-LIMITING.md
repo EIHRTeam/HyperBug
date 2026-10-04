@@ -2,6 +2,10 @@
 
 Owner: [03.3c–03.3d](plan/modules/03-security-foundation.md). Decision: [ADR 0008](decisions/0008-rate-limit-consistency.md). Status as of 2026-09-27: shared counters and adapters have local evidence, and registration is the first owned route; deployed consistency and 03.V3 acceptance are open. Audit work is [suspended](plan/AUDIT-SUSPENSION.md).
 
+## Risk-tiered admission (2026-10-05)
+
+Core's closed category table preserves all-active-version primary account/IP (or principal/IP) counters for identity. Upload, webhook configuration and search preserve their existing policies. Issue creation, comment creation and reactions require one principal and one project check: both receive current-version approximate shedding, and only the principal receives one authoritative current-version counter. Missing, unavailable or malformed shedding denies before the write. A primary outage denies; a exceeded principal counter returns 429. There is no durable project quota claim. During deliberate abuse-key rotation, content starts a new current-version window; identity continuity stays unchanged. This reduces content writes from 2×K to one for K active versions. Budgets remain provisional until B15. [ADR 0008 amendment](decisions/0008-rate-limit-consistency.md#risk-tiered-admission-amendment-2026-10-05-b9) supersedes general all-version wording below for these three content categories.
+
 ## Classes and dimensions
 
 Core has ten rate categories: login, password reset, registration, Issue creation, comment creation, reaction, search, attachment upload, API-token creation and webhook configuration. Categories are route classes, not a raw URL supplied by a caller. Each owning route must select relevant IP, account, principal, project, token and route dimensions; it must not rely on one global IP key. CAPTCHA success does not skip any limit.

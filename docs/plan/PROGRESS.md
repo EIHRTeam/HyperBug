@@ -1194,3 +1194,7 @@ B7 imported key reuse, purpose-filtered registry loads and request-local snapsho
 ### 2026-10-05 — Review remediation B8 checkpoint
 
 Formal Cloudflare Minimum now enables public peppered PBKDF2 accounts under the explicit ADR 0012 exception, with new acknowledgement, durable lockout/CAPTCHA, standard Argon2id upgrade and scoped activation. Separate Minimum bundle omits Wasm. [B8 evidence](evidence/2026-10-05-review-remediation.md#b8-formal-cloudflare-minimum-profile-2026-10-05) records focused verification and measured bundle sizes. G1/G2 require all three profiles and remain closed; additional 13.G6 remains open for actual Free-plan evidence. Next B9–B15.
+
+### 2026-10-05 — Review remediation B9 checkpoint
+
+Content admission now requires approximate principal/project shedding plus one primary current-version principal counter; identity counters keep all-version continuity. [B9 evidence](evidence/2026-10-05-review-remediation.md#b9-risk-tiered-content-admission-2026-10-05) records both-store HTTP and product issue checks. Next B10–B15; actual budgets and all gates remain open.
