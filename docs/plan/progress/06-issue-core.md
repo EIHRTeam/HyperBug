@@ -12,9 +12,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Implementation started: Yes (2026-10-01).
 - Completed implementation checklist IDs: 06.1a, 06.1b, 06.2a, 06.2b, 06.2d, 06.2e, 06.3a, 06.3b, 06.3c, 06.3d, 06.3e, 06.V1, 06.V2, 06.V3, 06.V4.
 - Active/next checklist group: None — module complete except the suspended audit portions.
-- Last updated: 2026-10-01 (acceptance 06.V1–06.V4 accepted; module complete).
-- Blocking issues discovered: None during planning; prerequisite completion is still required.
-- Evidence: Planning documents only; no implementation or runtime validation yet.
+- Last updated: 2026-10-03 (Module 07 scanner-hook integration follow-up).
+- Blocking issues discovered: None for Module 06 completion; suspended audit remainders remain deferred.
+- Evidence: [Issue Core validation](../evidence/06-issue-core-validation.md); later Module 07 integration evidence is appended below.
 
 ## Step tracking
 
@@ -175,3 +175,94 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None introduced; prerequisites (modules 04–05) are not yet complete.
 - Next actions: Unchanged — begin 06.1 after module 05 completes; wire the re-scoped project categories with the project routes and measure budgets at the staging milestone.
 - Next-session cautions: The re-scope adds scope to this module's project routes; it does not authorize starting module 06 early or resuming suspended audit work.
+
+
+### 2026-10-03 — Module 07 dependency follow-up
+
+- Scope and checklist IDs: Module 07 representation integration and prerequisite regression verification; no additional owning-module checklist item claimed.
+- Progress: Issue/comment detail and visible timeline rows now carry safe trees; issue/comment lists carry stored previews, with comment lists omitting bodies. Fixed D1 absent tombstoned timeline bodies to explicit null. Existing authorization/moderation/idempotency/timeline semantics remain verified.
+- Change summary: Supports the authorized Module 07 batch; [full handoff](07-content-and-attachments.md) and [verification evidence](../evidence/07-content-validation.md).
+- Files/artifacts: Affected package/fixture paths are inventoried in the linked Module 07 record; no older migration or protected SECURITY.md change.
+- Verification: Local unit 199, contract 1, Node 50, workerd/D1 143, PostgreSQL 18.6 82 tests passed; typecheck/lint/format/build/database/docs/license/secret checks passed. Local/emulated storage only; no deployment or remote migration.
+- Decisions and deviations: Owning-module status/gates and audit holds remain unchanged; no SPA or Module 09 expansion.
+- Blockers/open questions: Module 07's V7 policy-upgrade fixture and forms/storage acceptance remain with Module 07.
+- Next actions: Continue the authorized Module 07 goal; no unrelated feature work starts from this follow-up.
+- Next-session cautions: All changes remain uncommitted; preserve the protected draft and prior edits, suspended audits, existing migration history and initially clean module-03 measurement snapshots.
+
+
+### 2026-10-03 — Module 07 actual replacement-policy journey
+
+- Scope and checklist IDs: Dependency verification for 07.V7; no Module 06 checklist/gate change.
+- Progress: Both issue-route journeys now reload a test-only replacement API bundle against the same project/issues/database and traverse a saved cursor. Raw body/revision and pagination boundary stay unchanged while safe tree, policy version and ETag change; If-None-Match answers a fresh 200/no-store response.
+- Change summary: Shared content-policy-upgrade contract plus local Node/PostgreSQL listener replacement and Miniflare/workerd bundle reload; [Module 07 handoff](07-content-and-attachments.md), [evidence](../evidence/07-content-validation.md).
+- Files/artifacts: `tests/{postgres,workerd}/issue-route.test.ts`; shared replacement fixtures and build targets inventoried in Module 07.
+- Verification: Unit/contract 203, Node 50, workerd 144, PostgreSQL 82 passed (479 total); type/lint/format/build/docs/frozen install/license/secret checks passed. Local runtime/service evidence only; no deployment or remote migration.
+- Decisions and deviations: Test-only policy narrows del and changes its identifier; production content policy remains immutable. Existing Module 06 business/authorization/moderation/receipt behavior unchanged.
+- Blockers/open questions: Remaining form/store/API/attachment work belongs to Module 07.
+- Next actions: Continue the authorized Module 07 goal with versioned persistence/management/submissions.
+- Next-session cautions: Preserve all uncommitted work and protected SECURITY.md; Module 06's suspended audit portions remain suspended. Reacquire Miniflare binding handles after setOptions.
+
+### 2026-10-03 — Module 07 form/template integration dependency checkpoint
+
+- Scope and checklist IDs: Dependency impact of 07.2a and non-audit form management/submission; no owning-module gate/checklist change.
+- Progress/change summary: Shared contracts and both production roots compose immutable content stores, bounded management/history routes and atomic structured issue creation. Added `content:manage` and read-only `content:history` permission rules; existing issue/auth/admission behavior passes the complete regression matrix. New migrations preserve history; no older migration or audit behavior changed.
+- Files/artifacts: Owning changes and detailed decisions are inventoried in [Module 07 progress](07-content-and-attachments.md), [specification](../../ISSUE-FORMS.md) and [validation evidence](../evidence/07-content-validation.md).
+- Verification: 499 tests passed (unit/contract 204, Node 50, workerd 155, PostgreSQL 18.6 90); typecheck/lint/build/db/docs/license/secret checks passed. This is local runtime/database evidence; no remote migration or deployment.
+- Decisions/blockers: Attachment integration remains with Module 07; audit suspension and Module 09/SPA holds remain. G1 stays closed. See the linked record for the detected and corrected PostgreSQL project/receipt lock-order deadlock.
+- Next actions/cautions: Continue only the authorized Module 07 goal. Preserve all uncommitted changes and protected SECURITY.md; never resume suspended audit via this dependency record.
+
+### 2026-10-03 — Module 07 upload lifecycle dependency checkpoint
+
+- Scope and checklist IDs: Module 07 target authorization dependency; Module 06 accepted scope unchanged.
+- Progress: Independent dependency work verified; [Module 07 checkpoint](07-content-and-attachments.md) owns lifecycle acceptance.
+- Change summary: Added owner/project-scoped comment lookup by ID on both adapters for existing-comment upload associations; parent Issue visibility/moderation/deletion is enforced by the shared feature handler and transaction guards. Issue/comment/draft association checks and inherited content journeys pass; atomic attachment linking remains future Module 07 work.
+- Files/artifacts: Relevant roots/build/manifests, application/contracts/server/database/comment adapters and fixtures; [lifecycle specification](../../ATTACHMENT-LIFECYCLE.md) and [evidence](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Final current-tree matrix **541 passed** (unit/contract 209; Node 57 with 9 explicit provider skips; workerd/D1 172; isolated real local PostgreSQL 18.6 103). Typecheck/lint/db history/docs/secrets/licenses/frozen install/format passed; final build details in linked evidence. Existing actual-provider compatibility reused; no deployed lifecycle or scan result claimed.
+- Decisions and deviations: ADR 0011; scope remains Module 07 with no suspended audit or Module 09/SPA expansion.
+- Blockers/open questions: Multipart/scan/release/content linking/delivery/full cleanup and held dispatch remain with Module 07; no new prerequisite gate opened.
+- Next actions: Continue 07.3c multipart intent/capability orchestration, then 07.3d/f–h and attachment-aware 07.2; preserve existing module status/gates.
+- Next-session cautions: No commits; protected SECURITY.md and private credentials remain untouched. New migrations append to history. Legacy intents retain quota pending explicit reconciliation; unrelated regenerated Module 03 measurements were restored.
+
+### 2026-10-03 — Module 07 multipart lifecycle integration
+
+- Scope and checklist IDs: Module 07 attachment API integration on the existing Issue/comment authorization boundary; Module 06 completion and suspended audit remainders unchanged.
+- Progress: Both authenticated Issue journeys now include full local multipart orchestration and manual immutable processing.
+- Change summary: Owner/project-scoped create/resume/parts/complete/abort, current visibility/permission checks, quota semantics and no-store DTOs preserve existing Issue/comment behavior. Verified content remains unlinked and unscanned/quarantined.
+- Files/artifacts: Shared upload routes/services/DTOs, both issue-route fixtures and upload HTTP proof; synchronized English/Chinese Issue guides; [Module 07 evidence](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Final full matrix 569 passed: 209 unit/contract, 60 Node, 185 workerd/D1, 115 real local PostgreSQL 18.6; 9 optional provider skips. Multipart HTTP storage is local emulation. Typecheck/lint/docs/build passed; prior actual-R2/SeaweedFS evidence retained separately.
+- Decisions and deviations: No content attachment link, scan or release is inferred from upload verification. 202 continues to mean awaiting processing with no held dispatcher composed.
+- Blockers/open questions: Atomic attachment/form consumption depends on accepted scan/release policy; scanner/result integration, isolated delivery and complete cleanup remain Module 07 work.
+- Next actions: 07.3f scanner/result policy, then 07.2b–d/V2 atomic accepted attachment consumption; 07.3g/07.3h delivery and cleanup.
+- Next-session cautions: Preserve Module 06 semantics and audit suspension. No SPA/Module 09 scheduling, commits or credential exposure.
+
+### 2026-10-03 — Module 07 scanner hook integration
+
+- Scope and checklist IDs: Module 07 scan-policy/DTO integration; Module 06 completion and suspended audit remainders unchanged.
+- Progress: Core hooks/persistence/guard behavior locally verified; 07.3f actual scanner acceptance remains incomplete.
+- Change summary: Current ownership/visibility/membership guard remains authoritative for scan claim/result/release. Upload DTOs expose truthful policy statuses and omit scanner evidence. Attachment/form consumption remains unimplemented; no actual file is claimed scanned.
+- Files/artifacts: Shared upload services/views, both issue-route/synthetic proofs and synchronized Issue guides; lifecycle evidence. [Detailed validation](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Composed regression **598 passed**: 209 unit/contract, 70 Node (9 optional-provider skips), final 195 workerd/D1/R2 emulation and 124 real isolated local PostgreSQL 18.6 with S3 emulation. Scanner verdicts are synthetic. Typecheck/lint/db:check/build/docs/format/secrets/links passed. Initial D1 count failure and corrected-lane commands are recorded in the linked evidence.
+- Decisions and deviations: ADR 0011 scanner/result refinement; no provider adapter or dependency change, no audit/Module 09/SPA expansion. Fresh/upgrade preservation verified; only new uncommitted migrations refined before shared deployment.
+- Blockers/open questions: Actual scanner/plugin/service/result integration is absent. Module 07 cleanup/discovery, isolated delivery, consumption, production CORS and deployment acceptance remain open.
+- Next actions: 07.3f actual scanner evidence; independent 07.3h cleanup/reconciliation and 07.3g delivery; 07.2b–d accepted-state consumption.
+- Next-session cautions: No commit/cloud mutation or actual malware-detection claim. Preserve all prior work, protected SECURITY.md/private credentials and old histories. Used quota and held policy are retained until verified physical cleanup.
+
+### 2026-10-04 — Form attachment aggregate atomicity
+
+- Scope and checklist IDs: Module 07 07.2b–d/V2 integration into accepted issue creation; Module 06 status and audit suspension unchanged.
+- Progress/change summary: Form submission consumes up to 32 authorized current-clean-ready draft uploads in the existing issue/provenance/number/event/outbox/receipt transaction. Reuse or changed eligibility rolls everything back. Same-key concurrent receipt replay survives consumption and later form disable; original structured provenance remains intact. Linked uploads thereafter inherit persisted issue authorization, including hidden-parent denial.
+- Files/artifacts: Both issue repositories/new consumption helpers, shared form repository/API fixtures, form/lifecycle docs and [owning evidence](../evidence/07-content-validation.md).
+- Verification: Final default **646 passed / 11 optional-provider skips**, including workerd/D1 218 and real isolated local PostgreSQL 18.6 143. Expanded form/API focus D1 27/PostgreSQL 20, corrected stale-token focus 1 each. Synthetic scan results only; existing actual storage-provider evidence reused. Initial aggregate failure and correction recorded in Module 07.
+- Decisions/blockers: No schema/dependency/issue audit change. Actual scanner, isolated delivery and remaining cleanup/CORS stay Module 07 boundaries.
+- Next actions: 07.3g; remaining 07.3h/07.3c/07.3f. No SPA/Module 09 scheduling.
+- Next-session cautions: No commit/deployment; protected SECURITY.md and earlier work preserved. Do not treat linking as download permission or synthetic clean results as actual scanning.
+
+### 2026-10-04 — Authorized media and HTTPS checkpoint
+
+- Scope/checklist IDs: Module 07 07.3g/V5 accepted at backend/local transport scope; this module's existing gates/status remain unchanged.
+- Progress/change summary: Media delivery inherits visible non-deleted issue/comment authorization and project visibility, rechecked after storage acquisition. Both-profile HTTP fixtures exercise public/private/archived access, suspension/revocation/membership loss and hidden/redacted/deleted comment/issue parents. General comment attachment association is an internal fixture only.
+- Files/artifacts: shared media parent guards and issue-route/attachment fixtures; [owning evidence](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Final complete default matrix **673 passed / 11 optional-provider skips**: 236 unit/contract, 76 Node, 218 workerd/D1/R2 emulation, 143 real isolated PostgreSQL 18.6/S3 emulation. Focused media unit 22, TLS Node 5 and HTTP 1 per profile. Node media uses certificate-verified local native HTTPS with virtual Host; Workers uses canonical edge URL through workerd emulation. Types/lint/boundaries/build/docs/secrets passed. Provider/migration/dependency evidence reused unchanged; full final handoff checks are in Module 07.
+- Decisions/blockers: Current attachment/scan/association and bearer/principal/membership/parent state are rechecked after acquiring storage; held streams are canceled on denial. Actual scanner, installed production CORS/browser evidence and full cleanup/native discovery remain incomplete. No new audit, dispatcher or SPA.
+- Next actions: 07.3h/V4 native discovery and explicit used-file/legacy/retention cleanup; 07.3c production selection and 07.3f trusted actual scanner when available.
+- Cautions: All work uncommitted; no deployment. Preserve earlier work, historical migrations and protected SECURITY.md. Synthetic clean results never prove malware detection. Generated Module 03 measurements restored after runtime processes ended.

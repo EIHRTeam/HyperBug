@@ -12,7 +12,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Implementation started: Yes.
 - Completed implementation checklist IDs: 01.1a–01.1e, 01.2a–01.2f, 01.3a–01.3e, 01.V1–01.V3.
 - Active/next checklist group: 01.3f and 01.V4, the post-completion SAST increment added on 2026-09-18. The original foundation acceptance remains met; these two items are open, so the module is no longer Complete.
-- Last updated: 2026-09-18.
+- Last updated: 2026-10-03 (Module 07 scanner-hook integration follow-up).
 - Blocking issues discovered: None remaining for the original phase acceptance. An earlier intermittent Node reset remains recorded; later local, clean-checkout and hosted runs pass.
 - Evidence: [Local foundation validation](../evidence/01-foundation-validation.md). The SAST increment has local configuration validation only; no hosted run exists yet.
 
@@ -304,3 +304,239 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for this diagnostic repair; existing unrelated 01.3f/01.V4 work remains open under the scope hold.
 - Next actions: Keep new feature work paused.
 - Next-session cautions: Preserve the shared build target/fixture resolution contract and Node 24 verification requirement; audit and Argon2id performance work remain paused, Free tier disabled, and no SPA started.
+
+
+### 2026-10-03 — Module 07 dependency follow-up
+
+- Scope and checklist IDs: Module 07 parser dependencies and runtime fixture/build boundary; no additional owning-module checklist item claimed.
+- Progress: Added exact stable platform-neutral parser pins and an explicit Markdown export boundary; no unrelated toolchain/peer upgrade. The ingress bundle remains 6,893 bytes. Existing peer warning is documented in Module 07 evidence.
+- Change summary: Supports the authorized Module 07 batch; [full handoff](07-content-and-attachments.md) and [verification evidence](../evidence/07-content-validation.md).
+- Files/artifacts: Affected package/fixture paths are inventoried in the linked Module 07 record; no older migration or protected SECURITY.md change.
+- Verification: Local unit 199, contract 1, Node 50, workerd/D1 143, PostgreSQL 18.6 82 tests passed; typecheck/lint/format/build/database/docs/license/secret checks passed. Local/emulated storage only; no deployment or remote migration.
+- Decisions and deviations: Owning-module status/gates and audit holds remain unchanged; no SPA or Module 09 expansion.
+- Blockers/open questions: Module 07's V7 policy-upgrade fixture and forms/storage acceptance remain with Module 07.
+- Next actions: Continue the authorized Module 07 goal; no unrelated feature work starts from this follow-up.
+- Next-session cautions: All changes remain uncommitted; preserve the protected draft and prior edits, suspended audits, existing migration history and initially clean module-03 measurement snapshots.
+
+
+### 2026-10-03 — Module 07 format and policy-replacement follow-up
+
+- Scope and checklist IDs: Module 07 YAML dependency/format boundary and actual policy-upgrade runtime fixture; no additional owning-module checklist or gate claimed.
+- Progress: Exact platform-neutral yaml 2.9.1 pin and isolated parser export; test-only replacement bundles prove policy/tree/validator changes and cursor continuity on both local profiles. Form API/persistence/storage acceptance remains open.
+- Change summary: Supports the authorized Module 07 continuation; [full handoff](07-content-and-attachments.md) and [evidence](../evidence/07-content-validation.md).
+- Files/artifacts: Dependency/lockfile, shared boundary/build configuration, form corpus and replacement fixtures are inventoried in the linked Module 07 record.
+- Verification: Unit/contract 203, workerd 144, local PostgreSQL 82; type/lint/format/docs/frozen install/license/secret checks passed. All-target build and Node 50 passed (479 final-lane total). Local runtime/service evidence only; no deployment or cloud object mutation.
+- Decisions and deviations: Production policy immutable; transform is test-only. Existing peer warning preserved. No audit/SPA/Module 09 expansion.
+- Blockers/open questions: Module 07's persistence/APIs/attachment work and real provider tests remain with Module 07.
+- Next actions: Continue the current Module 07 goal with the versioned persistence/management/submission batch.
+- Next-session cautions: Keep the root SECURITY.md draft protected and all earlier changes; avoid concurrent lint with tests that create negative boundary fixtures; preserve initially clean module-03 measurements.
+
+### 2026-10-03 — Module 07 form/template integration dependency checkpoint
+
+- Scope and checklist IDs: Dependency impact of 07.2a and non-audit form management/submission; no owning-module gate/checklist change.
+- Progress/change summary: Shared contracts and both production roots compose immutable content stores, bounded management/history routes and atomic structured issue creation. Added `content:manage` and read-only `content:history` permission rules; existing issue/auth/admission behavior passes the complete regression matrix. New migrations preserve history; no older migration or audit behavior changed.
+- Files/artifacts: Owning changes and detailed decisions are inventoried in [Module 07 progress](07-content-and-attachments.md), [specification](../../ISSUE-FORMS.md) and [validation evidence](../evidence/07-content-validation.md).
+- Verification: 499 tests passed (unit/contract 204, Node 50, workerd 155, PostgreSQL 18.6 90); typecheck/lint/build/db/docs/license/secret checks passed. This is local runtime/database evidence; no remote migration or deployment.
+- Decisions/blockers: Attachment integration remains with Module 07; audit suspension and Module 09/SPA holds remain. G1 stays closed. See the linked record for the detected and corrected PostgreSQL project/receipt lock-order deadlock.
+- Next actions/cautions: Continue only the authorized Module 07 goal. Preserve all uncommitted changes and protected SECURITY.md; never resume suspended audit via this dependency record.
+
+### 2026-10-03 — Module 07 portable storage dependency checkpoint
+
+- Scope and checklist IDs: Dependency/runtime impact of 07.3a; no Module 01 gate or suspended item changed.
+- Progress/change summary: Isolated R2 and Node S3 adapter packages, shared runtime proof and explicit real-service command. Exact AWS SDK client/presigner 3.1146.0 and aws4fetch 1.0.20; Workers types 5.20261003.1 resolves the existing Wrangler 4.144.0 peer mismatch without relaxing strict peers. SDK code stays out of application/domain boundaries and Node SDK stays out of the R2 bundle.
+- Files/artifacts: Manifests/lockfile, adapter packages, boundary/build configuration, storage fixtures/launcher and development guides; detailed inventory in [Module 07 progress](07-content-and-attachments.md) and [storage evidence](../evidence/07-storage-validation.md).
+- Verification: 509 full tests passed with real-service cases enabled (209 unit/contract, 54 Node, 156 workerd, 90 PostgreSQL), plus type/lint/frozen install/build/db/docs/format/license/secret/links/whitespace. Native R2 via actual remote binding and real local SeaweedFS proof passed; these are separately classified from emulation and product deployment.
+- Decisions/blockers: No default real-service substitution or binary auto-install. R2 S3-scoped credentials/CORS acceptance remains with Module 07. Temporary actual test bucket deleted and absence confirmed. No product deployment/SPA/Module 09 expansion/audit resumed.
+- Next actions/cautions: Module 07 intents/finalization batch next. Preserve uncommitted work/protected SECURITY.md; keep peer/lifecycle and exact dependency restrictions. Initially clean generated Module 03 measurements were restored after tests finished.
+
+### 2026-10-03 — Module 07 actual storage and promotion checkpoint
+
+- Scope and checklist IDs: Dependency verification of 07.3i/V3; no owning-module gate/checklist change.
+- Progress/change summary: Actual R2 S3/signing/CORS, native local workerd/remote R2 promotion/signing and real local SeaweedFS promotion pass; the shared adapter normalizes quoted S3 part ETags for native R2 completion. Details and private configuration boundaries are in [Module 07 progress](07-content-and-attachments.md) and [storage evidence](../evidence/07-storage-validation.md).
+- Files/artifacts: Owning blob adapter/promotion/fixture/command/specification inventory in Module 07; no migration or product deployment in this batch.
+- Verification: Current full matrix 517 passed (unit/contract 209, Node 61, workerd/D1 157, real local PostgreSQL 18.6 90); typecheck/lint/db/docs/license/secret/read-only format passed. Provider checks remain distinct from emulator and product deployment evidence.
+- Decisions/blockers: R2 signing-credential blocker resolved privately; public attachment lifecycle remains Module 07 work. Audit/SPA/Module 09 holds and G1 remain unchanged.
+- Next actions/cautions: Continue only authorized Module 07 persistence/integration; preserve uncommitted work, historical migrations and protected SECURITY.md. No capability or credential in tracked evidence.
+
+### 2026-10-03 — Module 07 upload lifecycle dependency checkpoint
+
+- Scope and checklist IDs: Module 07 composition/build dependency; no new Module 01 acceptance.
+- Progress: Independent dependency work verified; [Module 07 checkpoint](07-content-and-attachments.md) owns lifecycle acceptance.
+- Change summary: Both roots optionally compose private backend storage configuration and shared upload routes. Node keeps a single production ESM artifact with codeSplitting disabled and targeted directory cleanup; frozen workspace links include the two isolated blob adapters.
+- Files/artifacts: Relevant roots/build/manifests, application/contracts/server/database/comment adapters and fixtures; [lifecycle specification](../../ATTACHMENT-LIFECYCLE.md) and [evidence](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Final current-tree matrix **541 passed** (unit/contract 209; Node 57 with 9 explicit provider skips; workerd/D1 172; isolated real local PostgreSQL 18.6 103). Typecheck/lint/db history/docs/secrets/licenses/frozen install/format passed; final build details in linked evidence. Existing actual-provider compatibility reused; no deployed lifecycle or scan result claimed.
+- Decisions and deviations: ADR 0011; scope remains Module 07 with no suspended audit or Module 09/SPA expansion.
+- Blockers/open questions: Multipart/scan/release/content linking/delivery/full cleanup and held dispatch remain with Module 07; no new prerequisite gate opened.
+- Next actions: Continue 07.3c multipart intent/capability orchestration, then 07.3d/f–h and attachment-aware 07.2; preserve existing module status/gates.
+- Next-session cautions: No commits; protected SECURITY.md and private credentials remain untouched. New migrations append to history. Legacy intents retain quota pending explicit reconciliation; unrelated regenerated Module 03 measurements were restored.
+
+### 2026-10-03 — Module 07 multipart lifecycle integration
+
+- Scope and checklist IDs: Module 07 multipart runtime integration; existing Module 01 acceptance and open SAST items unchanged.
+- Progress: Shared multipart routes execute on both existing runtime profiles; no SPA or Module 09 expansion.
+- Change summary: Fixture proofs now exercise native emulated multipart parts, completion crash recovery, immutable processing and abort/cleanup through the shared public API. Public composition remains optional and private configuration stays backend-owned.
+- Files/artifacts: `packages/server/src/index.ts`, multipart contracts/application services, account/upload proof and both issue-route fixtures; [Module 07 evidence](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Final `pnpm test`: 209 unit/contract, 60 Node, 185 workerd/D1, 115 real local PostgreSQL 18.6; 9 optional real-provider skips. All-target build, typecheck and import-boundary lint passed. Storage in the new HTTP journeys is emulated; prior real-provider evidence retained.
+- Decisions and deviations: Shared services/routes and infrastructure-isolated adapters preserved. No network/hash work inside database transactions or ordinary file-buffering routes.
+- Blockers/open questions: Module 07 scanner/result, production CORS/media, full cleanup and deployment evidence remain open; no change to foundation blockers.
+- Next actions: Continue 07.3f/07.2b–d/07.3g/07.3h within existing holds; Module 01 SAST stays separately owned.
+- Next-session cautions: No commits/cloud mutation; preserve existing changes and protected SECURITY.md. Do not build runtime fixture outputs during tests or run boundary lint during unit fixture creation.
+
+### 2026-10-03 — Module 07 scanner hook integration
+
+- Scope and checklist IDs: Core scanner hook/runtime integration; foundation status and SAST scope unchanged.
+- Progress: Core hooks/persistence/guard behavior locally verified; 07.3f actual scanner acceptance remains incomplete.
+- Change summary: Shared handler/DTOs run in both existing runtimes; scanner is unconfigured by default, with no public callback or held dispatcher. Authenticated HTTP fixtures use clearly labeled synthetic verdicts.
+- Files/artifacts: Application scan-upload, shared views/contracts, both issue-route/upload proofs; lifecycle evidence. [Detailed validation](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Composed regression **598 passed**: 209 unit/contract, 70 Node (9 optional-provider skips), final 195 workerd/D1/R2 emulation and 124 real isolated local PostgreSQL 18.6 with S3 emulation. Scanner verdicts are synthetic. Typecheck/lint/db:check/build/docs/format/secrets/links passed. Initial D1 count failure and corrected-lane commands are recorded in the linked evidence.
+- Decisions and deviations: ADR 0011 scanner/result refinement; no provider adapter or dependency change, no audit/Module 09/SPA expansion. Fresh/upgrade preservation verified; only new uncommitted migrations refined before shared deployment.
+- Blockers/open questions: Actual scanner/plugin/service/result integration is absent. Module 07 cleanup/discovery, isolated delivery, consumption, production CORS and deployment acceptance remain open.
+- Next actions: 07.3f actual scanner evidence; independent 07.3h cleanup/reconciliation and 07.3g delivery; 07.2b–d accepted-state consumption.
+- Next-session cautions: No commit/cloud mutation or actual malware-detection claim. Preserve all prior work, protected SECURITY.md/private credentials and old histories. Used quota and held policy are retained until verified physical cleanup.
+
+### 2026-10-04 — Module 07 read-only upload cors tooling
+
+- Scope and checklist IDs: Module 07 partial 07.3c/07.3h; existing module acceptance/holds unchanged.
+- Progress/change summary: Added exact-origin CORS preparation/snapshot checking and bounded internal project-local cleanup selection/execution, plus fenced synthetic trusted reconciliation. Both database adapters preserve shared semantics; no migration, provider adapter or dependency changed.
+- Files/artifacts: Application upload ports, both upload stores, `tooling/upload-cors.ts`, focused fixtures and [lifecycle evidence](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Full `pnpm test` **609 passed / 9 optional-provider skips** (211 unit/contract, 71 Node, 199 workerd/D1/R2 emulation, 128 real isolated PostgreSQL 18.6 with S3 emulation). Focused dual-store 5 each, unit/Node 11 and six local CLI commands pass; typecheck/lint/db/docs/links pass. Scanner/reconciler callbacks remain synthetic; prior provider acceptance reused.
+- Decisions/blockers: No actual scanner, deployed CORS or provider discovery is inferred. Complete cleanup and isolated delivery/consumption remain Module 07 work; scheduling/audit/SPA remain held.
+- Next actions: 07.3h actual exact-key discovery adapter evidence, then 07.3g/07.2b–d.
+- Next-session cautions: No commit/deployment; preserve older migrations, all prior work, protected SECURITY.md and private credentials.
+
+### 2026-10-04 — Module 07 actual discovery checkpoint handoff
+
+- Scope and checklist IDs: Partial 07.3h; existing owning-module checklist/gates unchanged.
+- Progress/change summary: Node upload composition supplies bounded exact-key S3 multipart reconciliation; native Workers remains fail-closed without a discovery adapter. Shared D1/PostgreSQL cleanup/accounting behavior is unchanged from the preceding verified port batch. No migration, dependency or held dispatcher added.
+- Files/artifacts: blob-s3 discovery helper/factory, Node upload root, actual-provider/negative fixtures, lifecycle/storage evidence.
+- Verification: Final default `pnpm test` **612 passed / 11 optional-provider skips** (214 unit/contract, 71 Node, 199 workerd/D1, 128 real PostgreSQL 18.6). Separate actual R2 S3 and real SeaweedFS discovery **2 passed / 11 filtered skips**; **614 distinct passing checks** composed, with nine other provider checks retaining earlier unchanged acceptance. Final sequential types/lint/build/docs/format/secrets/whitespace pass; initial lint/unit-fixture overlap resolved.
+- Decisions/blockers: Complete exact-key pagination/abort/post-abort absence is required; observed SeaweedFS upload-only continuation is preserved without inventing markers. Native Workers composition/full used-file cleanup, actual scanner, delivery/consumption and deployment CORS remain incomplete.
+- Next actions: 07.3g/07.2b–d and 07.3h native discovery/full cleanup; actual scanner acceptance remains 07.3f.
+- Next-session cautions: No commit/deployment; protected SECURITY.md unchanged, old histories and private credentials preserved. No Module 09/SPA/audit expansion.
+
+### 2026-10-04 — Module 07 atomic form attachment API checkpoint
+
+- Scope and checklist IDs: Module 07 07.2b–d/V2; foundation status/gates unchanged.
+- Progress/change summary: Shared submission contract adds explicit draft identity; both backend/API profiles atomically consume current clean released owner/project/draft uploads. Persisted upload association takes priority over stale handler snapshots after linking, including hidden-parent denial. No new composition/dependency/migration/provider/deployment scope.
+- Files/artifacts: Shared application/contracts/server and dual database adapters; repository/API fixtures; [Module 07 evidence](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Final default matrix **646 passed / 11 optional-provider skips**: 214 unit/contract, 71 Node, 218 workerd/D1/R2 emulation, 143 real isolated PostgreSQL 18.6/S3 emulation. Expanded focus D1 27/PostgreSQL 20; corrected stale-token focus 1 each. Initial aggregate workerd failure and lint's sequential-await annotations are preserved in owning evidence. Actual scanner verdicts remain synthetic; unchanged storage-provider evidence reused.
+- Decisions/blockers: Existing schema suffices; actual scanner, isolated delivery, deployed CORS and full cleanup remain Module 07. No SPA, Module 09 or audit expansion.
+- Next actions: 07.3g isolated authorized delivery, remaining 07.3h, 07.3c deployment selection and 07.3f actual scanner.
+- Next-session cautions: All work uncommitted; no deploy/commit. Protected SECURITY.md and historical migrations preserved; generated Module 03 measurements restored after tests stopped.
+
+### 2026-10-04 — Authorized media and HTTPS checkpoint
+
+- Scope/checklist IDs: Module 07 07.3g/V5 accepted at backend/local transport scope; this module's existing gates/status remain unchanged.
+- Progress/change summary: Both roots compose existing attachment reads and explicit media routing; Node optionally loads a bounded private PEM mount, starts native HTTP/1 TLS and passes the actual srvx hostname. Media early-return telemetry uses a fixed route label and matching request ID without auth/cookie routing.
+- Files/artifacts: runtime roots, Node TLS/listener, shared server/observability, runtime fixtures; [owning evidence](../evidence/07-upload-lifecycle-validation.md).
+- Verification: Final complete default matrix **673 passed / 11 optional-provider skips**: 236 unit/contract, 76 Node, 218 workerd/D1/R2 emulation, 143 real isolated PostgreSQL 18.6/S3 emulation. Focused media unit 22, TLS Node 5 and HTTP 1 per profile. Node media uses certificate-verified local native HTTPS with virtual Host; Workers uses canonical edge URL through workerd emulation. Types/lint/boundaries/build/docs/secrets passed. Provider/migration/dependency evidence reused unchanged; full final handoff checks are in Module 07.
+- Decisions/blockers: Current attachment/scan/association and bearer/principal/membership/parent state are rechecked after acquiring storage; held streams are canceled on denial. Actual scanner, installed production CORS/browser evidence and full cleanup/native discovery remain incomplete. No new audit, dispatcher or SPA.
+- Next actions: 07.3h/V4 native discovery and explicit used-file/legacy/retention cleanup; 07.3c production selection and 07.3f trusted actual scanner when available.
+- Cautions: All work uncommitted; no deployment. Preserve earlier work, historical migrations and protected SECURITY.md. Synthetic clean results never prove malware detection. Generated Module 03 measurements restored after runtime processes ended.
+
+
+### 2026-10-04 — Module 07 shared/native reconciliation checkpoint
+
+- Scope/checklist IDs: Module 07 partial 07.3h/07.V4; runtime composition only, existing owning-module acceptance/gates unchanged.
+- Progress/change summary: Shared application exact-key/page/ID/deadline/abort/absence policy now serves both selected storage roots; Workers uses bounded header-signed R2 S3 discovery beside native CRUD. No schema/migration/dependency/public-contract change.
+- Files/artifacts: Application/blob reconciliation, Workers upload root and native/provider fixtures; [Module 07 evidence](../evidence/07-upload-lifecycle-validation.md#native-reconciliation-final-regression).
+- Verification: Final default matrix **703 passed / 11 optional-provider skips**: 266 unit/contract, 76 Node, 218 workerd/D1/R2 emulation, 143 real isolated PostgreSQL 18.6/S3 emulation. Related actual R2 S3 + real local SeaweedFS **2 passed**; native local workerd/actual remote R2 **1 passed**. Types/lint/boundaries/build/docs pass; final ancillary in Module 07. Unchanged migration/provider CRUD/signing/promotion evidence reused.
+- Decisions/blockers: Manual mode/all-3xx refusal works around native Request redirect error/docs mismatch. Full used-unlinked/legacy/retention cleanup, actual scanner and production installed/browser CORS remain Module 07 work; no scheduler/audit/SPA expansion.
+- Next actions/cautions: Continue 07.3h/V4 explicit-policy cleanup. No commit/deployment; preserve earlier changes, historical migrations and protected SECURITY.md. Synthetic scans prove guards only. Generated Module 03 measurements restored after the matrix ended.
+
+
+### 2026-10-04 — Module 07 verified-unlinked cleanup checkpoint
+
+- Scope/checklist IDs: Module 07 partial 07.3h/07.V4; typed runtime fixture ports, existing owning-module acceptance/gates unchanged.
+- Progress/change summary: Required-retention orphan ports/handlers, atomic attachment absence/lease retirement and physical-absence used-byte release on both stores. Finalized immutable identity/guards and late-write tombstones preserved. No schema/migration/dependency/public-route change.
+- Files/artifacts: Application/database upload ports, shared/forced race fixture and two typed Node stubs; [Module 07 evidence](../evidence/07-upload-lifecycle-validation.md#verified-unlinked-cleanup-final-regression).
+- Verification: Full default **723 passed / 11 optional-provider skips**: 266 unit/contract, 76 Node, 229 workerd/D1/R2 emulation, 152 real isolated PostgreSQL 18.6/S3 emulation. Focus D1 12/PostgreSQL 10 included. Types/lint/boundaries/build/docs passed; final ancillary in Module 07. Blob/scan callbacks are synthetic; actual provider/migration/dependency evidence reused unchanged.
+- Decisions/blockers: Do not weaken finalized identity guards to expire retired records; deleted policy/released counters express retirement. Legacy reconciliation/adoption, tombstone retention/compaction and storage deadlines remain Module 07 work, alongside actual scanner and production CORS evidence.
+- Next actions/cautions: Continue 07.3h/V4; no commit/deploy/SPA/Module 09/audit. Preserve earlier work, old histories and protected SECURITY.md. Generated Module 03 measurements restored after tests ended.
+
+### 2026-10-04 — Module 07 cleanup waits, legacy inventory and actual scanner environment
+
+- Scope and checklist IDs: Module 07 partial 07.3h/V4 and actual-engine prerequisite 07.3f; foundation gates/SAST scope unchanged.
+- Progress and change summary: Shared lease-capped storage caller waits, bounded read-only legacy inventory and preserved runtime/API boundaries. Local ClamAV 1.5.4/signatures now verify; no application scanner or service is configured. No repository dependency/lockfile, runtime composition or migration change.
+- Files/artifacts: Application/database inventory/deadline helpers and focused tests; lifecycle/model/plan/evidence; installed official Homebrew local test tool/dependencies and ignored private scanner data. [Owning evidence](../evidence/07-upload-lifecycle-validation.md#bounded-legacy-inventory-2026-10-04); [scanner trust/limits](../evidence/07-scanner-environment-validation.md).
+- Verification: Final default **754 passed / 11 optional-provider skips** (287 local unit/contracts, 76 Node/S3 emulation, 234 workerd/D1/R2 emulation, 157 real isolated PostgreSQL 18.6/S3 emulation). Types/lint/import boundaries/all-target build/docs passed. Three actual local detached-signature and two actual engine clean/EICAR checks are separate from the aggregate and from both-profile scan acceptance. Existing actual-provider/migration/repository dependency evidence reused; final ancillary recorded in Module 07.
+- Decisions and deviations: Caller timeout is not physical CRUD cancellation; inventory grants no ownership/deletion. Scanner was installed without ClamAV PATH linking, service startup or global configuration; exact official source checksum/root and detached signatures verified without TLS/signature bypass.
+- Blockers and next actions: 07.3f bounded configured adapter plus actual both-profile pipeline results; 07.3h/V4 explicit legacy recovery/retained-key compaction; 07.3c selected production installed/browser CORS. No full checkbox closes from prerequisite proof.
+- Next-session cautions: All processes terminal, no service runs; generated Module 03 measurements restored. No commit/deploy/SPA/Module 09/audit. Preserve protected SECURITY.md, earlier work and historical migrations. Private databases are a snapshot and do not automatically update.
+
+
+### 2026-10-04 — Independent actual Node scanner adapter and verification lane
+
+- Scope and checklist IDs: Module 07 partial 07.3f; Node adapter/process lifecycle and explicit runtime verification lane, foundation status/gates unchanged.
+- Progress: Independent pinned/signed-read-only ClamAV adapter with one physical process slot, exact streaming bounds, actual closure/temp cleanup, fixed errors and private disposable verification configuration. Runtime roots do not select it; Workers transport remains next.
+- Change summary: Added adapter/helper/native subprocess tests, explicit `test:scanner` project/script and actual engine/archive/trust/failure cases; updated lifecycle/development/ADR evidence. No repository dependency, schema/history, public contract, scheduling or production deployment change.
+- Files/artifacts: Node adapter/helper, tests/node + tests/scanner + benign archive data, package/Vitest configuration; [owning scanner evidence](../evidence/07-scanner-environment-validation.md#actual-node-adapter-checkpoint).
+- Verification: Composed default **767 passed / 11 optional-provider skips** (287 unit/contracts, 89 Node, 234 workerd/D1/R2 emulation, 157 real local PostgreSQL 18.6/S3 emulation). Initial full 766/11 followed by final related Node-only case/full Node 89/11, with unchanged other lanes reused. Native subprocess 13 is included; explicit **actual local ClamAV 1.5.4 lane 15 passed** separately. Final types/lint/boundaries/build passed; final ancillary in Module 07. One actual 30-byte adapter resource sample: 4,476 ms / command max RSS 1,562,705,920 bytes. Earlier provider/migration/dependency evidence reused unchanged.
+- Decisions and deviations: Failed 33-MiB nested-ZIP probe revealed silent per-file truncation; selected corrected per-file/PCRE equals the unchanged 128-MiB aggregate cap and passes real supported/over-limit fixtures. Explicit spawn env permits macOS-synthesized locale state but inherits no parent variables. Application/engine limits do not supply OS isolation or cross-instance admission. Focused review remains within authorized implementation and does not resume audit scope.
+- Blockers/open questions: Trusted Workers transport, actual both-profile durable result/release/current-authorization/identity cases and production isolation/update/admission policy remain required. CORS/legacy/retention blockers remain in owning Module 07; no full scanner checkbox closes.
+- Next actions: Fixed configured trusted scanner service mechanism and actual dual-profile Core journey; independent legacy recovery/retention. Keep 07.3f/07.3c/07.3h/V4 and suspended audits incomplete.
+- Next-session cautions: No runtime wiring, daemon, commit/deploy/SPA/Module 09/audit. Tests require a disposable read-only snapshot separate from updater sources; all handles terminal, generated measurements restored and protected SECURITY.md preserved. Actual scanner lane and resource observation stay distinct from default synthetic database scan guards and deployment.
+
+### 2026-10-04 — Private scanner transport and complete actual verification lane
+
+- Scope/checklist IDs: Module 07 partial 07.3f; private runtime adapters/protocol and verification artifacts, foundation/SAST gates unchanged.
+- Progress/change summary: Shared exact streaming authenticated internal service, independent Node handler and explicit Workers binding adapter; one native fixture target and actual pipeline lane. `test:scanner` now starts its own isolated PostgreSQL cluster. No production startup, public endpoint, dependency/lockfile, deployment or scheduler change.
+- Files/artifacts: Application scanner-service files, runtime adapters, scanner/protocol/native fixtures/tests, build target/package script; [owning evidence](../evidence/07-scanner-environment-validation.md#trusted-transport-and-actual-durable-pipeline).
+- Verification: Full default **795 passed / 11 optional-provider skips** (314 unit/contracts, 89 Node, 235 workerd/D1/R2 emulation, 157 real local isolated PostgreSQL 18.6/S3 emulation). Complete actual signed ClamAV **33 passed / no skips** (15 adapter + 18 durable), 110.76 s; focuses included, not added. Final types/lint/import boundaries/all-target build passed. Prior actual provider/migration/dependency evidence reused unchanged; final ancillary in Module 07.
+- Decisions/blockers: Explicit platform streaming bridges preserve types and fixed trust boundaries; digest-construction/error/cancellation cleanup gaps fixed. Miniflare native callback proves local transport to actual Node engine, not deployed Worker-to-native service. Production trusted bridge/resource/egress/admission/signature rotation remains unverified; default scanner selection stays absent.
+- Next actions/cautions: Continue independent 07.3h/V4 legacy recovery/retained-key compaction; preserve strict ordinary blob keys and both-profile semantics. No commit/deploy/SPA/Module 09/audit. All runtime/test handles terminal, scanner temp/processes absent, generated measurements restored, protected SECURITY.md unchanged/untracked.
+
+
+### 2026-10-04 — Module 07 explicit legacy recovery ledger checkpoint
+
+- Scope/checklist IDs: Partial 07.3h/07.V4. Internal application/database mechanism and private test infrastructure; foundation/SAST gates unchanged.
+- Progress/change summary: Exact snapshots, explicit retention, trusted ownership/accounting references, atomic absence of every attachment/lifecycle row, immutable retirement keys/decisions and fenced once-only both-counter release. Fixed 20+1 base windows advance over live leases; timeouts retain quota and stop pages. No actual provider recovery/adoption/compaction or public API/scheduler.
+- Files/artifacts: Application recovery port/handler, both stores/schema/exports, D1 0023/PostgreSQL 0022 SQL/snapshots/journals and custom guards; shared/forced race/upgrade and unit page fixtures; [owning evidence](../evidence/07-upload-lifecycle-validation.md#explicit-legacy-recovery-ledger-2026-10-04).
+- Verification: Focus 19/profile plus 4 unit passed; expanded existing fresh+ledger focus 20/profile passed after schema assertions updated. Composed default **837 passed / 11 optional-provider skips**: 318 unit/contracts, 89 Node/S3 emulation, 254 workerd/D1/R2 emulation, 176 real isolated PostgreSQL 18.6/S3 emulation. Final actual signed ClamAV pipeline **18 passed / no skips**; unchanged actual adapter 15 reused, composed 33 actual. Types/lint/build/history checks passed; 45 prior SQL checksums unchanged. Final ancillary in Module 07.
+- Decisions/review: Forced D1 pre-read/CAS link and PostgreSQL project-lock waiting insert prove retirement exclusion. PostgreSQL TRUNCATE now preserves ledger targets. Missing/insufficient accounting rolls back both counters/retirement. Earlier sync-validation/type/fresh-count failures corrected before final acceptance. Recovery manifests/provider callbacks remain synthetic; ordinary key/scan/association policy stays strict.
+- Blockers/next actions: Real selected-provider arbitrary-key recovery/manifests/absence and retained-key compaction/quiescence; production scanner/CORS acceptance. Authorized test deployment/browser CORS work remains within the existing 07.3c/V4 plan and named infrastructure; no full checkbox closes.
+- Next-session cautions: No commit/SPA/Module 09/suspended audit or shared migration rollout. Preserve prior work/histories, protected SECURITY.md and scanner/updater snapshot separation. Runtime matrix/scanner handles terminal; generated Module 03 measurements byte-restored. Deployment resources/cleanup are tracked in the owning Module 07 record.
+
+
+### 2026-10-04 — Module 07 authorized disposable browser-origin deployment
+
+- Scope/checklist IDs: Existing 07.3c/V4 test protocol evidence, foundation/gates unchanged. Latest user permits only the named Workers account, `*.test.eihrteam.org`, existing test D1 and Chrome DevTools; no boundary expansion/out-of-plan tests.
+- Progress/change summary: Inert disposable plaintext Worker with exact allowed/denied origins, Workers.dev/previews off, named existing D1 bound with zero operations; actual R2 installed Core CORS and Chrome 154 PUT/ETag/three denials. Capabilities are minted through the unchanged local Node/S3 signer, with no public fixture API/secret or SPA.
+- Files/artifacts/verification: Ignored private `browser-cors/` config/state/redacted evidence and [owning results](../evidence/07-upload-lifecycle-validation.md#authorized-test-deployment-and-browser-cors-2026-10-04). Dry-run, previously absent Worker, deployment version/startup, verified HTTPS, browser/provider observations, four owned-key HEAD-null cleanup, exact captured CORS restoration, Worker 10007 and zero owned account custom domains verified. Initial TLS/tool restrictions were corrected before acceptance. DNS-record inventory API 403; public DoH no A answers, exhaustive DNS inventory unverified. Default 837/11 and separate composed actual scanner 33 retained unchanged.
+- Decisions/blockers/next actions: No production composition/scanner/D1 migration deployment or new tracked test. Full 07.3c product-origin/composition, 07.3h/V4 provider recovery/compaction and 07.3f production isolation remain; no full checkbox closes. Continue within existing boundaries without permission expansion; no commit/SPA/Module 09/audit. Preserve draft/earlier work; final ancillary in Module 07.
+
+
+### 2026-10-04 — Module 07 fixed S3 historical recovery adapter checkpoint
+
+- Scope/checklist IDs: Existing backend runtime/storage support for partial **07.3h/07.V4**; no new Module 01 acceptance or boundary.
+- Progress/change summary: Separate Node/S3 one-decision recovery capability with original closed manifest/destination/snapshot/accounting binding, explicit retention, pre-parser 128 KiB/UTF-8 responses, bounded discovery/abort/delete/absence/deadline and ownership-bound SeaweedFS 4.48 continuation. Known R2 endpoints refuse this generic capability; ordinary BlobStore/current reconciler/runtime composition/public API remain unchanged.
+- Files/artifacts: blob-s3 recovery/index, planned native/provider fixtures and existing storage cases; [owning evidence](../evidence/07-upload-lifecycle-validation.md#fixed-s3-legacy-physical-recovery-2026-10-04) and 07 progress/specifications/ADR.
+- Verification: Final default composed **869/13** (318 unit/contracts, final 121 Node/S3-emulated, 254 workerd/D1/R2-emulated, 176 isolated PostgreSQL 18.6/S3-emulated); includes 32 synthetic HTTP adapter cases. Separate actual **2 passed**, real isolated SeaweedFS 4.48 recovery and actual R2 refusal/preservation, with owned fixture cleanup verified. Both-profile types/lint/boundaries/all-target build and Drizzle histories pass. Existing scanner/browser/unrelated storage evidence reused at its recorded scope.
+- Decisions/blockers: Initial SeaweedFS mixed-prefix ID-only marker rejection diagnosed with pinned source/runtime probes; explicit ownership-bound mode verified. R2 returned undocumented empty versioning response; known endpoint refusal prevents relying on it. Initial fixture type/lint/token-comparison and concurrent lint boundary-fixture failures were corrected; see owning record. No production historical accounting/repair, provider-side scanning/global concurrency or deployment is claimed.
+- Next actions/cautions: Continue 07.3h/V4 fixed R2/native recovery and reviewed historical manifests/compaction, then existing 07.3c/07.3f deployment/composition blockers. No commit/deploy/SPA/Module 09/audit; preserve historical SQL, prior work, measurements and protected SECURITY.md. Final docs/preservation ancillary follows in 07.
+
+
+### 2026-10-04 — Module 07 direct R2 recovery runtime checkpoint
+
+- Scope/checklist IDs: Existing backend storage/runtime support for partial **07.3h/07.V4**, no new Module 01 gate or product boundary.
+- Progress/change summary: Async one-decision fixed header-signed R2 capability verifies original manifests/retention, bounded prefix/XML/encoding/absence/deadline and sibling preservation. Actual Node/local workerd proof; ordinary adapters/public composition unchanged. Test observer declares existing aws4fetch 1.0.20 at root, no version/package family change.
+- Files/artifacts: blob-r2 recovery/index, planned unit/shared actual fixtures, existing R2 Node suite/loopback Worker, root manifest/lock importer; [owning evidence](../evidence/07-upload-lifecycle-validation.md#direct-r2-approved-record-recovery-2026-10-04), 07 progress/spec/ADR.
+- Verification: Final composed **897/14** = 346 unit/contracts, 121 Node/S3 emulation, 254 workerd/D1/R2 emulation, 176 real isolated PostgreSQL/S3 emulation; 28 new local synthetic cases. Actual remote-R2 Node **1 passed** and local workerd **1 explicit proof passed**; 21 target sessions/preserved writable sibling/late sweep, owned cleanup and complete test-prefix zero inventory. Frozen install passes unchanged 641-entry supply-chain policy; types/lint/build/licenses pass.
+- Decisions/blockers: First native 503 from remote-proxy non-ASCII HEAD header; exact trace-owned leftover object/session verified/removed. Workerd proof retains Unicode/reserved key with native writes/parts and direct S3 observations/cleanup; native Unicode HEAD through that local gateway remains unverified. Offline install missing unrelated policy metadata, then ordinary frozen install passed without policy changes. No operational historical accounting/repair, internal physical erasure or deployed product is claimed.
+- Next actions/cautions: 07.3h/V4 actual-provider/dual-ledger operational recovery/manifests/quiescence/compaction; existing 07.3c/07.3f composition blockers. Never deploy loopback harness. Preserve histories/prior work/measurements/scanner artifacts/SECURITY.md; no commit/SPA/Module 09/audit. Final ancillary recorded in 07.
+
+
+### 2026-10-04 — Module 07 actual R2 and dual-ledger verification checkpoint
+
+- Scope/checklist IDs: Existing runtime/storage proof for partial **07.3h/07.V4**; no Module 01 gate or service boundary change.
+- Progress/change summary: Existing D1/PostgreSQL repository suites add planned opt-in fresh actual-R2/ledger composition. Reserved/used accounting, retirement-before-I/O, wrong-lease retention, once-only release and retained-decision late resweep pass with exact owned cleanup receipts. No runtime application/provider/schema/API change.
+- Files/artifacts: Existing shared recovery/provider fixtures and two repository suites; [owning evidence](../evidence/07-upload-lifecycle-validation.md#actual-r2-and-dual-ledger-composition-2026-10-04) and 07 handoff.
+- Verification: Four explicit actual-R2 cases, **2 local-workerd/D1** and **2 real isolated PostgreSQL 18.6**, all with Node orchestration; no deployed D1/native-provider composition claim. Fresh 346 unit/contracts, 254 workerd and 176 PostgreSQL regressions; reused unchanged 121 Node checks. Composed default **897/18 optional skips**; extra four default skips are opt-in actual cases. Types/lint/boundaries pass; all fresh resources verified removed and final prefix inventory empty; handles terminal and generated measurements restored. Final ancillary in 07.
+- Decisions/blockers/next actions: Operational historical manifests/quiescence/compaction remain separate; continue **07.3h/V4**, then existing **07.3c/07.3f** composition blockers. Actual scanner/provider/browser evidence reused at its exact scope. No commit/deployment/SPA/Module 09/audit; preserve histories/prior work/private artifacts/protected SECURITY.md. Never deploy the loopback blob fixture.
+
+### 2026-10-04 — Module 07 actual Workers upload runtime checkpoint
+
+- Scope/progress: Existing **07.3c/07.V4** deployment proof, no Module 01 gate change/new boundary. Corrected upload root validates static policy globally and requires lazily cached native D1/R2 adapters before serving requests. Initial rejected 10021 uploads have 10007 absence checks; corrected actual deployment is healthy and issues actual R2 capabilities from named remote D1.
+- Files/artifacts: Workers upload/index roots, existing configured entry test and ignored `.local/07-deployed-cors/` deployment/regression/cleanup receipts; [evidence](../evidence/07-upload-lifecycle-validation.md#deployed-workers-upload-and-cors-2026-10-04).
+- Verification: Existing focus **3/0**, fresh unit/contracts **346/0**, workerd **254/2 optional skips**; unchanged Node **121/14** and real PostgreSQL **176/2** reused, combined **897/18**. Both-profile types/lint/import boundaries/all-target build pass. Actual Chrome upload/CORS/expiry negatives pass separately; three Workers/domain mappings and all eight blob targets absent, captured CORS restored. No loopback harness/scanner deployed; ancillary in 07.
+- Decisions/blockers/next: Keep **07.3c** open for corresponding Node/S3 installed-policy/browser proof; **07.3h/V4** historical manifests/quiescence and **07.3f** production bridge/isolation/update remain. Existing boundaries/contracts/holds/draft preserved; no new automated case, commit, SPA, Module 09 or suspended audit. Do not replay disposed secret fixtures.

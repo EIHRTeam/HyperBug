@@ -791,3 +791,25 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: none in this module. The G1 audit-governance decision now covers only modules 05–09's suspended audit portions and stays with the user; 13.G6 stays open on its independent gate.
 - Next actions: none in this module under the current goal; the activation path's remaining journey items (08.V6, 09.V6, 10.3g, 12.V7) belong to their owning modules.
 - Next-session cautions: the audited activation never claims tier support; `PASSWORD_CAPABILITY_DISABLED` is a public contract; codes, tokens and recovery codes are bearer secrets; the `.local` scratch directories and the protected root `SECURITY.md` draft remain uncommitted by instruction.
+
+
+### 2026-10-03 — Module 07 dependency follow-up
+
+- Scope and checklist IDs: Module 07 migration-aware account/readiness regression fixtures only; no additional owning-module checklist item claimed.
+- Progress: Replaced relative migration positions with stable names in PostgreSQL account/recovery/passkey/OAuth and workerd readiness fixtures after the additive content migration. No account/auth product or suspended audit behavior changed.
+- Change summary: Supports the authorized Module 07 batch; [full handoff](07-content-and-attachments.md) and [verification evidence](../evidence/07-content-validation.md).
+- Files/artifacts: Affected package/fixture paths are inventoried in the linked Module 07 record; no older migration or protected SECURITY.md change.
+- Verification: Local unit 199, contract 1, Node 50, workerd/D1 143, PostgreSQL 18.6 82 tests passed; typecheck/lint/format/build/database/docs/license/secret checks passed. Local/emulated storage only; no deployment or remote migration.
+- Decisions and deviations: Owning-module status/gates and audit holds remain unchanged; no SPA or Module 09 expansion.
+- Blockers/open questions: Module 07's V7 policy-upgrade fixture and forms/storage acceptance remain with Module 07.
+- Next actions: Continue the authorized Module 07 goal; no unrelated feature work starts from this follow-up.
+- Next-session cautions: All changes remain uncommitted; preserve the protected draft and prior edits, suspended audits, existing migration history and initially clean module-03 measurement snapshots.
+
+### 2026-10-03 — Module 07 form/template integration dependency checkpoint
+
+- Scope and checklist IDs: Dependency impact of 07.2a and non-audit form management/submission; no owning-module gate/checklist change.
+- Progress/change summary: Shared contracts and both production roots compose immutable content stores, bounded management/history routes and atomic structured issue creation. Added `content:manage` and read-only `content:history` permission rules; existing issue/auth/admission behavior passes the complete regression matrix. New migrations preserve history; no older migration or audit behavior changed.
+- Files/artifacts: Owning changes and detailed decisions are inventoried in [Module 07 progress](07-content-and-attachments.md), [specification](../../ISSUE-FORMS.md) and [validation evidence](../evidence/07-content-validation.md).
+- Verification: 499 tests passed (unit/contract 204, Node 50, workerd 155, PostgreSQL 18.6 90); typecheck/lint/build/db/docs/license/secret checks passed. This is local runtime/database evidence; no remote migration or deployment.
+- Decisions/blockers: Attachment integration remains with Module 07; audit suspension and Module 09/SPA holds remain. G1 stays closed. See the linked record for the detected and corrected PostgreSQL project/receipt lock-order deadlock.
+- Next actions/cautions: Continue only the authorized Module 07 goal. Preserve all uncommitted changes and protected SECURITY.md; never resume suspended audit via this dependency record.

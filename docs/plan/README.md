@@ -24,6 +24,8 @@ Cross-module specifications and accepted direction records live in these English
 | Specification | Scope | Owner |
 | --- | --- | --- |
 | [MARKDOWN-POLICY](../MARKDOWN-POLICY.md) | Canonical Markdown storage, representation/transport kinds, determinism, derivation and pagination contract | 07.1 |
+| [ISSUE-FORMS](../ISSUE-FORMS.md) | Bounded GitHub YAML subset, canonical JSON schema, deterministic answers and atomic released-attachment consumption verified; audit suspended | 07.2 |
+| [ATTACHMENT-LIFECYCLE](../ATTACHMENT-LIFECYCLE.md), [BLOB-STORAGE](../BLOB-STORAGE.md), [ADR 0011](../decisions/0011-immutable-attachment-processing.md) | Direct/multipart upload intents, immutable processing, locally authorized media and actual local scanner journeys; production CORS/scanner and complete legacy/retention cleanup remain incomplete | 07.3 |
 | [ADR 0003](../decisions/0003-markdown-representation-and-pagination.md) | Accepted direction for Markdown representation, transport and pagination | 07 |
 | [DATA-MODEL](../DATA-MODEL.md), [API-CONVENTIONS](../API-CONVENTIONS.md), [API-OPERATIONS](../API-OPERATIONS.md) | Records, public contract, cursor rules and permission matrix | 02, 06–10 |
 | [AUTH-FLOWS](../AUTH-FLOWS.md) | Origins and trust boundaries, public-client registration, Authorization Code + PKCE, opaque tokens, first-party sessions, assurance, recovery, logout and operator-channel bootstrap | 04 |
