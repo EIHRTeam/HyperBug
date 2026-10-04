@@ -203,6 +203,17 @@ export function mvpSchemaContract(get: () => RepositoryHarness) {
         'INSERT INTO form_submissions (project_id, issue_id, form_id, form_version, "values", created_at) VALUES (?, ?, ?, 1, \'{}\', ?)',
         [project, issue, form, now],
       );
+      for (const statement of [
+        'UPDATE form_submissions SET "values" = \'{"changed":true}\' WHERE issue_id = ?',
+        'DELETE FROM form_submissions WHERE issue_id = ?',
+      ])
+        await expect(query(statement, [issue])).rejects.toThrow('append-only');
+      await expect(
+        query(
+          'INSERT INTO form_submissions (project_id, issue_id, form_id, form_version, "values", created_at) VALUES (?, ?, ?, 1, \'{}\', ?) ON CONFLICT(project_id, issue_id) DO UPDATE SET "values" = excluded."values"',
+          [project, issue, form, now],
+        ),
+      ).rejects.toThrow('append-only');
       await expect(
         query(
           'INSERT INTO form_submissions (project_id, issue_id, form_id, form_version, "values", created_at) VALUES (?, ?, ?, 1, \'{}\', ?)',

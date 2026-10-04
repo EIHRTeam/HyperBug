@@ -33,6 +33,7 @@ export const appTargets = [
       format: ['esm'],
       target: 'node24',
       outDir: 'dist/node',
+      outputOptions: { codeSplitting: false },
       dts: false,
       clean: false,
       deps: {
@@ -89,6 +90,31 @@ export const cloudflareWasmAssets = [
  * directory so chunk discovery stays unambiguous.
  */
 export const fixtureTargets = [
+  {
+    name: 'scanner-worker',
+    entry: 'tests/fixtures/scanner-worker.ts',
+    outDir: 'dist/scanner-worker',
+  },
+  {
+    name: 'blob-worker',
+    entry: 'tests/fixtures/blob-worker.ts',
+    outDir: 'dist/blob-worker',
+  },
+  {
+    name: 'policy-upgrade-worker',
+    entry: 'tests/fixtures/account-worker.ts',
+    outDir: 'dist/policy-upgrade-worker',
+  },
+  {
+    name: 'issue-form-worker',
+    entry: 'tests/fixtures/issue-form-worker.ts',
+    outDir: 'dist/issue-form-worker',
+  },
+  {
+    name: 'markdown-worker',
+    entry: 'tests/fixtures/markdown-worker.ts',
+    outDir: 'dist/markdown-worker',
+  },
   {
     name: 'worker-entry-test',
     entry: 'tests/fixtures/worker.ts',

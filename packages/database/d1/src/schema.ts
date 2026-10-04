@@ -837,9 +837,248 @@ export const uploadIntents = table(
 );
 
 // Additive lifecycle metadata: legacy foundational intents are not implicitly adopted.
+export const uploadIntentDetails = table(
+  'upload_intent_details',
+  {
+    intentId: id('intent_id').primaryKey(),
+    projectId: id('project_id').notNull(),
+    filename: text('filename').notNull(),
+    finalKey: text('final_key').notNull().unique(),
+    associationKind: text('association_kind').notNull(),
+    draftId: id('draft_id'),
+    issueId: id('issue_id'),
+    commentId: id('comment_id'),
+    leaseId: id('lease_id'),
+    leaseExpiresAt: instant('lease_expires_at'),
+    providerVersion: text('provider_version'),
+    reservationState: text('reservation_state').notNull().default('reserved'),
+    scanStatus: text('scan_status').notNull().default('unscanned'),
+    policyState: text('policy_state').notNull().default('quarantined'),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.projectId, t.intentId],
+      foreignColumns: [uploadIntents.projectId, uploadIntents.id],
+      name: 'upload_details_intent_fk',
+    }),
+    foreignKey({
+      columns: [t.projectId, t.issueId],
+      foreignColumns: [issues.projectId, issues.id],
+      name: 'upload_details_issue_fk',
+    }),
+    foreignKey({
+      columns: [t.projectId, t.commentId],
+      foreignColumns: [comments.projectId, comments.id],
+      name: 'upload_details_comment_fk',
+    }),
+    check(
+      'upload_details_association',
+      sql`(${t.associationKind} = 'issue-draft' AND ${t.draftId} IS NOT NULL AND ${t.issueId} IS NULL AND ${t.commentId} IS NULL) OR (${t.associationKind} = 'comment-draft' AND ${t.draftId} IS NOT NULL AND ${t.issueId} IS NOT NULL AND ${t.commentId} IS NULL) OR (${t.associationKind} = 'issue' AND ${t.draftId} IS NULL AND ${t.issueId} IS NOT NULL AND ${t.commentId} IS NULL) OR (${t.associationKind} = 'comment' AND ${t.draftId} IS NULL AND ${t.issueId} IS NULL AND ${t.commentId} IS NOT NULL)`,
+    ),
+    check(
+      'upload_details_lease',
+      sql`(${t.leaseId} IS NULL AND ${t.leaseExpiresAt} IS NULL) OR (${t.leaseId} IS NOT NULL AND ${t.leaseExpiresAt} IS NOT NULL)`,
+    ),
+    check(
+      'upload_details_reservation',
+      sql`${t.reservationState} IN ('reserved','used','released')`,
+    ),
+    check(
+      'upload_details_scan',
+      sql`${t.scanStatus} IN ('unscanned','pending','clean','infected','failed')`,
+    ),
+    check(
+      'upload_details_policy',
+      sql`${t.policyState} IN ('quarantined','ready','rejected','deleted') AND (${t.policyState} != 'ready' OR ${t.scanStatus} IN ('unscanned','clean'))`,
+    ),
+    contentCheck('upload_details_filename', t.filename, 255),
+    contentCheck('upload_details_final_key', t.finalKey, 1024),
+    contentCheck('upload_details_provider_version', t.providerVersion, 1024),
+    validId('upload_details_draft', t.draftId),
+    validId('upload_details_lease_id', t.leaseId),
+    validTime('upload_details_lease_time', t.leaseExpiresAt),
+    index('upload_details_draft_lookup').on(t.projectId, t.draftId, t.intentId),
+    index('upload_details_lease_lookup').on(t.leaseExpiresAt, t.intentId),
+  ],
+);
+
+export const uploadMultipartSessions = table(
+  'upload_multipart_sessions',
+  {
+    intentId: id('intent_id').primaryKey(),
+    projectId: id('project_id').notNull(),
+    partBytes: instant('part_bytes').notNull(),
+    maxParts: integer('max_parts').notNull(),
+    state: text('state').notNull().default('planned'),
+    providerUploadId: text('provider_upload_id'),
+    parts: json('parts').notNull().default('[]'),
+    revision: integer('revision').notNull().default(1),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.projectId, t.intentId],
+      foreignColumns: [uploadIntents.projectId, uploadIntents.id],
+      name: 'multipart_intent_project_fk',
+    }),
+    check(
+      'multipart_plan',
+      sql`${t.partBytes} BETWEEN 5242880 AND 5368709120 AND cast(${t.partBytes} as bigint) = ${t.partBytes} AND ${t.maxParts} BETWEEN 1 AND 10000`,
+    ),
+    check(
+      'multipart_state',
+      sql`${t.state} IN ('planned','creating','active','completing','completed','aborting','aborted')`,
+    ),
+    check(
+      'multipart_provider',
+      sql`(${t.providerUploadId} IS NULL AND ${t.state} IN ('planned','creating','aborting','aborted')) OR (${t.providerUploadId} IS NOT NULL AND length(${t.providerUploadId}) BETWEEN 1 AND 2048 AND ${t.state} NOT IN ('planned','creating'))`,
+    ),
+    validJson('multipart_catalog', t.parts),
+    check(
+      'multipart_catalog_array',
+      sql`json_type(${t.parts}) = 'array' AND json_array_length(${t.parts}) <= ${t.maxParts}`,
+    ),
+    revisionCheck('multipart_revision', t.revision),
+    index('multipart_state_lookup').on(t.state, t.intentId),
+  ],
+);
+
+export const uploadScanResults = table(
+  'upload_scan_results',
+  {
+    intentId: id('intent_id').primaryKey(),
+    projectId: id('project_id').notNull(),
+    attemptId: id('attempt_id').notNull(),
+    sha256: text('sha256').notNull(),
+    sizeBytes: instant('size_bytes').notNull(),
+    policyVersion: text('policy_version').notNull(),
+    status: text('status').notNull(),
+    startedAt: instant('started_at').notNull(),
+    completedAt: instant('completed_at'),
+    evidence: json('evidence'),
+    failureCode: text('failure_code'),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.projectId, t.intentId],
+      foreignColumns: [uploadIntents.projectId, uploadIntents.id],
+      name: 'scan_intent_project_fk',
+    }),
+    check(
+      'scan_digest',
+      sql`length(${t.sha256}) = 64 AND ${t.sha256} NOT GLOB '*[^0-9a-f]*'`,
+    ),
+    check(
+      'scan_size',
+      sql`${t.sizeBytes} BETWEEN 0 AND 9007199254740991 AND cast(${t.sizeBytes} as bigint) = ${t.sizeBytes}`,
+    ),
+    check('scan_policy', sql`length(${t.policyVersion}) BETWEEN 1 AND 64`),
+    check(
+      'scan_result',
+      sql`(${t.status} = 'pending' AND ${t.completedAt} IS NULL AND ${t.evidence} IS NULL AND ${t.failureCode} IS NULL) OR (${t.status} IN ('clean','infected') AND ${t.completedAt} IS NOT NULL AND ${t.evidence} IS NOT NULL AND ${t.failureCode} IS NULL) OR (${t.status} = 'failed' AND ${t.completedAt} IS NOT NULL AND ${t.evidence} IS NULL AND ${t.failureCode} IS NOT NULL AND ${t.failureCode} IN ('unavailable','timeout','partial','identity','invalid-result'))`,
+    ),
+    validId('scan_attempt_id', t.attemptId),
+    validTime('scan_started', t.startedAt),
+    check(
+      'scan_finished',
+      sql`${t.completedAt} IS NULL OR (${t.completedAt} BETWEEN ${t.startedAt} AND 8640000000000000 AND cast(${t.completedAt} as bigint) = ${t.completedAt})`,
+    ),
+    check(
+      'scan_evidence',
+      sql`${t.evidence} IS NULL OR (json_valid(${t.evidence}) AND length(${t.evidence}) <= 65536)`,
+    ),
+    check(
+      'scan_evidence_object',
+      sql`${t.evidence} IS NULL OR (json_type(${t.evidence}) = 'object' AND coalesce((json_type(${t.evidence}, '$.engine') = 'text' AND length(json_extract(${t.evidence}, '$.engine')) BETWEEN 1 AND 128) AND (json_type(${t.evidence}, '$.engineVersion') = 'text' AND length(json_extract(${t.evidence}, '$.engineVersion')) BETWEEN 1 AND 128) AND (json_type(${t.evidence}, '$.signatureVersion') = 'text' AND length(json_extract(${t.evidence}, '$.signatureVersion')) BETWEEN 1 AND 128), 0))`,
+    ),
+    index('scan_pending_lookup').on(t.status, t.intentId),
+  ],
+);
 
 // Explicit operator recovery ledger; no current lifecycle/association is fabricated.
+export const uploadLegacyRecoveries = table(
+  'upload_legacy_recoveries',
+  {
+    intentId: id('intent_id').primaryKey(),
+    projectId: id('project_id').notNull(),
+    principalId: id('principal_id')
+      .notNull()
+      .references(() => principals.id),
+    decisionId: id('decision_id').notNull().unique(),
+    decision: json('decision').notNull(),
+    state: text('state').notNull(),
+    revision: integer('revision').notNull().default(1),
+    leaseId: id('lease_id'),
+    leaseExpiresAt: instant('lease_expires_at'),
+    createdAt: instant('created_at').notNull(),
+    releasedAt: instant('released_at'),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.projectId, t.intentId],
+      foreignColumns: [uploadIntents.projectId, uploadIntents.id],
+      name: 'legacy_recovery_intent_fk',
+    }),
+    validId('legacy_recovery_decision', t.decisionId),
+    validId('legacy_recovery_lease', t.leaseId),
+    revisionCheck('legacy_recovery_revision', t.revision),
+    validTime('legacy_recovery_created', t.createdAt),
+    validTime('legacy_recovery_lease_time', t.leaseExpiresAt),
+    check(
+      'legacy_recovery_state',
+      sql`(${t.state} = 'deleting' AND ${t.releasedAt} IS NULL AND ${t.leaseId} IS NOT NULL) OR (${t.state} = 'released' AND ${t.releasedAt} IS NOT NULL)`,
+    ),
+    check(
+      'legacy_recovery_lease_pair',
+      sql`(${t.leaseId} IS NULL AND ${t.leaseExpiresAt} IS NULL) OR (${t.leaseId} IS NOT NULL AND ${t.leaseExpiresAt} IS NOT NULL)`,
+    ),
+    check(
+      'legacy_recovery_release_time',
+      sql`${t.releasedAt} IS NULL OR (${t.releasedAt} BETWEEN ${t.createdAt} AND 8640000000000000 AND cast(${t.releasedAt} as bigint) = ${t.releasedAt})`,
+    ),
+    check(
+      'legacy_recovery_payload',
+      sql`json_valid(${t.decision}) AND json_type(${t.decision}) = 'object' AND length(cast(${t.decision} as blob)) BETWEEN 1 AND 8192`,
+    ),
+    index('legacy_recovery_project_lookup').on(t.projectId, t.intentId),
+  ],
 );
+
+export const projectUploadUsage = table(
+  'project_upload_usage',
+  {
+    projectId: id('project_id')
+      .primaryKey()
+      .references(() => projects.id),
+    reservedBytes: instant('reserved_bytes').notNull().default(0),
+    usedBytes: instant('used_bytes').notNull().default(0),
+    reservedCount: integer('reserved_count').notNull().default(0),
+  },
+  (t) => [
+    check(
+      'project_upload_usage_bound',
+      sql`${t.reservedBytes} >= 0 AND ${t.usedBytes} >= 0 AND ${t.reservedBytes} <= 9007199254740991 - ${t.usedBytes} AND cast(${t.reservedBytes} as bigint) = ${t.reservedBytes} AND cast(${t.usedBytes} as bigint) = ${t.usedBytes} AND ${t.reservedCount} BETWEEN 0 AND 10000 AND cast(${t.reservedCount} as bigint) = ${t.reservedCount}`,
+    ),
+  ],
+);
+
+export const principalUploadUsage = table(
+  'principal_upload_usage',
+  {
+    principalId: id('principal_id')
+      .primaryKey()
+      .references(() => principals.id),
+    reservedBytes: instant('reserved_bytes').notNull().default(0),
+    usedBytes: instant('used_bytes').notNull().default(0),
+    reservedCount: integer('reserved_count').notNull().default(0),
+  },
+  (t) => [
+    check(
+      'principal_upload_usage_bound',
+      sql`${t.reservedBytes} >= 0 AND ${t.usedBytes} >= 0 AND ${t.reservedBytes} <= 9007199254740991 - ${t.usedBytes} AND cast(${t.reservedBytes} as bigint) = ${t.reservedBytes} AND cast(${t.usedBytes} as bigint) = ${t.usedBytes} AND ${t.reservedCount} BETWEEN 0 AND 10000 AND cast(${t.reservedCount} as bigint) = ${t.reservedCount}`,
+    ),
+  ],
+);
+
 export const attachments = table(
   'attachments',
   {

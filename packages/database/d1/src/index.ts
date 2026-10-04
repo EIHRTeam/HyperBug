@@ -1,3 +1,4 @@
+import { projectMarkdownText } from '@hyperbug/security/markdown';
 import type { D1Database } from '@cloudflare/workers-types';
 export { createD1RateCounterStore } from './rate-limit.ts';
 export { createD1AccountLockoutStore } from './account-lockout.ts';
@@ -53,6 +54,8 @@ interface IssueRow {
   deleted_at: number | null;
   author_id: string;
   revision: number;
+  body_text: string | null;
+  body_text_version: string | null;
   created_at: number;
   updated_at: number;
   closed_at: number | null;
@@ -70,13 +73,15 @@ const toListItem = (r: Omit<IssueRow, 'body'>): IssueListItem => ({
   deletedAt: r.deleted_at,
   authorId: r.author_id,
   revision: r.revision,
+  bodyText: r.body_text,
+  bodyTextVersion: r.body_text_version,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
   closedAt: r.closed_at,
 });
 const toIssue = (r: IssueRow): Issue => ({ ...toListItem(r), body: r.body });
 const listColumns =
-  'id, project_id, number, title, state, close_reason, type_id, milestone_id, moderation, deleted_at, author_id, revision, created_at, updated_at, closed_at';
+  'id, project_id, number, title, body_text, body_text_version, state, close_reason, type_id, milestone_id, moderation, deleted_at, author_id, revision, created_at, updated_at, closed_at';
 const issueColumns = `${listColumns}, body`;
 
 /** D1 SQL and bindings stay entirely in this adapter. Authorization precedes these intents. */
@@ -151,7 +156,40 @@ export function createD1Repository(db: D1Database): IssueRepository {
     ];
     let metadata = '{}';
     if (operation === 'issue.create') {
-      const create = intent as CreateIssueIntent;
+      let create = intent as CreateIssueIntent;
+      let formValues: ReturnType<typeof prepareIssueFormSubmission> | undefined;
+      let definition: IssueFormDefinition | undefined;
+      if (create.formSubmission) {
+        const form = await createD1ContentDefinitionStore(db).getForm(
+          create.projectId,
+          create.formSubmission.formId,
+          create.formSubmission.formVersion,
+        );
+        if (
+          !form ||
+          !form.enabled ||
+          form.revision !== create.formSubmission.formVersion
+        ) {
+          const concurrentReplay = await receipt(intent, operation);
+          if (concurrentReplay) return concurrentReplay;
+          throw new IssueFormError('FORM_VERSION_STALE', 'formVersion');
+        }
+        definition = form.definition;
+        formValues = prepareIssueFormSubmission(
+          form.definition,
+          create.formSubmission,
+          create.body,
+        );
+        create = {
+          ...create,
+          ...(await createD1ContentDefinitionStore(db).resolveFormDefaults(
+            create.projectId,
+            form.definition,
+          )),
+        };
+        validateIntent(create, operation);
+      }
+      const projection = projectMarkdownText(create.body);
       const project = await db
         .prepare('SELECT status FROM projects WHERE id = ?')
         .bind(create.projectId)
@@ -203,7 +241,7 @@ export function createD1Repository(db: D1Database): IssueRepository {
       statements.push(
         db
           .prepare(
-            "INSERT INTO issues (id, project_id, number, title, body, type_id, milestone_id, author_id, created_at, updated_at, last_mutation_id) VALUES (?, ?, (SELECT next_issue_number - 1 FROM projects WHERE id = ? AND status = 'active'), ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO issues (id, project_id, number, title, body, type_id, milestone_id, author_id, created_at, updated_at, last_mutation_id, body_text, body_text_version) VALUES (?, ?, (SELECT next_issue_number - 1 FROM projects WHERE id = ? AND status = 'active'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
           )
           .bind(
             create.id,
@@ -225,6 +263,8 @@ export function createD1Repository(db: D1Database): IssueRepository {
             .prepare(
               'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES (?, ?, ?)',
             )
+            projection.text,
+            projection.version,
             .bind(create.projectId, create.id, labelId),
         );
       for (const assigneeId of create.assigneeIds)
@@ -357,8 +397,15 @@ export function createD1Repository(db: D1Database): IssueRepository {
       const assignmentValues: unknown[] = [];
       if (operation === 'issue.edit') {
         const edit = intent as EditIssueIntent;
-        assignment = ', title = ?, body = ?';
-        assignmentValues.push(edit.title, edit.body);
+        const projection = projectMarkdownText(edit.body);
+        assignment =
+          ', title = ?, body = ?, body_text = ?, body_text_version = ?';
+        assignmentValues.push(
+          edit.title,
+          edit.body,
+          projection.text,
+          projection.version,
+        );
       } else if (operation === 'issue.close') {
         const close = intent as CloseIssueIntent;
         assignment = ', state = ?, close_reason = ?, closed_at = ?';
@@ -543,6 +590,37 @@ export function createD1Repository(db: D1Database): IssueRepository {
       const assigneeRows = (
         await db
           .prepare(
+      const form =
+        operation === 'issue.create'
+          ? (intent as CreateIssueIntent).formSubmission
+          : undefined;
+      if (form) {
+        const head = await db
+          .prepare(
+            'SELECT revision, enabled FROM issue_forms WHERE project_id = ? AND id = ?',
+          )
+          .bind(intent.projectId, form.formId)
+          .first<{ revision: number; enabled: number }>();
+        if (!head || head.enabled !== 1 || head.revision !== form.formVersion)
+          throw new IssueFormError('FORM_VERSION_STALE', 'formVersion');
+        if (/constraint failed: attachments\./u.test(String(error)))
+          throw new IssueFormError('FORM_ATTACHMENTS_INVALID', 'attachments');
+        if (
+          /NOT NULL constraint failed: form_submissions\.form_version/u.test(
+            String(error),
+          )
+        ) {
+          const allowed = await db
+            .prepare(
+              "SELECT 1 FROM projects x JOIN principals p ON p.id = ? WHERE x.id = ? AND x.status = 'active' AND p.status = 'active' AND ((p.kind = 'user' AND x.visibility = 'public') OR (p.kind = 'staff' AND EXISTS (SELECT 1 FROM project_roles r WHERE r.project_id = x.id AND r.principal_id = p.id)))",
+            )
+            .bind(intent.principalId, intent.projectId)
+            .first();
+          if (!allowed)
+            throw new IssueFormError('FORM_SUBMISSION_FORBIDDEN', 'principal');
+          throw new IssueFormError('FORM_DEFAULTS_INVALID', 'defaults');
+        }
+      }
             `SELECT issue_id, principal_id FROM issue_assignees WHERE project_id = ? AND issue_id IN (${placeholders(issueIds.length)})`,
           )
           .bind(projectId, ...issueIds)

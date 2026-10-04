@@ -1,3 +1,4 @@
+import { projectMarkdownText } from '@hyperbug/security/markdown';
 import type { Pool, PoolClient } from 'pg';
 export { createPostgresRateCounterStore } from './rate-limit.ts';
 export { createPostgresAccountRegistrationStore } from './account-registration.ts';
@@ -45,6 +46,8 @@ interface IssueRow {
   author_id: string;
   revision: number;
   created_at: string;
+  body_text: string | null;
+  body_text_version: string | null;
   updated_at: string;
   closed_at: string | null;
 }
@@ -62,12 +65,14 @@ const toListItem = (r: Omit<IssueRow, 'body'>): IssueListItem => ({
   authorId: r.author_id,
   revision: r.revision,
   createdAt: Number(r.created_at),
+  bodyText: r.body_text,
+  bodyTextVersion: r.body_text_version,
   updatedAt: Number(r.updated_at),
   closedAt: r.closed_at === null ? null : Number(r.closed_at),
 });
 const toIssue = (r: IssueRow): Issue => ({ ...toListItem(r), body: r.body });
 const listColumns =
-  'id, project_id, number, title, state, close_reason, type_id, milestone_id, moderation, deleted_at, author_id, revision, created_at, updated_at, closed_at';
+  'id, project_id, number, title, body_text, body_text_version, state, close_reason, type_id, milestone_id, moderation, deleted_at, author_id, revision, created_at, updated_at, closed_at';
 const issueColumns = `${listColumns}, body`;
 
 export function createPostgresRepository(pool: Pool): IssueRepository {
@@ -140,20 +145,93 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
           operation,
           intent.keyHash,
           intent.payloadHash,
-          intent.now,
-          intent.expiresAt,
-        ],
-      );
+      // Lock before receipt FK checks: concurrent KEY SHARE-to-UPDATE
+      // upgrades would otherwise deadlock on the project row.
       const project = await db.query<{ status: string }>(
-        'SELECT status FROM projects WHERE id = $1',
+        'SELECT status FROM projects WHERE id = $1' +
+          (operation === 'issue.create' &&
+          (intent as CreateIssueIntent).formSubmission
+            ? ' FOR UPDATE'
+            : ''),
         [intent.projectId],
       );
       if (project.rows[0]?.status !== 'active')
         throw new DomainError('NOT_FOUND');
+          intent.now,
+          intent.expiresAt,
+        ],
+      );
       let row: IssueRow | undefined;
       let metadata: Record<string, unknown> = { v: 1 };
       if (operation === 'issue.create') {
-        const create = intent as CreateIssueIntent;
+        let create = intent as CreateIssueIntent;
+        let formValues:
+          | ReturnType<typeof prepareIssueFormSubmission>
+          | undefined;
+        let formDefinition: IssueFormDefinition | undefined;
+        if (create.formSubmission) {
+          // Project precedes the form lock, matching definition management.
+          const { rows } = await db.query<{
+            revision: number;
+            enabled: number;
+            definition: unknown;
+          }>(
+            'SELECT h.revision, h.enabled, v.definition FROM issue_forms h JOIN issue_form_versions v ON v.project_id = h.project_id AND v.form_id = h.id AND v.version = $3 WHERE h.project_id = $1 AND h.id = $2 FOR SHARE OF h',
+            [
+              create.projectId,
+              create.formSubmission.formId,
+              create.formSubmission.formVersion,
+            ],
+          );
+          const form = rows[0];
+          if (!form)
+            throw new IssueFormError('FORM_VERSION_STALE', 'formVersion');
+          assertActiveIssueFormVersion(
+            form.enabled === 1,
+            form.revision,
+            create.formSubmission.formVersion,
+          );
+          const definition = normalizeIssueFormDefinition(
+            form.definition,
+            'canonical',
+          );
+          formDefinition = definition;
+          formValues = prepareIssueFormSubmission(
+            definition,
+            create.formSubmission,
+            create.body,
+          );
+          create = {
+            ...create,
+            ...(await resolvePostgresIssueFormDefaults(
+              db,
+              create.projectId,
+              definition,
+              true,
+            )),
+          };
+          validateIntent(create, operation);
+          const actor = await db.query<{ kind: string; status: string }>(
+            'SELECT kind, status FROM principals WHERE id = $1 FOR SHARE',
+            [create.principalId],
+          );
+          const member = await db.query(
+            'SELECT 1 FROM project_roles WHERE project_id = $1 AND principal_id = $2 FOR SHARE',
+            [create.projectId, create.principalId],
+          );
+          const visibility = await db.query<{ visibility: string }>(
+            'SELECT visibility FROM projects WHERE id = $1',
+            [create.projectId],
+          );
+          if (
+            actor.rows[0]?.status !== 'active' ||
+            (actor.rows[0].kind === 'staff'
+              ? member.rowCount !== 1
+              : visibility.rows[0]?.visibility !== 'public')
+          )
+            throw new IssueFormError('FORM_SUBMISSION_FORBIDDEN', 'principal');
+        }
+        const projection = projectMarkdownText(create.body);
         if (create.typeId !== null) {
           const type = await db.query(
             'SELECT 1 FROM issue_types WHERE project_id = $1 AND id = $2 AND enabled = 1',
@@ -191,7 +269,7 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
         const number = allocated.rows[0]?.number;
         if (number === undefined) throw new DomainError('NOT_FOUND');
         const inserted = await db.query<IssueRow>(
-          `INSERT INTO issues (id, project_id, number, title, body, type_id, milestone_id, author_id, created_at, updated_at, last_mutation_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10) RETURNING ${issueColumns}`,
+          `INSERT INTO issues (id, project_id, number, title, body, type_id, milestone_id, author_id, created_at, updated_at, last_mutation_id, body_text, body_text_version) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10, $11, $12) RETURNING ${issueColumns}`,
           [
             create.id,
             create.projectId,
@@ -317,8 +395,13 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
         if (operation === 'issue.edit') {
           const edit = intent as EditIssueIntent;
           assignments.push({
-            text: 'title = $1, body = $2',
-            values: [edit.title, edit.body],
+            text: 'title = $1, body = $2, body_text = $3, body_text_version = $4',
+            values: [
+              edit.title,
+              edit.body,
+              projection.text,
+              projection.version,
+            ],
           });
         } else if (operation === 'issue.close') {
           const close = intent as CloseIssueIntent;
@@ -346,6 +429,7 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
         } else if (operation === 'issue.assignees') {
           assignments.push({ text: '', values: [] });
         }
+          const projection = projectMarkdownText(edit.body);
         const assignment = assignments[0];
         const valueCount = assignment?.values.length ?? 0;
         const setClause =

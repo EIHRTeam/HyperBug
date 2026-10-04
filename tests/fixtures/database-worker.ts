@@ -27,6 +27,7 @@ import type {
 } from '../../packages/security/src/rate-limit.ts';
 import { abuseSubjectDigest } from '../../packages/security/src/rate-limit.ts';
 import { DomainError } from '@hyperbug/domain';
+import { IssueFormError } from '@hyperbug/application';
 import type {
   CommentQuery,
   CreateIssueIntent,
@@ -297,7 +298,9 @@ export default {
         {
           error: {
             code:
-              error instanceof DomainError ? error.code : 'PERSISTENCE_FAILURE',
+              error instanceof DomainError || error instanceof IssueFormError
+                ? error.code
+                : 'PERSISTENCE_FAILURE',
           },
           queries,
         },

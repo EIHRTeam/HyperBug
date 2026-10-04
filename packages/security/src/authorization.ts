@@ -38,6 +38,8 @@ const rules = {
     write: true,
     role: 'maintainer',
   },
+  'content:manage': { types: ['project'], write: true, role: 'maintainer' },
+  'content:history': { types: ['project'], role: 'maintainer' },
   'project:configure': {
     types: ['project'],
     write: true,
