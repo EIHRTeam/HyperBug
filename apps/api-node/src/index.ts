@@ -1,4 +1,6 @@
+import { configureNodeUploads } from './uploads.ts';
 import { listenNode } from './listen.ts';
+import { loadNodeTls } from './tls.ts';
 import { closeRejectedNodeRequest } from './rejected-request.ts';
 import { node } from '@elysia/node';
 import {
@@ -40,6 +42,11 @@ const abuse = configureNodeAbuseAdmission(
     keyFile: process.env.HYPERBUG_ABUSE_KEY_FILE,
     keyProviderFile: process.env.HYPERBUG_KEY_FILE,
   },
+  config.environment,
+);
+const uploadStorage = await configureNodeUploads(
+  abuse.uploadIntentStore,
+  process.env.HYPERBUG_UPLOAD_STORAGE_FILE,
   config.environment,
 );
 const keyProvider = abuse.keyProvider;
@@ -98,6 +105,10 @@ const app = createApp({
   reactionStore: abuse.reactionStore,
   timelineStore: abuse.timelineStore,
   taxonomyStore: abuse.taxonomyStore,
+  contentDefinitionStore: abuse.contentDefinitionStore,
+  uploads: uploadStorage.uploads,
+  attachmentStore: abuse.attachmentStore,
+  mediaOrigin: process.env.HYPERBUG_MEDIA_ORIGIN ?? null,
   pluginRegistry: abuse.pluginRegistryStore,
   pluginSettings: abuse.pluginSettingsStore,
   pluginEventOutbox: abuse.pluginEventOutbox,
@@ -112,12 +123,21 @@ const app = createApp({
 });
 let listener: Awaited<ReturnType<typeof listenNode>>;
 try {
-  listener = await listenNode(app, port, process.env.HOST ?? '127.0.0.1');
+  const tls = await loadNodeTls(process.env.HYPERBUG_TLS_FILE);
+  if (
+    process.env.HYPERBUG_MEDIA_ORIGIN &&
+    config.environment !== 'local' &&
+    !tls
+  )
+    throw new Error('Attachment media requires Node TLS configuration');
+  listener = await listenNode(app, port, process.env.HOST ?? '127.0.0.1', tls);
 } catch (error) {
+  uploadStorage.close();
   await abuse.close();
   throw error;
 }
 for (const signal of ['SIGINT', 'SIGTERM'] as const)
   process.once(signal, () => {
+    uploadStorage.close();
     void Promise.allSettled([listener.close(), abuse.close()]);
   });

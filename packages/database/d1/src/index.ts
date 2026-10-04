@@ -1,5 +1,4 @@
 import { projectMarkdownText } from '@hyperbug/security/markdown';
-import { formAttachmentStatements } from './form-attachments.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 export { createD1RateCounterStore } from './rate-limit.ts';
 export { createD1AccountLockoutStore } from './account-lockout.ts';
@@ -15,6 +14,10 @@ export { createD1PluginRegistryStore } from './plugin-registry.ts';
 export { createD1PluginSettingsStore } from './plugin-settings.ts';
 export { createD1PluginEventOutbox } from './plugin-events.ts';
 export { createD1AccountAdministration } from './account-administration.ts';
+export { createD1ContentDefinitionStore } from './content-definitions.ts';
+export { createD1AttachmentStore } from './attachments.ts';
+import { createD1ContentDefinitionStore } from './content-definitions.ts';
+import { formAttachmentStatements } from './form-attachments.ts';
 import {
   DomainError,
   assertId,
@@ -23,6 +26,10 @@ import {
 } from '@hyperbug/domain';
 import {
   validateIntent,
+  prepareIssueFormSubmission,
+  IssueFormError,
+  nameKeyOf,
+  type IssueFormDefinition,
   issuePageOptions,
   issuePage,
   replayReceipt,
@@ -47,6 +54,8 @@ interface IssueRow {
   number: number;
   title: string;
   body: string;
+  body_text: string | null;
+  body_text_version: string | null;
   state: Issue['state'];
   close_reason: Issue['closeReason'];
   type_id: string | null;
@@ -55,8 +64,6 @@ interface IssueRow {
   deleted_at: number | null;
   author_id: string;
   revision: number;
-  body_text: string | null;
-  body_text_version: string | null;
   created_at: number;
   updated_at: number;
   closed_at: number | null;
@@ -66,6 +73,8 @@ const toListItem = (r: Omit<IssueRow, 'body'>): IssueListItem => ({
   projectId: r.project_id,
   number: r.number,
   title: r.title,
+  bodyText: r.body_text,
+  bodyTextVersion: r.body_text_version,
   state: r.state,
   closeReason: r.close_reason,
   typeId: r.type_id,
@@ -74,8 +83,6 @@ const toListItem = (r: Omit<IssueRow, 'body'>): IssueListItem => ({
   deletedAt: r.deleted_at,
   authorId: r.author_id,
   revision: r.revision,
-  bodyText: r.body_text,
-  bodyTextVersion: r.body_text_version,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
   closedAt: r.closed_at,
@@ -256,6 +263,8 @@ export function createD1Repository(db: D1Database): IssueRepository {
             create.now,
             create.now,
             create.mutationId,
+            projection.text,
+            projection.version,
           ),
       );
       for (const labelId of create.labelIds)
@@ -264,10 +273,84 @@ export function createD1Repository(db: D1Database): IssueRepository {
             .prepare(
               'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES (?, ?, ?)',
             )
-            projection.text,
-            projection.version,
             .bind(create.projectId, create.id, labelId),
         );
+      if (create.formSubmission && formValues && definition) {
+        const guards = [
+          "EXISTS (SELECT 1 FROM projects x JOIN principals p ON p.id = ? WHERE x.id = ? AND x.status = 'active' AND p.status = 'active' AND ((p.kind = 'user' AND x.visibility = 'public') OR (p.kind = 'staff' AND EXISTS (SELECT 1 FROM project_roles r WHERE r.project_id = x.id AND r.principal_id = p.id))))",
+        ];
+        const values: (string | number)[] = [
+          create.principalId,
+          create.projectId,
+        ];
+        // Recheck resolved names, active types and Staff handles in the same
+        // batch. A renamed/revoked default cannot become a different choice.
+        if (create.labelIds.length) {
+          guards.push(
+            `(SELECT COUNT(*) FROM labels WHERE project_id = ? AND id IN (${placeholders(create.labelIds.length)}) AND name_key IN (${placeholders(definition.labels.length)})) = ?`,
+          );
+          values.push(
+            create.projectId,
+            ...create.labelIds,
+            ...definition.labels.map(nameKeyOf),
+            create.labelIds.length,
+          );
+        }
+        if (create.assigneeIds.length) {
+          guards.push(
+            `(SELECT COUNT(DISTINCT p.id) FROM project_roles r JOIN principals p ON p.id = r.principal_id JOIN identities i ON i.principal_id = p.id WHERE r.project_id = ? AND p.status = 'active' AND p.kind = 'staff' AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.id IN (${placeholders(create.assigneeIds.length)}) AND i.subject IN (${placeholders(definition.assignees.length)})) = ?`,
+          );
+          values.push(
+            create.projectId,
+            ...create.assigneeIds,
+            ...definition.assignees,
+            create.assigneeIds.length,
+          );
+        }
+        if (create.typeId) {
+          guards.push(
+            'EXISTS (SELECT 1 FROM issue_types WHERE project_id = ? AND id = ? AND name_key = ? AND enabled = 1)',
+          );
+          values.push(
+            create.projectId,
+            create.typeId,
+            nameKeyOf(definition.type!),
+          );
+        }
+        statements.push(
+          db
+            .prepare(
+              `INSERT INTO form_submissions (project_id, issue_id, form_id, form_version, "values", created_at) VALUES (?, ?, ?, (SELECT revision FROM issue_forms WHERE project_id = ? AND id = ? AND enabled = 1 AND revision = ? AND ${guards.join(' AND ')}), ?, ?)`,
+            )
+            .bind(
+              create.projectId,
+              create.id,
+              create.formSubmission.formId,
+              create.projectId,
+              create.formSubmission.formId,
+              create.formSubmission.formVersion,
+              ...values,
+              JSON.stringify(formValues.values),
+              create.now,
+            ),
+        );
+        try {
+          statements.push(
+            ...(await formAttachmentStatements(
+              db,
+              create,
+              definition,
+              formValues.attachmentIds,
+            )),
+          );
+        } catch (error) {
+          // An identical winner may have consumed the draft after our initial
+          // receipt read. Replay that success before reporting changed state.
+          const concurrentReplay = await receipt(intent, operation);
+          if (concurrentReplay) return concurrentReplay;
+          throw error;
+        }
+      }
       for (const assigneeId of create.assigneeIds)
         statements.push(
           db
@@ -507,6 +590,37 @@ export function createD1Repository(db: D1Database): IssueRepository {
       // A competing identical request may have won the unique receipt scope.
       const concurrentReplay = await receipt(intent, operation);
       if (concurrentReplay) return concurrentReplay;
+      const form =
+        operation === 'issue.create'
+          ? (intent as CreateIssueIntent).formSubmission
+          : undefined;
+      if (form) {
+        const head = await db
+          .prepare(
+            'SELECT revision, enabled FROM issue_forms WHERE project_id = ? AND id = ?',
+          )
+          .bind(intent.projectId, form.formId)
+          .first<{ revision: number; enabled: number }>();
+        if (!head || head.enabled !== 1 || head.revision !== form.formVersion)
+          throw new IssueFormError('FORM_VERSION_STALE', 'formVersion');
+        if (/constraint failed: attachments\./u.test(String(error)))
+          throw new IssueFormError('FORM_ATTACHMENTS_INVALID', 'attachments');
+        if (
+          /NOT NULL constraint failed: form_submissions\.form_version/u.test(
+            String(error),
+          )
+        ) {
+          const allowed = await db
+            .prepare(
+              "SELECT 1 FROM projects x JOIN principals p ON p.id = ? WHERE x.id = ? AND x.status = 'active' AND p.status = 'active' AND ((p.kind = 'user' AND x.visibility = 'public') OR (p.kind = 'staff' AND EXISTS (SELECT 1 FROM project_roles r WHERE r.project_id = x.id AND r.principal_id = p.id)))",
+            )
+            .bind(intent.principalId, intent.projectId)
+            .first();
+          if (!allowed)
+            throw new IssueFormError('FORM_SUBMISSION_FORBIDDEN', 'principal');
+          throw new IssueFormError('FORM_DEFAULTS_INVALID', 'defaults');
+        }
+      }
       // A conditional mutation whose pre-read passed but whose batch lost a
       // race (the timeline witness stays NULL) classifies by the row's
       // current existence: a lost revision/state race, never a raw failure.
@@ -591,37 +705,6 @@ export function createD1Repository(db: D1Database): IssueRepository {
       const assigneeRows = (
         await db
           .prepare(
-      const form =
-        operation === 'issue.create'
-          ? (intent as CreateIssueIntent).formSubmission
-          : undefined;
-      if (form) {
-        const head = await db
-          .prepare(
-            'SELECT revision, enabled FROM issue_forms WHERE project_id = ? AND id = ?',
-          )
-          .bind(intent.projectId, form.formId)
-          .first<{ revision: number; enabled: number }>();
-        if (!head || head.enabled !== 1 || head.revision !== form.formVersion)
-          throw new IssueFormError('FORM_VERSION_STALE', 'formVersion');
-        if (/constraint failed: attachments\./u.test(String(error)))
-          throw new IssueFormError('FORM_ATTACHMENTS_INVALID', 'attachments');
-        if (
-          /NOT NULL constraint failed: form_submissions\.form_version/u.test(
-            String(error),
-          )
-        ) {
-          const allowed = await db
-            .prepare(
-              "SELECT 1 FROM projects x JOIN principals p ON p.id = ? WHERE x.id = ? AND x.status = 'active' AND p.status = 'active' AND ((p.kind = 'user' AND x.visibility = 'public') OR (p.kind = 'staff' AND EXISTS (SELECT 1 FROM project_roles r WHERE r.project_id = x.id AND r.principal_id = p.id)))",
-            )
-            .bind(intent.principalId, intent.projectId)
-            .first();
-          if (!allowed)
-            throw new IssueFormError('FORM_SUBMISSION_FORBIDDEN', 'principal');
-          throw new IssueFormError('FORM_DEFAULTS_INVALID', 'defaults');
-        }
-      }
             `SELECT issue_id, principal_id FROM issue_assignees WHERE project_id = ? AND issue_id IN (${placeholders(issueIds.length)})`,
           )
           .bind(projectId, ...issueIds)
@@ -642,6 +725,8 @@ export {
   createD1ReactionStore,
   createD1TimelineStore,
 } from './comments.ts';
+
+export { createD1ContentProjectionStore } from './content-projections.ts';
 export { createD1UploadIntentStore } from './upload-intents.ts';
 export { createD1UploadLegacyInventoryStore } from './upload-legacy-inventory.ts';
 export { createD1UploadLegacyRecoveryStore } from './upload-legacy-recovery.ts';

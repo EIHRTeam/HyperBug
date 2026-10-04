@@ -1,3 +1,12 @@
+import { uploadHttpContract } from '../fixtures/upload-http-contract.ts';
+import { attachmentHttpContract } from '../fixtures/attachment-http-contract.ts';
+import { seedFormUpload } from '../fixtures/form-submission-contract.ts';
+import { createD1UploadIntentStore } from '@hyperbug/database-d1';
+import { defaultUploadQuota } from '@hyperbug/application';
+import type { D1Database } from '@cloudflare/workers-types';
+import { contentDefinitionHttpContract } from '../fixtures/content-definition-http-contract.ts';
+import { contentHttpContract } from '../fixtures/content-http-contract.ts';
+import { contentPolicyUpgradeContract } from '../fixtures/content-policy-upgrade-contract.ts';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
@@ -17,6 +26,7 @@ const enrollmentCode =
   'hbbs1_' +
   Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url');
 let mf: Miniflare;
+let workerOptions: Parameters<typeof convertV4MiniflareOptions>[0];
 
 const post = (
   path: string,
@@ -42,6 +52,7 @@ const call = (
     body?: unknown;
     origin?: string | null;
     idempotencyKey?: string;
+    ifNoneMatch?: string;
   } = {},
 ) =>
   mf.dispatchFetch(`${authOrigin}${path}`, {
@@ -58,6 +69,9 @@ const call = (
       ...(init.idempotencyKey === undefined
         ? {}
         : { 'idempotency-key': init.idempotencyKey }),
+      ...(init.ifNoneMatch === undefined
+        ? {}
+        : { 'if-none-match': init.ifNoneMatch }),
     },
     ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
   });
@@ -119,34 +133,42 @@ async function tokenFromCookie(cookie: string, state: string): Promise<string> {
 
 beforeAll(async () => {
   execFileSync(process.execPath, ['tooling/build.ts', '--target=fixtures']);
-  mf = new Miniflare(
-    convertV4MiniflareOptions({
-      modules: workerModules('dist/account-worker', [wasmPath]),
-      compatibilityDate: '2026-09-16',
-      compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
-      d1Databases: ['DB'],
-      ratelimits: {
-        ABUSE_VOLUMETRIC: {
-          namespace_id: '703415',
-          simple: { limit: 1000, period: 60 },
+  workerOptions = {
+    modules: workerModules('dist/account-worker', [wasmPath]),
+    compatibilityDate: '2026-09-16',
+    compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
+    d1Databases: ['DB'],
+    r2Buckets: ['HYPERBUG_UPLOAD_BLOB'],
+    ratelimits: {
+      ABUSE_VOLUMETRIC: {
+        namespace_id: '703415',
+        simple: { limit: 1000, period: 60 },
+      },
+    },
+    bindings: {
+      HYPERBUG_ENV: 'local',
+      HYPERBUG_UPLOAD_STORAGE: JSON.stringify({
+        accountId: 'a'.repeat(32),
+        bucket: 'hyperbug-test',
+        credentials: {
+          accessKeyId: 'fixture-access',
+          secretAccessKey: 'fixture-secret',
         },
-      },
-      bindings: {
-        HYPERBUG_ENV: 'local',
-        ALLOWED_ORIGINS: authOrigin,
-        HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
-        HYPERBUG_KEY_RING: await cryptoFixture().source.read(),
-        HYPERBUG_TEST_OAUTH_CLIENTS: JSON.stringify([
-          {
-            clientId: 'issues-cli',
-            redirectUris: [redirectUri],
-            scopes: ['public-api'],
-          },
-        ]),
-        HYPERBUG_TEST_BOOTSTRAP_CODE: enrollmentCode,
-      },
-    }),
-  );
+      }),
+      ALLOWED_ORIGINS: authOrigin,
+      HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
+      HYPERBUG_KEY_RING: await cryptoFixture().source.read(),
+      HYPERBUG_TEST_OAUTH_CLIENTS: JSON.stringify([
+        {
+          clientId: 'issues-cli',
+          redirectUris: [redirectUri],
+          scopes: ['public-api'],
+        },
+      ]),
+      HYPERBUG_TEST_BOOTSTRAP_CODE: enrollmentCode,
+    },
+  };
+  mf = new Miniflare(convertV4MiniflareOptions(workerOptions));
   const db = await mf.getD1Database('DB');
   for (const migration of await migrationStatements('d1'))
     await db.batch(
@@ -670,4 +692,150 @@ it('delivers the issue lifecycle on workerd/D1', async () => {
     )
     .first<{ count: number }>();
   expect(audited?.count).toBe(0);
+  await contentHttpContract({
+    projectId: project.id,
+    token: staffToken,
+    call,
+    query: async (sql, values) =>
+      (
+        await db
+          .prepare(sql)
+          .bind(...values)
+          .all<Record<string, unknown>>()
+      ).results,
+  });
+  const uploadCommand = async (
+    id: string,
+    operation: string,
+    text = '',
+    failDelete = false,
+  ) => {
+    const response = await post('/_proof/upload', {
+      id,
+      operation,
+      text,
+      failDelete,
+    });
+    if (response.status !== 200) throw new Error('Upload proof failed');
+    return response.json() as Promise<{
+      text?: string;
+      etag?: string;
+      sizeBytes?: number;
+    }>;
+  };
+  await uploadHttpContract({
+    token: staffToken,
+    userToken: authorToken,
+    call,
+    query: async (sql, values) =>
+      (
+        await db
+          .prepare(sql)
+          .bind(...values)
+          .all<Record<string, unknown>>()
+      ).results,
+    failSigning: async (id) => {
+      await uploadCommand(id, 'fail-signing');
+    },
+    observations: async () =>
+      JSON.stringify(await (await call('/_proof/observations')).json()),
+    stage: async (id, text) => {
+      await uploadCommand(id, 'stage', text);
+    },
+    process: async (id) => {
+      await uploadCommand(id, 'process');
+    },
+    finalText: async (id) => (await uploadCommand(id, 'final')).text!,
+    finalSize: async (id) => (await uploadCommand(id, 'final-size')).sizeBytes!,
+    syntheticScan: async (id, partial) => {
+      await uploadCommand(
+        id,
+        partial ? 'synthetic-partial-scan' : 'synthetic-scan',
+      );
+    },
+    stagePart: async (id, number, size) => {
+      const result = await uploadCommand(
+        id,
+        'multipart-part',
+        `${number}:${size}`,
+      );
+      return { etag: result.etag!, sizeBytes: result.sizeBytes! };
+    },
+    failCompletion: async (id) => {
+      await uploadCommand(id, 'fail-completion');
+    },
+    cleanup: async (id, failDelete) => {
+      await uploadCommand(id, 'cleanup', '', failDelete);
+    },
+  });
+  await attachmentHttpContract({
+    token: staffToken,
+    userToken: authorToken,
+    call,
+    allowedOrigin: authOrigin,
+    proof: uploadCommand,
+    mediaMismatch: (path) =>
+      mf.dispatchFetch(`http://media.poc.invalid${path}`, {
+        headers: { 'x-forwarded-proto': 'https' },
+      }),
+    observations: async () =>
+      JSON.stringify(await (await call('/_proof/observations')).json()),
+    media: (path, init = {}) =>
+      mf.dispatchFetch(`https://media.poc.invalid${path}`, {
+        method: init.method ?? 'GET',
+        headers: { host: 'media.poc.invalid', ...init.headers },
+      }),
+    query: async (sql, values) =>
+      (
+        await db
+          .prepare(sql)
+          .bind(...values)
+          .all<Record<string, unknown>>()
+      ).results,
+  });
+  await contentDefinitionHttpContract({
+    token: staffToken,
+    userToken: authorToken,
+    principalId: staffPrincipalId,
+    call,
+    seedAttachment: async ({ draftId, ...scope }) =>
+      (
+        await seedFormUpload(
+          createD1UploadIntentStore(
+            db as unknown as D1Database,
+            defaultUploadQuota,
+          ),
+          scope,
+          { draftId, now: Date.now(), filename: 'fixture.log' },
+        )
+      ).id,
+    query: async (sql, values) =>
+      (
+        await db
+          .prepare(sql)
+          .bind(...values)
+          .all<Record<string, unknown>>()
+      ).results,
+  });
+  await contentPolicyUpgradeContract({
+    projectId: project.id,
+    token: staffToken,
+    call,
+    upgrade: async () => {
+      await mf.setOptions(
+        convertV4MiniflareOptions({
+          ...workerOptions,
+          modules: workerModules('dist/policy-upgrade-worker', [wasmPath]),
+        }),
+      );
+      await mf.ready;
+      // setOptions invalidates earlier binding handles; reacquire before checking storage.
+      const reloadedDb = await mf.getD1Database('DB');
+      const row = await reloadedDb
+        .prepare('SELECT COUNT(*) AS count FROM issues WHERE project_id = ?')
+        .bind(project.id)
+        .first<{ count: number }>();
+      expect(row!.count).toBeGreaterThan(0);
+    },
+  });
 });

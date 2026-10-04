@@ -58,6 +58,7 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
       compatibilityDate: '2026-09-16',
       compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
       d1Databases: ['DB'],
+      r2Buckets: ['HYPERBUG_UPLOAD_BLOB'],
       ratelimits: {
         ABUSE_VOLUMETRIC: {
           namespace_id: '703398',
@@ -69,31 +70,50 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
         ALLOWED_ORIGINS: 'https://frontend.example',
         HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
         HYPERBUG_KEY_RING: await tokenKeys.source.read(),
+        HYPERBUG_UPLOAD_STORAGE: JSON.stringify({
+          accountId: 'a'.repeat(32),
+          bucket: 'hyperbug-test',
+          credentials: {
+            accessKeyId: 'fixture-access',
+            secretAccessKey: 'fixture-secret',
+          },
+        }),
       },
     }),
   );
   try {
     const db = await configured.getD1Database('DB');
     const migrations = await migrationStatements('d1');
-    const accountMigration = migrations.at(-8);
-    if (accountMigration?.name !== '0010_password_credentials')
-      throw new Error('Registration migration missing');
-    const sessionMigration = migrations.at(-7);
-    if (sessionMigration?.name !== '0011_authorization_sessions')
-      throw new Error('Session migration missing');
-    const recoveryMigration = migrations.at(-6);
-    if (recoveryMigration?.name !== '0012_recovery_codes')
-      throw new Error('Recovery migration missing');
-    const webauthnMigration = migrations.at(-5);
-    if (webauthnMigration?.name !== '0013_webauthn')
-      throw new Error('WebAuthn migration missing');
-    const oauthMigration = migrations.at(-4);
-    if (oauthMigration?.name !== '0014_oauth_codes')
-      throw new Error('OAuth migration missing');
-    const pluginMigration = migrations.at(-3);
-    if (pluginMigration?.name !== '0015_plugin_registry')
-      throw new Error('Plugin registry migration missing');
-    for (const migration of migrations.slice(0, -8))
+    const accountMigration = migrations.find(
+      (migration) => migration.name === '0010_password_credentials',
+    );
+    if (!accountMigration) throw new Error('Registration migration missing');
+    const sessionMigration = migrations.find(
+      (migration) => migration.name === '0011_authorization_sessions',
+    );
+    if (!sessionMigration) throw new Error('Session migration missing');
+    const recoveryMigration = migrations.find(
+      (migration) => migration.name === '0012_recovery_codes',
+    );
+    if (!recoveryMigration) throw new Error('Recovery migration missing');
+    const webauthnMigration = migrations.find(
+      (migration) => migration.name === '0013_webauthn',
+    );
+    if (!webauthnMigration) throw new Error('WebAuthn migration missing');
+    const oauthMigration = migrations.find(
+      (migration) => migration.name === '0014_oauth_codes',
+    );
+    if (!oauthMigration) throw new Error('OAuth migration missing');
+    const pluginMigration = migrations.find(
+      (migration) => migration.name === '0015_plugin_registry',
+    );
+    if (!pluginMigration) throw new Error('Plugin registry migration missing');
+    for (const migration of migrations.slice(
+      0,
+      migrations.findIndex(
+        (entry) => entry.name === '0010_password_credentials',
+      ),
+    ))
       await db.batch(migration.statements.map((sql) => db.prepare(sql)));
     const base = await configured.ready;
     const missingCredentials = await fetch(new URL('/health/ready', base));

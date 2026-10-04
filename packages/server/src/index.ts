@@ -1,4 +1,29 @@
+import {
+  UploadDocumentSchema,
+  UploadCapabilitySchema,
+  ReserveUploadRequestSchema,
+  MultipartDocumentSchema,
+  MultipartPartRequestSchema,
+  MultipartCompleteRequestSchema,
+  type MultipartDocument,
+  type MultipartPartRequest,
+  type MultipartCompleteRequest,
+  type UploadDocument,
+  type UploadCapabilityDocument,
+  type ReserveUploadRequest,
+} from '@hyperbug/contracts';
+import type {
+  UploadDependencies,
+  AttachmentStore,
+} from '@hyperbug/application';
+import { uploadOperation, type UploadContext } from './uploads.ts';
 import { Elysia, t } from 'elysia';
+import {
+  listContentDefinitions,
+  readContentDefinition,
+  saveContentDefinition,
+  type ContentDefinitionContext,
+} from './content-definitions.ts';
 import type { ElysiaAdapter } from 'elysia/adapter';
 import {
   assertDeploymentAvailable,
@@ -11,31 +36,6 @@ import {
 } from '@hyperbug/security';
 import {
   HealthSchema,
-  ReadinessSchema,
-  InstanceDocumentSchema,
-  RegistrationAcceptedSchema,
-  RegistrationChallengeSchema,
-  RegistrationRequestSchema,
-  LoginRequestSchema,
-  LoginChallengeSchema,
-import {
-  listContentDefinitions,
-  readContentDefinition,
-  saveContentDefinition,
-  type ContentDefinitionContext,
-} from './content-definitions.ts';
-  AccountSessionSchema,
-  AccountDocumentSchema,
-  BootstrapEnrollRequestSchema,
-  BootstrapEnrolledSchema,
-  RecoveryCodesSchema,
-  RecoveryRequestSchema,
-  RecoveredSchema,
-  AuthorizeRequestSchema,
-  AuthorizeResponseSchema,
-  TokenResponseSchema,
-  AccountSessionsSchema,
-  PrincipalStatusSchema,
   ContentDefinitionListSchema,
   SaveIssueFormRequestSchema,
   ReplaceIssueFormRequestSchema,
@@ -52,6 +52,25 @@ import {
   type IssueTemplateDocument,
   SubmitIssueFormRequestSchema,
   type SubmitIssueFormRequest,
+  ReadinessSchema,
+  InstanceDocumentSchema,
+  RegistrationAcceptedSchema,
+  RegistrationChallengeSchema,
+  RegistrationRequestSchema,
+  LoginRequestSchema,
+  LoginChallengeSchema,
+  AccountSessionSchema,
+  AccountDocumentSchema,
+  BootstrapEnrollRequestSchema,
+  BootstrapEnrolledSchema,
+  RecoveryCodesSchema,
+  RecoveryRequestSchema,
+  RecoveredSchema,
+  AuthorizeRequestSchema,
+  AuthorizeResponseSchema,
+  TokenResponseSchema,
+  AccountSessionsSchema,
+  PrincipalStatusSchema,
   ProjectMemberRoleRequestSchema,
   ProjectMemberRoleSchema,
   ProjectDocumentSchema,
@@ -170,7 +189,13 @@ import type {
   TimelineStore,
   StaffEnrollmentStore,
   TaxonomyStore,
+  ContentDefinitionStore,
 } from '@hyperbug/application';
+import {
+  createAttachmentMediaHandler,
+  parseMediaOrigin,
+  isAttachmentMediaRequest,
+} from './attachments.ts';
 import {
   readBoundedForm,
   readBoundedJson,
@@ -189,13 +214,7 @@ import {
 import { appendRequiredAuditEvent } from './audit-emit.ts';
 import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 import { registerAccount } from './account-registration.ts';
-  ContentDefinitionStore,
 import { loginAccount } from './account-login.ts';
-import {
-  createAttachmentMediaHandler,
-  parseMediaOrigin,
-  isAttachmentMediaRequest,
-} from './attachments.ts';
 import { enrollInitialStaff } from './bootstrap-enrollment.ts';
 import {
   passkeyLoginOptions,
@@ -345,6 +364,11 @@ export interface AppOptions {
   projectStore?: ProjectStore | null;
   /** Per-project label/type/milestone persistence. */
   taxonomyStore?: TaxonomyStore | null;
+  contentDefinitionStore?: ContentDefinitionStore | null;
+  uploads?: UploadDependencies | null;
+  attachmentStore?: AttachmentStore | null;
+  /** Explicit isolated media origin; absence leaves delivery disabled. */
+  mediaOrigin?: string | null;
   /** Project-scoped issue persistence (the module-02 repository). */
   issueRepository?: IssueRepository | null;
   /** Issue comment persistence with history and moderation. */
@@ -364,11 +388,6 @@ export interface AppOptions {
   /** Append-only audit sink for the audited account/role mutations. */
   auditAppend?: AuditAppend | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
-  contentDefinitionStore?: ContentDefinitionStore | null;
-  uploads?: UploadDependencies | null;
-  attachmentStore?: AttachmentStore | null;
-  /** Explicit isolated media origin; absence leaves delivery disabled. */
-  mediaOrigin?: string | null;
   bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
 }
@@ -476,6 +495,10 @@ export function createApp({
   projectRoleStore = null,
   projectStore = null,
   taxonomyStore = null,
+  contentDefinitionStore = null,
+  uploads = null,
+  attachmentStore = null,
+  mediaOrigin = null,
   issueRepository = null,
   commentStore = null,
   reactionStore = null,
@@ -495,10 +518,6 @@ export function createApp({
     passwordHashPolicy: config.deployment.requiredPasswordAlgorithm,
   });
   const tierSelected = deployment.tier === 'cloudflare-free-minimum';
-  contentDefinitionStore = null,
-  uploads = null,
-  attachmentStore = null,
-  mediaOrigin = null,
   // Exactly one profile's password service may be composed, matching the
   // selected tier; the minimum tier's peppered service is mandatory because
   // bootstrap enrollment and recovery still write credentials on that tier.
@@ -803,6 +822,24 @@ export function createApp({
       infix: '/members/',
     },
     {
+      label: 'project.upload',
+      methods: ['GET', 'POST', 'PUT'],
+      prefix: '/api/v1/projects/',
+      infix: '/uploads',
+    },
+    {
+      label: 'project.content',
+      methods: ['GET', 'POST', 'PUT'],
+      prefix: '/api/v1/projects/',
+      infix: '/forms',
+    },
+    {
+      label: 'project.content',
+      methods: ['GET', 'POST', 'PUT'],
+      prefix: '/api/v1/projects/',
+      infix: '/templates',
+    },
+    {
       label: 'project.taxonomy',
       methods: ['GET', 'POST', 'PATCH', 'DELETE'],
       prefix: '/api/v1/projects/',
@@ -821,24 +858,6 @@ export function createApp({
       infix: '/milestones',
     },
     {
-    {
-      label: 'project.upload',
-      methods: ['GET', 'POST', 'PUT'],
-      prefix: '/api/v1/projects/',
-      infix: '/uploads',
-    },
-    {
-      label: 'project.content',
-      methods: ['GET', 'POST', 'PUT'],
-      prefix: '/api/v1/projects/',
-      infix: '/forms',
-    },
-    {
-      label: 'project.content',
-      methods: ['GET', 'POST', 'PUT'],
-      prefix: '/api/v1/projects/',
-      infix: '/templates',
-    },
       label: 'issue.discussion',
       methods: null,
       prefix: '/api/v1/projects/',
@@ -964,25 +983,6 @@ export function createApp({
     projects: projectStore,
     taxonomy: taxonomyStore,
   };
-  const issueContext: IssueContext = {
-    ...projectContext,
-    issues: issueRepository,
-    admission: boundSensitiveAdmission,
-  };
-  const discussionContext: DiscussionContext = {
-    ...projectContext,
-    comments: commentStore,
-    reactions: reactionStore,
-    timeline: timelineStore,
-    issues: issueRepository,
-    admission: boundSensitiveAdmission,
-  };
-  return new Elysia({ adapter, aot: true, normalize: false })
-    .decorate('captcha', captchaGate)
-    .decorate('captchaSiteKey', publicCaptchaSiteKey)
-    .decorate('keyProvider', keyProvider ?? unavailableKeyProvider)
-    .decorate('sensitiveAdmission', boundSensitiveAdmission)
-    .decorate('accountPassword', accountPasswordService)
   const contentContext: ContentDefinitionContext = {
     ...projectContext,
     contentDefinitions: contentDefinitionStore,
@@ -994,20 +994,20 @@ export function createApp({
     comments: commentStore,
     admission: boundSensitiveAdmission,
   };
-    .decorate(
-      'minimumLoginAdmission',
-      minimumLoginAdmission ?? unavailableMinimumLoginAdmission,
+  const issueContext: IssueContext = {
+    ...projectContext,
+    issues: issueRepository,
     contentDefinitions: contentDefinitionStore,
-    )
-    .decorate(
-      'pluginEventPublisher',
-      pluginEventOutbox
-        ? {
-            publish: (input: {
-              pluginId: string;
-              point: string;
-              payload: unknown;
-            }) =>
+    admission: boundSensitiveAdmission,
+  };
+  const discussionContext: DiscussionContext = {
+    ...projectContext,
+    comments: commentStore,
+    reactions: reactionStore,
+    timeline: timelineStore,
+    issues: issueRepository,
+    admission: boundSensitiveAdmission,
+  };
   const isolatedMediaOrigin =
     mediaOrigin === null
       ? null
@@ -1039,6 +1039,25 @@ export function createApp({
         config.runtime,
       )
     : null;
+  return new Elysia({ adapter, aot: true, normalize: false })
+    .decorate('captcha', captchaGate)
+    .decorate('captchaSiteKey', publicCaptchaSiteKey)
+    .decorate('keyProvider', keyProvider ?? unavailableKeyProvider)
+    .decorate('sensitiveAdmission', boundSensitiveAdmission)
+    .decorate('accountPassword', accountPasswordService)
+    .decorate(
+      'minimumLoginAdmission',
+      minimumLoginAdmission ?? unavailableMinimumLoginAdmission,
+    )
+    .decorate(
+      'pluginEventPublisher',
+      pluginEventOutbox
+        ? {
+            publish: (input: {
+              pluginId: string;
+              point: string;
+              payload: unknown;
+            }) =>
               publishPluginEvent(
                 { registry: pluginRegistry, events: pluginEventOutbox },
                 input,
@@ -1051,6 +1070,23 @@ export function createApp({
       const requestId = crypto.randomUUID();
       boundaries.set(request, { requestId, cors: { vary: 'Origin' } });
       enforceSetHeaders(set.headers, boundaryFor(request));
+      if (
+        mediaHandler &&
+        isAttachmentMediaRequest(request, isolatedMediaOrigin!)
+      ) {
+        const response = await mediaHandler(request);
+        // onRequest short-circuits all auth/parsing/routes and afterHandle;
+        // retain the media handler's independent conservative headers.
+        for (const name of Object.keys(set.headers)) delete set.headers[name];
+        for (const [name, value] of response.headers) set.headers[name] = value;
+        set.status = response.status;
+        boundaries.set(request, {
+          requestId: response.headers.get('x-request-id')!,
+          cors: {},
+        });
+        observeRequest(request, response.status, 'attachment.media');
+        return response;
+      }
       const cors = corsPolicy(request, config.allowedOrigins);
       boundaries.set(request, { requestId, cors: { ...cors.headers } });
       enforceSetHeaders(set.headers, boundaryFor(request));
@@ -1070,23 +1106,6 @@ export function createApp({
       if (
         request.method === 'POST' &&
         (path === '/auth/login' ||
-      if (
-        mediaHandler &&
-        isAttachmentMediaRequest(request, isolatedMediaOrigin!)
-      ) {
-        const response = await mediaHandler(request);
-        // onRequest short-circuits all auth/parsing/routes and afterHandle;
-        // retain the media handler's independent conservative headers.
-        for (const name of Object.keys(set.headers)) delete set.headers[name];
-        for (const [name, value] of response.headers) set.headers[name] = value;
-        set.status = response.status;
-        boundaries.set(request, {
-          requestId: response.headers.get('x-request-id')!,
-          cors: {},
-        });
-        observeRequest(request, response.status, 'attachment.media');
-        return response;
-      }
           path === '/auth/logout' ||
           path === '/auth/bootstrap/enroll' ||
           path === '/auth/recovery-codes' ||
@@ -1184,6 +1203,14 @@ export function createApp({
       // A native Response or handler-modified set can override request-time
       // security headers. Reapply only the server's trusted policy snapshot.
       enforceSetHeaders(set.headers, boundary);
+      if (
+        response &&
+        typeof response === 'object' &&
+        'representationEtag' in response &&
+        typeof response.representationEtag === 'string' &&
+        /^"[a-zA-Z0-9_.-]+"$/.test(response.representationEtag)
+      )
+        set.headers.etag = response.representationEtag;
       observeRequest(
         request,
         typeof set.status === 'number'
@@ -1203,14 +1230,6 @@ export function createApp({
       async ({ request, set }) => {
         try {
           const available = await withDeadline(
-      if (
-        response &&
-        typeof response === 'object' &&
-        'representationEtag' in response &&
-        typeof response.representationEtag === 'string' &&
-        /^"[a-zA-Z0-9_.-]+"$/.test(response.representationEtag)
-      )
-        set.headers.etag = response.representationEtag;
             request.signal,
             config.requestTimeoutMs,
             ready,
@@ -1800,25 +1819,6 @@ export function createApp({
       },
       { body: t.Object({}, { additionalProperties: false }) },
     )
-    .post(
-      '/api/v1/projects/:projectId/issues',
-      async ({ request, params, body, set }): Promise<IssueDocument> => {
-        const projectId = params.projectId;
-        if (projectId === undefined || !uuidPattern.test(projectId))
-          throw new RequestFailure('NOT_FOUND');
-        const view = await createIssue(
-          request,
-          issueContext,
-          projectId,
-          boundaryFor(request).requestId,
-          {
-            title: body.title,
-            body: body.body,
-            typeId: body.typeId,
-            milestoneId: body.milestoneId,
-            labelIds: body.labelIds,
-            assigneeIds: body.assigneeIds,
-          },
     .put(
       '/api/v1/projects/:projectId/uploads/:uploadId',
       async ({ request, params, body }) => {
@@ -2300,6 +2300,25 @@ export function createApp({
         response: { 201: t.Unsafe<IssueDocument>(IssueDocumentSchema) },
       },
     )
+    .post(
+      '/api/v1/projects/:projectId/issues',
+      async ({ request, params, body, set }): Promise<IssueDocument> => {
+        const projectId = params.projectId;
+        if (projectId === undefined || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        const view = await createIssue(
+          request,
+          issueContext,
+          projectId,
+          boundaryFor(request).requestId,
+          {
+            title: body.title,
+            body: body.body,
+            typeId: body.typeId,
+            milestoneId: body.milestoneId,
+            labelIds: body.labelIds,
+            assigneeIds: body.assigneeIds,
+          },
         );
         set.status = 201;
         return view as IssueDocument;

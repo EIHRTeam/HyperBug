@@ -150,17 +150,17 @@
       "breakpoints": true
     },
     {
-      "idx": 22,
-      "version": "7",
-      "when": 1791070243271,
-      "tag": "0022_upload_legacy_recovery",
-      "breakpoints": true
-    },
-    {
       "idx": 21,
       "version": "7",
       "when": 1791041180756,
       "tag": "0021_upload_scans",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791070243271,
+      "tag": "0022_upload_legacy_recovery",
       "breakpoints": true
     }
   ]

@@ -22,6 +22,9 @@ import {
   createPostgresTimelineStore,
   createPostgresStaffEnrollmentStore,
   createPostgresTaxonomyStore,
+  createPostgresContentDefinitionStore,
+  createPostgresAttachmentStore,
+  createPostgresUploadIntentStore,
 } from '@hyperbug/database-postgres';
 import type {
   AuditAppend,
@@ -30,6 +33,7 @@ import type {
 import type { KeyProvider, KeyRegistry } from '@hyperbug/security';
 import type {
   AccountAdministrationStore,
+  AttachmentStore,
   AccountPasswordStore,
   AccountRecoveryStore,
   AccountRegistrationStore,
@@ -47,7 +51,10 @@ import type {
   TimelineStore,
   StaffEnrollmentStore,
   TaxonomyStore,
+  ContentDefinitionStore,
+  UploadIntentStore,
 } from '@hyperbug/application';
+import { defaultUploadQuota } from '@hyperbug/application';
 import { createNodeAbuseKeyProvider } from './abuse-keys.ts';
 import { nodeSocketClientAddress } from './client-address.ts';
 import { createNodeVolumetricLimiter } from './rate-limit.ts';
@@ -81,6 +88,9 @@ export interface NodeAbuseAdmission {
   readonly reactionStore: ReactionStore | null;
   readonly timelineStore: TimelineStore | null;
   readonly taxonomyStore: TaxonomyStore | null;
+  readonly uploadIntentStore: UploadIntentStore | null;
+  readonly contentDefinitionStore: ContentDefinitionStore | null;
+  readonly attachmentStore: AttachmentStore | null;
   readonly pluginRegistryStore: PluginRegistryStore | null;
   readonly pluginSettingsStore: PluginSettingsStore | null;
   readonly pluginEventOutbox: PluginEventOutboxStore | null;
@@ -135,6 +145,9 @@ export function configureNodeAbuseAdmission(
       reactionStore: null,
       timelineStore: null,
       taxonomyStore: null,
+      contentDefinitionStore: null,
+      attachmentStore: null,
+      uploadIntentStore: null,
       pluginRegistryStore: null,
       pluginSettingsStore: null,
       pluginEventOutbox: null,
@@ -262,6 +275,12 @@ export function configureNodeAbuseAdmission(
     reactionStore: createPostgresReactionStore(pool),
     timelineStore: createPostgresTimelineStore(pool),
     taxonomyStore: createPostgresTaxonomyStore(pool),
+    contentDefinitionStore: createPostgresContentDefinitionStore(pool),
+    attachmentStore: createPostgresAttachmentStore(pool),
+    uploadIntentStore: createPostgresUploadIntentStore(
+      pool,
+      defaultUploadQuota,
+    ),
     pluginRegistryStore: createPostgresPluginRegistryStore(pool),
     pluginSettingsStore: createPostgresPluginSettingsStore(pool),
     pluginEventOutbox: createPostgresPluginEventOutbox(pool),

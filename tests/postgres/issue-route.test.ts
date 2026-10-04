@@ -1,9 +1,24 @@
+import { uploadHttpContract } from '../fixtures/upload-http-contract.ts';
+import { attachmentHttpContract } from '../fixtures/attachment-http-contract.ts';
+import { seedFormUpload } from '../fixtures/form-submission-contract.ts';
+import { uploadProof } from '../fixtures/upload-proof.ts';
+import { configureNodeUploads } from '../../apps/api-node/src/uploads.ts';
+import { startLocalS3 } from '../../tooling/local-s3.ts';
+import { contentDefinitionHttpContract } from '../fixtures/content-definition-http-contract.ts';
+import { contentHttpContract } from '../fixtures/content-http-contract.ts';
+import { contentPolicyUpgradeContract } from '../fixtures/content-policy-upgrade-contract.ts';
+import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { Pool } from 'pg';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { node } from '@elysia/node';
+import { request as httpsRequest } from 'node:https';
+import { loadNodeTls, type NodeTls } from '../../apps/api-node/src/tls.ts';
+import { Readable } from 'node:stream';
 import { createApp } from '@hyperbug/server';
 import { loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
@@ -37,9 +52,57 @@ let bootstrap: Pool;
 let pool: Pool;
 let configured: ReturnType<typeof configureNodeAbuseAdmission>;
 let listener: Awaited<ReturnType<typeof listenNode>>;
+let mediaListener: Awaited<ReturnType<typeof listenNode>>;
+let mediaOrigin: string;
+let mediaTls: NodeTls;
 let directory: string;
 let base: string;
+let appOptions: Parameters<typeof createApp>[0];
 const sessionKeys = cryptoFixture();
+const uploadObservations: string[] = [];
+let storage: Awaited<ReturnType<typeof startLocalS3>>;
+let uploadStorage: Awaited<ReturnType<typeof configureNodeUploads>>;
+
+// Native TCP transport with virtual media Host; no DNS/loopback alias assumption.
+function mediaFetch(
+  path: string,
+  init: { method?: string; headers?: Record<string, string> } = {},
+) {
+  return new Promise<Response>((complete, reject) => {
+    const req = httpsRequest(
+      new URL(path, mediaListener.url),
+      {
+        method: init.method ?? 'GET',
+        headers: { host: new URL(mediaOrigin).host, ...init.headers },
+        ca: mediaTls.cert,
+      },
+      (incoming) => {
+        const headers = new Headers();
+        for (const [name, value] of Object.entries(incoming.headers))
+          if (value !== undefined)
+            headers.set(name, Array.isArray(value) ? value.join(', ') : value);
+        const empty = init.method === 'HEAD' || incoming.statusCode === 204;
+        if (empty) incoming.resume();
+        complete(
+          new Response(
+            empty
+              ? null
+              : (Readable.toWeb(incoming) as ReadableStream<Uint8Array>),
+            {
+              status: incoming.statusCode!,
+              headers,
+            },
+          ),
+        );
+      },
+    );
+    req.on('error', reject);
+    req.setTimeout(5000, () =>
+      req.destroy(new Error('Media test transport timeout')),
+    );
+    req.end();
+  });
+}
 
 const post = (
   path: string,
@@ -60,6 +123,7 @@ const call = (
     body?: unknown;
     origin?: string | null;
     idempotencyKey?: string;
+    ifNoneMatch?: string;
   } = {},
 ) =>
   fetch(new URL(path, base), {
@@ -75,6 +139,9 @@ const call = (
       ...(init.idempotencyKey === undefined
         ? {}
         : { 'idempotency-key': init.idempotencyKey }),
+      ...(init.ifNoneMatch === undefined
+        ? {}
+        : { 'if-none-match': init.ifNoneMatch }),
     },
     ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
   });
@@ -136,6 +203,7 @@ async function loginToken(handle: string, password: string): Promise<string> {
 }
 
 beforeAll(async () => {
+  execFileSync(process.execPath, ['tooling/build.ts', '--target=fixtures']);
   if (process.env.HYPERBUG_TEST_POSTGRES !== '1')
     throw new Error('Use the isolated PostgreSQL test cluster');
   const socketDirectory = process.env.PGHOST;
@@ -189,42 +257,113 @@ beforeAll(async () => {
     ),
     allowedOrigins: ['http://localhost:5173'],
   };
-  listener = await listenNode(
-    createApp({
-      adapter: node(),
-      config,
-      telemetry: jsonTelemetry(() => {}),
-      ready: (signal) => configured.ready(signal) as Promise<boolean>,
-      abuse: configured.abuse,
-      registrationStore: configured.registrationStore,
-      passwordStore: configured.passwordStore,
-      sessionStore: configured.sessionStore,
-      keyProvider: sessionKeys.provider,
-      standardPassword: createNodeStandardPasswordService(
-        config.deployment,
-        initialStandardPasswordPolicy,
-        1,
-        initialStandardPasswordPolicy.maximum.memoryKiB,
-      ),
-      oauthClients: clients,
-      oauthCodeStore: configured.oauthCodeStore,
-      projectRoleStore: configured.projectRoleStore,
-      projectStore: configured.projectStore,
-      taxonomyStore: configured.taxonomyStore,
-      issueRepository: configured.issueRepository,
-      accountAdministration: configured.accountAdministration,
-      auditAppend: configured.auditAppend,
-      bootstrapCode: enrollmentCode,
-      staffEnrollmentStore: configured.staffEnrollmentStore,
+  storage = await startLocalS3();
+  const storageFile = join(directory, 'upload-storage.json');
+  await writeFile(
+    storageFile,
+    JSON.stringify({
+      endpoint: storage.endpoint,
+      bucket: storage.bucket,
+      region: storage.region,
+      forcePathStyle: storage.forcePathStyle,
+      credentials: storage.credentials,
+      allowLocalHttp: true,
     }),
-    0,
+    { mode: 0o600 },
   );
+  uploadStorage = await configureNodeUploads(
+    configured.uploadIntentStore,
+    storageFile,
+    'local',
+  );
+  appOptions = {
+    adapter: node(),
+    config,
+    telemetry: jsonTelemetry((line) => uploadObservations.push(line)),
+    ready: (signal) => configured.ready(signal) as Promise<boolean>,
+    abuse: configured.abuse,
+    registrationStore: configured.registrationStore,
+    passwordStore: configured.passwordStore,
+    sessionStore: configured.sessionStore,
+    keyProvider: sessionKeys.provider,
+    standardPassword: createNodeStandardPasswordService(
+      config.deployment,
+      initialStandardPasswordPolicy,
+      1,
+      initialStandardPasswordPolicy.maximum.memoryKiB,
+    ),
+    oauthClients: clients,
+    oauthCodeStore: configured.oauthCodeStore,
+    projectRoleStore: configured.projectRoleStore,
+    projectStore: configured.projectStore,
+    taxonomyStore: configured.taxonomyStore,
+    contentDefinitionStore: configured.contentDefinitionStore,
+    uploads: uploadStorage.uploads,
+    commentStore: configured.commentStore,
+    issueRepository: configured.issueRepository,
+    accountAdministration: configured.accountAdministration,
+    auditAppend: configured.auditAppend,
+    bootstrapCode: enrollmentCode,
+    staffEnrollmentStore: configured.staffEnrollmentStore,
+  };
+  listener = await listenNode(createApp(appOptions), 0);
   base = listener.url;
   config.allowedOrigins.push(base);
+  const selection = await listenNode(createApp(appOptions), 0);
+  mediaOrigin = selection.url
+    .replace('http:', 'https:')
+    .replace('127.0.0.1', '127.0.0.2');
+  await selection.close();
+  const certFile = join(directory, 'media-cert.pem'),
+    mediaKeyFile = join(directory, 'media-key.pem');
+  execFileSync(
+    'openssl',
+    [
+      'req',
+      '-x509',
+      '-newkey',
+      'rsa:2048',
+      '-noenc',
+      '-days',
+      '1',
+      '-subj',
+      '/CN=127.0.0.1',
+      '-addext',
+      'subjectAltName=IP:127.0.0.1',
+      '-keyout',
+      mediaKeyFile,
+      '-out',
+      certFile,
+    ],
+    { stdio: 'ignore' },
+  );
+  const tlsFile = join(directory, 'media-tls.json');
+  await writeFile(
+    tlsFile,
+    JSON.stringify({
+      cert: await readFile(certFile, 'utf8'),
+      key: await readFile(mediaKeyFile, 'utf8'),
+    }),
+    { mode: 0o600 },
+  );
+  mediaTls = (await loadNodeTls(tlsFile))!;
+  mediaListener = await listenNode(
+    createApp({
+      ...appOptions,
+      attachmentStore: configured.attachmentStore,
+      mediaOrigin,
+    }),
+    Number(new URL(mediaOrigin).port),
+    '127.0.0.1',
+    mediaTls,
+  );
 });
 
 afterAll(async () => {
   await listener?.close().catch(() => {});
+  await mediaListener?.close().catch(() => {});
+  uploadStorage?.close();
+  await storage?.close();
   await pool?.end().catch(() => {});
   if (bootstrap)
     await bootstrap.query(`DROP DATABASE ${databaseName}`).catch(() => {});
@@ -447,4 +586,148 @@ it('delivers the issue lifecycle on Node/PostgreSQL', async () => {
     "SELECT COUNT(*)::int AS count FROM audit_events WHERE action LIKE 'issue.%'",
   );
   expect(audited[0]!.count).toBe(0);
-});
+  await contentHttpContract({
+    projectId: project.id,
+    token: staffToken,
+    call,
+    query: async (sql, values) => {
+      let index = 0;
+      return (
+        await pool.query(
+          sql.replace(/\?/g, () => `$${++index}`),
+          values,
+        )
+      ).rows;
+    },
+  });
+  const uploadCommand = async (
+    id: string,
+    operation: string,
+    text = '',
+    failDelete = false,
+  ) => {
+    const scope = (
+      await pool.query(
+        'SELECT id, project_id AS "projectId", principal_id AS "principalId" FROM upload_intents WHERE id = $1',
+        [id],
+      )
+    ).rows[0];
+    return uploadProof(
+      uploadStorage.uploads!,
+      scope,
+      operation,
+      text,
+      failDelete,
+    );
+  };
+  await uploadHttpContract({
+    token: staffToken,
+    userToken: authorToken,
+    call,
+    query: async (sql, values) => {
+      let index = 0;
+      return (
+        await pool.query(
+          sql.replace(/\?/g, () => `$${++index}`),
+          values,
+        )
+      ).rows;
+    },
+    failSigning: async (id) => {
+      await uploadCommand(id, 'fail-signing');
+    },
+    observations: async () => JSON.stringify(uploadObservations),
+    stage: async (id, text) => {
+      await uploadCommand(id, 'stage', text);
+    },
+    process: async (id) => {
+      await uploadCommand(id, 'process');
+    },
+    finalText: async (id) => (await uploadCommand(id, 'final')).text!,
+    finalSize: async (id) => (await uploadCommand(id, 'final-size')).sizeBytes!,
+    syntheticScan: async (id, partial) => {
+      await uploadCommand(
+        id,
+        partial ? 'synthetic-partial-scan' : 'synthetic-scan',
+      );
+    },
+    stagePart: async (id, number, size) => {
+      const result = await uploadCommand(
+        id,
+        'multipart-part',
+        `${number}:${size}`,
+      );
+      return { etag: result.etag!, sizeBytes: result.sizeBytes! };
+    },
+    failCompletion: async (id) => {
+      await uploadCommand(id, 'fail-completion');
+    },
+    cleanup: async (id, failDelete) => {
+      await uploadCommand(id, 'cleanup', '', failDelete);
+    },
+  });
+  await attachmentHttpContract({
+    token: staffToken,
+    userToken: authorToken,
+    call,
+    allowedOrigin: base,
+    proof: uploadCommand,
+    media: mediaFetch,
+    mediaMismatch: (path) =>
+      mediaFetch(path, {
+        headers: {
+          host: `${new URL(mediaOrigin).hostname}:1`,
+          'x-forwarded-host': new URL(mediaOrigin).host,
+          'x-forwarded-proto': 'https',
+        },
+      }),
+    observations: async () => uploadObservations.join('\n'),
+    query: async (sql, values) => {
+      let index = 0;
+      return (
+        await pool.query(
+          sql.replace(/\?/g, () => `$${++index}`),
+          values,
+        )
+      ).rows;
+    },
+  });
+  await contentDefinitionHttpContract({
+    token: staffToken,
+    userToken: authorToken,
+    principalId: staffPrincipalId,
+    call,
+    seedAttachment: async ({ draftId, ...scope }) =>
+      (
+        await seedFormUpload(uploadStorage.uploads!.intents, scope, {
+          draftId,
+          now: Date.now(),
+          filename: 'fixture.log',
+        })
+      ).id,
+    query: async (sql, values) => {
+      let index = 0;
+      return (
+        await pool.query(
+          sql.replace(/\?/g, () => `$${++index}`),
+          values,
+        )
+      ).rows;
+    },
+  });
+  await contentPolicyUpgradeContract({
+    projectId: project.id,
+    token: staffToken,
+    call,
+    upgrade: async () => {
+      const replacement = (await import(
+        pathToFileURL(
+          resolve('dist/policy-upgrade-server/policy-upgrade-server.mjs'),
+        ).href
+      )) as { createApp: typeof createApp };
+      await listener.close();
+      listener = await listenNode(replacement.createApp(appOptions), 0);
+      base = listener.url;
+    },
+  });
+}, 30000);

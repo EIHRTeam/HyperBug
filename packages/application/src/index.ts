@@ -9,6 +9,12 @@ import {
   type IssueListItem,
   type MutationResult,
 } from '@hyperbug/domain';
+import {
+  type IssueFormAnswer,
+  type IssueFormDefinition,
+  IssueFormError,
+  validateIssueFormAnswers,
+} from './issue-forms.ts';
 
 export * from './account-registration.ts';
 export * from './account-session.ts';
@@ -60,6 +66,27 @@ export interface CreateIssueIntent extends MutationIdentity {
   milestoneId: string | null;
   labelIds: readonly string[];
   assigneeIds: readonly string[];
+  formSubmission?: IssueFormSubmissionIntent;
+}
+export interface IssueFormSubmissionIntent {
+  readonly formId: string;
+  readonly formVersion: number;
+  readonly draftId?: string;
+  readonly values: Readonly<Record<string, IssueFormAnswer>>;
+}
+/** Repeat at persistence boundary so direct port callers cannot spoof generation. */
+export function prepareIssueFormSubmission(
+  definition: IssueFormDefinition,
+  submission: IssueFormSubmissionIntent,
+  body: string,
+) {
+  const validated = validateIssueFormAnswers(definition, submission.values);
+  if (validated.attachmentIds.length && !submission.draftId)
+    throw new IssueFormError('FORM_ATTACHMENTS_INVALID', 'attachments');
+  if (submission.draftId) assertId(submission.draftId);
+  if (validated.markdown !== body)
+    throw new IssueFormError('FORM_ANSWERS_INVALID', 'body');
+  return validated;
 }
 export interface EditIssueIntent extends MutationIdentity {
   id: string;
@@ -218,6 +245,12 @@ export function validateIntent(
         if (create.milestoneId !== null) assertId(create.milestoneId);
         checkedIdList(create.labelIds, maxIssueLabels);
         checkedIdList(create.assigneeIds, maxIssueAssignees);
+        if (create.formSubmission) {
+          assertId(create.formSubmission.formId);
+          assertRevision(create.formSubmission.formVersion);
+          if (create.formSubmission.draftId !== undefined)
+            assertId(create.formSubmission.draftId);
+        }
       } else {
         assertRevision((typed as EditIssueIntent).expectedRevision);
       }
@@ -427,6 +460,7 @@ export * from './blob-store.ts';
 export * from './blob-promotion.ts';
 export * from './upload-intents.ts';
 export * from './uploads.ts';
+
 export * from './multipart.ts';
 export * from './multipart-uploads.ts';
 export * from './upload-scans.ts';
@@ -438,6 +472,7 @@ export * from './upload-legacy-inventory.ts';
 export * from './upload-legacy-recovery.ts';
 export * from './upload-cors.ts';
 export * from './form-attachments.ts';
+export * from './attachments.ts';
 export * from './scanner-service-protocol.ts';
 export * from './scanner-service-stream.ts';
 export * from './scanner-service-client.ts';

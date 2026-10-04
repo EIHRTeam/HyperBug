@@ -1,8 +1,12 @@
 import { projectMarkdownText } from '@hyperbug/security/markdown';
+import { resolvePostgresIssueFormDefaults } from './content-definitions.ts';
+import { consumeFormAttachments } from './form-attachments.ts';
 import type { Pool, PoolClient } from 'pg';
 export { createPostgresRateCounterStore } from './rate-limit.ts';
 export { createPostgresAccountRegistrationStore } from './account-registration.ts';
 export { createPostgresStaffEnrollmentStore } from './staff-enrollment.ts';
+export { createPostgresContentDefinitionStore } from './content-definitions.ts';
+export { createPostgresAttachmentStore } from './attachments.ts';
 export { createPostgresAccountRecoveryStore } from './account-recovery.ts';
 export { createPostgresPasskeyStores } from './passkey-store.ts';
 export { createPostgresOAuthStores } from './oauth-store.ts';
@@ -14,6 +18,10 @@ import {
 } from '@hyperbug/domain';
 import {
   validateIntent,
+  prepareIssueFormSubmission,
+  assertActiveIssueFormVersion,
+  normalizeIssueFormDefinition,
+  IssueFormError,
   issuePageOptions,
   issuePage,
   replayReceipt,
@@ -22,6 +30,7 @@ import {
   type EditIssueIntent,
   type IssueListQuery,
   type IssueMutationIntent,
+  type IssueFormDefinition,
   type IssueOperation,
   type IssueRepository,
   type MutationIdentity,
@@ -37,6 +46,8 @@ interface IssueRow {
   number: number;
   title: string;
   body: string;
+  body_text: string | null;
+  body_text_version: string | null;
   state: Issue['state'];
   close_reason: Issue['closeReason'];
   type_id: string | null;
@@ -46,8 +57,6 @@ interface IssueRow {
   author_id: string;
   revision: number;
   created_at: string;
-  body_text: string | null;
-  body_text_version: string | null;
   updated_at: string;
   closed_at: string | null;
 }
@@ -56,6 +65,8 @@ const toListItem = (r: Omit<IssueRow, 'body'>): IssueListItem => ({
   projectId: r.project_id,
   number: r.number,
   title: r.title,
+  bodyText: r.body_text,
+  bodyTextVersion: r.body_text_version,
   state: r.state,
   closeReason: r.close_reason,
   typeId: r.type_id,
@@ -65,8 +76,6 @@ const toListItem = (r: Omit<IssueRow, 'body'>): IssueListItem => ({
   authorId: r.author_id,
   revision: r.revision,
   createdAt: Number(r.created_at),
-  bodyText: r.body_text,
-  bodyTextVersion: r.body_text_version,
   updatedAt: Number(r.updated_at),
   closedAt: r.closed_at === null ? null : Number(r.closed_at),
 });
@@ -136,15 +145,6 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
     const db = await pool.connect();
     try {
       await db.query('BEGIN');
-      await db.query(
-        "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES ($1, $2, $3, $4, $5, $6, 'null'::jsonb, $7, $8)",
-        [
-          intent.mutationId,
-          intent.principalId,
-          intent.projectId,
-          operation,
-          intent.keyHash,
-          intent.payloadHash,
       // Lock before receipt FK checks: concurrent KEY SHARE-to-UPDATE
       // upgrades would otherwise deadlock on the project row.
       const project = await db.query<{ status: string }>(
@@ -157,6 +157,15 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
       );
       if (project.rows[0]?.status !== 'active')
         throw new DomainError('NOT_FOUND');
+      await db.query(
+        "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES ($1, $2, $3, $4, $5, $6, 'null'::jsonb, $7, $8)",
+        [
+          intent.mutationId,
+          intent.principalId,
+          intent.projectId,
+          operation,
+          intent.keyHash,
+          intent.payloadHash,
           intent.now,
           intent.expiresAt,
         ],
@@ -281,9 +290,30 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
             create.principalId,
             create.now,
             create.mutationId,
+            projection.text,
+            projection.version,
           ],
         );
         row = inserted.rows[0];
+        if (create.formSubmission && formValues && formDefinition) {
+          await db.query(
+            'INSERT INTO form_submissions (project_id, issue_id, form_id, form_version, "values", created_at) VALUES ($1, $2, $3, $4, $5::jsonb, $6)',
+            [
+              create.projectId,
+              create.id,
+              create.formSubmission.formId,
+              create.formSubmission.formVersion,
+              JSON.stringify(formValues.values),
+              create.now,
+            ],
+          );
+          await consumeFormAttachments(
+            db,
+            create,
+            formDefinition,
+            formValues.attachmentIds,
+          );
+        }
         // Sequential by design: one transaction client cannot run parallel
         // statements, and the bounded cardinality (20 labels, 10 assignees)
         // keeps the loop short.
@@ -394,6 +424,7 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
         const assignments: { text: string; values: unknown[] }[] = [];
         if (operation === 'issue.edit') {
           const edit = intent as EditIssueIntent;
+          const projection = projectMarkdownText(edit.body);
           assignments.push({
             text: 'title = $1, body = $2, body_text = $3, body_text_version = $4',
             values: [
@@ -429,7 +460,6 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
         } else if (operation === 'issue.assignees') {
           assignments.push({ text: '', values: [] });
         }
-          const projection = projectMarkdownText(edit.body);
         const assignment = assignments[0];
         const valueCount = assignment?.values.length ?? 0;
         const setClause =
@@ -623,6 +653,8 @@ export {
   createPostgresReactionStore,
   createPostgresTimelineStore,
 } from './comments.ts';
+
+export { createPostgresContentProjectionStore } from './content-projections.ts';
 export { createPostgresUploadIntentStore } from './upload-intents.ts';
 export { createPostgresUploadLegacyInventoryStore } from './upload-legacy-inventory.ts';
 export { createPostgresUploadLegacyRecoveryStore } from './upload-legacy-recovery.ts';

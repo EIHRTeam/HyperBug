@@ -1,3 +1,4 @@
+import { configureWorkerUploads } from './uploads.ts';
 import { env } from 'cloudflare:workers';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
 import {
@@ -41,6 +42,8 @@ import {
   createD1RateCounterStore,
   createD1StaffEnrollmentStore,
   createD1TaxonomyStore,
+  createD1ContentDefinitionStore,
+  createD1AttachmentStore,
 } from '@hyperbug/database-d1';
 import { createCloudflareVolumetricLimiter } from './rate-limit.ts';
 import { createWorkerKeyProvider } from './key-provider.ts';
@@ -220,6 +223,10 @@ const minimumPassword = minimumTierEnabled
   ? adaptMinimumPasswordService(loadMinimumPasswordService)
   : null;
 
+const uploads = configureWorkerUploads(
+  env.DB ?? null,
+  env as unknown as Parameters<typeof configureWorkerUploads>[1],
+);
 const app = createApp({
   adapter: CloudflareAdapter,
   config,
@@ -271,6 +278,13 @@ const app = createApp({
   reactionStore,
   timelineStore,
   taxonomyStore,
+  contentDefinitionStore: env.DB
+    ? createD1ContentDefinitionStore(env.DB)
+    : null,
+  attachmentStore: env.DB ? createD1AttachmentStore(env.DB) : null,
+  mediaOrigin:
+    (env as { HYPERBUG_MEDIA_ORIGIN?: string }).HYPERBUG_MEDIA_ORIGIN ?? null,
+  uploads,
   pluginRegistry,
   pluginSettings,
   pluginEventOutbox,
@@ -301,6 +315,9 @@ const ensureTierActivated = (): Promise<void> =>
 
 export default {
   async fetch(request: Request) {
+    // Require live upload dependencies before serving any runtime request;
+    // Cloudflare's upload-time module validation may lack native bindings.
+    void uploads?.intents;
     if (minimumTierEnabled) await ensureTierActivated();
     return app.fetch(request);
   },

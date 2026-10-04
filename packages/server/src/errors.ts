@@ -82,6 +82,29 @@ const failures = {
     'The taxonomy name is already in use or the entry is referenced.',
   ],
   TAXONOMY_UNAVAILABLE: [503, 'The taxonomy service is unavailable.'],
+  CONTENT_INVALID: [400, 'The content definition request is invalid.'],
+  CONTENT_NAME_CONFLICT: [
+    409,
+    'The content definition name is already in use.',
+  ],
+  CONTENT_CATALOG_LIMIT: [409, 'The project content catalog is full.'],
+  CONTENT_UNAVAILABLE: [503, 'The content definition service is unavailable.'],
+  FORM_DEFINITION_INVALID: [400, 'The form definition is invalid.'],
+  FORM_ATTRIBUTE_UNSUPPORTED: [400, 'The form attribute is unsupported.'],
+  FORM_ANSWERS_INVALID: [400, 'The form answers are invalid.'],
+  FORM_DEFAULTS_INVALID: [
+    400,
+    'The authored form defaults do not resolve in this project.',
+  ],
+  FORM_ATTACHMENTS_INVALID: [
+    400,
+    'The form attachments are not authorized for submission.',
+  ],
+  FORM_SUBMISSION_FORBIDDEN: [403, 'Form submission is not permitted.'],
+  FORM_VERSION_STALE: [
+    409,
+    'The form changed or was disabled. Reload its definition.',
+  ],
   INTERNAL_ERROR: [500, 'An internal error occurred.'],
 } as const;
 

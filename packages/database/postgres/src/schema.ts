@@ -1065,6 +1065,43 @@ export const uploadLegacyRecoveries = table(
     index('legacy_recovery_project_lookup').on(t.projectId, t.intentId),
   ],
 );
+
+export const projectUploadUsage = table(
+  'project_upload_usage',
+  {
+    projectId: id('project_id')
+      .primaryKey()
+      .references(() => projects.id),
+    reservedBytes: instant('reserved_bytes').notNull().default(0),
+    usedBytes: instant('used_bytes').notNull().default(0),
+    reservedCount: integer('reserved_count').notNull().default(0),
+  },
+  (t) => [
+    check(
+      'project_upload_usage_bound',
+      sql`${t.reservedBytes} >= 0 AND ${t.usedBytes} >= 0 AND ${t.reservedBytes} <= 9007199254740991 - ${t.usedBytes} AND cast(${t.reservedBytes} as bigint) = ${t.reservedBytes} AND cast(${t.usedBytes} as bigint) = ${t.usedBytes} AND ${t.reservedCount} BETWEEN 0 AND 10000 AND cast(${t.reservedCount} as bigint) = ${t.reservedCount}`,
+    ),
+  ],
+);
+
+export const principalUploadUsage = table(
+  'principal_upload_usage',
+  {
+    principalId: id('principal_id')
+      .primaryKey()
+      .references(() => principals.id),
+    reservedBytes: instant('reserved_bytes').notNull().default(0),
+    usedBytes: instant('used_bytes').notNull().default(0),
+    reservedCount: integer('reserved_count').notNull().default(0),
+  },
+  (t) => [
+    check(
+      'principal_upload_usage_bound',
+      sql`${t.reservedBytes} >= 0 AND ${t.usedBytes} >= 0 AND ${t.reservedBytes} <= 9007199254740991 - ${t.usedBytes} AND cast(${t.reservedBytes} as bigint) = ${t.reservedBytes} AND cast(${t.usedBytes} as bigint) = ${t.usedBytes} AND ${t.reservedCount} BETWEEN 0 AND 10000 AND cast(${t.reservedCount} as bigint) = ${t.reservedCount}`,
+    ),
+  ],
+);
+
 export const attachments = table(
   'attachments',
   {

@@ -1,3 +1,5 @@
+import { configureWorkerUploads } from '../../apps/api-cloudflare/src/uploads.ts';
+import { uploadProof } from './upload-proof.ts';
 import { env } from 'cloudflare:workers';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
 import {
@@ -28,6 +30,8 @@ import {
   createD1ReactionStore,
   createD1TimelineStore,
   createD1TaxonomyStore,
+  createD1ContentDefinitionStore,
+  createD1AttachmentStore,
   createD1AccountRegistrationStore,
   createD1AccountSessionStore,
   createD1KeyRegistry,
@@ -36,6 +40,10 @@ import {
 } from '@hyperbug/database-d1';
 import { createWorkerKeyProvider } from '../../apps/api-cloudflare/src/key-provider.ts';
 
+const uploads = configureWorkerUploads(
+  env.DB,
+  env as unknown as Parameters<typeof configureWorkerUploads>[1],
+);
 const config = loadConfig(env, 'cloudflare');
 const observations: string[] = [];
 const abuse = {
@@ -92,6 +100,10 @@ export default createApp({
   reactionStore: createD1ReactionStore(env.DB),
   timelineStore: createD1TimelineStore(env.DB),
   taxonomyStore: createD1TaxonomyStore(env.DB),
+  contentDefinitionStore: createD1ContentDefinitionStore(env.DB),
+  attachmentStore: createD1AttachmentStore(env.DB),
+  mediaOrigin: uploads ? 'https://media.poc.invalid' : null,
+  uploads,
   accountAdministration: createD1AccountAdministration(env.DB),
   auditAppend: createD1AuditRepository(env.DB).append,
   oauthCodeStore: createD1OAuthStores(env.DB),
@@ -102,6 +114,27 @@ export default createApp({
       )
     : null,
 })
+  .post('/_proof/upload', async ({ body, set }) => {
+    try {
+      if (!uploads) throw new Error();
+      const scope = await env.DB.prepare(
+        'SELECT id, project_id AS projectId, principal_id AS principalId FROM upload_intents WHERE id = ?',
+      )
+        .bind(String(body.id))
+        .first<{ id: string; projectId: string; principalId: string }>();
+      if (!scope) throw new Error();
+      return await uploadProof(
+        uploads,
+        scope,
+        String(body.operation),
+        String(body.text ?? ''),
+        body.failDelete === true,
+      );
+    } catch {
+      set.status = 503;
+      return { error: 'Upload proof failed' };
+    }
+  })
   .get('/_proof/observations', () =>
     observations.map((line) => JSON.parse(line)),
   )
