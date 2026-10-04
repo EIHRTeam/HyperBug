@@ -1,3 +1,8 @@
+import {
+  securityDecisionTimeoutMs,
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+} from './bounds.ts';
 import { scopeKeyProvider } from '@hyperbug/security';
 import {
   generateAuthenticationOptions,
@@ -127,8 +132,10 @@ export async function passkeyRegistrationOptions(input: {
     nowMs: input.nowMs,
   });
   if (!session) throw new RequestFailure('LOGIN_DENIED');
-  const existing = await withDeadline(request.signal, 1000, () =>
-    relyingParty.store.listCredentialIds(session.identityId),
+  const existing = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => relyingParty.store.listCredentialIds(session.identityId),
   );
   const options = await generateRegistrationOptions({
     rpName: relyingParty.rpName,
@@ -143,7 +150,7 @@ export async function passkeyRegistrationOptions(input: {
       userVerification: 'required',
     },
   });
-  await withDeadline(request.signal, 1000, () =>
+  await withDeadline(request.signal, storeWriteTimeoutMs(request.signal), () =>
     relyingParty.store.create({
       kind: 'registration',
       challenge: options.challenge,
@@ -177,8 +184,10 @@ export async function passkeyRegistrationVerify(input: {
   });
   if (!session) throw new RequestFailure('LOGIN_DENIED');
   const challenge = decodeClientDataChallenge(body.response);
-  const owner = await withDeadline(request.signal, 1000, () =>
-    relyingParty.store.consume('registration', challenge, input.nowMs),
+  const owner = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () => relyingParty.store.consume('registration', challenge, input.nowMs),
   );
   if (owner === null || owner.identityId !== session.identityId)
     throw new RequestFailure('PASSKEY_DENIED');
@@ -201,7 +210,7 @@ export async function passkeyRegistrationVerify(input: {
     .replaceAll('+', '-')
     .replaceAll('/', '_')
     .replace(/=+$/, '');
-  await withDeadline(request.signal, 1000, () =>
+  await withDeadline(request.signal, storeWriteTimeoutMs(request.signal), () =>
     relyingParty.store.insertCredential({
       id: info.credential.id,
       identityId: session.identityId,
@@ -248,14 +257,17 @@ export async function passkeyLoginOptions(input: {
     timeout: challengeTtlMs,
     userVerification: 'required',
   });
-  await withDeadline(input.request.signal, 1000, () =>
-    input.relyingParty!.store.create({
-      kind: 'authentication',
-      challenge: options.challenge,
-      identityId: null,
-      nowMs: input.nowMs,
-      expiresAtMs: input.nowMs + challengeTtlMs,
-    }),
+  await withDeadline(
+    input.request.signal,
+    storeWriteTimeoutMs(input.request.signal),
+    () =>
+      input.relyingParty!.store.create({
+        kind: 'authentication',
+        challenge: options.challenge,
+        identityId: null,
+        nowMs: input.nowMs,
+        expiresAtMs: input.nowMs + challengeTtlMs,
+      }),
   );
   return options;
 }
@@ -297,7 +309,7 @@ export async function passkeyLoginVerify(input: {
     ],
     nowMs: input.nowMs,
     signal: request.signal,
-    timeoutMs: 1000,
+    timeoutMs: securityDecisionTimeoutMs(request.signal),
     captchaAction: 'login',
     ...(body.captchaToken === undefined
       ? {}
@@ -307,12 +319,16 @@ export async function passkeyLoginVerify(input: {
       : { requestId: input.requestId }),
   });
   const challenge = decodeClientDataChallenge(body.response);
-  const consumed = await withDeadline(request.signal, 1000, () =>
-    relyingParty.store.consume('authentication', challenge, input.nowMs),
+  const consumed = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () => relyingParty.store.consume('authentication', challenge, input.nowMs),
   );
   if (consumed === null) throw new RequestFailure('PASSKEY_DENIED');
-  const credential = await withDeadline(request.signal, 1000, () =>
-    relyingParty.store.loadCredential(credentialId),
+  const credential = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => relyingParty.store.loadCredential(credentialId),
   );
   if (!credential) throw new RequestFailure('PASSKEY_DENIED');
   let verification: Awaited<ReturnType<typeof verifyAuthenticationResponse>>;
@@ -339,16 +355,24 @@ export async function passkeyLoginVerify(input: {
     throw new RequestFailure('PASSKEY_DENIED');
   }
   if (!verification.verified) throw new RequestFailure('PASSKEY_DENIED');
-  const advanced = await withDeadline(request.signal, 1000, () =>
-    relyingParty.store.updateCounter(
-      credential.id,
-      verification.authenticationInfo.newCounter,
-      input.nowMs,
-    ),
+  const advanced = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      relyingParty.store.updateCounter(
+        credential.id,
+        verification.authenticationInfo.newCounter,
+        input.nowMs,
+      ),
   );
   if (!advanced) throw new RequestFailure('PASSKEY_DENIED');
-  const account = await withDeadline(request.signal, 1000, () =>
-    relyingParty.passwordStore.loadCredentialByIdentity(credential.identityId),
+  const account = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () =>
+      relyingParty.passwordStore.loadCredentialByIdentity(
+        credential.identityId,
+      ),
   );
   if (!account) throw new RequestFailure('LOGIN_DENIED');
   return issueSessionCookieFor({

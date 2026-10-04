@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadConfig, type SecurityEnvironment } from '@hyperbug/config';
+import { loadConfig } from '@hyperbug/config';
 import {
   jsonTelemetry,
   jsonSecurityTelemetry,
@@ -52,34 +52,35 @@ describe('security configuration and safe output', () => {
       ),
     ).toThrow();
   });
-  it('retains separate immutable settings for all seven retention purposes', () => {
-    const settings = {
-      RETENTION_SECURITY_LOG_SECONDS: '172800',
-      RETENTION_AUDIT_SECONDS: '345600',
-      RETENTION_ABUSE_SECONDS: '3600',
-      RETENTION_EXPIRED_SESSION_SECONDS: '7200',
-      RETENTION_DELETED_ACCOUNT_SECONDS: '10800',
-      RETENTION_TEMPORARY_UPLOAD_SECONDS: '14400',
-      RETENTION_EXPORT_SECONDS: '18000',
-    } satisfies SecurityEnvironment;
+  it('uses only implemented retention and bounded immutable store deadlines', () => {
     const security = loadConfig(
-      { ...environment, ...settings },
+      {
+        ...environment,
+        RETENTION_EXPIRED_SESSION_SECONDS: '7200',
+        STORE_READ_TIMEOUT_MS: '1200',
+        STORE_WRITE_TIMEOUT_MS: '1800',
+      },
       'node',
     ).security;
-    expect(security.retentionSeconds).toEqual({
-      securityLogs: 172800,
-      audit: 345600,
-      abuseMetadata: 3600,
-      expiredSessions: 7200,
-      deletedAccounts: 10800,
-      temporaryUploads: 14400,
-      exports: 18000,
-    });
+    expect(security.retentionSeconds).toEqual({ expiredSessions: 7200 });
+    expect(security.storeTimeouts).toEqual({ readMs: 1200, writeMs: 1800 });
+    for (const setting of [
+      'RETENTION_SECURITY_LOG_SECONDS',
+      'RETENTION_AUDIT_SECONDS',
+      'RETENTION_ABUSE_SECONDS',
+      'RETENTION_DELETED_ACCOUNT_SECONDS',
+      'RETENTION_TEMPORARY_UPLOAD_SECONDS',
+      'RETENTION_EXPORT_SECONDS',
+    ])
+      expect(() =>
+        loadConfig({ ...environment, [setting]: '86400' }, 'node'),
+      ).toThrow(/reserved/);
     for (const value of [
       security,
       security.input,
       security.authorization,
       security.retentionSeconds,
+      security.storeTimeouts,
     ])
       expect(Object.isFrozen(value)).toBe(true);
   });

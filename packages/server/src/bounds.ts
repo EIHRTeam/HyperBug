@@ -4,6 +4,32 @@ import { assertJsonDepth, assertJsonShape } from './input.ts';
 
 export { RequestFailure } from './errors.ts';
 
+export const AUTHORIZATION_TIMEOUT_MS = 1000;
+export const STORE_READ_TIMEOUT_MS = 1000;
+export const STORE_WRITE_TIMEOUT_MS = 1000;
+type DeadlinePolicy = {
+  readonly readMs: number;
+  readonly writeMs: number;
+  readonly securityMs: number;
+};
+const deadlinePolicies = new WeakMap<AbortSignal, DeadlinePolicy>();
+/** Bound by composition per request; standalone helpers use conservative defaults. */
+export function bindDeadlinePolicy(
+  signal: AbortSignal,
+  policy: DeadlinePolicy,
+): void {
+  deadlinePolicies.set(signal, Object.freeze({ ...policy }));
+}
+export function securityDecisionTimeoutMs(signal: AbortSignal): number {
+  return deadlinePolicies.get(signal)?.securityMs ?? AUTHORIZATION_TIMEOUT_MS;
+}
+export function storeReadTimeoutMs(signal: AbortSignal): number {
+  return deadlinePolicies.get(signal)?.readMs ?? STORE_READ_TIMEOUT_MS;
+}
+export function storeWriteTimeoutMs(signal: AbortSignal): number {
+  return deadlinePolicies.get(signal)?.writeMs ?? STORE_WRITE_TIMEOUT_MS;
+}
+
 export async function withDeadline<T>(
   signal: AbortSignal,
   timeoutMs: number,
@@ -11,6 +37,8 @@ export async function withDeadline<T>(
 ): Promise<T> {
   const deadline = new AbortController();
   const combined = AbortSignal.any([signal, deadline.signal]);
+  const policy = deadlinePolicies.get(signal);
+  if (policy) deadlinePolicies.set(combined, policy);
   let rejectAbort: (reason: unknown) => void = () => {};
   const aborted = new Promise<never>((_, reject) => {
     rejectAbort = reject;

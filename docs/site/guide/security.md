@@ -18,21 +18,13 @@ The defaults are 65536 body bytes and a 10000 ms request deadline. JSON is limit
 
 Use `MAX_BODY_BYTES`, `REQUEST_TIMEOUT_MS`, `MAX_JSON_DEPTH`, `MAX_JSON_NODES`, `MAX_JSON_OBJECT_KEYS`, `MAX_JSON_ARRAY_ITEMS`, `MAX_JSON_STRING_LENGTH`, `MAX_URL_LENGTH`, `MAX_QUERY_PARAMETERS` and `MAX_QUERY_VALUE_LENGTH` for reviewed deployment settings. Invalid or out-of-range supplied values prevent startup rather than selecting a permissive fallback.
 
-## Configure separate retention periods
+## Configure implemented retention and deadlines
 
-All values below are in seconds. They define intended cleanup cutoffs; automatic cleanup and privileged audit-retention procedures are still pending. They do not extend credential validity or authorize deletion of referenced records.
+`RETENTION_EXPIRED_SESSION_SECONDS` defaults to 86400 seconds (one day) and accepts 1–2592000. Existing five-minute schedulers remove bounded batches of expired/revoked sessions, OAuth credentials and passkey challenges after this retention. Receipts, counters and D1 lockouts use stored expiry. Audit, content history, recovery codes and attachments remain untouched.
 
-| Setting | Default |
-| --- | --- |
-| `RETENTION_SECURITY_LOG_SECONDS` | 2592000 (30 days) |
-| `RETENTION_AUDIT_SECONDS` | 31536000 (365 days) |
-| `RETENTION_ABUSE_SECONDS` | 86400 (1 day) |
-| `RETENTION_EXPIRED_SESSION_SECONDS` | 86400 (1 day) |
-| `RETENTION_DELETED_ACCOUNT_SECONDS` | 2592000 (30 days) |
-| `RETENTION_TEMPORARY_UPLOAD_SECONDS` | 86400 (1 day) |
-| `RETENTION_EXPORT_SECONDS` | 86400 (1 day) |
+Security decisions use `AUTHORIZATION_TIMEOUT_MS` (1000 ms default, 10–5000). Store reads/writes use `STORE_READ_TIMEOUT_MS` / `STORE_WRITE_TIMEOUT_MS` (provisional 1000 ms each, 10–10000); actual Free measurements still govern final defaults. Password hashing and streaming keep their separate bounds. Local debug emits safe route/status/request-ID diagnostics only.
 
-Review legal holds, privacy needs, linked records and required backup/key versions before a future cleanup procedure. These defaults do not establish legal compliance.
+The former security-log, audit, abuse, deleted-account, temporary-upload and export `RETENTION_*` settings are reserved and explicit values now prevent startup: their cleanup owners are unfinished. Configure provider log retention independently and review holds, references and retained backup/key versions before future deletion.
 
 ## Understand sensitive administration
 

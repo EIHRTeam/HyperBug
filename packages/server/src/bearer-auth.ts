@@ -1,3 +1,5 @@
+import { securityDecisionTimeoutMs } from './bounds.ts';
+import { storeReadTimeoutMs } from './bounds.ts';
 import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   Assurance,
@@ -56,17 +58,22 @@ export async function authenticateBearer(
     throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
   const nowMs = Date.now();
   try {
-    const record = await withDeadline(request.signal, 1000, () =>
-      tokenStore.loadActive(presented[1]!, nowMs),
+    const record = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () => tokenStore.loadActive(presented[1]!, nowMs),
     );
     if (!record) return null;
-    const valid = await withDeadline(request.signal, 1000, () =>
-      verifyCredential(
-        keyProvider,
-        presented[2]!,
-        JSON.parse(record.digest),
-        tokenContext(presented[1]!),
-      ),
+    const valid = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () =>
+        verifyCredential(
+          keyProvider,
+          presented[2]!,
+          JSON.parse(record.digest),
+          tokenContext(presented[1]!),
+        ),
     );
     if (!valid) return null;
     return Object.freeze({

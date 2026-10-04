@@ -11,6 +11,8 @@ export interface SecurityEnvironment {
   MAX_QUERY_VALUE_LENGTH?: unknown;
   ADMIN_RECENT_AUTH_SECONDS?: unknown;
   AUTHORIZATION_TIMEOUT_MS?: unknown;
+  STORE_READ_TIMEOUT_MS?: unknown;
+  STORE_WRITE_TIMEOUT_MS?: unknown;
   RETENTION_SECURITY_LOG_SECONDS?: unknown;
   RETENTION_AUDIT_SECONDS?: unknown;
   RETENTION_ABUSE_SECONDS?: unknown;
@@ -38,14 +40,9 @@ export interface SecurityConfig {
     readonly recentAuthMaxAgeMs: number;
     readonly timeoutMs: number;
   };
+  readonly storeTimeouts: Readonly<{ readMs: number; writeMs: number }>;
   readonly retentionSeconds: Readonly<{
-    securityLogs: number;
-    audit: number;
-    abuseMetadata: number;
     expiredSessions: number;
-    deletedAccounts: number;
-    temporaryUploads: number;
-    exports: number;
   }>;
 }
 
@@ -85,6 +82,19 @@ export function loadSecurityConfig(
   if (debug && environment !== 'local') {
     throw new Error('Debug is restricted to the explicit local environment');
   }
+  for (const setting of [
+    'RETENTION_SECURITY_LOG_SECONDS',
+    'RETENTION_AUDIT_SECONDS',
+    'RETENTION_ABUSE_SECONDS',
+    'RETENTION_DELETED_ACCOUNT_SECONDS',
+    'RETENTION_TEMPORARY_UPLOAD_SECONDS',
+    'RETENTION_EXPORT_SECONDS',
+  ] as const) {
+    if (env[setting] !== undefined)
+      throw new Error(
+        `${setting} is reserved until its retention owner is implemented`,
+      );
+  }
   const day = 86400;
   return Object.freeze({
     debug,
@@ -113,44 +123,17 @@ export function loadSecurityConfig(
         boundedInteger(env.ADMIN_RECENT_AUTH_SECONDS, 300, 1, 900) * 1000,
       timeoutMs: boundedInteger(env.AUTHORIZATION_TIMEOUT_MS, 1000, 10, 5000),
     }),
+    storeTimeouts: Object.freeze({
+      readMs: boundedInteger(env.STORE_READ_TIMEOUT_MS, 1000, 10, 10000),
+      writeMs: boundedInteger(env.STORE_WRITE_TIMEOUT_MS, 1000, 10, 10000),
+    }),
     retentionSeconds: Object.freeze({
-      securityLogs: boundedInteger(
-        env.RETENTION_SECURITY_LOG_SECONDS,
-        30 * day,
-        1,
-        365 * day,
-      ),
-      audit: boundedInteger(
-        env.RETENTION_AUDIT_SECONDS,
-        365 * day,
-        day,
-        3650 * day,
-      ),
-      abuseMetadata: boundedInteger(
-        env.RETENTION_ABUSE_SECONDS,
-        day,
-        1,
-        7 * day,
-      ),
       expiredSessions: boundedInteger(
         env.RETENTION_EXPIRED_SESSION_SECONDS,
         day,
         1,
         30 * day,
       ),
-      deletedAccounts: boundedInteger(
-        env.RETENTION_DELETED_ACCOUNT_SECONDS,
-        30 * day,
-        1,
-        365 * day,
-      ),
-      temporaryUploads: boundedInteger(
-        env.RETENTION_TEMPORARY_UPLOAD_SECONDS,
-        day,
-        1,
-        7 * day,
-      ),
-      exports: boundedInteger(env.RETENTION_EXPORT_SECONDS, day, 1, 7 * day),
     }),
   });
 }

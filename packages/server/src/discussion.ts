@@ -1,3 +1,4 @@
+import { securityDecisionTimeoutMs } from './bounds.ts';
 import { commentContentView, contentRepresentation } from './content.ts';
 import { deriveMarkdownTree } from '@hyperbug/security/markdown';
 import {
@@ -106,7 +107,7 @@ async function requireAdmission(
     ],
     nowMs: Date.now(),
     signal: request.signal,
-    timeoutMs: 1000,
+    timeoutMs: securityDecisionTimeoutMs(request.signal),
   });
 }
 

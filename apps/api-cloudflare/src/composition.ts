@@ -254,7 +254,7 @@ export function createCloudflareApi(
         captcha.gate,
         {
           lockout: minimumTierAccountLockoutPolicy,
-          rateTimeoutMs: 1000,
+          rateTimeoutMs: config.security.authorization.timeoutMs,
           lockoutTimeoutMs: 1000,
         },
         abuse && env.DB

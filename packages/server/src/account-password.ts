@@ -1,3 +1,4 @@
+import { storeReadTimeoutMs, storeWriteTimeoutMs } from './bounds.ts';
 import type { AccountPasswordStore } from '@hyperbug/application';
 import type { AccountPasswordService } from '@hyperbug/security';
 import { canonicalRegistrationHandle } from './account-registration.ts';
@@ -23,8 +24,10 @@ export async function verifyAccountPassword(input: {
   if (!service || !store) throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   const handle = canonicalRegistrationHandle(input.handle);
   try {
-    const credential = await withDeadline(signal, 1000, () =>
-      store.loadCredential(handle),
+    const credential = await withDeadline(
+      signal,
+      storeReadTimeoutMs(signal),
+      () => store.loadCredential(handle),
     );
     if (!credential) {
       // A missing handle still pays the selected Argon2id hash cost. The
@@ -40,18 +43,21 @@ export async function verifyAccountPassword(input: {
     if (!result.verified) return null;
     let expectedRevision = credential.revision;
     if (result.replacement) {
-      const replaced = await withDeadline(signal, 1000, () =>
-        store.replaceCredential({
-          identityId: credential.identityId,
-          expectedRevision,
-          record: result.replacement!,
-          nowMs,
-        }),
+      const replaced = await withDeadline(
+        signal,
+        storeWriteTimeoutMs(signal),
+        () =>
+          store.replaceCredential({
+            identityId: credential.identityId,
+            expectedRevision,
+            record: result.replacement!,
+            nowMs,
+          }),
       );
       if (!replaced) throw new Error('Credential changed during verification');
       expectedRevision++;
     }
-    const current = await withDeadline(signal, 1000, () =>
+    const current = await withDeadline(signal, storeReadTimeoutMs(signal), () =>
       store.loadCredential(handle),
     );
     if (

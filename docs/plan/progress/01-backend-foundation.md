@@ -549,3 +549,12 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Selected config/audit/provider/activation 36, Minimum journey 7, real PostgreSQL 18.6 account/upgrade journey 1 and final admission 19 passed; typecheck/lint/boundaries/docs pass. Bundle and denylist sizes recorded, initial fixture failures corrected. Local evidence only, no Argon2id performance or independent review claim.
 - Decisions/blockers: Authorized Minimum-only offline-strength deviation disclosed; historical v1 audit rows preserved. G1/G2 now require all three profiles and stay closed; additional real-Free 13.G6 open. Actual CPU/startup remains B15.
 - Next actions/cautions: Commit B8 then B9 risk-tiered limits. Preserve scoped key/concurrency bounds, one-use permits, stronger-hash refusal, expected credential revision, append-only histories, protected files and remaining holds.
+
+### 2026-10-05 — Review remediation B13 deadline/config consolidation
+
+- Scope/checklist IDs: Approved B13, 01/03 runtime bounds with 04/10 dependencies.
+- Progress/change summary: Named security/read/write deadlines, parsed store settings bound to request/nested signals; local safe debug diagnostics. Six unimplemented retention settings now reject explicit values; expired-session retention active.
+- Files/artifacts: [B13 record](../evidence/2026-10-05-review-remediation.md#b13-named-request-scoped-deadlines-and-active-configuration-2026-10-05), config/bounds/helper/root changes and bilingual security guide.
+- Verification: Unit security/config 9 and Node HTTP deadline 3 pass; types/lint/boundaries/docs pass. Call-site corrections recorded.
+- Decisions/blockers: Store defaults provisional 1000 ms pending B15 actual cold/p99 sizing; no gate closure or retention expansion.
+- Next actions/cautions: Commit B13 then B14; preserve per-request signal scoping, fail-closed decisions, safe diagnostics, history/protected drafts.

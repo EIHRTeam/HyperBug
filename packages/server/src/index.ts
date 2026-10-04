@@ -1,3 +1,5 @@
+import { bindDeadlinePolicy } from './bounds.ts';
+import { storeReadTimeoutMs, storeWriteTimeoutMs } from './bounds.ts';
 import {
   isInstanceMetadataRequest,
   responseCacheControl,
@@ -662,8 +664,10 @@ export function createApp({
   ): Promise<'user' | 'staff'> => {
     let kind: 'user' | 'staff' | null;
     try {
-      kind = await withDeadline(request.signal, 1000, () =>
-        oauthCodeStore!.loadPrincipalKind(principalId),
+      kind = await withDeadline(
+        request.signal,
+        storeReadTimeoutMs(request.signal),
+        () => oauthCodeStore!.loadPrincipalKind(principalId),
       );
     } catch (error) {
       if (error instanceof RequestFailure) throw error;
@@ -703,8 +707,10 @@ export function createApp({
         signal: request.signal,
         credential: credentialFactsOf(principal),
       });
-      const facts = await withDeadline(request.signal, 1000, () =>
-        administration.loadPrincipal(targetId),
+      const facts = await withDeadline(
+        request.signal,
+        storeReadTimeoutMs(request.signal),
+        () => administration.loadPrincipal(targetId),
       );
       if (!facts) throw new RequestFailure('NOT_FOUND');
       const audit = auditEvent({
@@ -719,10 +725,13 @@ export function createApp({
         createdAt: Date.now(),
         metadata: { v: 1 },
       });
-      const applied = await withAtomicAudit(request.signal, 1000, () =>
-        suspend
-          ? administration.suspendPrincipal(targetId, audit)
-          : administration.activatePrincipal(targetId, audit),
+      const applied = await withAtomicAudit(
+        request.signal,
+        storeWriteTimeoutMs(request.signal),
+        () =>
+          suspend
+            ? administration.suspendPrincipal(targetId, audit)
+            : administration.activatePrincipal(targetId, audit),
       );
       // The store refuses the last instance administrator atomically, so two
       // concurrent suspensions cannot both strand the deployment.
@@ -932,6 +941,15 @@ export function createApp({
     const label =
       route ?? routeLabelFor(new URL(request.url).pathname, request.method);
     try {
+      if (config.security.debug)
+        console.debug(
+          JSON.stringify({
+            kind: 'local-debug',
+            requestId: boundaryFor(request).requestId,
+            route: label,
+            status,
+          }),
+        );
       telemetry.request({
         requestId: boundaryFor(request).requestId,
         route: label,
@@ -1045,6 +1063,10 @@ export function createApp({
         : null,
     )
     .onRequest(async ({ request, set }) => {
+      bindDeadlinePolicy(request.signal, {
+        ...config.security.storeTimeouts,
+        securityMs: config.security.authorization.timeoutMs,
+      });
       starts.set(request, performance.now());
       const requestId = crypto.randomUUID();
       boundaries.set(request, { requestId, cors: { vary: 'Origin' } });
@@ -1234,7 +1256,7 @@ export function createApp({
               try {
                 pending = await withDeadline(
                   request.signal,
-                  1000,
+                  storeReadTimeoutMs(request.signal),
                   bootstrapState,
                 );
               } catch {
@@ -1333,11 +1355,14 @@ export function createApp({
         await requireActivePrincipalKind(request, principal.principalId);
         let sessions;
         try {
-          sessions = await withDeadline(request.signal, 1000, () =>
-            sessionStore.listActiveByPrincipal(
-              principal.principalId,
-              Date.now(),
-            ),
+          sessions = await withDeadline(
+            request.signal,
+            storeReadTimeoutMs(request.signal),
+            () =>
+              sessionStore.listActiveByPrincipal(
+                principal.principalId,
+                Date.now(),
+              ),
           );
         } catch (error) {
           if (error instanceof RequestFailure) throw error;
@@ -1373,8 +1398,11 @@ export function createApp({
           throw new RequestFailure('NOT_FOUND');
         let revoked: boolean;
         try {
-          revoked = await withDeadline(request.signal, 1000, () =>
-            sessionStore.revokeOwned(id, principal.principalId, Date.now()),
+          revoked = await withDeadline(
+            request.signal,
+            storeWriteTimeoutMs(request.signal),
+            () =>
+              sessionStore.revokeOwned(id, principal.principalId, Date.now()),
           );
         } catch (error) {
           if (error instanceof RequestFailure) throw error;
@@ -1453,8 +1481,10 @@ export function createApp({
           credential: credentialFactsOf(principal),
         });
         try {
-          const target = await withDeadline(request.signal, 1000, () =>
-            administration.loadPrincipal(principalId),
+          const target = await withDeadline(
+            request.signal,
+            storeReadTimeoutMs(request.signal),
+            () => administration.loadPrincipal(principalId),
           );
           if (!target) throw new RequestFailure('NOT_FOUND');
           // Membership never converts a User into Staff; only an active
@@ -1473,16 +1503,19 @@ export function createApp({
             createdAt: Date.now(),
             metadata: { v: 1, role: body.role },
           });
-          await withAtomicAudit(request.signal, 1000, () =>
-            roleStore.grant(
-              {
-                projectId,
-                principalId,
-                role: body.role,
-                nowMs: Date.now(),
-              },
-              audit,
-            ),
+          await withAtomicAudit(
+            request.signal,
+            storeWriteTimeoutMs(request.signal),
+            () =>
+              roleStore.grant(
+                {
+                  projectId,
+                  principalId,
+                  role: body.role,
+                  nowMs: Date.now(),
+                },
+                audit,
+              ),
           );
         } catch (error) {
           if (error instanceof RequestFailure) throw error;
@@ -1543,8 +1576,10 @@ export function createApp({
         });
         let removed: boolean;
         try {
-          removed = await withAtomicAudit(request.signal, 1000, () =>
-            roleStore.revoke(projectId, principalId, audit),
+          removed = await withAtomicAudit(
+            request.signal,
+            storeWriteTimeoutMs(request.signal),
+            () => roleStore.revoke(projectId, principalId, audit),
           );
         } catch (error) {
           if (error instanceof RequestFailure) throw error;
@@ -3248,8 +3283,10 @@ export function createApp({
           // Enrollment issues a session for immediate passkey/recovery setup.
           if (!passwordStore || !keyProvider || !sessionStore)
             throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
-          const credential = await withDeadline(request.signal, 1000, () =>
-            passwordStore!.loadCredentialByIdentity(result.identityId),
+          const credential = await withDeadline(
+            request.signal,
+            storeReadTimeoutMs(request.signal),
+            () => passwordStore!.loadCredentialByIdentity(result.identityId),
           );
           if (!credential || credential.principalId !== result.principalId)
             throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
@@ -3629,7 +3666,13 @@ export function createApp({
     );
 }
 
-export { RequestFailure, withDeadline } from './bounds.ts';
+export {
+  RequestFailure,
+  withDeadline,
+  AUTHORIZATION_TIMEOUT_MS,
+  STORE_READ_TIMEOUT_MS,
+  STORE_WRITE_TIMEOUT_MS,
+} from './bounds.ts';
 export { verifyAccountPassword } from './account-password.ts';
 export { parseBootstrapEnrollmentCode } from './bootstrap-enrollment.ts';
 export { parsePasskeyConfiguration } from './passkey.ts';

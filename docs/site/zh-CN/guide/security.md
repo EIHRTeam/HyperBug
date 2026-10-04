@@ -18,21 +18,13 @@
 
 经审查后可通过 `MAX_BODY_BYTES`、`REQUEST_TIMEOUT_MS`、`MAX_JSON_DEPTH`、`MAX_JSON_NODES`、`MAX_JSON_OBJECT_KEYS`、`MAX_JSON_ARRAY_ITEMS`、`MAX_JSON_STRING_LENGTH`、`MAX_URL_LENGTH`、`MAX_QUERY_PARAMETERS` 和 `MAX_QUERY_VALUE_LENGTH` 调整部署设置。显式提供无效或越界值会阻止启动，不会自动切换到宽松的默认策略。
 
-## 分别配置数据保留时间
+## 配置已实现的保留时间与期限
 
-下列值均以秒为单位，用于定义预期的清理截止时间；自动清理和受控审计保留流程尚待实现。这些设置不会延长凭证有效期，也不会授权删除仍被引用的记录。
+`RETENTION_EXPIRED_SESSION_SECONDS` 默认为 86400 秒（一天），范围为 1–2592000。现有五分钟调度会按有界批次清理超过保留期的过期或已撤销会话、OAuth 凭证和通行密钥挑战。回执、计数器和 D1 锁定记录使用已存储的到期时间。审计、内容历史、恢复码和附件不会被清理。
 
-| 设置 | 默认值 |
-| --- | --- |
-| `RETENTION_SECURITY_LOG_SECONDS` | 2592000（30 天） |
-| `RETENTION_AUDIT_SECONDS` | 31536000（365 天） |
-| `RETENTION_ABUSE_SECONDS` | 86400（1 天） |
-| `RETENTION_EXPIRED_SESSION_SECONDS` | 86400（1 天） |
-| `RETENTION_DELETED_ACCOUNT_SECONDS` | 2592000（30 天） |
-| `RETENTION_TEMPORARY_UPLOAD_SECONDS` | 86400（1 天） |
-| `RETENTION_EXPORT_SECONDS` | 86400（1 天） |
+安全决策使用 `AUTHORIZATION_TIMEOUT_MS`（默认 1000 毫秒，范围 10–5000）。存储读写分别使用 `STORE_READ_TIMEOUT_MS` / `STORE_WRITE_TIMEOUT_MS`（暂定均为 1000 毫秒，范围 10–10000）；最终默认值仍需依据真实 Free 测量。密码哈希和流传输保持独立期限。本地调试只输出安全的路由、状态和请求 ID。
 
-在将来执行清理流程前，应审查法律保留要求、隐私需求、关联记录以及备份所需的密钥版本。这些默认值不构成法律合规保证。
+此前安全日志、审计、滥用数据、已删除账户、临时上传和导出的 `RETENTION_*` 设置保留给尚未完成的清理模块，显式配置会阻止启动。服务商日志保留需独立配置；未来删除前应审查保留要求、引用和备份所需的密钥版本。
 
 ## 了解敏感管理操作的要求
 

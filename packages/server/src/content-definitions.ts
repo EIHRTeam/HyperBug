@@ -1,3 +1,5 @@
+import { storeWriteTimeoutMs } from './bounds.ts';
+import { storeReadTimeoutMs } from './bounds.ts';
 import {
   ContentDefinitionError,
   IssueFormError,
@@ -128,8 +130,10 @@ export async function listContentDefinitions(
     includeDisabled ? 'content:history' : 'project:read',
   );
   try {
-    return await withDeadline(request.signal, 1000, () =>
-      store(context).list(kind, projectId, includeDisabled),
+    return await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () => store(context).list(kind, projectId, includeDisabled),
     );
   } catch (error) {
     mapFailure(error);
@@ -150,10 +154,13 @@ export async function readContentDefinition(
     version === undefined ? 'project:read' : 'content:history',
   );
   try {
-    const record = await withDeadline(request.signal, 1000, async () =>
-      kind === 'form'
-        ? store(context).getForm(projectId, id, version)
-        : store(context).getTemplate(projectId, id, version),
+    const record = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      async () =>
+        kind === 'form'
+          ? store(context).getForm(projectId, id, version)
+          : store(context).getTemplate(projectId, id, version),
     );
     if (!record) throw new RequestFailure('NOT_FOUND');
     if (!record.enabled && version === undefined) {
@@ -223,8 +230,10 @@ export async function saveContentDefinition(
     }
     try {
       return issueFormView(
-        await withDeadline(request.signal, 1000, () =>
-          store(context).saveForm({ ...identity, definition }),
+        await withDeadline(
+          request.signal,
+          storeWriteTimeoutMs(request.signal),
+          () => store(context).saveForm({ ...identity, definition }),
         ),
       );
     } catch (error) {
@@ -240,8 +249,10 @@ export async function saveContentDefinition(
   }
   try {
     return templateView(
-      await withDeadline(request.signal, 1000, () =>
-        store(context).saveTemplate(template),
+      await withDeadline(
+        request.signal,
+        storeWriteTimeoutMs(request.signal),
+        () => store(context).saveTemplate(template),
       ),
     );
   } catch (error) {

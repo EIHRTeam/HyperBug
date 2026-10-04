@@ -1,3 +1,8 @@
+import {
+  securityDecisionTimeoutMs,
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+} from './bounds.ts';
 import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   AccountSessionStore,
@@ -95,23 +100,28 @@ export async function issueSessionCookieFor(input: {
   const id = crypto.randomUUID();
   const token = generateOpaqueCredential();
   try {
-    const digest = await withDeadline(signal, 1000, () =>
-      digestCredential(provider, token, context(id)),
+    const digest = await withDeadline(
+      signal,
+      securityDecisionTimeoutMs(signal),
+      () => digestCredential(provider, token, context(id)),
     );
-    const created = await withDeadline(signal, 1000, () =>
-      store.createIfCurrent({
-        id,
-        principalId: account.principalId,
-        identityId: account.identityId,
-        credentialRevision: account.credentialRevision,
-        digest: JSON.stringify(digest),
-        nowMs,
-        idleExpiresAtMs: nowMs + idleMs,
-        absoluteExpiresAtMs: nowMs + absoluteMs,
-        authMethod: ceremony.method,
-        authenticatedAtMs: nowMs,
-        assurance: ceremony.assurance,
-      }),
+    const created = await withDeadline(
+      signal,
+      storeWriteTimeoutMs(signal),
+      () =>
+        store.createIfCurrent({
+          id,
+          principalId: account.principalId,
+          identityId: account.identityId,
+          credentialRevision: account.credentialRevision,
+          digest: JSON.stringify(digest),
+          nowMs,
+          idleExpiresAtMs: nowMs + idleMs,
+          absoluteExpiresAtMs: nowMs + absoluteMs,
+          authMethod: ceremony.method,
+          authenticatedAtMs: nowMs,
+          assurance: ceremony.assurance,
+        }),
     );
     if (!created || signal.aborted) throw new Error('Session not current');
     return issuedSessionCookie(id, token);
@@ -142,17 +152,22 @@ export async function currentAccountSession(input: {
   if (!provider || !store || request.signal.aborted)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   try {
-    const record = await withDeadline(request.signal, 1000, () =>
-      store.load(cookie.id, nowMs),
+    const record = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () => store.load(cookie.id, nowMs),
     );
     if (!record) return null;
-    const valid = await withDeadline(request.signal, 1000, () =>
-      verifyCredential(
-        provider,
-        cookie.token,
-        JSON.parse(record.digest),
-        context(cookie.id),
-      ),
+    const valid = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () =>
+        verifyCredential(
+          provider,
+          cookie.token,
+          JSON.parse(record.digest),
+          context(cookie.id),
+        ),
     );
     if (!valid) return null;
     const renewIntervalMs =
@@ -165,13 +180,16 @@ export async function currentAccountSession(input: {
       record.idleExpiresAtMs < nextIdleExpiresAtMs &&
       record.idleExpiresAtMs - nowMs <= idleMs - renewIntervalMs
     ) {
-      const touched = await withDeadline(request.signal, 1000, () =>
-        store.touch({
-          id: cookie.id,
-          digest: record.digest,
-          nowMs,
-          idleExpiresAtMs: nextIdleExpiresAtMs,
-        }),
+      const touched = await withDeadline(
+        request.signal,
+        storeWriteTimeoutMs(request.signal),
+        () =>
+          store.touch({
+            id: cookie.id,
+            digest: record.digest,
+            nowMs,
+            idleExpiresAtMs: nextIdleExpiresAtMs,
+          }),
       );
       if (!touched) throw new Error('Session changed during renewal');
     }
@@ -203,21 +221,28 @@ export async function revokeAccountSession(input: {
   if (!provider || !store || request.signal.aborted)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   try {
-    const record = await withDeadline(request.signal, 1000, () =>
-      store.load(cookie.id, nowMs),
+    const record = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () => store.load(cookie.id, nowMs),
     );
     if (!record) return;
-    const valid = await withDeadline(request.signal, 1000, () =>
-      verifyCredential(
-        provider,
-        cookie.token,
-        JSON.parse(record.digest),
-        context(cookie.id),
-      ),
+    const valid = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () =>
+        verifyCredential(
+          provider,
+          cookie.token,
+          JSON.parse(record.digest),
+          context(cookie.id),
+        ),
     );
     if (!valid) return;
-    const revoked = await withDeadline(request.signal, 1000, () =>
-      store.revoke(cookie.id, record.digest, nowMs),
+    const revoked = await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => store.revoke(cookie.id, record.digest, nowMs),
     );
     if (!revoked || request.signal.aborted)
       throw new Error('Session changed during revocation');

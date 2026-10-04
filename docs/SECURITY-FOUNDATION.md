@@ -85,19 +85,11 @@ Turnstile setup uses three bindings: backend-only `TURNSTILE_SECRET`, public `TU
 
 ## Independent retention policy
 
-These values select lifecycle cutoffs, not automatic deletion. Module 09 supplies bounded cleanup; 03.3a owns privileged audit retention. Legal holds and required retained key versions must be honored before destructive cleanup.
+Only `RETENTION_EXPIRED_SESSION_SECONDS` is an implemented runtime cleanup setting: default 86,400 seconds, range 1–2,592,000. Existing schedulers retain expired sessions/codes/tokens/challenges for this post-expiry interval, without extending validity. Receipts, rate counters and D1 lockouts use their stored expiry. Cleanup is bounded; see DATA-MODEL.
 
-| Variable | Default seconds | Inclusive range | Cutoff anchor / cleanup requirement |
-| --- | --- | --- | --- |
-| `RETENTION_SECURITY_LOG_SECONDS` | 2592000 | 1–31536000 | Diagnostic event creation; transport/storage retention configured separately |
-| `RETENTION_AUDIT_SECONDS` | 31536000 | 86400–315360000 | Audit event creation; privileged reviewed batch, hold check, new audit event; never individual deletion API |
-| `RETENTION_ABUSE_SECONDS` | 86400 | 1–604800 | Bucket expiry; minimize IPs and rotate keyed identifiers independently of logs |
-| `RETENTION_EXPIRED_SESSION_SECONDS` | 86400 | 1–2592000 | Session expiry/revocation; expiry is enforced immediately, not after cleanup |
-| `RETENTION_DELETED_ACCOUNT_SECONDS` | 2592000 | 1–31536000 | Account deletion; purge personal fields, preserve tombstone authorship/audit references |
-| `RETENTION_TEMPORARY_UPLOAD_SECONDS` | 86400 | 1–604800 | Unfinalized intent expiry; recheck finalized/referenced objects before deletion |
-| `RETENTION_EXPORT_SECONDS` | 86400 | 1–604800 | Export completion; revoke download capability and remove unneeded output |
+The six other former `RETENTION_*` settings (security log, audit, abuse, deleted account, temporary upload, export) have no runtime owner yet. Explicit values now refuse startup as reserved rather than being parsed and silently unused. Their earlier intended policy remains a planning input; audit/legal holds, tombstones, attachments, backups and keys are never deleted by the new cleanup. Implement the owning retention policy before reintroducing a runtime setting.
 
-These defaults are explicit engineering policy, not a claim of legal compliance. Operators choose purpose-appropriate values within reviewed bounds. A cutoff change cannot disable current authorization, expand credential validity or drop keys still needed by retained data/backups.
+Security decisions use `AUTHORIZATION_TIMEOUT_MS` (default 1,000 ms, 10–5,000). Store operations use independent `STORE_READ_TIMEOUT_MS` and `STORE_WRITE_TIMEOUT_MS` (provisional 1,000 ms defaults, 10–10,000); final defaults are reviewed against B15 actual cold/p99 measurements. The root binds immutable deadlines to each request signal and nested deadlines inherit them. Isolated callers use named defaults. Password hashing and streaming retain their separate existing deadlines. `DEBUG=true` emits local safe route/status/request-ID diagnostics, never exception/request details.
 
 ## Verification and remaining work
 

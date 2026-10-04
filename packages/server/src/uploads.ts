@@ -1,3 +1,4 @@
+import { securityDecisionTimeoutMs } from './bounds.ts';
 import {
   UploadIntentError,
   BlobStoreError,
@@ -251,7 +252,7 @@ export async function uploadOperation(
       ],
       nowMs: Date.now(),
       signal: request.signal,
-      timeoutMs: 1000,
+      timeoutMs: securityDecisionTimeoutMs(request.signal),
     });
   }
   const scope = { id, projectId, principalId: actor.principalId };

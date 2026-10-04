@@ -879,3 +879,12 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Focused D1 1, PostgreSQL 18.6 1 and Node scheduler 2 pass; typecheck/lint/boundaries/db history checks pass. Initial fixture/generation issues corrected in linked record.
 - Decisions/blockers: Credential/challenge post-expiry retention uses configured default one day; other records stored expiry. 09.3d remains partial; sustained/deployed retention and broader module scope open. Gates unchanged.
 - Next actions/cautions: Commit B11 then B12 unkeyed receipts; preserve old SQL/snapshots/audit and protected drafts. No queue/workflow or blob cleanup expansion.
+
+### 2026-10-05 — Review remediation B13 deadline/config consolidation
+
+- Scope/checklist IDs: Approved B13, 01/03 runtime bounds with 04/10 dependencies.
+- Progress/change summary: Named security/read/write deadlines, parsed store settings bound to request/nested signals; local safe debug diagnostics. Six unimplemented retention settings now reject explicit values; expired-session retention active.
+- Files/artifacts: [B13 record](../evidence/2026-10-05-review-remediation.md#b13-named-request-scoped-deadlines-and-active-configuration-2026-10-05), config/bounds/helper/root changes and bilingual security guide.
+- Verification: Unit security/config 9 and Node HTTP deadline 3 pass; types/lint/boundaries/docs pass. Call-site corrections recorded.
+- Decisions/blockers: Store defaults provisional 1000 ms pending B15 actual cold/p99 sizing; no gate closure or retention expansion.
+- Next actions/cautions: Commit B13 then B14; preserve per-request signal scoping, fail-closed decisions, safe diagnostics, history/protected drafts.

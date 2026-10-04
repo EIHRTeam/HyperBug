@@ -1,3 +1,8 @@
+import {
+  securityDecisionTimeoutMs,
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+} from './bounds.ts';
 import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   AccountSessionStore,
@@ -321,11 +326,13 @@ export async function issueCodeForSession(input: {
   const id = crypto.randomUUID();
   const secret = generateOpaqueCredential();
   try {
-    const digest = await withDeadline(signal, 1000, () =>
-      digestCredential(keyProvider, secret, codeContext(id)),
+    const digest = await withDeadline(
+      signal,
+      securityDecisionTimeoutMs(signal),
+      () => digestCredential(keyProvider, secret, codeContext(id)),
     );
     if (signal?.aborted) throw new Error('Aborted');
-    await withDeadline(signal, 1000, () =>
+    await withDeadline(signal, storeWriteTimeoutMs(signal), () =>
       codeStore.insert({
         id,
         digest: JSON.stringify(digest),
@@ -411,7 +418,7 @@ export async function exchangeAuthorizationCode(input: {
     ],
     nowMs,
     signal: request.signal,
-    timeoutMs: 1000,
+    timeoutMs: securityDecisionTimeoutMs(request.signal),
     captchaAction: 'login',
     ...(input.requestId === undefined || input.requestId === null
       ? {}
@@ -419,8 +426,10 @@ export async function exchangeAuthorizationCode(input: {
   });
   const presented = code.match(codePattern);
   if (!presented) throw new RequestFailure('OAUTH_DENIED');
-  const consumed = await withDeadline(request.signal, 1000, () =>
-    codeStore.consume(presented[1]!, nowMs),
+  const consumed = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () => codeStore.consume(presented[1]!, nowMs),
   );
   if (!consumed) throw new RequestFailure('OAUTH_DENIED');
   const challenge = await s256Challenge(verifier);
@@ -434,24 +443,29 @@ export async function exchangeAuthorizationCode(input: {
   const id = crypto.randomUUID();
   const secret = generateOpaqueCredential();
   try {
-    const digest = await withDeadline(request.signal, 1000, () =>
-      digestCredential(keyProvider, secret, tokenContext(id)),
+    const digest = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () => digestCredential(keyProvider, secret, tokenContext(id)),
     );
     if (request.signal.aborted) throw new Error('Aborted');
-    await withDeadline(request.signal, 1000, () =>
-      tokenStore.insertAccessToken({
-        id,
-        digest: JSON.stringify(digest),
-        principalId: consumed.principalId,
-        identityId: consumed.identityId,
-        clientId,
-        scope: consumed.scope,
-        nowMs,
-        expiresAtMs: nowMs + tokenLifetimeMs,
-        authMethod: consumed.authMethod,
-        authenticatedAtMs: consumed.authenticatedAtMs,
-        assurance: consumed.assurance,
-      }),
+    await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () =>
+        tokenStore.insertAccessToken({
+          id,
+          digest: JSON.stringify(digest),
+          principalId: consumed.principalId,
+          identityId: consumed.identityId,
+          clientId,
+          scope: consumed.scope,
+          nowMs,
+          expiresAtMs: nowMs + tokenLifetimeMs,
+          authMethod: consumed.authMethod,
+          authenticatedAtMs: consumed.authenticatedAtMs,
+          assurance: consumed.assurance,
+        }),
     );
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
@@ -500,28 +514,35 @@ export async function revokeAccessToken(input: {
     ],
     nowMs,
     signal: request.signal,
-    timeoutMs: 1000,
+    timeoutMs: securityDecisionTimeoutMs(request.signal),
     captchaAction: 'login',
     ...(input.requestId === undefined || input.requestId === null
       ? {}
       : { requestId: input.requestId }),
   });
   try {
-    const record = await withDeadline(request.signal, 1000, () =>
-      store.loadActive(match[1]!, nowMs),
+    const record = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () => store.loadActive(match[1]!, nowMs),
     );
     if (!record) return;
-    const valid = await withDeadline(request.signal, 1000, () =>
-      verifyCredential(
-        keyProvider,
-        match[2]!,
-        JSON.parse(record.digest),
-        tokenContext(match[1]!),
-      ),
+    const valid = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () =>
+        verifyCredential(
+          keyProvider,
+          match[2]!,
+          JSON.parse(record.digest),
+          tokenContext(match[1]!),
+        ),
     );
     if (!valid) return;
-    await withDeadline(request.signal, 1000, () =>
-      store.revoke(match[1]!, nowMs),
+    await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => store.revoke(match[1]!, nowMs),
     );
   } catch (error) {
     if (error instanceof RequestFailure) throw error;

@@ -1,3 +1,4 @@
+import { securityDecisionTimeoutMs } from './bounds.ts';
 import { contentRepresentation, storedPreview } from './content.ts';
 import { deriveMarkdownTree, type SafeTree } from '@hyperbug/security/markdown';
 import {
@@ -299,7 +300,7 @@ export async function createIssue(
       ],
       nowMs: Date.now(),
       signal: request.signal,
-      timeoutMs: 1000,
+      timeoutMs: securityDecisionTimeoutMs(request.signal),
     });
   let title = input.title;
   let body = input.body;

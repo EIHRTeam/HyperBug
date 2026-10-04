@@ -1,3 +1,4 @@
+import { securityDecisionTimeoutMs } from './bounds.ts';
 import type { StaffEnrollmentStore } from '@hyperbug/application';
 import type { BootstrapEnrollRequest } from '@hyperbug/contracts';
 import { auditEvent, type AccountPasswordService } from '@hyperbug/security';
@@ -75,7 +76,7 @@ export async function enrollInitialStaff(input: {
     ],
     nowMs,
     signal: request.signal,
-    timeoutMs: 1000,
+    timeoutMs: securityDecisionTimeoutMs(request.signal),
     captchaAction: 'bootstrap',
     ...(input.requestId === undefined || input.requestId === null
       ? {}

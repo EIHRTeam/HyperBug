@@ -1,3 +1,4 @@
+import { AUTHORIZATION_TIMEOUT_MS } from './bounds.ts';
 import type {
   AuthorizationFacts,
   AuthorizationResolver,
@@ -10,7 +11,7 @@ import type {
 /** Default policy for isolated callers; createApp uses parsed runtime config. */
 export const authorizationPolicy = Object.freeze({
   recentAuthMaxAgeMs: 300_000,
-  timeoutMs: 1_000,
+  timeoutMs: AUTHORIZATION_TIMEOUT_MS,
 });
 
 /**

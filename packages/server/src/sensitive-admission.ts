@@ -1,3 +1,8 @@
+import {
+  securityDecisionTimeoutMs,
+  storeWriteTimeoutMs,
+  STORE_WRITE_TIMEOUT_MS,
+} from './bounds.ts';
 import type {
   AbuseKeyProvider,
   ActiveAbuseKey,
@@ -126,7 +131,7 @@ export function createSensitiveActionAdmission(
           try {
             await withDeadline(
               signal ?? new AbortController().signal,
-              1000,
+              signal ? storeWriteTimeoutMs(signal) : STORE_WRITE_TIMEOUT_MS,
               (bound) =>
                 auditAppend(
                   auditEvent({
@@ -239,23 +244,30 @@ export function createBoundSensitiveActionAdmission(
       throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
     let decision: Awaited<ReturnType<VolumetricLimiter['consume']>>;
     try {
-      decision = await withDeadline(request.signal, 1000, async (signal) => {
-        const address = canonicalIpAddress(await clientAddress(request));
-        // A separate route/IP bucket keeps login and registration from
-        // consuming the ordinary IP approximate bucket twice. Their primary
-        // account/IP counters still run after parsing on every valid request.
-        const subjects = await activeAbuseSubjects(
-          requestProvider(request),
-          category,
-          'route',
-          `${route}|${address}`,
-          signal,
-        );
-        if (signal.aborted) throw new Error('Aborted admission');
-        const outcome = await limiter.consume(subjects[0]!.digest, Date.now());
-        if (signal.aborted) throw new Error('Aborted admission');
-        return outcome;
-      });
+      decision = await withDeadline(
+        request.signal,
+        securityDecisionTimeoutMs(request.signal),
+        async (signal) => {
+          const address = canonicalIpAddress(await clientAddress(request));
+          // A separate route/IP bucket keeps login and registration from
+          // consuming the ordinary IP approximate bucket twice. Their primary
+          // account/IP counters still run after parsing on every valid request.
+          const subjects = await activeAbuseSubjects(
+            requestProvider(request),
+            category,
+            'route',
+            `${route}|${address}`,
+            signal,
+          );
+          if (signal.aborted) throw new Error('Aborted admission');
+          const outcome = await limiter.consume(
+            subjects[0]!.digest,
+            Date.now(),
+          );
+          if (signal.aborted) throw new Error('Aborted admission');
+          return outcome;
+        },
+      );
     } catch {
       throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
     }

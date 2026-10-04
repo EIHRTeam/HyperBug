@@ -1,3 +1,4 @@
+import { storeWriteTimeoutMs } from './bounds.ts';
 import { AuditFailure, type AuditEvent } from '@hyperbug/security';
 import type { AuditAppend } from './sensitive-admission.ts';
 import { withDeadline } from './bounds.ts';
@@ -15,7 +16,9 @@ export async function appendRequiredAuditEvent(input: {
   const { append, event, signal } = input;
   if (!append) throw new RequestFailure('AUDIT_UNAVAILABLE');
   try {
-    await withDeadline(signal, 1000, (bound) => append(event, bound));
+    await withDeadline(signal, storeWriteTimeoutMs(signal), (bound) =>
+      append(event, bound),
+    );
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
     throw new RequestFailure('AUDIT_UNAVAILABLE');

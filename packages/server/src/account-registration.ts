@@ -1,3 +1,4 @@
+import { securityDecisionTimeoutMs } from './bounds.ts';
 import type { AccountRegistrationStore } from '@hyperbug/application';
 import type { RegistrationRequest } from '@hyperbug/contracts';
 import type { AccountPasswordService } from '@hyperbug/security';
@@ -49,7 +50,7 @@ export async function registerAccount(input: {
     ],
     nowMs,
     signal: request.signal,
-    timeoutMs: 1000,
+    timeoutMs: securityDecisionTimeoutMs(request.signal),
     captchaAction: 'register',
     ...(input.requestId === undefined || input.requestId === null
       ? {}

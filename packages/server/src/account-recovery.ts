@@ -1,3 +1,8 @@
+import {
+  securityDecisionTimeoutMs,
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+} from './bounds.ts';
 import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   AccountPasswordStore,
@@ -179,53 +184,68 @@ export async function recoverAccount(input: {
     ],
     nowMs,
     signal: request.signal,
-    timeoutMs: 1000,
+    timeoutMs: securityDecisionTimeoutMs(request.signal),
     captchaAction: 'password-reset',
     ...(input.requestId === undefined || input.requestId === null
       ? {}
       : { requestId: input.requestId }),
   });
-  const credential = await withDeadline(request.signal, 1000, () =>
-    passwordStore.loadCredential(handle),
+  const credential = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => passwordStore.loadCredential(handle),
   );
   if (!credential) {
     // Equalize the timing profile with a real digest verification.
     const context = recoveryContext('00000000-0000-4000-8000-000000000000');
-    const decoy = await withDeadline(request.signal, 1000, () =>
-      digestCredential(keyProvider, generateOpaqueCredential(), context),
+    const decoy = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () => digestCredential(keyProvider, generateOpaqueCredential(), context),
     );
-    await withDeadline(request.signal, 1000, () =>
-      verifyCredential(
-        keyProvider,
-        typeof body.recoveryCode === 'string' && body.recoveryCode.length <= 128
-          ? body.recoveryCode
-          : generateOpaqueCredential(),
-        JSON.stringify(decoy),
-        context,
-      ),
+    await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () =>
+        verifyCredential(
+          keyProvider,
+          typeof body.recoveryCode === 'string' &&
+            body.recoveryCode.length <= 128
+            ? body.recoveryCode
+            : generateOpaqueCredential(),
+          JSON.stringify(decoy),
+          context,
+        ),
     );
     throw new RequestFailure('RECOVERY_DENIED');
   }
   const context = recoveryContext(credential.identityId);
-  const active = await withDeadline(request.signal, 1000, () =>
-    recoveryStore.listActive(credential.identityId),
+  const active = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => recoveryStore.listActive(credential.identityId),
   );
   let consumedId: string | null = null;
   for (const record of active) {
     // Sequential verification stops at the first match without a timing signal.
     // eslint-disable-next-line no-await-in-loop
-    const valid = await withDeadline(request.signal, 1000, () =>
-      verifyCredential(
-        keyProvider,
-        body.recoveryCode,
-        JSON.parse(record.digest),
-        context,
-      ),
+    const valid = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () =>
+        verifyCredential(
+          keyProvider,
+          body.recoveryCode,
+          JSON.parse(record.digest),
+          context,
+        ),
     );
     if (!valid) continue;
     // eslint-disable-next-line no-await-in-loop
-    const consumed = await withDeadline(request.signal, 1000, () =>
-      recoveryStore.consume(record.id, nowMs),
+    const consumed = await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => recoveryStore.consume(record.id, nowMs),
     );
     if (consumed) {
       consumedId = record.id;
@@ -248,8 +268,10 @@ export async function recoverAccount(input: {
       }),
     );
     if (!replaced) throw new RequestFailure('RECOVERY_DENIED');
-    await withDeadline(request.signal, 1000, () =>
-      sessionStore.revokeAllForPrincipal(credential.principalId, nowMs),
+    await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => sessionStore.revokeAllForPrincipal(credential.principalId, nowMs),
     );
     await appendRequiredAuditEvent({
       append: input.auditAppend,

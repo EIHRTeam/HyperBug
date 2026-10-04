@@ -1,3 +1,4 @@
+import { storeReadTimeoutMs } from './bounds.ts';
 import {
   attachmentIsDeliverable,
   attachmentBlobMatches,
@@ -154,7 +155,7 @@ export function createAttachmentMediaHandler(
         return new Response(null, { status: 204, headers });
       }
       const load = () =>
-        withDeadline(request.signal, 1000, () =>
+        withDeadline(request.signal, storeReadTimeoutMs(request.signal), () =>
           context.attachments.get(match[1]!),
         );
       const file = await load();
@@ -258,8 +259,10 @@ async function permit(
   let issueId = file.issueId;
   if (file.commentId !== null) {
     if (!context.comments) throw new RequestFailure('ATTACHMENT_UNAVAILABLE');
-    const comment = await withDeadline(request.signal, 1000, () =>
-      context.comments!.getById(file.projectId, file.commentId!),
+    const comment = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () => context.comments!.getById(file.projectId, file.commentId!),
     );
     if (
       !comment ||
@@ -272,8 +275,10 @@ async function permit(
   const issue =
     issueId === null
       ? null
-      : await withDeadline(request.signal, 1000, () =>
-          context.issues.getIssue(file.projectId, issueId!),
+      : await withDeadline(
+          request.signal,
+          storeReadTimeoutMs(request.signal),
+          () => context.issues.getIssue(file.projectId, issueId!),
         );
   if (!issue || issue.deletedAt !== null || issue.moderation !== 'visible')
     throw new RequestFailure('NOT_FOUND');

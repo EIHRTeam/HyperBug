@@ -1,3 +1,4 @@
+import { securityDecisionTimeoutMs } from './bounds.ts';
 import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 import { scopeKeyProvider } from '@hyperbug/security';
 import type {
@@ -71,7 +72,7 @@ export async function loginAccount(input: {
     ],
     nowMs,
     signal: request.signal,
-    timeoutMs: 1000,
+    timeoutMs: securityDecisionTimeoutMs(request.signal),
     captchaAction: 'login',
     ...(input.requestId === undefined || input.requestId === null
       ? {}
