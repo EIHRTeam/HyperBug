@@ -127,6 +127,20 @@
       "when": 1791010945077,
       "tag": "0017_content_projection",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791015525332,
+      "tag": "0018_template_versions",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791024311701,
+      "tag": "0019_upload_reservations",
+      "breakpoints": true
     }
   ]
 }

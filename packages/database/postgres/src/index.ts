@@ -623,3 +623,4 @@ export {
   createPostgresReactionStore,
   createPostgresTimelineStore,
 } from './comments.ts';
+export { createPostgresUploadIntentStore } from './upload-intents.ts';

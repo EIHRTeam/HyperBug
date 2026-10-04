@@ -641,3 +641,4 @@ export {
   createD1ReactionStore,
   createD1TimelineStore,
 } from './comments.ts';
+export { createD1UploadIntentStore } from './upload-intents.ts';
