@@ -660,3 +660,5 @@ export { createPostgresContentProjectionStore } from './content-projections.ts';
 export { createPostgresUploadIntentStore } from './upload-intents.ts';
 export { createPostgresUploadLegacyInventoryStore } from './upload-legacy-inventory.ts';
 export { createPostgresUploadLegacyRecoveryStore } from './upload-legacy-recovery.ts';
+
+export { createPostgresExpiredCleanupStore } from './expired-cleanup.ts';

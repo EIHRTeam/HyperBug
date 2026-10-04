@@ -1448,6 +1448,8 @@ export const authorizationSessions = table(
     ),
     index('authorization_session_principal').on(t.principalId, t.id),
     index('authorization_session_expiry').on(t.absoluteExpiresAt),
+    index('authorization_session_idle_expiry').on(t.idleExpiresAt, t.id),
+    index('authorization_session_revoked_expiry').on(t.revokedAt, t.id),
     validId('authorization_session_id', t.id),
     validTime('authorization_session_created', t.createdAt),
     validTime('authorization_session_idle', t.idleExpiresAt),

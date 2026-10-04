@@ -749,3 +749,5 @@ export { createD1ContentProjectionStore } from './content-projections.ts';
 export { createD1UploadIntentStore } from './upload-intents.ts';
 export { createD1UploadLegacyInventoryStore } from './upload-legacy-inventory.ts';
 export { createD1UploadLegacyRecoveryStore } from './upload-legacy-recovery.ts';
+
+export { createD1ExpiredCleanupStore } from './expired-cleanup.ts';

@@ -49,6 +49,7 @@ const abuse = configureNodeAbuseAdmission(
     keyProviderFile: process.env.HYPERBUG_KEY_FILE,
   },
   config.environment,
+  config.security.retentionSeconds.expiredSessions,
 );
 const uploadStorage = await configureNodeUploads(
   abuse.uploadIntentStore,

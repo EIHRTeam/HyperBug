@@ -113,3 +113,12 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Sustained retention, staging/production Cron, and full Module 09 acceptance remain unverified.
 - Next actions: Do not expand Module 09 during the hold; revisit only its existing checklist after user direction.
 - Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-10-05 — Review remediation B11 bounded expired cleanup
+
+- Scope/checklist IDs: Approved B11, partial 09.3d and dependent data/security/account/acceptance retention.
+- Progress/change summary: Fixed indexed cleanup of expired credentials/receipts/counters and D1 lockouts on existing schedulers; 25 rows/target, eight D1/seven PG statements. Audit and history preserved.
+- Files/artifacts: [B11 record](../evidence/2026-10-05-review-remediation.md#b11-bounded-expired-cleanup-2026-10-05), application/adapters/roots, D1 0026/PG 0025 indexes/snapshots and DATA-MODEL/MIGRATIONS.
+- Verification: Focused D1 1, PostgreSQL 18.6 1 and Node scheduler 2 pass; typecheck/lint/boundaries/db history checks pass. Initial fixture/generation issues corrected in linked record.
+- Decisions/blockers: Credential/challenge post-expiry retention uses configured default one day; other records stored expiry. 09.3d remains partial; sustained/deployed retention and broader module scope open. Gates unchanged.
+- Next actions/cautions: Commit B11 then B12 unkeyed receipts; preserve old SQL/snapshots/audit and protected drafts. No queue/workflow or blob cleanup expansion.

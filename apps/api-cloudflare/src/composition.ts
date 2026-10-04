@@ -1,3 +1,4 @@
+import { expiredCleanupBatchSize } from '@hyperbug/application';
 import { configureWorkerUploads } from './uploads.ts';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
 import {
@@ -42,6 +43,7 @@ import {
   createD1ReactionStore,
   createD1TimelineStore,
   createD1RateCounterStore,
+  createD1ExpiredCleanupStore,
   createD1StaffEnrollmentStore,
   createD1TaxonomyStore,
   createD1ContentDefinitionStore,
@@ -377,10 +379,12 @@ export function createCloudflareApi(
       return app.fetch(request);
     },
     async scheduled(_controller: ScheduledController, bindings: Env) {
-      if (!bindings.DB) throw new Error('Rate counter cleanup unavailable');
-      await createD1RateCounterStore(bindings.DB).purgeExpired(
+      if (!bindings.DB) throw new Error('Expired cleanup unavailable');
+      const cleanupConfig = loadConfig(bindings, 'cloudflare');
+      await createD1ExpiredCleanupStore(bindings.DB).purgeExpired(
         Date.now(),
-        1000,
+        cleanupConfig.security.retentionSeconds.expiredSessions * 1000,
+        expiredCleanupBatchSize,
       );
     },
   } satisfies ExportedHandler<Env>;

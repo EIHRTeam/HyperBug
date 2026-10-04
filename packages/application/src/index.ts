@@ -488,3 +488,5 @@ export * from './scanner-service-stream.ts';
 export * from './scanner-service-client.ts';
 
 export type { PreparedAuditEvent } from './prepared-audit.ts';
+
+export * from './expired-cleanup.ts';

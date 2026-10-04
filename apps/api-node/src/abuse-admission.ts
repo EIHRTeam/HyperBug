@@ -16,6 +16,7 @@ import {
   createPostgresProjectRoleStore,
   createPostgresProjectStore,
   createPostgresRateCounterStore,
+  createPostgresExpiredCleanupStore,
   createPostgresRepository,
   createPostgresCommentStore,
   createPostgresReactionStore,
@@ -59,7 +60,7 @@ import { createNodeAbuseKeyProvider } from './abuse-keys.ts';
 import { nodeSocketClientAddress } from './client-address.ts';
 import { createNodeVolumetricLimiter } from './rate-limit.ts';
 import { createNodeKeyProvider } from './key-provider.ts';
-import { startNodeRateCounterCleanup } from './rate-cleanup.ts';
+import { startNodeExpiredCleanup } from './rate-cleanup.ts';
 
 export interface NodeAbuseBindings {
   readonly databaseUrl?: unknown;
@@ -111,6 +112,7 @@ export interface NodeAbuseAdmission {
 export function configureNodeAbuseAdmission(
   bindings: NodeAbuseBindings,
   environment: RuntimeConfig['environment'],
+  expiredSessionRetentionSeconds = 86400,
 ): NodeAbuseAdmission {
   const databaseUrl = bindings.databaseUrl;
   const socketDirectory = bindings.socketDirectory;
@@ -239,7 +241,10 @@ export function configureNodeAbuseAdmission(
   });
   const accountStore = createPostgresAccountRegistrationStore(pool);
   const rateStore = createPostgresRateCounterStore(pool);
-  const cleanup = startNodeRateCounterCleanup(rateStore);
+  const cleanup = startNodeExpiredCleanup(
+    createPostgresExpiredCleanupStore(pool),
+    expiredSessionRetentionSeconds * 1000,
+  );
   const keyRegistry = createPostgresKeyRegistry(pool);
   const keyProvider =
     keyProviderFile === undefined
@@ -287,7 +292,8 @@ export function configureNodeAbuseAdmission(
     accountAdministration: createPostgresAccountAdministration(pool),
     passkeyStores: createPostgresPasskeyStores(pool),
     auditAppend,
-    purgeExpiredRateCounters: cleanup.run,
+    purgeExpiredRateCounters: (nowMs: number) =>
+      rateStore.purgeExpired(nowMs, 1000),
     async ready(signal: AbortSignal): Promise<boolean> {
       if (signal.aborted || !provider || !keyProvider) return false;
       try {

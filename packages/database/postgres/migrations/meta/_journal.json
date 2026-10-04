@@ -176,6 +176,13 @@
       "when": 1791134175781,
       "tag": "0024_token_assurance",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791147239665,
+      "tag": "0025_expired_cleanup_indexes",
+      "breakpoints": true
     }
   ]
 }

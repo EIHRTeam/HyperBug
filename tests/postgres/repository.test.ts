@@ -1,3 +1,5 @@
+import { expiredCleanupContract } from '../fixtures/expired-cleanup-contract.ts';
+import { createPostgresExpiredCleanupStore } from '@hyperbug/database-postgres';
 import { uploadScanContract } from '../fixtures/upload-scan-contract.ts';
 import { uploadOrphanContract } from '../fixtures/upload-orphan-contract.ts';
 import { uploadLegacyInventoryContract } from '../fixtures/upload-legacy-inventory-contract.ts';
@@ -798,3 +800,11 @@ it('legacy recovery migration preserves populated identities, links, lifecycle a
 it('backfills pre-existing session, code and token assurance without upgrading it', async () => {
   await verifyTokenAssuranceUpgrade();
 });
+
+expiredCleanupContract(
+  () => ({
+    harness,
+    store: createPostgresExpiredCleanupStore(pool),
+  }),
+  false,
+);
