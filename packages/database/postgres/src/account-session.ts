@@ -40,6 +40,8 @@ export function createPostgresAccountSessionStore(
       assertId(id);
       assertInstant(nowMs);
       const result = await pool.query<{
+        principal_kind: string;
+        idle_expires_at: string;
         principal_id: string;
         identity_id: string;
         digest: unknown;
@@ -48,7 +50,7 @@ export function createPostgresAccountSessionStore(
         authenticated_at: string;
         assurance: number;
       }>(
-        "SELECT s.principal_id, s.identity_id, s.digest, s.absolute_expires_at, s.auth_method, s.authenticated_at, s.assurance FROM authorization_sessions s JOIN identities i ON i.id = s.identity_id AND i.principal_id = s.principal_id JOIN principals p ON p.id = s.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE s.id = $1 AND s.revoked_at IS NULL AND s.idle_expires_at > $2 AND s.absolute_expires_at > $2 AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = s.credential_revision LIMIT 1",
+        "SELECT p.kind AS principal_kind, s.idle_expires_at, s.principal_id, s.identity_id, s.digest, s.absolute_expires_at, s.auth_method, s.authenticated_at, s.assurance FROM authorization_sessions s JOIN identities i ON i.id = s.identity_id AND i.principal_id = s.principal_id JOIN principals p ON p.id = s.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE s.id = $1 AND s.revoked_at IS NULL AND s.idle_expires_at > $2 AND s.absolute_expires_at > $2 AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = s.credential_revision LIMIT 1",
         [id, nowMs],
       );
       const row = result.rows[0];
@@ -56,6 +58,10 @@ export function createPostgresAccountSessionStore(
       const digest = JSON.stringify(row.digest);
       const absoluteExpiresAtMs = Number(row.absolute_expires_at);
       if (
+        (row.principal_kind !== 'user' && row.principal_kind !== 'staff') ||
+        !Number.isSafeInteger(Number(row.idle_expires_at)) ||
+        Number(row.idle_expires_at) <= nowMs ||
+        Number(row.idle_expires_at) > Number(row.absolute_expires_at) ||
         typeof row.identity_id !== 'string' ||
         !/^[0-9a-f-]{36}$/.test(row.identity_id) ||
         typeof digest !== 'string' ||
@@ -69,6 +75,8 @@ export function createPostgresAccountSessionStore(
         throw new Error('Invalid authorization session record');
       return {
         principalId: row.principal_id,
+        principalKind: row.principal_kind as 'user' | 'staff',
+        idleExpiresAtMs: Number(row.idle_expires_at),
         identityId: row.identity_id,
         digest,
         absoluteExpiresAtMs,

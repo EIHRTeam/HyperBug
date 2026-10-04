@@ -151,16 +151,27 @@ export async function currentAccountSession(input: {
       ),
     );
     if (!valid) return null;
-    const touched = await withDeadline(request.signal, 1000, () =>
-      store.touch({
-        id: cookie.id,
-        digest: record.digest,
-        nowMs,
-        idleExpiresAtMs: Math.min(record.absoluteExpiresAtMs, nowMs + idleMs),
-      }),
+    const renewIntervalMs =
+      record.principalKind === 'staff' ? 180_000 : 300_000;
+    const nextIdleExpiresAtMs = Math.min(
+      record.absoluteExpiresAtMs,
+      nowMs + idleMs,
     );
-    if (!touched || request.signal.aborted)
-      throw new Error('Session changed during validation');
+    if (
+      record.idleExpiresAtMs < nextIdleExpiresAtMs &&
+      record.idleExpiresAtMs - nowMs <= idleMs - renewIntervalMs
+    ) {
+      const touched = await withDeadline(request.signal, 1000, () =>
+        store.touch({
+          id: cookie.id,
+          digest: record.digest,
+          nowMs,
+          idleExpiresAtMs: nextIdleExpiresAtMs,
+        }),
+      );
+      if (!touched) throw new Error('Session changed during renewal');
+    }
+    if (request.signal.aborted) throw new Error('Session validation aborted');
     return {
       principalId: record.principalId,
       identityId: record.identityId,

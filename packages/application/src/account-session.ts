@@ -25,6 +25,8 @@ export interface AccountSessionRecord {
   readonly principalId: string;
   readonly identityId: string;
   readonly digest: string;
+  readonly principalKind: 'user' | 'staff';
+  readonly idleExpiresAtMs: number;
   readonly absoluteExpiresAtMs: number;
   readonly authMethod: AuthMethod;
   readonly authenticatedAtMs: number;

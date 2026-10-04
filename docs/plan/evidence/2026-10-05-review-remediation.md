@@ -22,7 +22,7 @@ Cross-module record for the remediation of two review reports supplied by the us
 | Recovery-code regeneration without step-up (DESIGN 3.3) | B4 | Fixed |
 | Audit committed separately from Module 04/05 mutations (DESIGN 3.4) | B4 | Fixed for the authorized mutation list; 06+ audit stays suspended |
 | Passkey login fails when CAPTCHA is configured (DESIGN §8 P1) | B4 | Fixed |
-| Session touch on every validation (PERF 4.1) | B5 | Pending |
+| Session touch on every validation (PERF 4.1) | B5 | Fixed |
 | Duplicate public-read project/authorization queries (PERF 4.2) | B6 | Pending |
 | Key ring re-read and re-import per call (PERF 5.2, 5.3) | B7 | Pending |
 | Minimum password floor, rename, activation coupling, bundle (PERF 5.1, 5.4; DESIGN 2, 5) | B8 | Pending |
@@ -114,6 +114,13 @@ Cross-module record for the remediation of two review reports supplied by the us
 - Failed attempts/corrections: New shared fixtures initially reused the enrolled handle for the staff-active denial (D1 correctly reported handle-taken first) and omitted PostgreSQL's required project updated timestamp. Corrected fixture inputs; final affected cases pass on both stores.
 - Focused primary security/performance review: transaction ownership, rollback and denial guards, audit catalog/redaction, application dependency boundary, B3 serialization, secret-row UUID/envelope alignment, stale authentication and CAPTCHA-before-WebAuthn ordering checked. No known critical/high residual within this batch. Sonnet/review-toolkit agents are not callable; no independent review is claimed. Standalone session revocation/link/redeem events retain their existing path; later-module audit stays suspended.
 - Decisions/next/cautions: No schema migration. B5 conditional session renewal next, followed by B6–B15. Current state remains primary-backed; G1/G2 closed and 13.G6 open. Preserve protected draft/reports, old migrations/history and prior measurements. No SPA or Argon2id performance work.
+
+### B5 — Conditional session renewal (2026-10-05)
+
+- Progress/change: Complete locally. Session `load` returns authoritative principal kind and idle expiry in its existing primary query. Every request still loads current state and verifies its digest; renewal occurs only when due (User five minutes, Staff three minutes) and when the bounded new expiry can grow. No permission/session facts survive across requests. Existing conditional monotonic touch SQL is unchanged, and immutable authentication time/assurance never advance.
+- Files: application session record, both session adapters, server session validator; shared session renewal contract on both stores; AUTH-FLOWS and paired reader security guides.
+- Verification: Focused workerd/D1 `session-renewal`, `recovery-route`, `oauth-route` suites **4 passed**, and corresponding real isolated PostgreSQL **18.6** suites **5 passed**, no skips. The final renewal contract rerun on both stores covers User/Staff zero writes inside their interval, one sequential due write, near-idle renewal, concurrent monotonic renewal, zero futile writes at absolute expiry, unchanged ceremony time, logout/owned revocation and credential revision invalidation before any further touch. Typecheck/lint/boundaries/scoped formatting/diff and documentation build pass. No schema/deployment/cryptographic change or external research required for this business-logic optimization. Broad unchanged lanes are not repeated under the user preference.
+- Review/decisions/cautions: Current issuance remains 30-minute idle/seven-day absolute for both kinds; the old claim that shorter Staff lifetimes were already implemented was corrected in AUTH-FLOWS. Shorter lifetimes remain specified and are outside this renewal batch. Concurrent callers that both observed a due expiry may both perform safe conditional renewal; there is no global cache or guaranteed one-write deduplication across a race. B6 request-scoped facts reuse follows. G1/G2 remain closed and 13.G6 open.
 
 ## Documentation lookups
 
