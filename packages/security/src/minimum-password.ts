@@ -30,48 +30,61 @@ export interface MinimumPasswordPolicy {
   readonly maximumIterations: number;
 }
 
-/**
- * Reviewed security floor for PBKDF2-HMAC-SHA256 on the minimum tier
- * (OWASP Password Storage Cheat Sheet recommendation, 2026-09-29 review).
- * A plan measurement can never lower this floor; an unmet floor disables
- * password login on the tier instead.
- */
-export const minimumTierPasswordFloorIterations = 600_000;
-
-/**
- * Deployment policy measured on a real Cloudflare Free plan on 2026-09-29
- * (docs/plan/evidence/03-free-pbkdf2-measurement.json): 100,000 iterations
- * complete deterministically within one invocation's CPU budget and 100,500
- * fail, so the stored-record maximum is the measured fit and the new-record
- * target keeps about half the budget for the rest of a login invocation.
- */
+/** Minimum-only disclosed exception under ADR 0012; B15 revalidates CPU fit. */
 export const minimumTierPasswordPolicy: MinimumPasswordPolicy = Object.freeze({
   currentIterations: 50_000,
   maximumIterations: 100_000,
 });
 
-/** The floor rule: an unmet reviewed floor disables tier password login. */
-export function minimumPasswordLoginAvailable(
-  policy: MinimumPasswordPolicy,
-  floorIterations: number,
-): boolean {
-  try {
-    const snapshot = policySnapshot(policy);
-    return (
-      Number.isSafeInteger(floorIterations) &&
-      floorIterations >= 1 &&
-      snapshot.currentIterations >= floorIterations
-    );
-  } catch {
-    return false;
-  }
+/** New password strength only; existing records keep their original verifier. */
+const commonMinimumPasswords = new Set([
+  '',
+  'aaaaaaaaaaaa',
+  'password',
+  'password123',
+  'password1234',
+  'password12345',
+  'password123456',
+  'password1234567',
+  'password12345678',
+  'password123456789',
+  'password1234567890',
+  '123456',
+  '123456789',
+  '123456789012',
+  '1234567890123',
+  '12345678901234',
+  '123456789012345',
+  '1234567890123456',
+  '123456123456',
+  '111111111111',
+  '000000000000',
+  'qwertyuiop',
+  'qwertyuiop123',
+  'qwertyuiopasdf',
+  'qwerty123456',
+  'qwerty123456789',
+  'abcdefghijkl',
+  'abcdefghijklmnop',
+  'letmein',
+  'letmein123456',
+  'welcome123456',
+  'iloveyou',
+  'iloveyou12345',
+  'administrator',
+  'admin12345678',
+  'changeme12345',
+  'correcthorsebatterystaple',
+]);
+export function acceptsMinimumPassword(password: string): boolean {
+  return (
+    typeof password === 'string' &&
+    password.length <= 1024 &&
+    [...password].length >= 12 &&
+    new TextEncoder().encode(password).length <= 1024 &&
+    !commonMinimumPasswords.has(password.trim().toLowerCase())
+  );
 }
-
-/** Measured outcome of the floor rule for the deployment policy above. */
-export const minimumTierPasswordLoginEnabled = minimumPasswordLoginAvailable(
-  minimumTierPasswordPolicy,
-  minimumTierPasswordFloorIterations,
-);
 
 function cost(iterations: number): void {
   if (
@@ -378,6 +391,7 @@ export interface AccountPasswordVerification {
  * root supplies the adapted peppered PBKDF2 service below.
  */
 export interface AccountPasswordService {
+  acceptsNewPassword?(password: string): boolean;
   forRequest?(scope: object): AccountPasswordService;
   hash(password: string, signal?: AbortSignal): Promise<AccountPasswordRecord>;
   verify(
@@ -418,6 +432,7 @@ export function adaptMinimumPasswordService(
       throw error;
     }));
   return Object.freeze({
+    acceptsNewPassword: acceptsMinimumPassword,
     forRequest: (scope: object) =>
       adaptMinimumPasswordService(async () => {
         const root = await resolve();
@@ -427,5 +442,33 @@ export function adaptMinimumPasswordService(
       (await resolve()).hash(password, accountPasswordContext),
     verify: async (password: string, stored: unknown) =>
       (await resolve()).verify(password, stored, accountPasswordContext),
+  });
+}
+
+/** Standard profiles migrate verified peppered PBKDF2 records to Argon2id once. */
+export function withMinimumPasswordUpgrade(
+  standard: AccountPasswordService,
+  minimum: AccountPasswordService,
+): AccountPasswordService {
+  return Object.freeze({
+    forRequest: (scope: object) =>
+      withMinimumPasswordUpgrade(
+        standard.forRequest?.(scope) ?? standard,
+        minimum.forRequest?.(scope) ?? minimum,
+      ),
+    hash: (password: string, signal?: AbortSignal) =>
+      standard.hash(password, signal),
+    verify: async (password: string, stored: unknown, signal?: AbortSignal) => {
+      const record = parseAccountPasswordRecord(stored);
+      if (record.alg === 'Argon2id')
+        return standard.verify(password, record, signal);
+      const result = await minimum.verify(password, record, signal);
+      if (!result.verified) return { verified: false, replacement: null };
+      if (signal?.aborted) throw new CryptoFailure();
+      return {
+        verified: true,
+        replacement: await standard.hash(password, signal),
+      };
+    },
   });
 }

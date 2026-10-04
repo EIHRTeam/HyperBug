@@ -2,7 +2,7 @@
 
 [Documentation home](../index.md) · [Operations](operations.md)
 
-> Status: Initial backend security controls and local registration, login, session, and logout routes exist on both profiles. Credential digests, envelope encryption, and persistent key-lifecycle protection have local tests. Full authentication, recovery, audit access, distributed rate limiting, and outbound-fetch acceptance remain open. This is not a production readiness claim. Audit development and Argon2id performance work are suspended; the Free tier remains disabled.
+> Status: Backend security/account flows are locally verified at their recorded scopes. Cloudflare Minimum is a formal third profile with disclosed password risk. Full G1/G2 and real-Free acceptance remain open; this is not production readiness. Later-module audit and Argon2id performance work remain suspended.
 
 ## Set the environment and browser origins
 
@@ -59,13 +59,13 @@ Backup capture pins required keys before the snapshot begins and blocks rotation
 
 ## Deployment tier status
 
-The default `standard` tier retains the standard password policy and both first-class backend profiles. The planned `cloudflare-free-minimum` tier is an explicit Cloudflare Free variant with its own acceptance gate. Its configuration parser requires `HYPERBUG_DEPLOYMENT_TIER=cloudflare-free-minimum` and the exact `HYPERBUG_DEGRADATION_ACK=free-minimum-v1`; Node rejects this tier. Unknown values, whitespace and stale acknowledgements prevent startup. Remove the acknowledgement when selecting `standard`.
+Three profiles are planned for acceptance: Node/PostgreSQL and Cloudflare Standard use Argon2id; Cloudflare Minimum uses peppered PBKDF2. Select Minimum with `HYPERBUG_DEPLOYMENT_TIER=cloudflare-minimum` and `HYPERBUG_DEGRADATION_ACK=minimum-v2`. The old tier name is a deprecated alias; the old acknowledgement is refused. Node refuses Minimum. Remove the acknowledgement when selecting `standard`.
 
-The current build also refuses correctly configured minimum-tier startup because its compensating controls and independent acceptance are incomplete. The configuration parser does not enable password login or declare the tier supported. Provider plan, quota errors and missing bindings never select it automatically.
+Minimum enables public password registration, login and recovery. New passwords need at least 12 characters, bounded input and rejection of common bundled passwords. New records use 50,000 iterations, stored costs cap at 100,000. This provides less offline-guessing protection than Argon2id. Keep the pepper separate and prefer passkeys. Online rate limits, durable progressive lockout and configured CAPTCHA cannot compensate for offline guessing after both database and pepper compromise.
 
-`/health/ready` reports the running tier, degradation IDs and required password-hash policy on both healthy and unavailable responses. Today it reports `standard`, an empty ID list and `argon2id`. This describes policy; it does not mean password login or the full product is ready. The minimum tier cannot return readiness while its startup barrier is active.
+Account/auth/write routes wait for append-only audited activation and pepper preflight; liveness, instance metadata and anonymous public GETs remain available. Readiness stays unavailable while activation is pending or fails. The instance document reports actual capabilities. Standard login upgrades verified PBKDF2 to Argon2id; Minimum refuses Argon2id, so prepare passkeys/recovery or a credential reset before downgrade.
 
-The planned differences are PBKDF2 instead of Argon2id, location-scoped rate limits, reduced background durability, shorter retention without log export, Free-plan capacity ceilings, an operator SMTP relay for arbitrary recipients, a shorter recovery window, and capped bulk/long-running jobs. Authorization, audit integrity/redaction, content security, credential/envelope encryption, TLS/HSTS and browser-token rules remain mandatory. See the [minimum-tier specification and compensating controls](https://github.com/EIHRTeam/HyperBug/blob/main/docs/FREE-TIER-PROFILE.md). The standard Workers profile uses the paid-capable runtime envelope; minimum-tier PBKDF2 cannot verify an Argon2id credential.
+G1/G2 require all three profiles. Additional actual Free-plan acceptance (13.G6) remains open; local success is not release support. Free-plan background durability, retention/export, capacity, email relay, recovery and bulk limits remain disclosed in the [profile specification](https://github.com/EIHRTeam/HyperBug/blob/main/docs/FREE-TIER-PROFILE.md). Authorization, atomic required audit, content security, encryption, TLS and browser-token policy remain mandatory.
 
 ## Verify HTTPS and transport claims
 

@@ -5,6 +5,10 @@ Prerequisites: 03 complete.
 Progress: [Session log and current status](../progress/04-identity-and-access.md)  
 Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
+## Current profile amendment (2026-10-05)
+
+[ADR 0012](../../decisions/0012-cloudflare-minimum-formal-profile.md) supersedes the historic PBKDF2 floor and optional-profile exclusion below. Minimum is a formal third G1/G2 profile with public peppered PBKDF2 accounts (50,000 new / 100,000 maximum), at least 12 characters and bundled common-password rejection. Prior dated acceptance records retain their original scope. B8 locally revalidates accounts; B15 actual Free-plan evidence and 13.G6 remain open.
+
 ## Outcome and scope
 
 Provide a working authorization service and account/project permission system without depending on the SPA or an installed SSO/email plugin.

@@ -1,3 +1,9 @@
+import {
+  adaptMinimumPasswordService,
+  createMinimumPasswordService,
+  minimumTierPasswordPolicy,
+  withMinimumPasswordUpgrade,
+} from '../../packages/security/src/index.ts';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { Pool } from 'pg';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
@@ -140,11 +146,19 @@ beforeAll(async () => {
       passwordStore: configured.passwordStore,
       sessionStore: configured.sessionStore,
       keyProvider: sessionKeys.provider,
-      standardPassword: createNodeStandardPasswordService(
-        config.deployment,
-        initialStandardPasswordPolicy,
-        1,
-        initialStandardPasswordPolicy.maximum.memoryKiB,
+      standardPassword: withMinimumPasswordUpgrade(
+        createNodeStandardPasswordService(
+          config.deployment,
+          initialStandardPasswordPolicy,
+          1,
+          initialStandardPasswordPolicy.maximum.memoryKiB,
+        ),
+        adaptMinimumPasswordService(() =>
+          createMinimumPasswordService(
+            sessionKeys.provider,
+            minimumTierPasswordPolicy,
+          ),
+        ),
       ),
     }),
     0,
@@ -1606,6 +1620,35 @@ it('registers a real User through Node, primary counters and PostgreSQL atomical
     expect(sessionCalls).toEqual({ load: 4, revoke: 1 });
   } finally {
     await missingSessionLimiter.close();
+  }
+  {
+    const min = adaptMinimumPasswordService(
+      await createMinimumPasswordService(
+        sessionKeys.provider,
+        minimumTierPasswordPolicy,
+      ),
+    );
+    const principalId = crypto.randomUUID(),
+      identityId = crypto.randomUUID();
+    await configured.registrationStore!.register({
+      principalId,
+      identityId,
+      handle: 'upgradetier',
+      passwordRecord: await min.hash('upgrade-to-strong-password'),
+      nowMs: Date.now(),
+    });
+    const upgradeResponse = await fetch(new URL('/auth/login', base), {
+      method: 'POST',
+      headers: { origin: base, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        handle: 'upgradetier',
+        password: 'upgrade-to-strong-password',
+      }),
+    });
+    expect(upgradeResponse.status).toBe(200);
+    const saved = await configured.passwordStore!.loadCredential('upgradetier');
+    expect(saved?.record.alg).toBe('Argon2id');
+    expect(saved?.revision).toBe(2);
   }
   await pool.query('DROP TABLE rate_limit_counters');
   const unavailable = await fetch(base + '/api/v1/accounts/register', {

@@ -1,5 +1,5 @@
 export type DeploymentRuntime = 'node' | 'cloudflare';
-export type DeploymentTier = 'standard' | 'cloudflare-free-minimum';
+export type DeploymentTier = 'standard' | 'cloudflare-minimum';
 
 export interface DeploymentEnvironment {
   HYPERBUG_DEPLOYMENT_TIER?: unknown;
@@ -19,12 +19,12 @@ export const deploymentInvariants = Object.freeze([
   'no-production-debug-or-bypasses',
 ] as const);
 
-/** IDs and compensation requirements are versioned by ADR 0007, not by env. */
+/** IDs and compensation requirements are versioned by ADR 0012, not by env. */
 export const minimumDegradations = Object.freeze({
   'FREE-01': Object.freeze({
     summary: 'PBKDF2 password hashing instead of Argon2id',
     compensation:
-      'Versioned pepper and salt, reviewed measured floor, upgrade rehash, passkeys and recovery codes',
+      'Versioned pepper and salt, disclosed Minimum-only cost exception and strength policy, upgrade rehash, passkeys and recovery codes',
   }),
   'FREE-02': Object.freeze({
     summary: 'Approximate location-scoped sensitive rate limits',
@@ -72,8 +72,8 @@ const standard = Object.freeze({
   requiredPasswordAlgorithm: 'argon2id' as const,
 });
 const minimum = Object.freeze({
-  tier: 'cloudflare-free-minimum' as const,
-  acknowledgement: 'free-minimum-v1' as const,
+  tier: 'cloudflare-minimum' as const,
+  acknowledgement: 'minimum-v2' as const,
   degradationIds: Object.freeze(
     Object.keys(minimumDegradations) as DegradationId[],
   ),
@@ -84,7 +84,7 @@ const minimum = Object.freeze({
 /** Required policy only. This is not a capability or a password verifier. */
 export type DeploymentConfig = typeof standard | typeof minimum;
 
-const documentation = 'See docs/FREE-TIER-PROFILE.md (ADR 0007).';
+const documentation = 'See docs/FREE-TIER-PROFILE.md (ADR 0012).';
 
 export function loadDeploymentConfig(
   env: DeploymentEnvironment,
@@ -94,12 +94,20 @@ export function loadDeploymentConfig(
     throw new Error(
       'Deployment runtime must be supplied by the composition root',
     );
-  const tier =
+  const selectedTier =
     env.HYPERBUG_DEPLOYMENT_TIER === undefined
       ? 'standard'
       : env.HYPERBUG_DEPLOYMENT_TIER;
+  const tier =
+    selectedTier === 'cloudflare-free-minimum'
+      ? 'cloudflare-minimum'
+      : selectedTier;
+  if (selectedTier === 'cloudflare-free-minimum')
+    console.warn(
+      'HYPERBUG_DEPLOYMENT_TIER=cloudflare-free-minimum is deprecated; use cloudflare-minimum.',
+    );
   // Only an absent value defaults. Null, empty, mixed case and coercions fail.
-  if (tier !== 'standard' && tier !== 'cloudflare-free-minimum')
+  if (tier !== 'standard' && tier !== 'cloudflare-minimum')
     throw new Error(`Invalid HYPERBUG_DEPLOYMENT_TIER. ${documentation}`);
   if (tier === 'standard') {
     if (env.HYPERBUG_DEGRADATION_ACK !== undefined)
@@ -112,9 +120,9 @@ export function loadDeploymentConfig(
     throw new Error(
       `The minimum tier is restricted to Cloudflare. ${documentation}`,
     );
-  if (env.HYPERBUG_DEGRADATION_ACK !== 'free-minimum-v1')
+  if (env.HYPERBUG_DEGRADATION_ACK !== 'minimum-v2')
     throw new Error(
-      `The minimum tier requires HYPERBUG_DEGRADATION_ACK=free-minimum-v1. ${documentation}`,
+      `The minimum tier requires HYPERBUG_DEGRADATION_ACK=minimum-v2. ${documentation}`,
     );
   return minimum;
 }
@@ -123,7 +131,7 @@ export function loadDeploymentConfig(
  * Consistency gate for a parsed deployment config. The audited enablement
  * itself is enforced by the composition root: the persisted
  * deployment.enablement audit event, the startup warning and the peppered
- * password service preflight run per isolate and fail every request closed
+ * password service preflight run per isolate and gate sensitive routes
  * while they fail (Cloudflare's upload-time module validation runs without
  * live bindings, so a binding-dependent check here would falsely refuse
  * valid uploads). Passing this check never implies the independent 13.G6
@@ -132,6 +140,6 @@ export function loadDeploymentConfig(
  */
 export function assertDeploymentAvailable(config: DeploymentConfig): void {
   if (config?.tier === 'standard') return;
-  if (config?.tier === 'cloudflare-free-minimum') return;
+  if (config?.tier === 'cloudflare-minimum') return;
   throw new Error(`Invalid deployment configuration. ${documentation}`);
 }

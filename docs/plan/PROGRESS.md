@@ -43,11 +43,11 @@ All 16 module 00 guidance checklist items are complete. Module 01 has reproducib
 | Gate | Required evidence | Current state |
 | --- | --- | --- |
 | G0 — Guidance ready | Module 00 skills, registration, and validation | Passed; [evidence](evidence/00-guidance-validation.md) |
-| G1 — Backend accepted | Module 10.G1–10.G5 on both profiles | Not passed; SPA development must wait |
+| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; SPA development must wait |
 | G2 — MVP accepted | Module 13.G1–13.G5 including deployment/recovery evidence | Not passed |
 | Post-MVP backend gates | Backend acceptance before UI in 14, 15, and each provider in 16 | Not started |
 | Markdown representation policy | 07.1 implementation, local determinism/persistence/cost and replacement-bundle cursor/validator evidence | Implemented and locally verified including V7; deployment unclaimed ([07 evidence](evidence/07-content-validation.md)) |
-| Minimum tier (Cloudflare Free) | 13.G6 evidence on a real Free account: measured password parameters, quota-aware measurements, bilingual disclosure, recorded recovery objectives | Not started; independent of G1/G2 and never cited as MVP acceptance |
+| Minimum tier (Cloudflare Free) | 13.G6 evidence on a real Free account: measured password parameters, quota-aware measurements, bilingual disclosure, recorded recovery objectives | Open; additional real-Free evidence for the formal third profile |
 
 ## Current decisions and open implementation questions
 
@@ -1190,3 +1190,7 @@ Current Workers/ingress/actual named D1 composition and exact R2 CORS pass the p
 ### 2026-10-05 — Review remediation B7 checkpoint
 
 B7 imported key reuse, purpose-filtered registry loads and request-local snapshots are verified locally. [Detailed evidence](evidence/2026-10-05-review-remediation.md#b7-imported-key-reuse-and-request-lifecycle-snapshots-2026-10-05) records focused counts, source/revocation checks and documentation coverage gaps. Next B8 formal Minimum profile; G1/G2 closed, 13.G6 open. No remote migration/deployment or later audit expansion.
+
+### 2026-10-05 — Review remediation B8 checkpoint
+
+Formal Cloudflare Minimum now enables public peppered PBKDF2 accounts under the explicit ADR 0012 exception, with new acknowledgement, durable lockout/CAPTCHA, standard Argon2id upgrade and scoped activation. Separate Minimum bundle omits Wasm. [B8 evidence](evidence/2026-10-05-review-remediation.md#b8-formal-cloudflare-minimum-profile-2026-10-05) records focused verification and measured bundle sizes. G1/G2 require all three profiles and remain closed; additional 13.G6 remains open for actual Free-plan evidence. Next B9–B15.

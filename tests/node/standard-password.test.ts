@@ -53,8 +53,8 @@ it('rejects an unsupported Node verification ceiling before account use', async 
   const standard = loadDeploymentConfig({}, 'node');
   const minimum = loadDeploymentConfig(
     {
-      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
-      HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
+      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum',
+      HYPERBUG_DEGRADATION_ACK: 'minimum-v2',
     },
     'cloudflare',
   );
@@ -84,4 +84,44 @@ it('rejects an unsupported Node verification ceiling before account use', async 
     verified: true,
     replacement: null,
   });
+});
+
+it('verifies peppered Minimum credentials once and returns an Argon2id upgrade', async () => {
+  const {
+    adaptMinimumPasswordService,
+    createMinimumPasswordService,
+    minimumTierPasswordPolicy,
+    withMinimumPasswordUpgrade,
+    acceptsMinimumPassword,
+  } = await import('../../packages/security/src/index.ts');
+  const { cryptoFixture } = await import('../fixtures/crypto-scenarios.ts');
+  const minimum = adaptMinimumPasswordService(
+    await createMinimumPasswordService(
+      cryptoFixture().provider,
+      minimumTierPasswordPolicy,
+    ),
+  );
+  const cost = { memoryKiB: 19456, passes: 2, parallelism: 1 };
+  const standard = createNodeStandardPasswordService(
+    loadDeploymentConfig({}, 'node'),
+    { current: cost, maximum: cost },
+    1,
+    19456,
+  );
+  const upgrade = withMinimumPasswordUpgrade(standard, minimum);
+  const password = 'distinct-keystone-phrase';
+  const old = await minimum.hash(password);
+  expect((await upgrade.verify('wrong-secret', old)).verified).toBe(false);
+  const result = await upgrade.verify(password, old);
+  expect(result.verified).toBe(true);
+  expect(result.replacement?.alg).toBe('Argon2id');
+  expect((await standard.verify(password, result.replacement)).verified).toBe(
+    true,
+  );
+  await expect(
+    minimum.verify(password, result.replacement),
+  ).rejects.toBeInstanceOf(CryptoFailure);
+  expect(acceptsMinimumPassword('password123456')).toBe(false);
+  expect(acceptsMinimumPassword('😀'.repeat(6))).toBe(false);
+  expect(acceptsMinimumPassword(password)).toBe(true);
 });

@@ -31,6 +31,35 @@
     },
   ],
   "env": {
+    "minimum-local": {
+      "name": "hyperbug-api-minimum-local",
+      "main": "src/minimum.ts",
+      "secrets": {
+        "required": ["HYPERBUG_KEY_RING", "HYPERBUG_ABUSE_KEY_RING"],
+      },
+      "observability": { "enabled": true, "head_sampling_rate": 1 },
+      "vars": {
+        "HYPERBUG_ENV": "local",
+        "ALLOWED_ORIGINS": "http://localhost:5173",
+        "HYPERBUG_DEPLOYMENT_TIER": "cloudflare-minimum",
+        "HYPERBUG_DEGRADATION_ACK": "minimum-v2",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "hyperbug-local",
+          "database_id": "00000000-0000-4000-8000-000000000001",
+          "migrations_dir": "../../packages/database/d1/migrations",
+        },
+      ],
+      "ratelimits": [
+        {
+          "name": "ABUSE_VOLUMETRIC",
+          "namespace_id": "703305",
+          "simple": { "limit": 1000, "period": 60 },
+        },
+      ],
+    },
     "local-turnstile": {
       "name": "hyperbug-api-local-turnstile",
       "triggers": { "crons": ["*/5 * * * *"] },

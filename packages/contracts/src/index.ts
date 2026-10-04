@@ -29,7 +29,7 @@ export const ReadinessSchema = Type.Object(
       {
         tier: Type.Union([
           Type.Literal('standard'),
-          Type.Literal('cloudflare-free-minimum'),
+          Type.Literal('cloudflare-minimum'),
         ]),
         degradationIds: Type.Array(Type.String({ pattern: '^FREE-0[1-8]$' }), {
           maxItems: 8,
@@ -51,7 +51,7 @@ export const InstanceDocumentSchema = Type.Object(
   {
     tier: Type.Union([
       Type.Literal('standard'),
-      Type.Literal('cloudflare-free-minimum'),
+      Type.Literal('cloudflare-minimum'),
     ]),
     degradationIds: Type.Array(Type.String({ pattern: '^FREE-0[1-8]$' }), {
       maxItems: 8,

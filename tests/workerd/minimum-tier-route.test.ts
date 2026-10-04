@@ -20,7 +20,7 @@ const redirectUri = 'https://client.poc.example/callback';
 const enrollmentCode =
   'hbbs1_' +
   Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url');
-const enablementEventId = '5ee1a0d2-7c3b-4f68-9a1d-2b4c5d6e7f80';
+const enablementEventId = '80fad34e-66c5-4c63-a0c1-1a2e7a35b3f2';
 const verifier = 'v'.repeat(64);
 const challenge = createHash('sha256').update(verifier).digest('base64url');
 let mf: Miniflare;
@@ -105,8 +105,8 @@ beforeAll(async () => {
       bindings: {
         HYPERBUG_ENV: 'local',
         ALLOWED_ORIGINS: authOrigin,
-        HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
-        HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
+        HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum',
+        HYPERBUG_DEGRADATION_ACK: 'minimum-v2',
         HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
         HYPERBUG_KEY_RING: await cryptoFixture().source.read(),
         HYPERBUG_TEST_BOOTSTRAP_CODE: enrollmentCode,
@@ -156,7 +156,7 @@ it('reports the enabled tier truthfully and records its audited enablement', asy
       administratorAssistedRecovery: boolean;
     };
   };
-  expect(document.tier).toBe('cloudflare-free-minimum');
+  expect(document.tier).toBe('cloudflare-minimum');
   expect(document.degradationIds).toEqual([
     'FREE-01',
     'FREE-02',
@@ -171,10 +171,9 @@ it('reports the enabled tier truthfully and records its audited enablement', asy
     algorithm: 'pbkdf2-hmac-sha256',
     downgraded: true,
   });
-  // The floor rule (50k current < 600k reviewed floor) disables the password
-  // surface while the recommended path stays advertised as available.
-  expect(document.authentication.passwordRegistration).toBe(false);
-  expect(document.authentication.passwordLogin).toBe(false);
+  // Password capability matches the formal Minimum profile.
+  expect(document.authentication.passwordRegistration).toBe(true);
+  expect(document.authentication.passwordLogin).toBe(true);
   expect(document.authentication.recoveryCodes).toBe(true);
   expect(document.authentication.passkeys).toBe(true);
   expect(document.authentication.administratorAssistedRecovery).toBe(true);
@@ -190,48 +189,45 @@ it('reports the enabled tier truthfully and records its audited enablement', asy
   });
 });
 
-it('refuses the password surface with the documented capability error', async () => {
+it('enables public passwords, enforces strength and records durable login lockout', async () => {
+  const weak = await postJson('/api/v1/accounts/register', {
+    handle: 'weakuser',
+    password: 'password123456',
+  });
+  expect(weak.status).toBe(400);
   const registration = await postJson('/api/v1/accounts/register', {
     handle: 'tieruser',
     password: 'long-functional-password',
   });
-  expect(registration.status).toBe(403);
-  expect(await registration.json()).toMatchObject({
-    error: { code: 'PASSWORD_CAPABILITY_DISABLED' },
-  });
+  expect(registration.status).toBe(202);
   const login = await postJson('/auth/login', {
     handle: 'tieruser',
     password: 'long-functional-password',
   });
-  expect(login.status).toBe(403);
-  expect(await login.json()).toMatchObject({
-    error: { code: 'PASSWORD_CAPABILITY_DISABLED' },
+  expect(login.status).toBe(200);
+  const wrong = await postJson('/auth/login', {
+    handle: 'tieruser',
+    password: 'wrong-but-long-password',
   });
+  expect(wrong.status).toBe(401);
+  const denied = await postJson('/auth/login', {
+    handle: 'tieruser',
+    password: 'wrong-but-long-password',
+  });
+  expect(denied.status).toBe(429);
   const db = await mf.getD1Database('DB');
-  const credentials = await db
-    .prepare('SELECT COUNT(*) AS count FROM password_credentials')
-    .first<{ count: number }>();
-  expect(credentials?.count).toBe(0);
-  // The authorization login page shows the degradation notice and an
-  // explained state instead of a password form that cannot succeed.
+  expect(
+    await db
+      .prepare(
+        'SELECT COUNT(*) AS count FROM account_lockouts WHERE failed_attempts > 0',
+      )
+      .first('count'),
+  ).toBeGreaterThan(0);
   const page = await request(`/auth/authorize?${authorizeQuery}`, {});
   expect(page.status).toBe(200);
   const html = await page.text();
   expect(html).toContain('degradation-notice');
-  expect(html).toContain('Password sign-in is unavailable');
-  expect(html).not.toContain('name="password"');
-  const loginPost = await postForm(
-    '/auth/authorize/login',
-    new URLSearchParams({
-      ...Object.fromEntries(authorizeQuery),
-      handle: 'tieradmin',
-      password: 'long-functional-password',
-    }),
-  );
-  expect(loginPost.status).toBe(403);
-  expect(await loginPost.text()).toContain(
-    'Password sign-in is disabled on this instance.',
-  );
+  expect(html).toContain('name="password"');
 });
 
 it('bootstraps the initial administrator with a tier session', async () => {
@@ -337,15 +333,13 @@ it('generates and redeems single-use recovery codes without email', async () => 
     .prepare("SELECT record->>'alg' AS alg FROM password_credentials")
     .first<{ alg: string }>();
   expect(record?.alg).toBe('PBKDF2-HMAC-SHA256');
-  // The floor rule keeps the password surface closed even after recovery.
+  // Recovery creates a usable password under the disclosed Minimum policy.
   const passwordLogin = await postJson('/auth/login', {
     handle: 'tieradmin',
     password: 'fresh-functional-password',
   });
-  expect(passwordLogin.status).toBe(403);
-  expect(await passwordLogin.json()).toMatchObject({
-    error: { code: 'PASSWORD_CAPABILITY_DISABLED' },
-  });
+  expect(passwordLogin.status).toBe(200);
+  expect(await passwordLogin.json()).toEqual({ authenticated: true });
   // The passkey path still signs in after the credential revision change.
   const loginOptions = await postJson('/auth/passkey/login/options', {});
   const second = await authenticator.assertion(

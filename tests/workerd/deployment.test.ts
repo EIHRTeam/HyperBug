@@ -4,10 +4,14 @@ import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { workerModules } from '../fixtures/worker-modules.ts';
 
 beforeAll(() => {
-  execFileSync(process.execPath, ['tooling/build.ts', '--target=cloudflare']);
+  execFileSync(process.execPath, [
+    'tooling/build.ts',
+    '--target=cloudflare',
+    '--target=cloudflare-minimum',
+  ]);
 });
 
-function worker(bindings: Record<string, string>) {
+function worker(bindings: Record<string, string>, minimumEntry = false) {
   return new Miniflare(
     convertV4MiniflareOptions({
       bindings: {
@@ -15,7 +19,9 @@ function worker(bindings: Record<string, string>) {
         ALLOWED_ORIGINS: 'https://issues.example.org',
         ...bindings,
       },
-      modules: workerModules('dist/cloudflare'),
+      modules: workerModules(
+        minimumEntry ? 'dist/cloudflare-minimum' : 'dist/cloudflare',
+      ),
       compatibilityDate: '2026-09-16',
       compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
     }),
@@ -24,13 +30,13 @@ function worker(bindings: Record<string, string>) {
 
 it('rejects invalid tier settings and partial minimum enablement during real Worker startup', async () => {
   for (const settings of [
-    { HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum' },
+    { HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum' },
     {
-      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
-      HYPERBUG_DEGRADATION_ACK: 'free-minimum-v0',
+      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum',
+      HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
     },
     { HYPERBUG_DEPLOYMENT_TIER: 'minimum' },
-    { HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1' },
+    { HYPERBUG_DEGRADATION_ACK: 'minimum-v2' },
   ]) {
     const mf = worker(settings);
     let startupError: unknown;
@@ -55,19 +61,27 @@ it('rejects invalid tier settings and partial minimum enablement during real Wor
   }
 });
 
-it('starts an acknowledged minimum-tier selection but fails every request without its enablement trail', async () => {
+it('keeps public reads live during failed Minimum activation and gates sensitive routes', async () => {
   // The binding-free worker boots (module scope is consistent), but without
   // the database there is no audited enablement trail: the per-isolate
   // activation barrier fails and every request fails closed. The persisted
   // enablement itself is verified by the minimum-tier journey fixture.
-  const mf = worker({
-    HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
-    HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
-  });
+  const mf = worker(
+    {
+      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum',
+      HYPERBUG_DEGRADATION_ACK: 'minimum-v2',
+    },
+    true,
+  );
   try {
     const base = await mf.ready;
-    const response = await fetch(new URL('/health/live', base));
-    expect(response.status).toBe(500);
+    for (const path of ['/health/live', '/api/v1/instance']) {
+      const response = await fetch(new URL(path, base));
+      expect(response.status).toBe(200);
+      await response.body?.cancel();
+    }
+    expect((await fetch(new URL('/health/ready', base))).status).toBe(503);
+    expect((await fetch(new URL('/auth/session', base))).status).toBe(500);
   } finally {
     await mf.dispose();
   }

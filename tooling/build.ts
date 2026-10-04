@@ -18,6 +18,7 @@ const targets = new Set([
   'all',
   'node',
   'cloudflare',
+  'cloudflare-minimum',
   'cloudflare-ingress',
   'fixtures',
 ]);

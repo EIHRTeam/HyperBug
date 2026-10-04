@@ -5,6 +5,10 @@
 - Owners: 03.1e, 03.2g, 03.3g, 03.3h, 03.V6, 03.V7; 04.1e, 04.2g, 04.V6; 08.2h, 08.V6; 09.1f, 09.2e, 09.3g, 09.V6; 10.2f, 10.3g; 11.1g, 11.V5; 12.3f, 12.V7; 13.1f, 13.1g, 13.2g, 13.3f, 13.G6; 16.1d, 16.2i, 16.3f
 - Sources: SECURITY §§28–34, 96–98, 111, 114–116, 129–130, 144–147, 155, 158–160; TECH-STACK §§6–8, 16–17, 47–53; PERFORMANCE §§33–34, 47–53
 
+## Supersession (2026-10-05)
+
+[ADR 0012](0012-cloudflare-minimum-formal-profile.md) supersedes this document’s password-floor rule and G1/G2 exclusions. The original decision below remains historical context.
+
 ## Context
 
 The two first-class profiles are Workers + D1 + R2 + Queues + Workflows and Node 24 + PostgreSQL 18.x + S3-compatible storage + Graphile Worker. Neither can be reproduced inside the Workers Free plan envelope, and the documentation facts are dated provider statements, not measured results:

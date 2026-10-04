@@ -213,7 +213,9 @@ export function auditEvent(input: unknown): AuditEvent {
         r.projectId !== null ||
         r.actorId !== null ||
         r.systemActor !== 'core.deployment' ||
-        r.targetId !== 'cloudflare-free-minimum'
+        !['cloudflare-free-minimum', 'cloudflare-minimum'].includes(
+          r.targetId as string,
+        )
       )
         throw invalid();
       const enablement = record(r.metadata, [
@@ -223,7 +225,10 @@ export function auditEvent(input: unknown): AuditEvent {
       ]);
       if (
         enablement.v !== 1 ||
-        enablement.acknowledgement !== 'free-minimum-v1' ||
+        enablement.acknowledgement !==
+          (r.targetId === 'cloudflare-minimum'
+            ? 'minimum-v2'
+            : 'free-minimum-v1') ||
         (enablement.outcome !== 'refused' &&
           enablement.outcome !== 'enabled') ||
         (r.result === 'success') !== (enablement.outcome === 'enabled')
@@ -231,7 +236,7 @@ export function auditEvent(input: unknown): AuditEvent {
         throw invalid();
       metadata = Object.freeze({
         v: 1,
-        acknowledgement: enablement.acknowledgement,
+        acknowledgement: enablement.acknowledgement as string,
         outcome: enablement.outcome,
       });
     } else if (r.action === 'provider.outage') {
@@ -583,11 +588,11 @@ export function deploymentEnablementAuditEvent(
     actorId: null,
     systemActor: 'core.deployment',
     action: 'deployment.enablement',
-    targetId: 'cloudflare-free-minimum',
+    targetId: 'cloudflare-minimum',
     result: outcome === 'enabled' ? 'success' : 'failure',
     requestId: crypto.randomUUID(),
     createdAt: nowMs,
-    metadata: { v: 1, acknowledgement: 'free-minimum-v1', outcome },
+    metadata: { v: 1, acknowledgement: 'minimum-v2', outcome },
   });
 }
 

@@ -157,6 +157,36 @@ export function createSensitiveActionAdmission(
 }
 
 /** App routes receive only root-selected sources; a missing source denies. */
+const admissionRings = new WeakMap<
+  AbuseKeyProvider,
+  WeakMap<Request, Promise<readonly ActiveAbuseKey[]>>
+>();
+export function scopeAdmissionAbuseKeys(
+  provider: AbuseKeyProvider,
+  request: Request,
+): AbuseKeyProvider {
+  let requestRings = admissionRings.get(provider);
+  if (!requestRings) {
+    requestRings = new WeakMap();
+    admissionRings.set(provider, requestRings);
+  }
+  const rings = requestRings;
+  return {
+    active: async (signal) => {
+      if (signal.aborted) throw new Error('Aborted admission');
+      let keys = rings.get(request);
+      if (!keys) {
+        keys = provider.active(signal);
+        rings.set(request, keys);
+      }
+      const ring = await keys;
+      if (signal.aborted || request.signal.aborted)
+        throw new Error('Aborted admission');
+      return ring;
+    },
+  };
+}
+
 export function createBoundSensitiveActionAdmission(
   captcha: CaptchaGate,
   dependencies: SensitiveAdmissionDependencies | null,
@@ -198,24 +228,8 @@ export function createBoundSensitiveActionAdmission(
     (clientAddress !== undefined && typeof clientAddress !== 'function')
   )
     throw new Error('Invalid sensitive admission dependencies');
-  const requestRings = new WeakMap<
-    Request,
-    Promise<readonly ActiveAbuseKey[]>
-  >();
-  const requestProvider = (request: Request): AbuseKeyProvider => ({
-    active: async (signal) => {
-      if (signal.aborted) throw new Error('Aborted admission');
-      let keys = requestRings.get(request);
-      if (!keys) {
-        keys = provider.active(signal);
-        requestRings.set(request, keys);
-      }
-      const ring = await keys;
-      if (signal.aborted || request.signal.aborted)
-        throw new Error('Aborted admission');
-      return ring;
-    },
-  });
+  const requestProvider = (request: Request) =>
+    scopeAdmissionAbuseKeys(provider, request);
   const preparse = async (
     request: Request,
     category: RateCategory,

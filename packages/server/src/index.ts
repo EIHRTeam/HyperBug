@@ -32,10 +32,7 @@ import {
   type RuntimeConfig,
 } from '@hyperbug/config';
 import type { Telemetry, RouteLabel } from '@hyperbug/observability';
-import {
-  auditEvent,
-  minimumTierPasswordLoginEnabled,
-} from '@hyperbug/security';
+import { auditEvent } from '@hyperbug/security';
 import {
   HealthSchema,
   ContentDefinitionListSchema,
@@ -518,7 +515,7 @@ export function createApp({
     degradationIds: Object.freeze([...config.deployment.degradationIds]),
     passwordHashPolicy: config.deployment.requiredPasswordAlgorithm,
   });
-  const tierSelected = deployment.tier === 'cloudflare-free-minimum';
+  const tierSelected = deployment.tier === 'cloudflare-minimum';
   // Exactly one profile's password service may be composed, matching the
   // selected tier; the minimum tier's peppered service is mandatory because
   // bootstrap enrollment and recovery still write credentials on that tier.
@@ -529,15 +526,9 @@ export function createApp({
   const accountPasswordService = tierSelected
     ? minimumPassword
     : (standardPassword ?? null);
-  // Password capabilities are advertised only under the standard algorithm,
-  // and on the minimum tier only when the reviewed parameter floor is met —
-  // the floor-disabled login must not present itself as usable.
-  const passwordCapable = tierSelected
-    ? minimumTierPasswordLoginEnabled
-    : accountPasswordService != null;
-  // Persistent account-surface notice for the reduced-capability tier.
+  const passwordCapable = accountPasswordService != null;
   const degradationNotice = tierSelected
-    ? 'This instance runs the Cloudflare Free minimum tier, a reduced-capability mode. Password sign-in is disabled on this instance; passkeys and single-use recovery codes are the sign-in path, and some capabilities are limited or unavailable.'
+    ? 'This instance uses Cloudflare Minimum with PBKDF2 password protection below the standard Argon2id baseline. Choose a strong password of at least 12 characters and prefer passkeys. Capacity and background capabilities are limited.'
     : null;
   const instanceDocument: InstanceDocument = Object.freeze({
     tier: deployment.tier,
@@ -549,9 +540,6 @@ export function createApp({
     authentication: {
       passwordRegistration: passwordCapable,
       passwordLogin: passwordCapable,
-      // Recovery codes are hash-policy-independent: they remain the
-      // recommended path on the minimum tier even while its password login
-      // is floor-disabled, so they follow the recovery-store wiring.
       recoveryCodes: recoveryStore != null,
       passkeys: passkey != null,
       administratorAssistedRecovery: staffEnrollmentStore != null,
@@ -2932,12 +2920,6 @@ export function createApp({
         sensitiveAdmission,
         accountPassword: passwordService,
       }) => {
-        // A floor-disabled tier answers the password surface with the
-        // documented capability error before any admission or parsing work;
-        // a standard composition that lacks its password service stays an
-        // availability failure, not a capability statement.
-        if (!passwordCapable && tierSelected)
-          throw new RequestFailure('PASSWORD_CAPABILITY_DISABLED');
         const result = await registerAccount({
           request,
           body,
@@ -3138,8 +3120,6 @@ export function createApp({
     .post(
       '/auth/login',
       async ({ request, body, set, sensitiveAdmission }) => {
-        if (!passwordCapable && tierSelected)
-          throw new RequestFailure('PASSWORD_CAPABILITY_DISABLED');
         const { cookie } = await loginAccount({
           request,
           body,
@@ -3148,6 +3128,9 @@ export function createApp({
           passwordService:
             accountPasswordService?.forRequest?.(request) ??
             accountPasswordService,
+          minimumAdmission: tierSelected
+            ? (minimumLoginAdmission ?? unavailableMinimumLoginAdmission)
+            : null,
           passwordStore: passwordStore ?? null,
           keyProvider: keyProvider
             ? scopeKeyProvider(keyProvider, request)
@@ -3208,10 +3191,7 @@ export function createApp({
         });
         set.status = 201;
         if (tierSelected) {
-          // The tier's password login is floor-disabled, so a bootstrapped
-          // administrator could never sign in; enrollment therefore completes
-          // by issuing the first-party session the operator uses to register
-          // a passkey and recovery codes immediately.
+          // Enrollment issues a session for immediate passkey/recovery setup.
           if (!passwordStore || !keyProvider || !sessionStore)
             throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
           const credential = await withDeadline(request.signal, 1000, () =>
@@ -3452,6 +3432,9 @@ export function createApp({
               passwordService:
                 accountPasswordService?.forRequest?.(request) ??
                 accountPasswordService,
+              minimumAdmission: tierSelected
+                ? (minimumLoginAdmission ?? unavailableMinimumLoginAdmission)
+                : null,
               passwordStore: passwordStore ?? null,
               keyProvider: keyProvider
                 ? scopeKeyProvider(keyProvider, request)

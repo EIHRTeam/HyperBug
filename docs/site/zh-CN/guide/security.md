@@ -2,7 +2,7 @@
 
 [文档首页](../index.md) · [运维指南](operations.md)
 
-> 状态：两种后端配置已具备首批安全控制，以及经过本地测试的注册、登录、会话读取和退出端点。凭证摘要、信封加密及持久化密钥生命周期保护也已通过本地测试。完整身份认证、账号找回、审计访问、分布式限流和出站请求验收仍未完成。这不代表系统已具备生产就绪条件。审计开发和 Argon2id 性能工作仍暂停，Free 模式仍禁用。
+> 状态：后端安全与账户流程已在记录范围内完成本地验证。Cloudflare Minimum 是第三种正式配置，并明确披露密码风险。完整 G1/G2 与真实 Free 套餐验收仍未完成，不代表生产就绪。后续模块审计与 Argon2id 性能工作仍暂停。
 
 ## 设置环境和浏览器来源
 
@@ -59,13 +59,13 @@ Core 已提供基于 CSPRNG 的不透明凭证、绑定用途的 HMAC 摘要、A
 
 ## 部署模式状态
 
-默认的 `standard` 模式保留标准密码策略和两种一等后端配置。规划中的 `cloudflare-free-minimum` 是显式选择的 Cloudflare Free 变体，拥有独立验收门槛。配置解析器要求同时设置 `HYPERBUG_DEPLOYMENT_TIER=cloudflare-free-minimum` 和精确的 `HYPERBUG_DEGRADATION_ACK=free-minimum-v1`；Node 会拒绝该模式。未知值、多余空白或过期确认值都会阻止启动。选择 `standard` 时应移除降级确认值。
+验收涵盖三种配置：Node/PostgreSQL 和 Cloudflare Standard 使用 Argon2id；Cloudflare Minimum 使用带 pepper 的 PBKDF2。选择 Minimum 时设置 `HYPERBUG_DEPLOYMENT_TIER=cloudflare-minimum` 和 `HYPERBUG_DEGRADATION_ACK=minimum-v2`。旧模式名称是已弃用别名，旧确认值会被拒绝。Node 不接受 Minimum。改用 `standard` 时移除降级确认值。
 
-当前构建也会拒绝配置正确的 minimum 模式启动，因为补偿控制和独立验收尚未完成。配置解析器不会启用密码登录，也不代表该模式已受支持。服务商套餐、配额错误和缺失绑定均不会自动选择该模式。
+Minimum 开放公开密码注册、登录和恢复。新密码至少需要 12 个字符，限制输入大小，并拒绝内置常见密码。新记录使用 50,000 次迭代，存储成本上限为 100,000 次。其抵抗离线猜测的能力低于 Argon2id。应单独保管 pepper，并优先使用通行密钥。数据库和 pepper 同时泄露后，在线限流、持久化渐进锁定及已配置的 CAPTCHA 无法弥补离线猜测风险。
 
-`/health/ready` 在健康和不可用响应中都会报告正在运行的部署模式、降级标识及要求使用的密码哈希策略。目前返回 `standard`、空的降级标识列表和 `argon2id`。这些字段说明策略，并不表示密码登录或整个产品已就绪。minimum 模式的启动屏障仍在生效，因此不会返回就绪响应。
+账户、认证和写入路由等待只追加审计的激活流程及 pepper 预检查；存活检查、实例信息和匿名公开 GET 仍可访问。激活待完成或失败时，就绪检查返回不可用。实例文档报告实际能力。标准配置登录验证 PBKDF2 后升级为 Argon2id；Minimum 拒绝 Argon2id，因此降级前需准备通行密钥、恢复码或凭证重置。
 
-规划中的差异包括使用 PBKDF2 代替 Argon2id、按位置近似限流、降低后台任务持久性、缩短保留期且无日志导出、Free 套餐容量上限、向任意收件人发信需操作方提供 SMTP 中继、更短的恢复窗口，以及限制批量和长时间任务。授权、审计完整性与脱敏、内容安全、凭证与信封加密、TLS/HSTS 和浏览器令牌规则仍为强制要求。详见[minimum 模式规范与补偿控制](https://github.com/EIHRTeam/HyperBug/blob/main/docs/FREE-TIER-PROFILE.md)。标准 Workers 配置使用支持付费套餐的运行时资源范围；minimum 模式的 PBKDF2 不得用于验证 Argon2id 凭证。
+G1/G2 要求三种配置全部通过。额外的真实 Free 套餐验收（13.G6）仍未完成，本地成功不代表发布支持。Free 套餐的后台持久性、保留与导出、容量、邮件中继、恢复和批量限制见[配置规范](https://github.com/EIHRTeam/HyperBug/blob/main/docs/FREE-TIER-PROFILE.md)。授权、必需审计的原子性、内容安全、加密、TLS 和浏览器令牌策略始终是强制要求。
 
 ## 验证 HTTPS 与传输安全声明
 

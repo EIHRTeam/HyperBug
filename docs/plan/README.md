@@ -76,7 +76,7 @@ The module checklist is the source of truth for implementation completion. Its p
 08 Structured search backend
 09 Durable queues, workflow foundation, cleanup
 10 Backend integration, client, security/performance acceptance
-  -> G1: both backend profiles pass before any SPA development
+  -> G1: all three backend profiles pass before any SPA development
 11 Static SPA foundation
 12 Public and staff web workflows
 13 Deployment, recovery, and release
@@ -88,7 +88,7 @@ The module checklist is the source of truth for implementation completion. Its p
 
 Follow the default sequence unless a documented dependency analysis permits independent work after G0. This is not an instruction to delegate or spawn agents. Never bypass G1 or build a later feature's UI before its backend acceptance.
 
-The optional Cloudflare Free minimum tier runs beside this sequence with its own independent acceptance in 13.G6. It never opens, closes or substitutes for G1 or G2, and no later module may treat it as the profile its backend acceptance was written against.
+Under ADR 0012, G1/G2 cover Node/PostgreSQL, Cloudflare Standard and Cloudflare Minimum. 13.G6 supplies additional actual Free-plan evidence and cannot be replaced by local fixtures.
 
 Modules 07 and 08 implement handlers against the event contracts defined in 02/05; module 09 supplies production dispatch and scheduling. These are explicit integration handoffs, not circular prerequisites. They are fully tested together before G1.
 
@@ -99,8 +99,8 @@ Backend-owned authorization interaction pages and minimal browser test fixtures 
 - **MVP:** the full PRODUCT §29 path, including Issue Forms, discussion/reactions, triage, timeline, auth/permissions, safe Markdown, attachments, search, audit, abuse controls, public API, and plugin runtime foundation.
 - **Post-MVP:** structured relations/sub-issues, saved views, subscriptions/notifications, bulk operations, import/export, and named official provider plugins. The async/event/security seams required for these exist in the MVP.
 - **Deferred:** AI, vector search, realtime collaborative editing, full boards/roadmaps, SLA/knowledge-base products, SCIM, arbitrary workflow designers, and hosting untrusted runtime plugin code. They must not block MVP.
-- **Two first-class backend profiles:** Workers + D1 + R2 + Queues + Workflows, and Node 24 + PostgreSQL 18.x + S3-compatible storage + Graphile Worker with durable PostgreSQL workflow state.
-- **Optional minimum tier:** an opt-in, explicitly acknowledged `cloudflare-free-minimum` variant of Profile A for the Cloudflare Free plan, carrying the documented FREE-01–FREE-08 degradations and their compensating controls. It stays outside G1/G2, is accepted only by 13.G6, and never weakens the first-class profiles.
+- **Standard backend profiles:** Workers + D1 + R2 + Queues + Workflows, and Node 24 + PostgreSQL 18.x + S3-compatible storage + Graphile Worker with durable PostgreSQL workflow state.
+- **Third profile — Cloudflare Minimum:** explicitly acknowledged `cloudflare-minimum` with the FREE-01–FREE-08 disclosures and controls. G1/G2 include it; 13.G6 adds actual Free-plan acceptance. [ADR 0012](../decisions/0012-cloudflare-minimum-formal-profile.md) supersedes the old optional/floor exclusions.
 - **Shared semantics:** domain/application services, Elysia routes, public contracts, plugin protocol, security and performance policy. Database SQL, migrations, FTS, blob/queue/workflow adapters, and runtime startup may differ.
 - **Static frontend:** independent hosting and registrable domains; public runtime configuration, versioned REST/OpenAPI, memory-only opaque bearer tokens, and top-level PKCE authentication recovery.
 - **Modern web:** Baseline Widely Available, WCAG 2.2 AA, native capabilities where suitable, measured performance, and explicit progressive enhancement.

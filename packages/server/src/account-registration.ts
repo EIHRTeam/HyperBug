@@ -36,6 +36,8 @@ export async function registerAccount(input: {
   const { request, body, admission, password: rootPassword, store } = input;
   const password = rootPassword?.forRequest?.(request) ?? rootPassword;
   if (!password || !store) throw new RequestFailure('REGISTRATION_UNAVAILABLE');
+  if (password.acceptsNewPassword?.(body.password) === false)
+    throw new RequestFailure('INVALID_REQUEST');
   const handle = canonicalRegistrationHandle(body.handle);
   const nowMs = Date.now();
   await admission.require({

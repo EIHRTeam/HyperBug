@@ -1,7 +1,10 @@
+import { minimumTierAccountLockoutPolicy } from '../../packages/security/src/index.ts';
+import { createCaptchaGate } from '../../packages/server/src/captcha.ts';
 import { env } from 'cloudflare:workers';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
 import {
   createApp,
+  createBoundMinimumLoginAdmission,
   parseBootstrapEnrollmentCode,
   parseOAuthClients,
 } from '@hyperbug/server';
@@ -18,6 +21,7 @@ import { createWorkerAbuseKeyProvider } from '../../apps/api-cloudflare/src/abus
 import { createCloudflareVolumetricLimiter } from '../../apps/api-cloudflare/src/rate-limit.ts';
 import {
   createD1AccountAdministration,
+  createD1AccountLockoutStore,
   createD1AccountRecoveryStore,
   createD1AuditRepository,
   createD1KeyRegistry,
@@ -31,14 +35,14 @@ import {
 } from '@hyperbug/database-d1';
 import { createWorkerKeyProvider } from '../../apps/api-cloudflare/src/key-provider.ts';
 
-// Test-only composition of the cloudflare-free-minimum tier: the environment
+// Test-only composition of the cloudflare-minimum tier: the environment
 // selects the tier with its exact acknowledgement, and this fixture mirrors
 // the production root's audited activation (warning, idempotent persisted
 // enablement event, pepper preflight) before composing the shared app. Like
 // the production root, the activation and composition run lazily on the
 // first request because Workers global scope forbids the async D1 work.
 const config = loadConfig(env, 'cloudflare');
-if (config.deployment.tier !== 'cloudflare-free-minimum')
+if (config.deployment.tier !== 'cloudflare-minimum')
   throw new Error('The minimum-tier fixture requires the tier environment');
 const observations: string[] = [];
 const auditRepository = createD1AuditRepository(env.DB);
@@ -56,7 +60,7 @@ const keyProvider = createWorkerKeyProvider(
 // Same deterministic id as the production root so the event is written once
 // per database; this fixture only ever runs against its private Miniflare
 // D1, never the shared remote test database.
-const enablementEventId = '5ee1a0d2-7c3b-4f68-9a1d-2b4c5d6e7f80';
+const enablementEventId = '80fad34e-66c5-4c63-a0c1-1a2e7a35b3f2';
 
 const recordTierEnablement = async (): Promise<void> => {
   const recorded = await env.DB.prepare(
@@ -72,13 +76,13 @@ const recordTierEnablement = async (): Promise<void> => {
       actorId: null,
       systemActor: 'core.deployment',
       action: 'deployment.enablement',
-      targetId: 'cloudflare-free-minimum',
+      targetId: 'cloudflare-minimum',
       result: 'success',
       requestId: enablementEventId,
       createdAt: Date.now(),
       metadata: {
         v: 1,
-        acknowledgement: 'free-minimum-v1',
+        acknowledgement: 'minimum-v2',
         outcome: 'enabled',
       },
     }),
@@ -88,8 +92,12 @@ const recordTierEnablement = async (): Promise<void> => {
 let minimumService: Promise<MinimumPasswordService> | null = null;
 const loadMinimumPasswordService = (): Promise<MinimumPasswordService> =>
   (minimumService ??= (async () => {
+    const service = await createMinimumPasswordService(
+      keyProvider,
+      minimumTierPasswordPolicy,
+    );
     await recordTierEnablement();
-    return createMinimumPasswordService(keyProvider, minimumTierPasswordPolicy);
+    return service;
   })().catch((error: unknown) => {
     minimumService = null;
     throw error;
@@ -104,6 +112,20 @@ const app = createApp({
   auditAppend: auditRepository.append,
   registrationStore: createD1AccountRegistrationStore(env.DB),
   minimumPassword,
+  minimumLoginAdmission: createBoundMinimumLoginAdmission(
+    createCaptchaGate(),
+    {
+      lockout: minimumTierAccountLockoutPolicy,
+      rateTimeoutMs: 1000,
+      lockoutTimeoutMs: 1000,
+    },
+    {
+      provider: abuse.provider,
+      rateStore: abuse.store,
+      lockoutStore: createD1AccountLockoutStore(env.DB),
+      clientAddress: abuse.clientAddress,
+    },
+  ),
   bootstrapCode: parseBootstrapEnrollmentCode(env.HYPERBUG_TEST_BOOTSTRAP_CODE),
   passkey: env.HYPERBUG_TEST_PASSKEY_RP_ID
     ? {

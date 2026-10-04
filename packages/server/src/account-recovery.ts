@@ -166,6 +166,8 @@ export async function recoverAccount(input: {
   if (!password || !passwordStore || !recoveryStore || !sessionStore)
     throw new RequestFailure('RECOVERY_UNAVAILABLE');
   if (!keyProvider) throw new RequestFailure('RECOVERY_UNAVAILABLE');
+  if (password.acceptsNewPassword?.(body.password) === false)
+    throw new RequestFailure('INVALID_REQUEST');
   const handle = canonicalRegistrationHandle(body.handle);
   const nowMs = Date.now();
   await admission.require({

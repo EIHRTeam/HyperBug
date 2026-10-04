@@ -89,9 +89,9 @@ it('validates deployment-enablement audit events with a closed catalog', () => {
     actorId: null,
     systemActor: 'core.deployment',
     action: 'deployment.enablement',
-    targetId: 'cloudflare-free-minimum',
+    targetId: 'cloudflare-minimum',
     result: 'failure',
-    metadata: { v: 1, acknowledgement: 'free-minimum-v1', outcome: 'refused' },
+    metadata: { v: 1, acknowledgement: 'minimum-v2', outcome: 'refused' },
   };
   expect(auditEvent(enablement)).toEqual(enablement);
   const enabled = deploymentEnablementAuditEvent('enabled', 1800000000000);
@@ -112,7 +112,7 @@ it('validates deployment-enablement audit events with a closed catalog', () => {
     {
       metadata: {
         v: 1,
-        acknowledgement: 'free-minimum-v1',
+        acknowledgement: 'minimum-v2',
         outcome: 'SEEDED_SECRET',
       },
     },
@@ -362,4 +362,25 @@ it('records an instance-role backfill with a closed system event', () => {
     { metadata: { v: 1, role: 'instance-administrator', source: 'unbounded' } },
   ])
     expect(() => auditEvent({ ...event, ...change })).toThrow('AUDIT_INVALID');
+});
+
+it('preserves historical Minimum v1 enablement rows alongside canonical v2 events', () => {
+  expect(
+    auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: null,
+      systemActor: 'core.deployment',
+      action: 'deployment.enablement',
+      targetId: 'cloudflare-free-minimum',
+      result: 'success',
+      requestId: crypto.randomUUID(),
+      createdAt: Date.now(),
+      metadata: {
+        v: 1,
+        acknowledgement: 'free-minimum-v1',
+        outcome: 'enabled',
+      },
+    }).targetId,
+  ).toBe('cloudflare-free-minimum');
 });

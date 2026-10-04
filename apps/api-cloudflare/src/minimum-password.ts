@@ -14,7 +14,7 @@ export async function createCloudflareMinimumPasswordService(
   provider: KeyProvider,
   policy: MinimumPasswordPolicy,
 ): Promise<MinimumPasswordService> {
-  if (deployment?.tier !== 'cloudflare-free-minimum') throw new CryptoFailure();
+  if (deployment?.tier !== 'cloudflare-minimum') throw new CryptoFailure();
   // The measured plan fit is a hard ceiling: a configured policy above it
   // would exceed the Free per-invocation CPU budget on every verification.
   if (

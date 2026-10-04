@@ -1,3 +1,4 @@
+import { scopeAdmissionAbuseKeys } from './sensitive-admission.ts';
 import {
   checkSensitiveRateAdmissionWithSubjects,
   type AbuseKeyProvider,
@@ -54,7 +55,7 @@ export interface BoundMinimumLoginDependencies {
   readonly rateStore: RateCounterStore;
   readonly lockoutStore: AccountLockoutStore;
   /** Root-owned trusted client address; omit when provenance is unavailable. */
-  readonly clientAddress?: (request: Request) => string;
+  readonly clientAddress?: (request: Request) => string | Promise<string>;
 }
 
 export type BoundMinimumLoginIntent = Omit<
@@ -256,7 +257,7 @@ export function createBoundMinimumLoginAdmission(
         );
         if (needsIp && !clientAddress)
           throw new Error('Client address unavailable');
-        const ip = needsIp ? clientAddress!(intent.request) : null;
+        const ip = needsIp ? await clientAddress!(intent.request) : null;
         const checks = intent.checks.map((check) =>
           check?.dimension === 'ip'
             ? { ...check, canonicalSubject: ip! }
@@ -265,11 +266,12 @@ export function createBoundMinimumLoginAdmission(
         return admission.require({
           ...intent,
           checks,
-          provider,
+          provider: scopeAdmissionAbuseKeys(provider, intent.request),
           rateStore,
           lockoutStore,
         });
-      } catch {
+      } catch (error) {
+        if (error instanceof RequestFailure) throw error;
         throw new RequestFailure('RATE_LIMIT_UNAVAILABLE');
       }
     },

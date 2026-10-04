@@ -1,3 +1,4 @@
+import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   AccountPasswordStore,
@@ -28,6 +29,7 @@ export async function loginAccount(input: {
   readonly body: LoginRequest;
   readonly admission: Pick<BoundSensitiveActionAdmission, 'require'>;
   readonly passwordService: AccountPasswordService | null;
+  readonly minimumAdmission?: BoundMinimumLoginAdmission | null;
   readonly passwordStore: AccountPasswordStore | null;
   readonly keyProvider: KeyProvider | null;
   readonly requestId?: string | null;
@@ -56,12 +58,16 @@ export async function loginAccount(input: {
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   const handle = canonicalRegistrationHandle(body.handle);
   const nowMs = Date.now();
-  await admission.require({
+  const intent = {
     request,
-    category: 'login',
+    category: 'login' as const,
     checks: [
-      { dimension: 'account', canonicalSubject: handle, rule: accountRule },
-      { dimension: 'ip', rule: ipRule },
+      {
+        dimension: 'account' as const,
+        canonicalSubject: handle,
+        rule: accountRule,
+      },
+      { dimension: 'ip' as const, rule: ipRule },
     ],
     nowMs,
     signal: request.signal,
@@ -73,7 +79,11 @@ export async function loginAccount(input: {
     ...(body.captchaToken === undefined
       ? {}
       : { captchaToken: body.captchaToken }),
-  });
+  };
+  const permit = input.minimumAdmission
+    ? await input.minimumAdmission.require(intent)
+    : null;
+  if (!input.minimumAdmission) await admission.require(intent);
   const account = await verifyAccountPassword({
     handle,
     password: body.password,
@@ -82,7 +92,11 @@ export async function loginAccount(input: {
     signal: request.signal,
     nowMs,
   });
-  if (!account) throw new RequestFailure('LOGIN_DENIED');
+  if (!account) {
+    await permit?.recordFailure(Date.now());
+    throw new RequestFailure('LOGIN_DENIED');
+  }
+  await permit?.clearAfterSuccess();
   const cookie = await issueSessionCookieFor({
     account,
     ceremony: { method: 'password', assurance: 1 },

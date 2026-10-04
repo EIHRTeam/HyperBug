@@ -34,7 +34,7 @@ Module source sections use these shorthand names and the numbered sections insid
 | Optional email/SSO versus functional accounts | Choose and test usable Core account/bootstrap/recovery flows without mandatory email/SSO; provider-specific implementations stay optional | 04, 16 |
 | Source security/performance docs are primarily Cloudflare-oriented | Enforce the same security, bounds, and recovery semantics in Node/PostgreSQL/S3 | 03–10, 13 |
 | Existing architecture files are not English | All new plans/progress/specifications/skills/runbooks use English; existing inputs remain historical unless separately translated | 00 and every module |
-| Cloudflare Free CPU/quota/retention limits versus the two first-class profiles | Add one opt-in, explicitly acknowledged minimum tier that removes capabilities and records each deviation; the first-class profiles, their adapters and their gates are unchanged | 03, 09, 13 |
+| Cloudflare Free CPU/quota/retention limits versus standard profiles | [ADR 0012](../decisions/0012-cloudflare-minimum-formal-profile.md) formalizes Minimum as the third G1/G2 profile with an acknowledged PBKDF2 exception; 13.G6 adds actual Free-plan evidence | 03, 09, 13 |
 | Cloudflare Email Service sending requires Workers Paid and outbound port 25 is prohibited | Implement a self-contained SMTP transport over the Workers socket API plus a shared Node protocol layer; keep the Cloudflare adapter optional and, on Free, limited to verified destination addresses | 16 |
 
 Workers + PostgreSQL through Hyperdrive is architecturally possible but is not a guaranteed profile in this plan. Do not generalize source-time support claims or advertise PostgreSQL 18 compatibility without current provider and integration evidence.
@@ -135,7 +135,7 @@ No frontend code was created, so this session verified planning coverage and com
 | Search language and indexing delay | Shared documented semantics, limits, language/ranking choices, and rebuild | 08 |
 | Queue/workflow semantic differences | Crash/replay/idempotency and bounded scheduling evidence | 09 |
 | Performance budgets and support claims | Measured results with environment, fixture, versions, and required checks | 10, 13 |
-| Minimum-tier password parameters and floor | Measured Free-plan PBKDF2 cost curve, reviewed iteration floor and the recorded algorithm/parameter decision; password login on the tier stays closed until then | 03, 13 |
+| Minimum-tier password parameters and floor | ADR 0012 Minimum-only exception (50,000 new / 100,000 maximum), strength policy and B15 actual complete-login measurement; no offline-strength parity claim | 03, 13 |
 | Minimum-tier capacity ceiling and quota alerting | Instance ceiling measured from Free-plan fixtures, with quota budgets and alerting recorded for the tier | 10, 13 |
 | SMTP relay interoperability | Verified relay matrix (implicit TLS and STARTTLS), deliverability statement and provider-independent conformance evidence | 16 |
 

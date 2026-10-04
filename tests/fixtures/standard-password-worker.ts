@@ -18,8 +18,8 @@ const provider = createCloudflareArgon2idProvider(19456);
 const deployment = loadDeploymentConfig({}, 'cloudflare');
 const minimum = loadDeploymentConfig(
   {
-    HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
-    HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
+    HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum',
+    HYPERBUG_DEGRADATION_ACK: 'minimum-v2',
   },
   'cloudflare',
 );

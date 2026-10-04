@@ -105,20 +105,11 @@ See [initial batch evidence](plan/evidence/03-security-foundation-validation.md)
 
 ## Deployment-tier posture and enablement boundary
 
-[ADR 0007](decisions/0007-cloudflare-free-minimum-tier.md) defines the optional `cloudflare-free-minimum` tier beside the two first-class standard profiles. The tier changes declared capabilities and the explicitly listed assurance/durability properties; it cannot change the classification or protection of secret data, confer a role, authorize an object, or turn a failed provider check into success. A claimed Free plan, exhausted quota, missing binding or HTTP input is not authority to select a tier.
+[ADR 0012](decisions/0012-cloudflare-minimum-formal-profile.md) makes `cloudflare-minimum` the third profile. Node/PostgreSQL and Cloudflare Standard retain Argon2id. Minimum requires Cloudflare plus `HYPERBUG_DEGRADATION_ACK=minimum-v2`; the deprecated `cloudflare-free-minimum` input warns and normalizes, while the old acknowledgement is refused. Provider-plan/quota state never selects a profile.
 
-`loadConfig(env, runtime)` requires the composition root to supply `node` or `cloudflare`; this identity is not read from environment variables or a request. Its frozen `deployment` member records the tier, acknowledgement, stable degradation IDs, invariants and **required** password algorithm. Required policy is not a claim that a password verifier is implemented or login is available.
+Public Minimum passwords use peppered PBKDF2 at 50,000 new / 100,000 stored maximum iterations, with 12 Unicode code points and bounded common-password rejection for new credentials. This acknowledged exception is weaker against offline guessing; online limits/lockout/CAPTCHA do not offset that loss. Authoritative account/IP admission, durable progressive lockout and configured required CAPTCHA precede login hashing. Standard login upgrades verified PBKDF2 records to Argon2id under expected revision. Minimum refuses Argon2id.
 
-| Configuration | Behavior |
-| --- | --- |
-| `HYPERBUG_DEPLOYMENT_TIER` absent or exactly `standard` | Standard policy; no degradation IDs or acknowledgement |
-| Tier exactly `cloudflare-free-minimum` | Requires the Cloudflare root and exact `HYPERBUG_DEGRADATION_ACK=free-minimum-v1` |
-| Null/empty/unknown/mixed-case/whitespace tier or invalid acknowledgement | Reject configuration; no coercion, fallback or echo of supplied values |
-| Acknowledgement present without the minimum tier | Reject as stale or contradictory configuration; remove it when upgrading |
-| Minimum tier selected on Node | Reject configuration before listening |
-| Correct minimum configuration in this build | Reject application startup: audited activation, compensating controls and independent acceptance are incomplete |
-
-The shared application constructor enforces the last barrier. It has no environment override, including in local mode. Parsing a selected posture is available to internal implementation tests; no running minimum instance or public capability endpoint is enabled. `/health/ready` now reports the selected standard tier, an empty degradation-ID list and the required `argon2id` hash policy on both success and unavailable responses. This is policy metadata, not an assertion that password login or all product dependencies are ready. The eventual minimum-tier activation must audit enablement/change/acknowledgement, warn with the active IDs, and report its truthful PBKDF2 policy before the barrier can be removed. `03.3g`, `03.V6` and `13.G6` remain incomplete.
+Audited activation and current-pepper preflight gate account/auth/write routes. Liveness, the canonical instance document and anonymous GETs remain available while activation fails; readiness stays unavailable. New v2 enablement records preserve old rows. G1/G2 cover all three profiles; 13.G6 remains additional real-Free evidence and stays open.
 
 The invariant list is fixed for **every** tier: object-level authorization and roles; append-only audit integrity and metadata redaction; Markdown/CSP/sanitization; keyed-digest credentials and AES-256-GCM envelope encryption; TLS/HSTS; memory-only browser tokens; bearer-only business APIs; fail-closed authorization; and no production debug or test/authorization bypass. They are policy constants, not operator or plugin switches. Existing input, origin, recent-authentication, provider-deadline and retention validation is identical for both selected postures.
 
@@ -126,7 +117,7 @@ The frozen `minimumDegradations` catalog in `packages/config/src/deployment.ts` 
 
 | ID | Changed boundary/property | Mandatory compensation before enablement |
 | --- | --- | --- |
-| FREE-01 | Password database theft resistance: PBKDF2 instead of Argon2id | Versioned pepper, per-user salt, reviewed measured floor, upgrade rehash, passkeys/recovery codes; never verify an Argon2id record with PBKDF2 |
+| FREE-01 | Password database theft resistance: PBKDF2 instead of Argon2id | Versioned pepper, per-user salt, disclosed Minimum-only exception, upgrade rehash, passkeys/recovery codes; never verify an Argon2id record with PBKDF2 |
 | FREE-02 | Cross-location abuse consistency | D1 account lockout/progressive delay, account/route quotas, configured required CAPTCHA, alerts and explicit consistency model |
 | FREE-03 | Background execution durability | D1/Cron outbox, idempotency, crash reconciliation, D1 failed-job replay and visible backlog |
 | FREE-04 | Audit/diagnostic retention and export | Complete append-only audit, authorized browsing, bounded operator queries and quota/backlog alerts |

@@ -35,8 +35,7 @@ export function parseBootstrapEnrollmentCode(value: unknown): string | null {
 /**
  * Single-shot initial Staff enrollment through the operator-channel code.
  * On the standard profiles no session is issued; the administrator then
- * signs in through /auth/login. On the minimum tier, where the reviewed
- * floor disables password login, the composition root issues the first
+ * signs in through /auth/login. On Minimum, the composition root also issues the first
  * session from the returned facts so the operator can register a passkey.
  * Wrong code, occupied handle or an existing active Staff administrator all
  * answer the same generic denial so the endpoint reveals none of them.
@@ -64,6 +63,8 @@ export async function enrollInitialStaff(input: {
   if (!password || !code || !store)
     throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
   const handle = canonicalRegistrationHandle(body.handle);
+  if (password.acceptsNewPassword?.(body.password) === false)
+    throw new RequestFailure('INVALID_REQUEST');
   const nowMs = Date.now();
   await admission.require({
     request,

@@ -15,13 +15,13 @@ const nodeEntryArguments = ['--enable-source-maps', 'dist/node/index.mjs'];
 
 it('refuses minimum and malformed tier settings in the real Node entry point before listening', () => {
   for (const settings of [
-    { HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum' },
+    { HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum' },
     {
-      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
-      HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
+      HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum',
+      HYPERBUG_DEGRADATION_ACK: 'minimum-v2',
     },
     { HYPERBUG_DEPLOYMENT_TIER: 'SEEDED_SECRET' },
-    { HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1' },
+    { HYPERBUG_DEGRADATION_ACK: 'minimum-v2' },
   ]) {
     const result = spawnSync(process.execPath, nodeEntryArguments, {
       env: {

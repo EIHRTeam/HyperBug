@@ -1,3 +1,9 @@
+import {
+  adaptMinimumPasswordService,
+  createMinimumPasswordService,
+  minimumTierPasswordPolicy,
+  withMinimumPasswordUpgrade,
+} from '@hyperbug/security';
 import { configureNodeUploads } from './uploads.ts';
 import { listenNode } from './listen.ts';
 import { loadNodeTls } from './tls.ts';
@@ -91,7 +97,14 @@ const app = createApp({
   captchaSiteKey: captcha.siteKey,
   abuse: abuse.abuse,
   keyProvider,
-  standardPassword,
+  standardPassword: keyProvider
+    ? withMinimumPasswordUpgrade(
+        standardPassword,
+        adaptMinimumPasswordService(() =>
+          createMinimumPasswordService(keyProvider, minimumTierPasswordPolicy),
+        ),
+      )
+    : standardPassword,
   registrationStore: abuse.registrationStore,
   passwordStore: abuse.passwordStore,
   sessionStore: abuse.sessionStore,

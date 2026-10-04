@@ -7,11 +7,11 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 ## Outcome and scope
 
-Make the MVP installable, upgradeable, observable, and recoverable in both official deployment profiles, with a separately deployable static frontend.
+Make the MVP installable, upgradeable, observable, and recoverable in all three official deployment profiles, with a separately deployable static frontend.
 
 Reader documentation starts at the [documentation index](../../README.md). Its current outlines are preparation for 13.3d, not completed publication or exercised runbooks.
 
-The optional Cloudflare Free minimum tier is packaged and accepted here through 13.1f–13.1g, 13.2g, 13.3f and the independent gate 13.G6, under [ADR 0007](../../decisions/0007-cloudflare-free-minimum-tier.md) and [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md). It is never part of G1 or G2 and is never cited as MVP acceptance.
+Cloudflare Minimum is the formal third profile under [ADR 0012](../../decisions/0012-cloudflare-minimum-formal-profile.md), included in G1/G2. Items 13.1f–13.1g, 13.2g, 13.3f and 13.G6 add the profile's Free-plan packaging, disclosure, budget and recovery evidence; historical gate exclusions are superseded.
 
 ## Ordered checklist
 
@@ -46,7 +46,7 @@ The optional Cloudflare Free minimum tier is packaged and accepted here through 
 
 ## MVP release gate
 
-- [ ] **13.G1** The entire PRODUCT §29 journey works on both official profiles and the static frontend.
+- [ ] **13.G1** The entire PRODUCT §29 journey works on all three official profiles and the static frontend.
 - [ ] **13.G2** Security and PERFORMANCE §77 baselines are met, with no unresolved release-blocking issues.
 - [ ] **13.G3** Fresh install, upgrade, restore, configuration validation, and operator recovery instructions have been exercised.
 - [ ] **13.G4** Evidence, English docs, supported-version matrix, release artifacts, and every affected session log are current.

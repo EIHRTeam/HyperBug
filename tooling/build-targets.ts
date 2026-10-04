@@ -59,6 +59,22 @@ export const appTargets = [
     },
   },
   {
+    name: 'cloudflare-minimum',
+    options: {
+      ...productionArtifacts,
+      entry: ['apps/api-cloudflare/src/minimum.ts'],
+      platform: 'neutral',
+      format: ['esm'],
+      target: 'es2023',
+      outDir: 'dist/cloudflare-minimum',
+      dts: false,
+      clean: false,
+      deps: { neverBundle: workerdNeverBundle },
+      inputOptions: { resolve: workerdResolve, external: workerdExternal },
+      outExtensions: mjsExtension,
+    },
+  },
+  {
     name: 'cloudflare-ingress',
     options: {
       ...productionArtifacts,

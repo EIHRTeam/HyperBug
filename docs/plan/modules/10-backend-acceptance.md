@@ -9,7 +9,7 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Produce a tested, documented backend that another client can use before building `apps/web`.
 
-G1 covers the two first-class profiles only. The optional Cloudflare Free minimum tier is accepted by its own checklist in 13.G6, its evidence is labelled and kept separate, and it never substitutes for a gate item here.
+G1 covers all three profiles under [ADR 0012](../../decisions/0012-cloudflare-minimum-formal-profile.md): Node/PostgreSQL, Cloudflare Standard and Cloudflare Minimum. 13.G6 adds actual Free-plan budget/recovery evidence; local fixtures cannot substitute for it.
 
 ## Ordered checklist
 
@@ -23,7 +23,7 @@ G1 covers the two first-class profiles only. The optional Cloudflare Free minimu
 
 ### Step 10.2 — Execute the backend MVP acceptance matrix
 
-- [ ] **10.2a** Run the full API journey on both profiles: accounts/permissions → project → Issue Form/upload → Issue → search → comment/reaction → triage → close/reopen → timeline.
+- [ ] **10.2a** Run the full API journey on all three profiles: accounts/permissions → project → Issue Form/upload → Issue → search → comment/reaction → triage → close/reopen → timeline.
 - [ ] **10.2b** Run fresh/upgrade database migrations, repository conformance, actual R2 and selected S3 compatibility, queue replay, workflow recovery, and plugin lifecycle tests.
 - [ ] **10.2c** Run security regression coverage for BOLA, identity confusion, token expiry/revocation, OAuth/PKCE, CORS/CSRF, XSS, unsafe URLs, upload handling, rate limits, and plugin boundaries.
 - [ ] **10.2d** Verify separate registrable domains, exact allowlists, third-party-cookie blocking, and no frontend-host proxy dependency with a minimal auth fixture.
@@ -33,7 +33,7 @@ G1 covers the two first-class profiles only. The optional Cloudflare Free minimu
 ### Step 10.3 — Establish measurable performance and operational readiness
 
 - [ ] **10.3a** Benchmark list/detail/create/comment/search/auth/password-hash/upload-intent paths using representative data and real security checks.
-- [ ] **10.3b** Record p50/p95/p99 latency, error rate, query count/plan/rows, runtime CPU/memory where available, queue lag, and object operations for both profiles.
+- [ ] **10.3b** Record p50/p95/p99 latency, error rate, query count/plan/rows, runtime CPU/memory where available, queue lag, and object operations for all three profiles.
 - [ ] **10.3c** Test large valid payloads, abusive search, failed-login bursts, abandoned uploads, retry storms, and slow providers within an authorized test environment.
 - [ ] **10.3d** Set initial regression thresholds and measured environment-specific budgets; do not invent SLA/SLO promises from unmeasured assumptions.
 - [ ] **10.3e** Verify readiness, structured telemetry/redaction, basic backup/restore, migration failure recovery, and isolated staging configuration.
@@ -43,7 +43,7 @@ G1 covers the two first-class profiles only. The optional Cloudflare Free minimu
 ## Backend gate checklist
 
 - [ ] **10.G1** Modules 00–09 are complete and their progress logs identify passing evidence.
-- [ ] **10.G2** Both production profiles support the whole MVP API path with security and performance controls active.
+- [ ] **10.G2** All three production profiles support the whole MVP API path with security and performance controls active.
 - [ ] **10.G3** API/client compatibility, storage/migration semantics, async recovery, and plugin boundaries are verified.
 - [ ] **10.G4** Blocking findings are resolved; any source-baseline deviation has the required ADR/review and explicit release impact.
 - [ ] **10.G5** Update the master progress document to open the SPA gate. Only then begin module 11.

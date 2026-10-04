@@ -13,8 +13,8 @@ const environment = {
   ALLOWED_ORIGINS: 'https://issues.example.org',
 };
 const minimum = {
-  HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
-  HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1',
+  HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-minimum',
+  HYPERBUG_DEGRADATION_ACK: 'minimum-v2',
 };
 
 describe('deployment posture and startup gate', () => {
@@ -49,15 +49,21 @@ describe('deployment posture and startup gate', () => {
         'STANDARD',
         ' standard',
         'standard ',
-        'cloudflare-free-minimum ',
+        'cloudflare-minimum ',
         'SEEDED_SECRET',
         {},
         ['standard'],
       ].map((value) => ({ HYPERBUG_DEPLOYMENT_TIER: value })),
-      ...[undefined, null, '', true, 'free-minimum-v0', 'free-minimum-v1 '].map(
-        (value) => ({ ...minimum, HYPERBUG_DEGRADATION_ACK: value }),
-      ),
-      { HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1' },
+      ...[
+        undefined,
+        null,
+        '',
+        true,
+        'free-minimum-v0',
+        'free-minimum-v1',
+        'minimum-v2 ',
+      ].map((value) => ({ ...minimum, HYPERBUG_DEGRADATION_ACK: value })),
+      { HYPERBUG_DEGRADATION_ACK: 'minimum-v2' },
       { HYPERBUG_DEPLOYMENT_TIER: 'standard', HYPERBUG_DEGRADATION_ACK: '' },
     ];
     for (const settings of invalid) {
@@ -91,8 +97,8 @@ describe('deployment posture and startup gate', () => {
     env.HYPERBUG_DEPLOYMENT_TIER = 'standard';
     env.HYPERBUG_DEGRADATION_ACK = '';
     expect(config.deployment).toMatchObject({
-      tier: 'cloudflare-free-minimum',
-      acknowledgement: 'free-minimum-v1',
+      tier: 'cloudflare-minimum',
+      acknowledgement: 'minimum-v2',
       requiredPasswordAlgorithm: 'pbkdf2-hmac-sha256',
       degradationIds: [
         'FREE-01',
@@ -162,4 +168,21 @@ describe('deployment posture and startup gate', () => {
       ),
     ).not.toThrow();
   });
+});
+
+it('normalizes the deprecated tier alias but requires the new acknowledgement', () => {
+  const alias = {
+    ...environment,
+    HYPERBUG_DEPLOYMENT_TIER: 'cloudflare-free-minimum',
+    HYPERBUG_DEGRADATION_ACK: 'minimum-v2',
+  };
+  expect(loadConfig(alias, 'cloudflare').deployment.tier).toBe(
+    'cloudflare-minimum',
+  );
+  expect(() =>
+    loadConfig(
+      { ...alias, HYPERBUG_DEGRADATION_ACK: 'free-minimum-v1' },
+      'cloudflare',
+    ),
+  ).toThrow('minimum-v2');
 });
