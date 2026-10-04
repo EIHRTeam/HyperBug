@@ -44,6 +44,7 @@ async function requireTaxonomyManager(
   // The archived-project read-only rule comes from the evaluator's write
   // check; the maintainer-or-higher role from the taxonomy:manage rule.
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: principal.principalId,
       permission: 'taxonomy:manage',
@@ -66,6 +67,7 @@ async function requireProjectReader(
   if (!context.authorizationResolver)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: principal?.principalId ?? null,
       permission: 'project:read',

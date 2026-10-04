@@ -71,6 +71,7 @@ async function requirePermission(
   if (!context.authorizationResolver)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: principal?.principalId ?? null,
       permission,

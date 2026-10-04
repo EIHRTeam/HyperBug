@@ -924,3 +924,12 @@ Final bounded read-only actual named test-D1 inventory: **0 upload intents, 0 at
 - Blockers/open questions: None for B3. Independent Sonnet review unavailable (model not callable); no independent review claimed. Atomic account/role/plugin audit remains B4.
 - Next actions: B4 audit transaction/failure cases, recovery-code step-up and passkey CAPTCHA forwarding, then B5–B15 in the approved order.
 - Next-session cautions: Never stage SECURITY.md or supplied reviews; preserve historical migration/audit rows, apply schema before adapters, inspect upgrade role recipient, and require new passkey login for old tokens. No SPA or later-module audit resume.
+
+### 2026-10-05 — Review remediation B6 request-scoped authorization reuse
+
+- Scope/checklist IDs: Approved B6 correction to 04.2e and 06.2d/V4, with guarded plugin/content and 10 acceptance dependencies. Later audit remains suspended.
+- Progress/change summary: Built-in DB resolvers share exact-ID fact promises within one original HTTP Request; authoritative visibility seeds project facts and private membership admission shares its loader. Every permission evaluation retains its own resource/credential binding; decisions/token verification remain uncached.
+- Files/artifacts: [B6 record](../evidence/2026-10-05-review-remediation.md#b6-request-scoped-authorization-facts-2026-10-05), server resolver/guards/handler wiring, shared actual-adapter query/revocation contract and AUTH-FLOWS.
+- Verification: Both focused D1/workerd and real PostgreSQL 18.6 suites **9 passed each**, plus token-assurance unit **3 passed**, no skips. Measured anonymous list **5→4**, Staff list **11→7** database statements with the in-memory test key source; no unmeasured production count claim. Role removal/suspension/private visibility changes take effect on new requests; B2 negatives and existing query/index plans pass. Typecheck/lint/boundaries/scoped format/diff and documentation build pass.
+- Decisions/blockers: Actual authenticated count supersedes the plan's rough ~5 estimate. No schema/deployment/ADR/permission change or blocker. Gates unchanged; production key overhead and real-Free limits remain B7/B15.
+- Next actions/cautions: Commit B6, then B7 imported key reuse/per-purpose registry/request snapshots with immediate revocation. Keep cache lifetime at one Request, separate decisions/credentials, and retain authoritative project seed provenance. Preserve protected files and historical evidence.

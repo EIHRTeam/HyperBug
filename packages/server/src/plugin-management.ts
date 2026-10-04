@@ -70,6 +70,7 @@ async function requirePluginAdministrator(
   if (!context.authorizationResolver || !context.registry)
     throw new RequestFailure('PLUGIN_UNAVAILABLE');
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: principal.principalId,
       permission: 'instance:plugins.manage',

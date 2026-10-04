@@ -280,6 +280,7 @@ async function permit(
   if (!context.authorizationResolver)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: actor?.principalId ?? null,
       permission: file.commentId === null ? 'issue:read' : 'comment:read',

@@ -1,3 +1,7 @@
+import {
+  seedAuthorizationProject,
+  requestAuthorizationDependencies,
+} from './authorization-facts.ts';
 import type {
   AccountAdministrationStore,
   OAuthAccessTokenStore,
@@ -107,12 +111,6 @@ export async function createProject(
  * disclose existence; members then run the shared guard so suspension,
  * stale tokens and policy all keep failing closed.
  */
-/**
- * The visibility pre-check makes private projects invisible (404) to
- * anonymous callers and non-members before any permission semantics could
- * disclose existence; members then run the shared guard so suspension,
- * stale tokens and policy all keep failing closed.
- */
 export async function requireVisibleProject(
   request: Request,
   context: ProjectContext,
@@ -122,13 +120,24 @@ export async function requireVisibleProject(
     store(context).load(projectId),
   );
   if (!record) throw new RequestFailure('NOT_FOUND');
+  seedAuthorizationProject(request, context.authorizationResolver, projectId, {
+    visibility: record.visibility,
+    state: record.status,
+  });
   if (record.visibility === 'private') {
     const principal = await bearer(request, context);
     if (!principal) throw new RequestFailure('NOT_FOUND');
     if (!context.roleStore || !context.authorizationResolver)
       throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
-    const membership = await withDeadline(request.signal, storeTimeoutMs, () =>
-      context.roleStore!.loadRole(projectId, principal.principalId),
+    const membership = await withDeadline(
+      request.signal,
+      storeTimeoutMs,
+      () =>
+        requestAuthorizationDependencies(
+          request,
+          context.authorizationResolver,
+        )?.loadMembership(projectId, principal.principalId) ??
+        context.roleStore!.loadRole(projectId, principal.principalId),
     );
     if (!membership) throw new RequestFailure('NOT_FOUND');
   }
@@ -152,6 +161,7 @@ export async function readProject(
   if (!context.authorizationResolver)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: principal?.principalId ?? null,
       permission: 'project:read',
@@ -186,6 +196,7 @@ export async function configureProject(
   if (!context.authorizationResolver)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: principal.principalId,
       permission: 'project:configure',
@@ -243,6 +254,7 @@ export async function archiveProject(
   if (!context.authorizationResolver)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: principal.principalId,
       permission: 'project:configure',

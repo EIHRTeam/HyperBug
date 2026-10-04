@@ -46,7 +46,7 @@ function deniedProject(projectId: string) {
   });
 }
 
-export function createDbAuthorizationResolver(
+function resolverFromDependencies(
   deps: DbAuthorizationDependencies,
 ): AuthorizationResolver {
   return {
@@ -137,4 +137,116 @@ export function createDbAuthorizationResolver(
       });
     },
   };
+}
+
+interface RequestFacts {
+  readonly dependencies: DbAuthorizationDependencies;
+  readonly resolver: AuthorizationResolver;
+  readonly projects: Map<
+    string,
+    Promise<Awaited<ReturnType<DbAuthorizationDependencies['loadProject']>>>
+  >;
+}
+const scopes = new WeakMap<
+  AuthorizationResolver,
+  {
+    dependencies: DbAuthorizationDependencies;
+    requests: WeakMap<Request, RequestFacts>;
+  }
+>();
+
+function memoized<K, V>(
+  cache: Map<K, Promise<V>>,
+  key: K,
+  load: () => Promise<V>,
+): Promise<V> {
+  let value = cache.get(key);
+  if (value === undefined) {
+    value = Promise.resolve().then(load);
+    cache.set(key, value);
+  }
+  return value;
+}
+function requestFacts(
+  request: Request,
+  resolver: AuthorizationResolver,
+): RequestFacts | null {
+  const scope = scopes.get(resolver);
+  if (!scope) return null;
+  const existing = scope.requests.get(request);
+  if (existing) return existing;
+  const principals = new Map<
+    string,
+    Promise<Awaited<ReturnType<DbAuthorizationDependencies['loadPrincipal']>>>
+  >();
+  const projects = new Map<
+    string,
+    Promise<Awaited<ReturnType<DbAuthorizationDependencies['loadProject']>>>
+  >();
+  const memberships = new Map<
+    string,
+    Promise<Awaited<ReturnType<DbAuthorizationDependencies['loadMembership']>>>
+  >();
+  const instanceRoles = new Map<
+    string,
+    Promise<
+      Awaited<ReturnType<DbAuthorizationDependencies['loadInstanceRole']>>
+    >
+  >();
+  const dependencies: DbAuthorizationDependencies = {
+    loadPrincipal: (id) =>
+      memoized(principals, id, () => scope.dependencies.loadPrincipal(id)),
+    loadProject: (id) =>
+      memoized(projects, id, () => scope.dependencies.loadProject(id)),
+    loadMembership: (projectId, principalId) =>
+      memoized(memberships, `${projectId}:${principalId}`, () =>
+        scope.dependencies.loadMembership(projectId, principalId),
+      ),
+    loadInstanceRole: (id) =>
+      memoized(instanceRoles, id, () =>
+        scope.dependencies.loadInstanceRole(id),
+      ),
+  };
+  const facts = {
+    dependencies,
+    resolver: resolverFromDependencies(dependencies),
+    projects,
+  };
+  scope.requests.set(request, facts);
+  return facts;
+}
+
+/** Facts only, never decisions or credential assurance; lifetime is one HTTP Request. */
+export function requestAuthorizationResolver(
+  request: Request,
+  resolver: AuthorizationResolver,
+): AuthorizationResolver {
+  return requestFacts(request, resolver)?.resolver ?? resolver;
+}
+export function seedAuthorizationProject(
+  request: Request,
+  resolver: AuthorizationResolver | null,
+  projectId: string,
+  project: Awaited<ReturnType<DbAuthorizationDependencies['loadProject']>>,
+): void {
+  if (resolver)
+    requestFacts(request, resolver)?.projects.set(
+      projectId,
+      Promise.resolve(project === null ? null : Object.freeze({ ...project })),
+    );
+}
+export function requestAuthorizationDependencies(
+  request: Request,
+  resolver: AuthorizationResolver | null,
+): DbAuthorizationDependencies | null {
+  return resolver === null
+    ? null
+    : (requestFacts(request, resolver)?.dependencies ?? null);
+}
+export function createDbAuthorizationResolver(
+  dependencies: DbAuthorizationDependencies,
+): AuthorizationResolver {
+  const resolver = resolverFromDependencies(dependencies);
+  scopes.set(resolver, { dependencies, requests: new WeakMap() });
+  return resolver;
 }

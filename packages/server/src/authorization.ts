@@ -1,3 +1,4 @@
+import { requestAuthorizationResolver } from './authorization-facts.ts';
 import {
   authorize,
   type AuthorizationPolicy,
@@ -8,6 +9,7 @@ import {
 import { RequestFailure } from './errors.ts';
 
 export interface AuthorizationIntent {
+  readonly httpRequest?: Request;
   readonly request: PermissionRequest;
   readonly resolver: AuthorizationResolver;
   readonly policy: AuthorizationPolicy;
@@ -45,7 +47,9 @@ export async function requireAuthorizedAction(
   try {
     const decision = await authorize(
       intent.request,
-      intent.resolver,
+      intent.httpRequest
+        ? requestAuthorizationResolver(intent.httpRequest, intent.resolver)
+        : intent.resolver,
       intent.policy,
       {
         signal,

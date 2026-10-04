@@ -692,6 +692,7 @@ export function createApp({
       throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
     try {
       await requireAuthorizedAction({
+        httpRequest: request,
         request: {
           actorId: principal.principalId,
           permission: 'instance:principals.manage',
@@ -1389,6 +1390,7 @@ export function createApp({
         if (!authorizationResolver || !administration || !roleStore)
           throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
         await requireAuthorizedAction({
+          httpRequest: request,
           request: {
             actorId: principal.principalId,
             permission: 'role:manage',
@@ -1463,6 +1465,7 @@ export function createApp({
         if (!authorizationResolver || !roleStore)
           throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
         await requireAuthorizedAction({
+          httpRequest: request,
           request: {
             actorId: principal.principalId,
             permission: 'role:manage',

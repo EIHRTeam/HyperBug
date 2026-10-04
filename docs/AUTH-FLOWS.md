@@ -173,3 +173,9 @@ Core operates with zero plugins: no email, SSO or CAPTCHA provider is required f
 Principal suspension/activation, project-role grant/revoke, bootstrap enrollment, recovery-code replacement and plugin registry/configuration changes commit their prepared closed-catalog event in the same D1 batch or PostgreSQL transaction. An audit insert failure rolls back the complete mutation and answers `AUDIT_UNAVAILABLE` (503); timeout or unknown commit outcomes answer a closed unavailable/timeout response. A denied or zero-change mutation emits no success event. PostgreSQL retains the last-instance-administrator advisory lock before its authoritative UPDATE snapshot. Configuration changes are one bounded transaction, and uninstall's explicit delete policy removes settings within that transaction.
 
 Standalone session revocation, passkey linking and recovery redemption retain their existing event path; this remediation does not claim atomicity for those paths or resume later-module audit work.
+
+## Authorization fact reuse (2026-10-05 remediation)
+
+Guards reuse principal, project, membership and instance-role loader promises only within the same HTTP `Request`. The authoritative visibility pre-check seeds its project facts, and private-project membership admission shares the same loader. Each permission evaluation still builds its own resource binding and uses the presented token's own ceremony facts. Decisions and token verification are not cached. A new request starts empty and sees current role removal, suspension and visibility; there is no permission state shared across requests.
+
+Actual-adapter issue-list statement counts fall from 5 to 4 for anonymous reads and 11 to 7 for Staff reads (nonempty public project, in-memory test key source, all database reads included). Production registry-key overhead and real-Free invocation accounting remain B7/B15 evidence; the original rough five-query authenticated estimate is not claimed.

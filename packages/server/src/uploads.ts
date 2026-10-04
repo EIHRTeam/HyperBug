@@ -103,6 +103,7 @@ async function permit(
         : 'issue:moderate';
   }
   await requireAuthorizedAction({
+    httpRequest: request,
     request: {
       actorId: actor.principalId,
       permission,
