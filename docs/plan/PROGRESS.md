@@ -1198,3 +1198,7 @@ Formal Cloudflare Minimum now enables public peppered PBKDF2 accounts under the 
 ### 2026-10-05 — Review remediation B9 checkpoint
 
 Content admission now requires approximate principal/project shedding plus one primary current-version principal counter; identity counters keep all-version continuity. [B9 evidence](evidence/2026-10-05-review-remediation.md#b9-risk-tiered-content-admission-2026-10-05) records both-store HTTP and product issue checks. Next B10–B15; actual budgets and all gates remain open.
+
+### 2026-10-05 — Review remediation B10 checkpoint
+
+Only anonymous instance metadata becomes public for 60 seconds; credentialed/error/other API responses retain no-store. [B10 evidence](evidence/2026-10-05-review-remediation.md#b10-server-owned-response-cache-table-2026-10-05) records validators/variation/override checks and remaining Free-account billing coverage. Next B11–B15; gates unchanged.

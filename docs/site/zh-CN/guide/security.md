@@ -8,7 +8,7 @@
 
 将 `HYPERBUG_ENV` 明确设置为 `local`、`staging` 或 `production`。将 `ALLOWED_ORIGINS` 设置为用逗号分隔的精确 HTTPS 来源列表，例如 `https://issues.example.org`，最多支持 16 个不重复来源。不要包含路径、凭证、通配符域名或结尾斜杠。本地模式还允许 `http://localhost:5173` 等 HTTP 回环来源。
 
-携带未列入名单的 Origin 的请求会收到 `ORIGIN_FORBIDDEN`（403）。不携带 Origin 的请求仍需接受正常的身份与权限检查；省略 Origin 不会授予访问权限。业务 API 不启用跨来源 Cookie。允许的预检结果最多保留 300 秒。当前所有响应都使用 `Cache-Control: no-store`。
+携带未列入名单的 Origin 的请求会收到 `ORIGIN_FORBIDDEN`（403）。不携带 Origin 的请求仍需接受正常的身份与权限检查；省略 Origin 不会授予访问权限。业务 API 不启用跨来源 Cookie。允许的预检结果最多保留 300 秒。匿名实例信息可缓存 60 秒，并使用 ETag 及 Origin、Authorization、Cookie 区分响应。携带凭证的实例请求、错误以及所有其他 API 路由使用 `Cache-Control: no-store`。
 
 `DEBUG` 默认为 `false`。只有明确指定本地环境时才能设置 `DEBUG=true`。API 错误始终只包含安全的错误码、消息和服务端生成的请求 ID，不会返回堆栈或服务商消息。配置对象只能包含策略设置，不要将凭证放入策略值。
 

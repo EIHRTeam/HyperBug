@@ -1,3 +1,8 @@
+import {
+  isInstanceMetadataRequest,
+  responseCacheControl,
+} from './response-cache.ts';
+import { idempotencyDigest } from '@hyperbug/security';
 import { scopeKeyProvider } from '@hyperbug/security';
 import {
   UploadDocumentSchema,
@@ -410,6 +415,8 @@ const unavailableMinimumLoginAdmission: BoundMinimumLoginAdmission =
   });
 
 interface BoundaryHeaders {
+  readonly cacheControl?: string;
+  readonly instanceMetadata?: boolean;
   readonly requestId: string;
   readonly cors: Readonly<Record<string, string>>;
 }
@@ -428,9 +435,12 @@ function protectedHeader(name: string): boolean {
 function boundaryValues(boundary: BoundaryHeaders): Record<string, string> {
   return {
     'x-request-id': boundary.requestId,
-    'cache-control': 'no-store',
+    'cache-control': boundary.cacheControl ?? 'no-store',
     'x-content-type-options': 'nosniff',
     ...boundary.cors,
+    ...(boundary.instanceMetadata
+      ? { vary: 'Origin, Authorization, Cookie' }
+      : {}),
   };
 }
 
@@ -548,6 +558,7 @@ export function createApp({
       documented: 'docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas',
     },
   });
+  let instanceEtag: Promise<string> | null = null;
   const readiness = (
     status: ReadinessResponse['status'],
     pending?: boolean,
@@ -1167,7 +1178,22 @@ export function createApp({
       };
     })
     .onAfterHandle(({ request, response, set }) => {
-      const boundary = boundaryFor(request);
+      const status =
+        response instanceof Response
+          ? response.status
+          : typeof set.status === 'number'
+            ? set.status
+            : 200;
+      const setsCookie =
+        Object.keys(set.headers).some(
+          (name) => name.toLowerCase() === 'set-cookie',
+        ) ||
+        (response instanceof Response && response.headers.has('set-cookie'));
+      const boundary: BoundaryHeaders = {
+        ...boundaryFor(request),
+        cacheControl: responseCacheControl(request, status, setsCookie),
+        instanceMetadata: isInstanceMetadataRequest(request),
+      };
       // A native Response or handler-modified set can override request-time
       // security headers. Reapply only the server's trusted policy snapshot.
       enforceSetHeaders(set.headers, boundary);
@@ -1230,9 +1256,37 @@ export function createApp({
         },
       },
     )
-    .get('/api/v1/instance', () => instanceDocument, {
-      response: t.Unsafe<InstanceDocument>(InstanceDocumentSchema),
-    })
+    .get(
+      '/api/v1/instance',
+      async ({ request, set }) => {
+        const etag = await (instanceEtag ??= idempotencyDigest(
+          JSON.stringify(instanceDocument),
+        ).then((digest) => 'W/"instance-v1.' + digest + '"'));
+        set.headers.etag = etag;
+        const validators = request.headers
+          .get('if-none-match')
+          ?.split(',')
+          .map((v) => v.trim());
+        if (
+          validators?.some(
+            (v) =>
+              v === '*' || v.replace(/^W\//, '') === etag.replace(/^W\//, ''),
+          )
+        ) {
+          set.status = 304;
+          return new Response(null, { status: 304, headers: { etag } });
+        }
+        return new Response(JSON.stringify(instanceDocument), {
+          headers: { 'content-type': 'application/json', etag },
+        });
+      },
+      {
+        response: {
+          200: t.Unsafe<InstanceDocument>(InstanceDocumentSchema),
+          304: t.Null(),
+        },
+      },
+    )
     .get(
       '/api/v1/account',
       async ({ request }): Promise<AccountDocument> => {

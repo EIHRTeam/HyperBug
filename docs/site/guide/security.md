@@ -8,7 +8,7 @@
 
 Set `HYPERBUG_ENV` explicitly to `local`, `staging` or `production`. Set `ALLOWED_ORIGINS` to a comma-separated list of exact HTTPS origins, such as `https://issues.example.org`. Up to 16 unique origins are supported. Do not include paths, credentials, wildcard domains or a trailing slash. Local mode also permits HTTP loopback origins such as `http://localhost:5173`.
 
-A request with an unlisted Origin receives `ORIGIN_FORBIDDEN` (403). A request without Origin remains eligible for the normal authentication and permission checks; omitting Origin does not grant access. Business APIs do not enable cross-origin cookies. Allowed preflights expire after at most 300 seconds. All current responses use `Cache-Control: no-store`.
+A request with an unlisted Origin receives `ORIGIN_FORBIDDEN` (403). A request without Origin remains eligible for the normal authentication and permission checks; omitting Origin does not grant access. Business APIs do not enable cross-origin cookies. Allowed preflights expire after at most 300 seconds. Anonymous instance metadata may be cached for 60 seconds with an ETag and Origin/Authorization/Cookie variation. Credentialed instance requests, errors and all other API routes use `Cache-Control: no-store`.
 
 `DEBUG` defaults to `false`. `DEBUG=true` is valid only in the explicit local environment. API errors always contain a safe code, message and server-generated request ID, never a stack trace or provider message. Configuration must contain policy settings only; do not put credentials in policy values.
 

@@ -2,6 +2,16 @@
 
 The public business API uses `/api/v1`. Its contract is versioned JSON/REST plus OpenAPI, independent of Elysia server types. `packages/contracts` owns reusable schemas and DTOs; module 10 owns validated OpenAPI generation and the public client. No feature endpoint exists merely because it is listed in the [inventory](API-OPERATIONS.md).
 
+## Response cache policy (06.2e amendment, 2026-10-05)
+
+| Route/response | Server-owned policy |
+| --- | --- |
+| Anonymous successful GET/HEAD `/api/v1/instance`, including its own 304 | `public, max-age=60`; stable representation ETag; `Vary: Origin, Authorization, Cookie` |
+| Instance request carrying any Authorization or Cookie header | `no-store` |
+| Errors, auth/account/admin, projects/issues/comments, uploads/media and all other routes | `no-store` (media may add its own stricter directives) |
+
+Defaults are private/conservative. Handler-provided cache headers cannot override this table, and Set-Cookie forces no-store. Origin validation remains global. Issue/comment shared caching stays deferred pending measured invalidation and current authorization/moderation evidence. No Workers Cache API or two-Worker cache is enabled by this amendment; B15 measures actual request accounting separately.
+
 ## Representations and compatibility
 
 IDs are lowercase UUID strings. Issue numbers and revisions are positive bounded integers. Instants are canonical UTC strings with exactly three fractional digits. Nullable fields are explicitly null; optional fields describe genuinely absent capabilities, not a second encoding of null. Requests reject unknown fields; response consumers must tolerate additive fields. Breaking field meanings, enum removals, narrowing accepted input, or changing ordering semantics requires a versioned contract change. New closed enums need a documented client compatibility strategy.
@@ -76,7 +86,7 @@ Passkey routes exist on the authorization origin when the deployment configures 
 
 ## Browser origins and cache
 
-Any present Origin must exactly match the explicit deployment allowlist; null, wildcard and lookalike origins are denied. No-Origin clients remain eligible for normal authentication and authorization. Business APIs do not enable credentialed cookies. Preflight methods and headers are explicit; the maximum preflight age is 300 seconds. Preflights vary on Origin, Access-Control-Request-Method and Access-Control-Request-Headers; actual responses vary on Origin and expose x-request-id, retry-after and etag. A preflight does not authorize an operation. All currently implemented routes enforce no-store after handler responses and on errors, including native `Response` headers; future shared caches require explicit anonymous-public representation policy. See [HTTP security policy](SECURITY-FOUNDATION.md#http-errors-and-diagnostics).
+Any present Origin must exactly match the explicit deployment allowlist; null, wildcard and lookalike origins are denied. No-Origin clients remain eligible for normal authentication and authorization. Business APIs do not enable credentialed cookies. Preflight methods and headers are explicit; the maximum preflight age is 300 seconds. Preflights vary on Origin, Access-Control-Request-Method and Access-Control-Request-Headers; actual responses vary on Origin and expose x-request-id, retry-after and etag. A preflight does not authorize an operation. All routes enforce the response-policy table after handler responses and on errors, including native `Response` headers. See [HTTP security policy](SECURITY-FOUNDATION.md#http-errors-and-diagnostics).
 
 ## Mutations and concurrency
 
@@ -107,7 +117,7 @@ Authorized issue/comment detail and visible comment timeline entries carry `body
 
 Issue and comment list rows omit full body trees and carry a stored `preview` (at most 280 scalar code points) and `textProjectionVersion`; legacy rows have null fields until explicit backfill. Issue summary `body` remains null; comment lists omit `body`. Timeline pages explicitly carry visible bodies and trees with the existing cap of 100. Lists never run Markdown derivation. Source/code-point/byte/lexical/AST bounds are enforced for new content; over-complex issue/comment writes answer `ISSUE_INVALID` (400) before committing anything.
 
-Detail/mutation responses with a safe body expose their representation validator through both `representationEtag` and `ETag`; it includes resource ID, revision, kind and policy version. Every current response remains `no-store`; If-None-Match never produces 304 and reads always use the current pipeline after authorization. A future shared-cache implementation must include policy version and audience/moderation and retain current object checks. Cursor tuples and versions remain independent of rendering.
+Detail/mutation responses with a safe body expose their representation validator through both `representationEtag` and `ETag`; it includes resource ID, revision, kind and policy version. Issue/comment responses remain `no-store`; their If-None-Match never produces 304 and reads always use the current pipeline after authorization. A future shared-cache implementation must include policy version and audience/moderation and retain current object checks. Cursor tuples and versions remain independent of rendering.
 
 ## Module 07 forms and templates
 

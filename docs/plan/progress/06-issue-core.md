@@ -333,3 +333,12 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Unit 17, D1 content/issue 2 and PostgreSQL 18.6 content/issue 2 passed; typecheck/lint/boundaries/scoped format/diff pass. One counter, rotation, identity continuity, 429 and approximate-outage no-write verified. Initial fixture corrections recorded.
 - Decisions/blockers: No schema/deployment or blocker; approximate project shedding is not a durable quota. Production budgets remain B15. No independent review claim; gates unchanged.
 - Next actions/cautions: Commit B9, then B10 explicit cache policy. Preserve identity all-version limits, mandatory content shedding, trusted IDs, primary fail-closed behavior and protected drafts.
+
+### 2026-10-05 — Review remediation B10 response cache policy
+
+- Scope/checklist IDs: Approved B10 amendment to 06.2e with 03 HTTP trust and 10 acceptance dependencies.
+- Progress/change summary: Anonymous instance metadata alone is public for 60 seconds with weak ETag/304 and Origin/Authorization/Cookie variation. Credentialed/error/other routes stay no-store; handler overrides cannot opt in. No Workers Cache or shared content cache enabled.
+- Files/artifacts: Server policy/hook/instance handler, shared HTTP fixture, API/security specs and bilingual guides; [B10 evidence](../evidence/2026-10-05-review-remediation.md#b10-server-owned-response-cache-table-2026-10-05).
+- Verification: Selected Node/workerd HTTP 6 passed / 62 intentionally deselected; typecheck/lint/boundaries/scoped format/diff/docs pass. Native/set override defenses and Origin errors remain closed. Initial response-inference issue corrected.
+- Decisions/blockers: No schema/deployment or blocker. Context7 cache/pricing gaps recorded; real Free request accounting B15. Gates unchanged.
+- Next actions/cautions: Commit B10, then B11 bounded expired cleanup only. Keep global Origin checks, credential/cache separation, metadata Vary, no shared content cache and audit history/protected drafts.

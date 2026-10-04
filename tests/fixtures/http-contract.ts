@@ -7,6 +7,37 @@ type Fetcher = (
 ) => Promise<Response>;
 export function httpContract(fetcher: Fetcher) {
   describe('shared HTTP behavior', () => {
+    it('caches only anonymous instance metadata and validates its representation', async () => {
+      const response = await fetcher('/api/v1/instance');
+      expect(response.status).toBe(200);
+      expect(response.headers.get('cache-control')).toBe('public, max-age=60');
+      const etag = response.headers.get('etag');
+      expect(etag).toMatch(/^W\/"instance-v1\./);
+      expect(response.headers.get('vary')).toContain('Authorization');
+      expect(response.headers.get('vary')).toContain('Cookie');
+      await response.text();
+      const cached = await fetcher('/api/v1/instance', {
+        headers: { 'if-none-match': etag! },
+      });
+      expect(cached.status).toBe(304);
+      expect(cached.headers.get('cache-control')).toBe('public, max-age=60');
+      expect(await cached.text()).toBe('');
+      for (const headers of [
+        { authorization: 'Bearer fixture' },
+        { cookie: 'fixture=1' },
+      ]) {
+        const privateResponse = await fetcher('/api/v1/instance', { headers });
+        expect(privateResponse.status).toBe(200);
+        expect(privateResponse.headers.get('cache-control')).toBe('no-store');
+        await privateResponse.text();
+      }
+      const error = await fetcher('/api/v1/instance', {
+        headers: { origin: 'https://denied.example' },
+      });
+      expect(error.status).toBe(403);
+      expect(error.headers.get('cache-control')).toBe('no-store');
+      await error.text();
+    });
     it('publishes the registration challenge action while no-provider setup requires no token', async () => {
       const response = await fetcher('/api/v1/accounts/register');
       expect(response.status).toBe(200);

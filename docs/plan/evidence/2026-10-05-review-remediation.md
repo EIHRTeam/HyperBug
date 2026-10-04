@@ -27,8 +27,8 @@ Cross-module record for the remediation of two review reports supplied by the us
 | Key ring re-read and re-import per call (PERF 5.2, 5.3) | B7 | Fixed |
 | Minimum password floor, rename, activation coupling, bundle (PERF 5.1, 5.4; DESIGN 2, 5) | B8 | Fixed locally; real-Free measurements B15 |
 | Risk-tiered rate limits (PERF 4.3; DESIGN 4.1) | B9 | Fixed |
-| Unconditional `no-store` (PERF 6.1; DESIGN 4.2) | B10 | Pending |
-| Workers Cache and two-Worker request counting (PERF 6.2) | B10 | Investigation only |
+| Unconditional `no-store` (PERF 6.1; DESIGN 4.2) | B10 | Fixed |
+| Workers Cache and two-Worker request counting (PERF 6.2) | B10 | Investigated; enablement deferred |
 | Cron cleanup consolidation (PERF 7.1) | B11 | Pending |
 | Receipts on one-shot mutations (PERF 4.4) | B12 | Pending |
 | Fixed short timeouts; unused configuration (DESIGN §4) | B13 | Pending |
@@ -151,6 +151,13 @@ Cross-module record for the remediation of two review reports supplied by the us
 - Verification: Provider/rate unit **17 passed**; final D1 content/issue suites **2 passed**, real PostgreSQL 18.6 content/issue **2 passed**, no skips. Three content categories each produce one version-2 principal row after three admissions (hits=3), one version-3 row after rotation; identity produces six account/IP rows over three versions. Approximate outage returns 503 with unchanged primary hits; principal excess returns 429. Typecheck/lint/boundaries/scoped format/diff pass. Initial fixture-only missing adapter/readiness, JSON media-type and counter-column assumptions corrected. No new library/platform syntax; actual budget measurements B15. Broad unchanged lanes omitted.
 - Primary focused security review: mandatory shedding, trusted dimension validation, fail-closed decisions, current-first ring provenance, identity rotation continuity and explicit content reset consequence inspected. No independent Sonnet review claim. Next B10 explicit server-owned response policy. G1/G2 and 13.G6 unchanged.
 
+### B10 — Server-owned response cache table (2026-10-05)
+
+- Progress/change: Only anonymous successful GET/HEAD instance metadata uses `public, max-age=60`; any Authorization/Cookie header or Set-Cookie response forces no-store. Default/error/auth/account/admin/project/issue/comment policies remain conservative. Stable weak ETag supports conditional 304 for the immutable instance document. Vary partitions Origin/Authorization/Cookie; global Origin validation remains. Response/set overrides cannot opt another route into public caching; media keeps its independent conservative headers. API-CONVENTIONS 06.2e table amended before code; reader guides synchronized.
+- Files/artifacts: Server response-cache policy/helper/hook/instance handler, shared HTTP contract, active API/security/module specs and bilingual guides. No persistence/deployment or Workers cache configuration.
+- Verification: Typecheck and selected Node/workerd HTTP checks **6 passed / 62 intentionally deselected**, covering anonymous/credentialed metadata, validator/304, Origin errors and native/immutable/set handler override defenses. A response-schema inference issue was resolved by serializing the trusted frozen document into the native Response consistently; the ETag derives from that same JSON. Lint/boundaries, scoped format/diff and documentation build pass. Broad unchanged lanes omitted under the user preference.
+- Investigation/decision: Context7 Workers docs describe opt-in caching around entrypoints, authenticated/Set-Cookie bypass and callee caching over service bindings. Pricing snippets say no extra same-account binding request fee with summed CPU, but an older snippet labels this Standard-only; no unmeasured Free-quota counting claim. B15 retains actual request-accounting measurement. No Workers Cache API, credential stripping, public content cache or cache bypass of authorization introduced. Next B11 narrowly authorized expired cleanup; G1/G2/13.G6 unchanged.
+
 ## Documentation lookups
 
 - 2026-10-05, Context7 `/llmstxt/developers_cloudflare_d1_llms-full_txt`:
@@ -167,3 +174,5 @@ Cross-module record for the remediation of two review reports supplied by the us
 - 2026-10-05, Context7 resolve→query `/llmstxt/developers_cloudflare_workers_llms-full_txt`: Workers isolate/global state and per-request I/O boundaries. Coverage did not directly establish imported CryptoKey reuse; focused Node and workerd object-identity/change/revocation experiments establish only local runtime compatibility. No real-Free CPU claim.
 
 - 2026-10-05, Context7 resolve→query `/llmstxt/developers_cloudflare_workers_llms-full_txt`: [bundling](https://developers.cloudflare.com/workers/wrangler/bundling), dry-run command, static Wasm module imports and request/global initialization/startup bounds. Exact environment `main` override checked by installed Wrangler 4.144.0 schema/dry-run; returned coverage did not establish complete PBKDF2 Free fit or startup measurement, which remain actual B15 evidence.
+
+- 2026-10-05, Context7 resolve→query `/llmstxt/developers_cloudflare_workers_llms-full_txt`: [Cache API headers](https://developers.cloudflare.com/workers/runtime-apis/cache), [Workers caching](https://developers.cloudflare.com/workers/cache/), [service-binding pricing](https://developers.cloudflare.com/workers/platform/pricing/#service-bindings). Set-Cookie/Authorization bypass and ETag behavior documented; Free daily request accounting remains an explicit coverage gap because pricing snippets differ in scope. Headers are implemented; no cache service enabled.
