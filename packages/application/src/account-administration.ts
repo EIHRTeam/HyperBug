@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 /** A deployment-scoped role fact; matches the security evaluator's shape. */
 export interface InstanceRoleFacts {
   readonly principalId: string;
@@ -30,7 +31,13 @@ export interface AccountAdministrationStore extends InstanceRoleStore {
   loadPrincipal(principalId: string): Promise<PrincipalAccountFacts | null>;
   loadProject(projectId: string): Promise<ProjectVisibilityFacts | null>;
   /** Suspend an existing, non-deleted principal; false when it cannot apply. */
-  suspendPrincipal(principalId: string): Promise<boolean>;
+  suspendPrincipal(
+    principalId: string,
+    audit: PreparedAuditEvent,
+  ): Promise<boolean>;
   /** Restore a suspended principal; false when it cannot apply. */
-  activatePrincipal(principalId: string): Promise<boolean>;
+  activatePrincipal(
+    principalId: string,
+    audit: PreparedAuditEvent,
+  ): Promise<boolean>;
 }

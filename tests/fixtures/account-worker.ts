@@ -1,3 +1,4 @@
+import { passkeyCaptcha } from './passkey-captcha.ts';
 import { configureWorkerUploads } from '../../apps/api-cloudflare/src/uploads.ts';
 import { uploadProof } from './upload-proof.ts';
 import { env } from 'cloudflare:workers';
@@ -47,6 +48,10 @@ const uploads = configureWorkerUploads(
   db,
   env as unknown as Parameters<typeof configureWorkerUploads>[1],
 );
+const captcha =
+  env.HYPERBUG_TEST_PASSKEY_CAPTCHA === '1'
+    ? passkeyCaptcha('auth.poc.example')
+    : null;
 const config = loadConfig(env, 'cloudflare');
 const observations: string[] = [];
 const abuse = {
@@ -63,6 +68,9 @@ export default createApp({
   telemetry: jsonTelemetry((line) => observations.push(line)),
   ready: async () => true,
   abuse,
+  ...(captcha
+    ? { captcha: captcha.gate, captchaSiteKey: captcha.siteKey }
+    : {}),
   registrationStore: createD1AccountRegistrationStore(db),
   standardPassword: createCloudflareStandardPasswordService(
     config.deployment,

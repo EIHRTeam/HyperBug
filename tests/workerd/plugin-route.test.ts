@@ -10,7 +10,7 @@ import { createFakeAuthenticator } from '../fixtures/fake-authenticator.ts';
 // 05.2a audited scope (resumed 2026-10-01): the deployment-level plugin
 // registry and its management endpoints on workerd/D1. Plugin administration
 // is sensitive administration — recent authentication is enforced — and every
-// registry mutation appends its plugin.* audit event after the authoritative
+// registry mutation appends its plugin.* audit event atomically with the authoritative
 // write; denials append nothing and no setting value enters the trail.
 const wasmPath = 'apps/api-cloudflare/src/vendor/libsodium-sumo-0.8.4.wasm';
 const authOrigin = 'https://auth.poc.example';

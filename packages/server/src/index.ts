@@ -212,7 +212,7 @@ import {
   type AuditAppend,
   type SensitiveAdmissionDependencies,
 } from './sensitive-admission.ts';
-import { appendRequiredAuditEvent } from './audit-emit.ts';
+import { appendRequiredAuditEvent, withAtomicAudit } from './audit-emit.ts';
 import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 import { registerAccount } from './account-registration.ts';
 import { loginAccount } from './account-login.ts';
@@ -385,7 +385,7 @@ export interface AppOptions {
   pluginEventOutbox?: PluginEventOutboxStore | null;
   /** Principal/project directory and staff account administration. */
   accountAdministration?: AccountAdministrationStore | null;
-  /** Append-only audit sink for the audited account/role mutations. */
+  /** Append-only sink for standalone session, linking and recovery events. */
   auditAppend?: AuditAppend | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
   bootstrapState?: (() => Promise<boolean>) | null;
@@ -706,30 +706,26 @@ export function createApp({
         administration.loadPrincipal(targetId),
       );
       if (!facts) throw new RequestFailure('NOT_FOUND');
-      const applied = await withDeadline(request.signal, 1000, () =>
+      const audit = auditEvent({
+        id: crypto.randomUUID(),
+        projectId: null,
+        actorId: principal.principalId,
+        systemActor: null,
+        action: suspend ? 'principal.suspended' : 'principal.activated',
+        targetId,
+        result: 'success',
+        requestId: boundaryFor(request).requestId,
+        createdAt: Date.now(),
+        metadata: { v: 1 },
+      });
+      const applied = await withAtomicAudit(request.signal, 1000, () =>
         suspend
-          ? administration.suspendPrincipal(targetId)
-          : administration.activatePrincipal(targetId),
+          ? administration.suspendPrincipal(targetId, audit)
+          : administration.activatePrincipal(targetId, audit),
       );
       // The store refuses the last instance administrator atomically, so two
       // concurrent suspensions cannot both strand the deployment.
       if (!applied) throw new RequestFailure('FORBIDDEN');
-      await appendRequiredAuditEvent({
-        append: auditAppend,
-        event: auditEvent({
-          id: crypto.randomUUID(),
-          projectId: null,
-          actorId: principal.principalId,
-          systemActor: null,
-          action: suspend ? 'principal.suspended' : 'principal.activated',
-          targetId,
-          result: 'success',
-          requestId: boundaryFor(request).requestId,
-          createdAt: Date.now(),
-          metadata: { v: 1 },
-        }),
-        signal: request.signal,
-      });
       return {
         principalId: targetId,
         status: suspend ? 'suspended' : 'active',
@@ -1412,30 +1408,29 @@ export function createApp({
           // staff principal can hold a project role.
           if (target.kind !== 'staff' || target.status !== 'active')
             throw new RequestFailure('FORBIDDEN');
-          await withDeadline(request.signal, 1000, () =>
-            roleStore.grant({
-              projectId,
-              principalId,
-              role: body.role,
-              nowMs: Date.now(),
-            }),
-          );
-          await appendRequiredAuditEvent({
-            append: auditAppend,
-            event: auditEvent({
-              id: crypto.randomUUID(),
-              projectId,
-              actorId: principal.principalId,
-              systemActor: null,
-              action: 'role.granted',
-              targetId: principalId,
-              result: 'success',
-              requestId: boundaryFor(request).requestId,
-              createdAt: Date.now(),
-              metadata: { v: 1, role: body.role },
-            }),
-            signal: request.signal,
+          const audit = auditEvent({
+            id: crypto.randomUUID(),
+            projectId,
+            actorId: principal.principalId,
+            systemActor: null,
+            action: 'role.granted',
+            targetId: principalId,
+            result: 'success',
+            requestId: boundaryFor(request).requestId,
+            createdAt: Date.now(),
+            metadata: { v: 1, role: body.role },
           });
+          await withAtomicAudit(request.signal, 1000, () =>
+            roleStore.grant(
+              {
+                projectId,
+                principalId,
+                role: body.role,
+                nowMs: Date.now(),
+              },
+              audit,
+            ),
+          );
         } catch (error) {
           if (error instanceof RequestFailure) throw error;
           throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
@@ -1478,32 +1473,28 @@ export function createApp({
           signal: request.signal,
           credential: credentialFactsOf(principal),
         });
+        const audit = auditEvent({
+          id: crypto.randomUUID(),
+          projectId,
+          actorId: principal.principalId,
+          systemActor: null,
+          action: 'role.revoked',
+          targetId: principalId,
+          result: 'success',
+          requestId: boundaryFor(request).requestId,
+          createdAt: Date.now(),
+          metadata: { v: 1 },
+        });
         let removed: boolean;
         try {
-          removed = await withDeadline(request.signal, 1000, () =>
-            roleStore.revoke(projectId, principalId),
+          removed = await withAtomicAudit(request.signal, 1000, () =>
+            roleStore.revoke(projectId, principalId, audit),
           );
         } catch (error) {
           if (error instanceof RequestFailure) throw error;
           throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
         }
         if (!removed) throw new RequestFailure('NOT_FOUND');
-        await appendRequiredAuditEvent({
-          append: auditAppend,
-          event: auditEvent({
-            id: crypto.randomUUID(),
-            projectId,
-            actorId: principal.principalId,
-            systemActor: null,
-            action: 'role.revoked',
-            targetId: principalId,
-            result: 'success',
-            requestId: boundaryFor(request).requestId,
-            createdAt: Date.now(),
-            metadata: { v: 1 },
-          }),
-          signal: request.signal,
-        });
         set.status = 204;
         return null;
       },
@@ -3238,6 +3229,7 @@ export function createApp({
           sessionStore: sessionStore ?? null,
           auditAppend,
           requestId: boundaryFor(request).requestId,
+          recentAuthMaxAgeMs: authorizationPolicy.recentAuthMaxAgeMs,
           nowMs: Date.now(),
         }),
       {
@@ -3305,7 +3297,7 @@ export function createApp({
       async ({ request, body, sensitiveAdmission, set }) => {
         const cookie = await passkeyLoginVerify({
           request,
-          body: body as { response: never },
+          body: body as { response: never; captchaToken?: string },
           admission: sensitiveAdmission,
           relyingParty: passkey,
           nowMs: Date.now(),
@@ -3315,7 +3307,15 @@ export function createApp({
         return { authenticated: true as const };
       },
       {
-        body: t.Object({ response: t.Any() }, { additionalProperties: false }),
+        body: t.Object(
+          {
+            response: t.Any(),
+            captchaToken: t.Optional(
+              t.String({ minLength: 1, maxLength: 4096 }),
+            ),
+          },
+          { additionalProperties: false },
+        ),
         response: t.Unsafe<AccountSession>(AccountSessionSchema),
       },
     )

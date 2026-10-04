@@ -1,3 +1,4 @@
+import { postgresAuditedMutation } from './audit-write.ts';
 import type { Pool } from 'pg';
 import { assertId } from '@hyperbug/domain';
 import type {
@@ -80,38 +81,31 @@ export function createPostgresAccountAdministration(
         throw new Error('Invalid instance role record');
       return { principalId, role };
     },
-    async suspendPrincipal(principalId) {
+    async suspendPrincipal(principalId, audit) {
       assertId(principalId);
-      const db = await pool.connect();
-      try {
-        await db.query('BEGIN');
-        // Serialize suspensions before the UPDATE takes its READ COMMITTED
-        // snapshot; a COUNT subquery alone would allow cross-row write skew.
+      return postgresAuditedMutation(pool, audit, async (db) => {
+        // Take the serialization lock before the UPDATE's READ COMMITTED snapshot.
         await db.query('SELECT pg_advisory_xact_lock(1212371531, 1)');
         const result = await db.query(
-          "UPDATE principals SET status = 'suspended' WHERE id = $1 AND status IN ('active', 'suspended') AND (status = 'suspended' OR NOT EXISTS (SELECT 1 FROM instance_roles r WHERE r.principal_id = principals.id) OR (SELECT count(*) FROM instance_roles r JOIN principals p ON p.id = r.principal_id WHERE p.kind = 'staff' AND p.status = 'active') > 1)",
+          "UPDATE principals SET status = 'suspended' WHERE id = $1 AND status = 'active' AND (NOT EXISTS (SELECT 1 FROM instance_roles r WHERE r.principal_id = principals.id) OR (SELECT count(*) FROM instance_roles r JOIN principals p ON p.id = r.principal_id WHERE p.kind = 'staff' AND p.status = 'active') > 1)",
           [principalId],
         );
-        if (result.rowCount !== null && result.rowCount > 1)
+        if (result.rowCount !== 0 && result.rowCount !== 1)
           throw new Error('Invalid principal suspension');
-        await db.query('COMMIT');
-        return result.rowCount === 1;
-      } catch (error) {
-        await db.query('ROLLBACK');
-        throw error;
-      } finally {
-        db.release();
-      }
+        return { value: result.rowCount === 1, changed: result.rowCount === 1 };
+      });
     },
-    async activatePrincipal(principalId) {
+    async activatePrincipal(principalId, audit) {
       assertId(principalId);
-      const result = await pool.query(
-        "UPDATE principals SET status = 'active' WHERE id = $1 AND status IN ('active', 'suspended')",
-        [principalId],
-      );
-      if (result.rowCount !== null && result.rowCount > 1)
-        throw new Error('Invalid principal activation');
-      return result.rowCount === 1;
+      return postgresAuditedMutation(pool, audit, async (db) => {
+        const result = await db.query(
+          "UPDATE principals SET status = 'active' WHERE id = $1 AND status = 'suspended'",
+          [principalId],
+        );
+        if (result.rowCount !== 0 && result.rowCount !== 1)
+          throw new Error('Invalid principal activation');
+        return { value: result.rowCount === 1, changed: result.rowCount === 1 };
+      });
     },
   };
 }

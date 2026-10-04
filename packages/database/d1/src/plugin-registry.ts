@@ -1,3 +1,5 @@
+import { d1AuditedMutation } from './audit-write.ts';
+import type { PreparedAuditEvent } from '@hyperbug/application';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   validatePluginRegistryRecord,
@@ -49,22 +51,25 @@ export function createD1PluginRegistryStore(
   db: D1Database,
 ): PluginRegistryStore {
   return {
-    async insert(record) {
+    async insert(record, audit) {
       validatePluginRegistryRecord(record);
-      const row = await db
-        .prepare(
-          'INSERT INTO plugin_registry (id, version, state, manifest, registered_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING RETURNING id',
-        )
-        .bind(
-          record.id,
-          record.version,
-          record.state,
-          JSON.stringify(record.manifest),
-          record.registeredAtMs,
-          record.updatedAtMs,
-        )
-        .first<{ id: string }>();
-      return row === null ? 'conflict' : 'inserted';
+      const result = await d1AuditedMutation<{ id: string }>(
+        db,
+        db
+          .prepare(
+            'INSERT INTO plugin_registry (id, version, state, manifest, registered_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING RETURNING id',
+          )
+          .bind(
+            record.id,
+            record.version,
+            record.state,
+            JSON.stringify(record.manifest),
+            record.registeredAtMs,
+            record.updatedAtMs,
+          ),
+        audit,
+      );
+      return result.meta.changes === 0 ? 'conflict' : 'inserted';
     },
     async load(id) {
       const row = await db
@@ -84,6 +89,7 @@ export function createD1PluginRegistryStore(
         readonly expectedState: PluginLifecycleState;
         readonly expectedVersion?: string;
       },
+      audit: PreparedAuditEvent,
     ) {
       validatePluginRegistryRecord({
         ...input,
@@ -112,17 +118,29 @@ export function createD1PluginRegistryStore(
             input.id,
             input.expectedState,
           ];
-      const row = await db
-        .prepare(sql)
-        .bind(...bindings)
-        .first<RegistryRow>();
-      return row === null ? null : toRecord(row);
+      const result = await d1AuditedMutation<RegistryRow>(
+        db,
+        db.prepare(sql).bind(...bindings),
+        audit,
+      );
+      const row = result.results[0];
+      return row === undefined ? null : toRecord(row);
     },
-    async remove(id) {
-      const result = await db
-        .prepare('DELETE FROM plugin_registry WHERE id = ?')
-        .bind(id)
-        .run();
+    async remove(id, audit, deleteSettings = false) {
+      const result = await d1AuditedMutation(
+        db,
+        db.prepare('DELETE FROM plugin_registry WHERE id = ?').bind(id),
+        audit,
+        deleteSettings
+          ? [
+              db
+                .prepare(
+                  'DELETE FROM plugin_settings WHERE plugin_id = ? AND EXISTS (SELECT 1 FROM audit_events WHERE id = ?)',
+                )
+                .bind(id, audit.id),
+            ]
+          : [],
+      );
       if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes > 1)
         throw new Error('Invalid plugin registry deletion');
       return result.meta.changes === 1;

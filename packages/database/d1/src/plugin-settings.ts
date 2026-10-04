@@ -1,3 +1,4 @@
+import { d1AuditedMutation } from './audit-write.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   validatePluginSettingRecord,
@@ -50,24 +51,34 @@ export function createD1PluginSettingsStore(
   db: D1Database,
 ): PluginSettingsStore {
   return {
-    async upsert(record) {
-      validatePluginSettingRecord(record);
-      await db
-        .prepare(
-          'INSERT INTO plugin_settings (id, plugin_id, setting_key, kind, public_value, secret_record, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (plugin_id, setting_key) DO UPDATE SET kind = excluded.kind, public_value = excluded.public_value, secret_record = excluded.secret_record, updated_at = excluded.updated_at',
-        )
-        .bind(
-          record.id,
-          record.pluginId,
-          record.key,
-          record.kind,
-          record.publicValue ?? null,
-          record.secretRecord === undefined
-            ? null
-            : JSON.stringify(record.secretRecord),
-          record.updatedAtMs,
-        )
-        .run();
+    async configure(records, audit) {
+      if (records.length > 64)
+        throw new Error('Plugin configuration exceeds the bound');
+      if (records.length === 0) return;
+      for (const record of records) {
+        validatePluginSettingRecord(record);
+        if (record.pluginId !== audit.targetId)
+          throw new Error('Invalid configuration namespace');
+      }
+      await d1AuditedMutation(
+        db,
+        db
+          .prepare(`INSERT INTO plugin_settings (id, plugin_id, setting_key, kind, public_value, secret_record, updated_at)
+        SELECT json_extract(value, '$.id'), json_extract(value, '$.pluginId'), json_extract(value, '$.key'), json_extract(value, '$.kind'), json_extract(value, '$.publicValue'), json_extract(value, '$.secret'), json_extract(value, '$.updatedAtMs') FROM json_each(?) WHERE 1
+        ON CONFLICT (plugin_id, setting_key) DO UPDATE SET id = excluded.id, kind = excluded.kind, public_value = excluded.public_value, secret_record = excluded.secret_record, updated_at = excluded.updated_at`)
+          .bind(
+            JSON.stringify(
+              records.map((record) => ({
+                ...record,
+                secret:
+                  record.secretRecord === undefined
+                    ? null
+                    : JSON.stringify(record.secretRecord),
+              })),
+            ),
+          ),
+        audit,
+      );
     },
     async list(pluginId) {
       const rows = await db
@@ -77,26 +88,6 @@ export function createD1PluginSettingsStore(
         .bind(pluginId)
         .all<SettingRow>();
       return rows.results.map(toRecord);
-    },
-    async remove(pluginId, key) {
-      const result = await db
-        .prepare(
-          'DELETE FROM plugin_settings WHERE plugin_id = ? AND setting_key = ?',
-        )
-        .bind(pluginId, key)
-        .run();
-      if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes > 1)
-        throw new Error('Invalid plugin setting deletion');
-      return result.meta.changes === 1;
-    },
-    async removeAll(pluginId) {
-      const result = await db
-        .prepare('DELETE FROM plugin_settings WHERE plugin_id = ?')
-        .bind(pluginId)
-        .run();
-      if (!Number.isSafeInteger(result.meta.changes))
-        throw new Error('Invalid plugin settings deletion');
-      return result.meta.changes;
     },
   };
 }

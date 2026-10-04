@@ -47,3 +47,7 @@ A conforming example plugin loads, participates in a bounded extension point, an
 ## Source coverage
 
 PRODUCT §§2.4, 25–28; ARCHITECTURE §§34–36; TECH-STACK §44; SECURITY §§117–123; PERFORMANCE §§47–50.
+
+### B4 remediation addendum (2026-10-05)
+
+The original post-commit audit limitation above is superseded for principal suspend/activate, project-role grant/revoke, bootstrap enrollment, recovery-code replacement and plugin registry/configuration mutations: mutation and prepared audit event now share a transaction, with both-store rollback and zero-change denial evidence. Recovery-code generation requires recent authentication, and passkey login forwards configured CAPTCHA before WebAuthn verification. Standalone session revocation/link/redeem events retain their original path; later-module audit remains suspended. See the [remediation record](../evidence/2026-10-05-review-remediation.md). No gate closes here.

@@ -72,3 +72,5 @@ Core 已提供基于 CSPRNG 的不透明凭证、绑定用途的 HMAC 摘要、A
 应分别检查前端和 API 的主机名。Cloudflare 可与支持该能力的 TLS 1.3 客户端协商混合 `X25519MLKEM768` 密钥交换。自托管部署需要配置 HTTPS 终止服务；当前 Node 监听器使用本地 HTTP。在声明部署的保护能力前，应检查实际协商的密钥交换组、证书验证、代理边界和 HSTS 设置。仅凭 TLS 密码套件名称无法判断密钥交换算法。
 
 本地 Node 检查已通过混合密钥协商、经典算法回退以及证书和协议拒绝用例，但这些结果不能验证实际 Cloudflare 或自托管部署。混合密钥交换保护机密性，并不代表整个应用链路已实现后量子身份认证。Cloudflare 面向源站的 ML-DSA 支持是独立能力，此处尚未配置或验证。详见[传输验证流程与证据](https://github.com/EIHRTeam/HyperBug/blob/main/docs/TRANSPORT-SECURITY.md)。
+
+生成或重新生成恢复码要求在 `ADMIN_RECENT_AUTH_SECONDS`（默认 300 秒）内完成身份验证。会话验证时间过旧时返回 `REAUTHENTICATION_REQUIRED`（403），现有恢复码仍有效。配置 CAPTCHA 后，通行密钥登录需要提供登录操作的 `captchaToken`。账户、角色及插件管理、初始管理员注册和恢复码替换与审计事件在同一数据库事务中提交；审计写入失败时全部回滚，并返回 `AUDIT_UNAVAILABLE`（503）。

@@ -486,3 +486,5 @@ export * from './attachments.ts';
 export * from './scanner-service-protocol.ts';
 export * from './scanner-service-stream.ts';
 export * from './scanner-service-client.ts';
+
+export type { PreparedAuditEvent } from './prepared-audit.ts';

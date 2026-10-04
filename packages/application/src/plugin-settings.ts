@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import { assertId } from '@hyperbug/domain';
 
 /**
@@ -28,13 +29,13 @@ export interface PluginSettingView {
 }
 
 export interface PluginSettingsStore {
-  /** Upsert one setting row within the plugin's namespace. */
-  upsert(record: PluginSettingRecord): Promise<void>;
+  /** Apply a bounded configuration and its required audit atomically. */
+  configure(
+    records: readonly PluginSettingRecord[],
+    audit: PreparedAuditEvent,
+  ): Promise<void>;
   /** All settings of one plugin; secrets carry only their envelope. */
   list(pluginId: string): Promise<readonly PluginSettingRecord[]>;
-  remove(pluginId: string, key: string): Promise<boolean>;
-  /** Remove every setting of the namespace; returns the removed count. */
-  removeAll(pluginId: string): Promise<number>;
 }
 
 export function validatePluginSettingRecord(record: PluginSettingRecord): void {

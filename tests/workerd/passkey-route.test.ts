@@ -25,7 +25,15 @@ const post = (
       'sec-fetch-site': 'same-origin',
       ...extra,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(
+      path === '/api/v1/accounts/register' || path === '/auth/login'
+        ? {
+            ...(body as object),
+            captchaToken:
+              path === '/auth/login' ? 'fixture-login' : 'fixture-register',
+          }
+        : body,
+    ),
   });
 
 beforeAll(async () => {
@@ -44,6 +52,7 @@ beforeAll(async () => {
       },
       bindings: {
         HYPERBUG_ENV: 'local',
+        HYPERBUG_TEST_PASSKEY_CAPTCHA: '1',
         ALLOWED_ORIGINS: authOrigin,
         HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
         HYPERBUG_KEY_RING: await cryptoFixture().source.read(),
@@ -128,8 +137,16 @@ it('registers a passkey and signs in discoverably on workerd/D1', async () => {
   const challenge = ((await loginOptions.json()) as { challenge: string })
     .challenge;
   const assertion = await authenticator.assertion(challenge, 1);
+  const missingCaptcha = await post('/auth/passkey/login', {
+    response: assertion,
+  });
+  expect(missingCaptcha.status).toBe(403);
+  expect(await missingCaptcha.json()).toMatchObject({
+    error: { code: 'CAPTCHA_DENIED' },
+  });
   const passkeyLogin = await post('/auth/passkey/login', {
     response: assertion,
+    captchaToken: 'fixture-login',
   });
   expect(passkeyLogin.status).toBe(200);
   expect(await passkeyLogin.json()).toEqual({ authenticated: true });
@@ -138,6 +155,7 @@ it('registers a passkey and signs in discoverably on workerd/D1', async () => {
 
   const replay = await post('/auth/passkey/login', {
     response: await authenticator.assertion(challenge, 2),
+    captchaToken: 'fixture-login',
   });
   expect(replay.status).toBe(403);
   expect(await replay.json()).toMatchObject({

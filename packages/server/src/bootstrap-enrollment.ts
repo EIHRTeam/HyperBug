@@ -1,7 +1,7 @@
 import type { StaffEnrollmentStore } from '@hyperbug/application';
 import type { BootstrapEnrollRequest } from '@hyperbug/contracts';
 import { auditEvent, type AccountPasswordService } from '@hyperbug/security';
-import { appendRequiredAuditEvent, auditRequestId } from './audit-emit.ts';
+import { withAtomicAudit, auditRequestId } from './audit-emit.ts';
 import { canonicalRegistrationHandle } from './account-registration.ts';
 import { requireAuthOrigin } from './account-session.ts';
 import { constantTimeEquals } from './oauth.ts';
@@ -51,8 +51,7 @@ export async function enrollInitialStaff(input: {
   readonly auditAppend: AuditAppend | null;
   readonly requestId?: string | null;
 }): Promise<{ enrolled: true; principalId: string; identityId: string }> {
-  const { request, body, admission, password, code, store, auditAppend } =
-    input;
+  const { request, body, admission, password, code, store } = input;
   requireAuthOrigin(request);
   if (!password || !code || !store)
     throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
@@ -87,34 +86,33 @@ export async function enrollInitialStaff(input: {
       throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
     const principalId = crypto.randomUUID();
     const identityId = crypto.randomUUID();
-    const outcome = await withDeadline(request.signal, 5000, () =>
-      store.enrollStaff({
-        principalId,
-        identityId,
-        handle,
-        passwordRecord,
-        nowMs,
-      }),
+    const audit = auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: null,
+      systemActor: 'core.identity',
+      action: 'account.enrolled',
+      targetId: principalId,
+      result: 'success',
+      requestId: auditRequestId(input.requestId),
+      createdAt: nowMs,
+      metadata: { v: 1 },
+    });
+    const outcome = await withAtomicAudit(request.signal, 5000, () =>
+      store.enrollStaff(
+        {
+          principalId,
+          identityId,
+          handle,
+          passwordRecord,
+          nowMs,
+        },
+        audit,
+      ),
     );
     if (outcome?.status !== 'enrolled')
       throw new RequestFailure('BOOTSTRAP_FORBIDDEN');
     // The operator-channel enrollment is the one audited account creation.
-    await appendRequiredAuditEvent({
-      append: auditAppend,
-      event: auditEvent({
-        id: crypto.randomUUID(),
-        projectId: null,
-        actorId: null,
-        systemActor: 'core.identity',
-        action: 'account.enrolled',
-        targetId: principalId,
-        result: 'success',
-        requestId: auditRequestId(input.requestId),
-        createdAt: nowMs,
-        metadata: { v: 1 },
-      }),
-      signal: request.signal,
-    });
     facts = { principalId, identityId };
   } catch (error) {
     if (error instanceof RequestFailure) throw error;

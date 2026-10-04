@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import { assertId, assertInstant } from '@hyperbug/domain';
 
 /**
@@ -35,9 +36,16 @@ export interface ProjectRoleStore {
    * Upsert the staff membership on the composite project+principal key.
    * 'granted' creates the row; 'replaced' overwrites an existing role.
    */
-  grant(input: ProjectRoleGrant): Promise<ProjectRoleGrantOutcome>;
+  grant(
+    input: ProjectRoleGrant,
+    audit: PreparedAuditEvent,
+  ): Promise<ProjectRoleGrantOutcome>;
   /** Remove the membership; false when the principal held no role. */
-  revoke(projectId: string, principalId: string): Promise<boolean>;
+  revoke(
+    projectId: string,
+    principalId: string,
+    audit: PreparedAuditEvent,
+  ): Promise<boolean>;
   /** The current role row; null when the principal is not a member. */
   loadRole(
     projectId: string,

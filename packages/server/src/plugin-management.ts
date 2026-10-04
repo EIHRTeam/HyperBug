@@ -32,7 +32,7 @@ import {
   type SecretContext,
 } from '@hyperbug/security';
 import { authenticateBearer, type BearerPrincipal } from './bearer-auth.ts';
-import { appendRequiredAuditEvent, auditRequestId } from './audit-emit.ts';
+import { withAtomicAudit, auditRequestId } from './audit-emit.ts';
 import type { AuditAppend } from './sensitive-admission.ts';
 import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
 import { withDeadline } from './bounds.ts';
@@ -153,33 +153,32 @@ export async function registerPlugin(
   );
   if (existing) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
   const nowMs = Date.now();
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    registry(context).insert({
-      id: decision.manifest.id,
-      version: decision.manifest.version,
-      state: 'registered',
-      manifest: decision.manifest,
-      registeredAtMs: nowMs,
-      updatedAtMs: nowMs,
-    }),
+  const audit = auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: principal.principalId,
+    systemActor: null,
+    action: 'plugin.registered',
+    targetId: decision.manifest.id,
+    result: 'success',
+    requestId: auditRequestId(requestId),
+    createdAt: nowMs,
+    metadata: { v: 1, version: decision.manifest.version },
+  });
+  const outcome = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
+    registry(context).insert(
+      {
+        id: decision.manifest.id,
+        version: decision.manifest.version,
+        state: 'registered',
+        manifest: decision.manifest,
+        registeredAtMs: nowMs,
+        updatedAtMs: nowMs,
+      },
+      audit,
+    ),
   );
   if (outcome === 'conflict') throw new RequestFailure('PLUGIN_STATE_CONFLICT');
-  await appendRequiredAuditEvent({
-    append: context.auditAppend,
-    event: auditEvent({
-      id: crypto.randomUUID(),
-      projectId: null,
-      actorId: principal.principalId,
-      systemActor: null,
-      action: 'plugin.registered',
-      targetId: decision.manifest.id,
-      result: 'success',
-      requestId: auditRequestId(requestId),
-      createdAt: nowMs,
-      metadata: { v: 1, version: decision.manifest.version },
-    }),
-    signal: request.signal,
-  });
   return pluginRegistryView({
     id: decision.manifest.id,
     version: decision.manifest.version,
@@ -240,33 +239,32 @@ export async function enablePlugin(
     configuration,
   });
   if (!decision.ok) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
-  const updated = await withDeadline(request.signal, storeTimeoutMs, () =>
-    registry(context).transition({
-      id,
-      state: 'enabled',
-      version: record.version,
-      manifest: record.manifest,
-      nowMs: Date.now(),
-      expectedState: record.state,
-    }),
+  const audit = auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: principal.principalId,
+    systemActor: null,
+    action: 'plugin.enabled',
+    targetId: id,
+    result: 'success',
+    requestId: auditRequestId(requestId),
+    createdAt: Date.now(),
+    metadata: { v: 1 },
+  });
+  const updated = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
+    registry(context).transition(
+      {
+        id,
+        state: 'enabled',
+        version: record.version,
+        manifest: record.manifest,
+        nowMs: Date.now(),
+        expectedState: record.state,
+      },
+      audit,
+    ),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
-  await appendRequiredAuditEvent({
-    append: context.auditAppend,
-    event: auditEvent({
-      id: crypto.randomUUID(),
-      projectId: null,
-      actorId: principal.principalId,
-      systemActor: null,
-      action: 'plugin.enabled',
-      targetId: id,
-      result: 'success',
-      requestId: auditRequestId(requestId),
-      createdAt: Date.now(),
-      metadata: { v: 1 },
-    }),
-    signal: request.signal,
-  });
   return pluginRegistryView(updated);
 }
 
@@ -281,33 +279,32 @@ export async function disablePlugin(
   const record = await loadRecord(context, request, id);
   if (record.state !== 'enabled')
     throw new RequestFailure('PLUGIN_STATE_CONFLICT');
-  const updated = await withDeadline(request.signal, storeTimeoutMs, () =>
-    registry(context).transition({
-      id,
-      state: 'disabled',
-      version: record.version,
-      manifest: record.manifest,
-      nowMs: Date.now(),
-      expectedState: 'enabled',
-    }),
+  const audit = auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: principal.principalId,
+    systemActor: null,
+    action: 'plugin.disabled',
+    targetId: id,
+    result: 'success',
+    requestId: auditRequestId(requestId),
+    createdAt: Date.now(),
+    metadata: { v: 1 },
+  });
+  const updated = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
+    registry(context).transition(
+      {
+        id,
+        state: 'disabled',
+        version: record.version,
+        manifest: record.manifest,
+        nowMs: Date.now(),
+        expectedState: 'enabled',
+      },
+      audit,
+    ),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
-  await appendRequiredAuditEvent({
-    append: context.auditAppend,
-    event: auditEvent({
-      id: crypto.randomUUID(),
-      projectId: null,
-      actorId: principal.principalId,
-      systemActor: null,
-      action: 'plugin.disabled',
-      targetId: id,
-      result: 'success',
-      requestId: auditRequestId(requestId),
-      createdAt: Date.now(),
-      metadata: { v: 1 },
-    }),
-    signal: request.signal,
-  });
   return pluginRegistryView(updated);
 }
 
@@ -330,34 +327,33 @@ export async function upgradePlugin(
     currentVersion: record.version,
   });
   if (!decision.ok) throw new RequestFailure('PLUGIN_INVALID');
-  const updated = await withDeadline(request.signal, storeTimeoutMs, () =>
-    registry(context).transition({
-      id,
-      state: record.state,
-      version: decision.manifest.version,
-      manifest: decision.manifest,
-      nowMs: Date.now(),
-      expectedState: record.state,
-      expectedVersion: record.version,
-    }),
+  const audit = auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: principal.principalId,
+    systemActor: null,
+    action: 'plugin.upgraded',
+    targetId: id,
+    result: 'success',
+    requestId: auditRequestId(requestId),
+    createdAt: Date.now(),
+    metadata: { v: 1, version: decision.manifest.version },
+  });
+  const updated = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
+    registry(context).transition(
+      {
+        id,
+        state: record.state,
+        version: decision.manifest.version,
+        manifest: decision.manifest,
+        nowMs: Date.now(),
+        expectedState: record.state,
+        expectedVersion: record.version,
+      },
+      audit,
+    ),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
-  await appendRequiredAuditEvent({
-    append: context.auditAppend,
-    event: auditEvent({
-      id: crypto.randomUUID(),
-      projectId: null,
-      actorId: principal.principalId,
-      systemActor: null,
-      action: 'plugin.upgraded',
-      targetId: id,
-      result: 'success',
-      requestId: auditRequestId(requestId),
-      createdAt: Date.now(),
-      metadata: { v: 1, version: decision.manifest.version },
-    }),
-    signal: request.signal,
-  });
   return pluginRegistryView(updated);
 }
 
@@ -376,34 +372,26 @@ export async function uninstallPlugin(
   // interfaces (05.2b); today the registry entry itself is the plugin's data.
   if (policyInput !== 'retain' && policyInput !== 'delete')
     throw new RequestFailure('PLUGIN_INVALID');
-  const removed = await withDeadline(request.signal, storeTimeoutMs, () =>
-    registry(context).remove(id),
+  const audit = auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: principal.principalId,
+    systemActor: null,
+    action: 'plugin.uninstalled',
+    targetId: id,
+    result: 'success',
+    requestId: auditRequestId(requestId),
+    createdAt: Date.now(),
+    metadata: {
+      v: 1,
+      version: record.version,
+      policy: policyInput,
+    },
+  });
+  const removed = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
+    registry(context).remove(id, audit, policyInput === 'delete'),
   );
   if (!removed) throw new RequestFailure('NOT_FOUND');
-  await appendRequiredAuditEvent({
-    append: context.auditAppend,
-    event: auditEvent({
-      id: crypto.randomUUID(),
-      projectId: null,
-      actorId: principal.principalId,
-      systemActor: null,
-      action: 'plugin.uninstalled',
-      targetId: id,
-      result: 'success',
-      requestId: auditRequestId(requestId),
-      createdAt: Date.now(),
-      metadata: {
-        v: 1,
-        version: record.version,
-        policy: policyInput,
-      },
-    }),
-    signal: request.signal,
-  });
-  if (policyInput === 'delete' && context.settings)
-    await withDeadline(request.signal, storeTimeoutMs, () =>
-      settings(context).removeAll(id),
-    );
 }
 
 /**
@@ -491,50 +479,45 @@ export async function configurePlugin(
       record: { secretRecord: envelope },
     });
   }
-  await Promise.all(
-    writes.map((write) =>
-      withDeadline(request.signal, storeTimeoutMs, () =>
-        settings(context).upsert({
-          id: write.rowId,
-          pluginId: record.id,
-          key: write.key,
-          kind: write.kind,
-          ...(write.kind === 'public'
-            ? {
-                publicValue: (write.record as { publicValue: string })
-                  .publicValue,
-              }
-            : {
-                secretRecord: (write.record as { secretRecord: unknown })
-                  .secretRecord,
-              }),
-          updatedAtMs: nowMs,
-        }),
-      ),
+  const audit = auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: principal.principalId,
+    systemActor: null,
+    action: 'plugin.configured',
+    targetId: id,
+    result: 'success',
+    requestId: auditRequestId(requestId),
+    createdAt: nowMs,
+    metadata: {
+      v: 1,
+      publicCount: writes.filter((write) => write.kind === 'public').length,
+      secretCount: writes.filter((write) => write.kind === 'secret').length,
+    },
+  });
+  await withAtomicAudit(request.signal, storeTimeoutMs, () =>
+    settings(context).configure(
+      writes.map((write) => ({
+        id: write.rowId,
+        pluginId: record.id,
+        key: write.key,
+        kind: write.kind,
+        ...(write.kind === 'public'
+          ? {
+              publicValue: (write.record as { publicValue: string })
+                .publicValue,
+            }
+          : {
+              secretRecord: (write.record as { secretRecord: unknown })
+                .secretRecord,
+            }),
+        updatedAtMs: nowMs,
+      })),
+      audit,
     ),
   );
   // Configuration audit carries counts only — no setting key or value ever
   // enters the audit trail (SECURITY §110–116 redaction baseline).
-  await appendRequiredAuditEvent({
-    append: context.auditAppend,
-    event: auditEvent({
-      id: crypto.randomUUID(),
-      projectId: null,
-      actorId: principal.principalId,
-      systemActor: null,
-      action: 'plugin.configured',
-      targetId: id,
-      result: 'success',
-      requestId: auditRequestId(requestId),
-      createdAt: nowMs,
-      metadata: {
-        v: 1,
-        publicCount: writes.filter((write) => write.kind === 'public').length,
-        secretCount: writes.filter((write) => write.kind === 'secret').length,
-      },
-    }),
-    signal: request.signal,
-  });
   return pluginRegistryView(record);
 }
 

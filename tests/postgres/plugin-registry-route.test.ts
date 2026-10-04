@@ -20,7 +20,7 @@ import { createFakeAuthenticator } from '../fixtures/fake-authenticator.ts';
 // 05.2a audited scope (resumed 2026-10-01) on the Node/PostgreSQL profile:
 // the plugin registry and its management endpoints run the identical shared
 // route surface against the PostgreSQL adapter, with recent-authentication
-// enforcement; every registry mutation appends its plugin.* audit event after
+// enforcement; every registry mutation appends its plugin.* audit event atomically with
 // the authoritative write, denials append nothing, and no setting value
 // enters the trail.
 const databaseName = 'hyperbug_plugin_route_test';

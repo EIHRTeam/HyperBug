@@ -59,3 +59,7 @@ See [ADR 0007](../../decisions/0007-cloudflare-free-minimum-tier.md) and [FREE-T
 ## Post-completion review remediation (2026-10-05)
 
 B3 corrects the accepted 04.2a/b/e and 04.3a/c behavior without reopening unrelated roadmap scope: session/code/token ceremony facts are immutable, recent authentication consumes the parsed 300-second default, and instance roles are independent of project administration. Fresh/populated migrations, old-token step-up denial, project-creator instance denial and concurrent last-administrator guards are covered on both stores. See the [remediation record](../evidence/2026-10-05-review-remediation.md). B4's atomic audit/recovery work remains separate. No gate or previously unchecked item closes here.
+
+### B4 remediation addendum (2026-10-05)
+
+The original post-commit audit limitation above is superseded for principal suspend/activate, project-role grant/revoke, bootstrap enrollment, recovery-code replacement and plugin registry/configuration mutations: mutation and prepared audit event now share a transaction, with both-store rollback and zero-change denial evidence. Recovery-code generation requires recent authentication, and passkey login forwards configured CAPTCHA before WebAuthn verification. Standalone session revocation/link/redeem events retain their original path; later-module audit remains suspended. See the [remediation record](../evidence/2026-10-05-review-remediation.md). No gate closes here.

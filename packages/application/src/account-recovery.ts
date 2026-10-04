@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import { assertId, assertInstant } from '@hyperbug/domain';
 
 /** A stored recovery code: its id and keyed digest, never the plaintext. */
@@ -11,11 +12,14 @@ export interface AccountRecoveryStore {
    * Replace every stored code for the identity under a fresh generation;
    * the previous generation is deleted, so regeneration invalidates it.
    */
-  replaceCodes(input: {
-    identityId: string;
-    digests: readonly string[];
-    nowMs: number;
-  }): Promise<void>;
+  replaceCodes(
+    input: {
+      identityId: string;
+      digests: readonly string[];
+      nowMs: number;
+    },
+    audit: PreparedAuditEvent,
+  ): Promise<void>;
   /** Unused digests of the identity's latest generation. */
   listActive(identityId: string): Promise<readonly RecoveryCodeDigestRecord[]>;
   /** Consume exactly one unused code atomically; false on race or loss. */

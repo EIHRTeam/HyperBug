@@ -13,7 +13,11 @@ import {
   type KeyProvider,
   type SecretContext,
 } from '@hyperbug/security';
-import { appendRequiredAuditEvent, auditRequestId } from './audit-emit.ts';
+import {
+  appendRequiredAuditEvent,
+  withAtomicAudit,
+  auditRequestId,
+} from './audit-emit.ts';
 import { canonicalRegistrationHandle } from './account-registration.ts';
 import { currentAccountSession, requireAuthOrigin } from './account-session.ts';
 import type {
@@ -58,6 +62,7 @@ export async function generateAccountRecoveryCodes(input: {
   readonly auditAppend: AuditAppend | null;
   readonly requestId?: string | null;
   readonly nowMs: number;
+  readonly recentAuthMaxAgeMs?: number;
 }): Promise<{ codes: string[] }> {
   const { request, keyProvider, recoveryStore, sessionStore, nowMs } = input;
   requireAuthOrigin(request);
@@ -70,6 +75,13 @@ export async function generateAccountRecoveryCodes(input: {
     nowMs,
   });
   if (!session) throw new RequestFailure('LOGIN_DENIED');
+  if (
+    !Number.isSafeInteger(session.authenticatedAtMs) ||
+    session.authenticatedAtMs > nowMs ||
+    nowMs - session.authenticatedAtMs > (input.recentAuthMaxAgeMs ?? 300_000) ||
+    session.authMethod === 'recovery'
+  )
+    throw new RequestFailure('REAUTHENTICATION_REQUIRED');
   const context = recoveryContext(session.identityId);
   const codes = Array.from({ length: codeCount }, () =>
     generateOpaqueCredential(),
@@ -79,29 +91,28 @@ export async function generateAccountRecoveryCodes(input: {
       codes.map((code) => digestCredential(keyProvider, code, context)),
     );
     if (request.signal.aborted) throw new Error('Aborted');
-    await withDeadline(request.signal, 5000, () =>
-      recoveryStore.replaceCodes({
-        identityId: session.identityId,
-        digests: digests.map((digest) => JSON.stringify(digest)),
-        nowMs,
-      }),
-    );
-    await appendRequiredAuditEvent({
-      append: input.auditAppend,
-      event: auditEvent({
-        id: crypto.randomUUID(),
-        projectId: null,
-        actorId: session.principalId,
-        systemActor: null,
-        action: 'recovery.generated',
-        targetId: session.principalId,
-        result: 'success',
-        requestId: auditRequestId(input.requestId),
-        createdAt: nowMs,
-        metadata: { v: 1 },
-      }),
-      signal: request.signal,
+    const audit = auditEvent({
+      id: crypto.randomUUID(),
+      projectId: null,
+      actorId: session.principalId,
+      systemActor: null,
+      action: 'recovery.generated',
+      targetId: session.principalId,
+      result: 'success',
+      requestId: auditRequestId(input.requestId),
+      createdAt: nowMs,
+      metadata: { v: 1 },
     });
+    await withAtomicAudit(request.signal, 5000, () =>
+      recoveryStore.replaceCodes(
+        {
+          identityId: session.identityId,
+          digests: digests.map((digest) => JSON.stringify(digest)),
+          nowMs,
+        },
+        audit,
+      ),
+    );
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
     throw new RequestFailure('RECOVERY_UNAVAILABLE');

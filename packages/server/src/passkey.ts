@@ -258,7 +258,10 @@ export async function passkeyLoginOptions(input: {
 /** Verify an assertion and issue a first-party session for the principal. */
 export async function passkeyLoginVerify(input: {
   readonly request: Request;
-  readonly body: { response: AuthenticationResponseJSON };
+  readonly body: {
+    response: AuthenticationResponseJSON;
+    captchaToken?: string;
+  };
   readonly admission: Pick<BoundSensitiveActionAdmission, 'require'>;
   readonly relyingParty: PasskeyRelyingParty | null;
   readonly nowMs: number;
@@ -291,6 +294,9 @@ export async function passkeyLoginVerify(input: {
     signal: request.signal,
     timeoutMs: 1000,
     captchaAction: 'login',
+    ...(body.captchaToken === undefined
+      ? {}
+      : { captchaToken: body.captchaToken }),
     ...(input.requestId === undefined || input.requestId === null
       ? {}
       : { requestId: input.requestId }),

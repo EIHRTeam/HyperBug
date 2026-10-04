@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import { assertInstant } from '@hyperbug/domain';
 import type {
   PluginLifecycleState,
@@ -48,7 +49,10 @@ export interface PluginRegistryTransition {
  */
 export interface PluginRegistryStore {
   /** Insert a new row; 'conflict' when the id already exists. */
-  insert(record: PluginRegistryRecord): Promise<'inserted' | 'conflict'>;
+  insert(
+    record: PluginRegistryRecord,
+    audit: PreparedAuditEvent,
+  ): Promise<'inserted' | 'conflict'>;
   load(id: string): Promise<PluginRegistryRecord | null>;
   /** Deterministic, bounded listing ordered by id. */
   list(): Promise<readonly PluginRegistryRecord[]>;
@@ -62,9 +66,14 @@ export interface PluginRegistryStore {
       readonly expectedState: PluginLifecycleState;
       readonly expectedVersion?: string;
     },
+    audit: PreparedAuditEvent,
   ): Promise<PluginRegistryRecord | null>;
   /** Remove the entry; false when the id was not registered. */
-  remove(id: string): Promise<boolean>;
+  remove(
+    id: string,
+    audit: PreparedAuditEvent,
+    deleteSettings?: boolean,
+  ): Promise<boolean>;
 }
 
 export function validatePluginRegistryRecord(

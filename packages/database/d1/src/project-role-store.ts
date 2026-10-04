@@ -1,3 +1,4 @@
+import { d1AuditedMutation } from './audit-write.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 import { assertId } from '@hyperbug/domain';
 import {
@@ -21,27 +22,34 @@ function validRole(value: unknown): ProjectStaffRole {
  */
 export function createD1ProjectRoleStore(db: D1Database): ProjectRoleStore {
   return {
-    async grant(input) {
+    async grant(input, audit) {
       validateProjectRoleGrant(input);
-      const row = await db
-        .prepare(
-          "INSERT INTO project_roles (project_id, principal_id, principal_kind, role, granted_at, revision) VALUES (?, ?, 'staff', ?, ?, 1) ON CONFLICT (project_id, principal_id) DO UPDATE SET role = excluded.role, granted_at = excluded.granted_at, revision = project_roles.revision + 1 RETURNING revision",
-        )
-        .bind(input.projectId, input.principalId, input.role, input.nowMs)
-        .first<{ revision: number }>();
+      const result = await d1AuditedMutation<{ revision: number }>(
+        db,
+        db
+          .prepare(
+            "INSERT INTO project_roles (project_id, principal_id, principal_kind, role, granted_at, revision) VALUES (?, ?, 'staff', ?, ?, 1) ON CONFLICT (project_id, principal_id) DO UPDATE SET role = excluded.role, granted_at = excluded.granted_at, revision = project_roles.revision + 1 RETURNING revision",
+          )
+          .bind(input.projectId, input.principalId, input.role, input.nowMs),
+        audit,
+      );
+      const row = result.results[0];
       if (!Number.isSafeInteger(row?.revision) || row!.revision < 1)
         throw new Error('Invalid project role grant');
       return row!.revision === 1 ? 'granted' : 'replaced';
     },
-    async revoke(projectId, principalId) {
+    async revoke(projectId, principalId, audit) {
       assertId(projectId);
       assertId(principalId);
-      const result = await db
-        .prepare(
-          'DELETE FROM project_roles WHERE project_id = ? AND principal_id = ?',
-        )
-        .bind(projectId, principalId)
-        .run();
+      const result = await d1AuditedMutation(
+        db,
+        db
+          .prepare(
+            'DELETE FROM project_roles WHERE project_id = ? AND principal_id = ?',
+          )
+          .bind(projectId, principalId),
+        audit,
+      );
       if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes > 1)
         throw new Error('Invalid project role deletion');
       return result.meta.changes === 1;

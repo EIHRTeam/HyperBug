@@ -1,3 +1,4 @@
+import { d1AuditedMutation } from './audit-write.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 import { assertId } from '@hyperbug/domain';
 import type {
@@ -84,26 +85,32 @@ export function createD1AccountAdministration(
         throw new Error('Invalid instance role record');
       return { principalId, role: row.role };
     },
-    async suspendPrincipal(principalId) {
+    async suspendPrincipal(principalId, audit) {
       assertId(principalId);
-      const result = await db
-        .prepare(
-          "UPDATE principals SET status = 'suspended' WHERE id = ? AND status IN ('active', 'suspended') AND (status = 'suspended' OR NOT EXISTS (SELECT 1 FROM instance_roles r WHERE r.principal_id = principals.id) OR (SELECT count(*) FROM instance_roles r JOIN principals p ON p.id = r.principal_id WHERE p.kind = 'staff' AND p.status = 'active') > 1)",
-        )
-        .bind(principalId)
-        .run();
+      const result = await d1AuditedMutation(
+        db,
+        db
+          .prepare(
+            "UPDATE principals SET status = 'suspended' WHERE id = ? AND status = 'active' AND ( NOT EXISTS (SELECT 1 FROM instance_roles r WHERE r.principal_id = principals.id) OR (SELECT count(*) FROM instance_roles r JOIN principals p ON p.id = r.principal_id WHERE p.kind = 'staff' AND p.status = 'active') > 1)",
+          )
+          .bind(principalId),
+        audit,
+      );
       if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes > 1)
         throw new Error('Invalid principal suspension');
       return result.meta.changes === 1;
     },
-    async activatePrincipal(principalId) {
+    async activatePrincipal(principalId, audit) {
       assertId(principalId);
-      const result = await db
-        .prepare(
-          "UPDATE principals SET status = 'active' WHERE id = ? AND status IN ('active', 'suspended')",
-        )
-        .bind(principalId)
-        .run();
+      const result = await d1AuditedMutation(
+        db,
+        db
+          .prepare(
+            "UPDATE principals SET status = 'active' WHERE id = ? AND status = 'suspended'",
+          )
+          .bind(principalId),
+        audit,
+      );
       if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes > 1)
         throw new Error('Invalid principal activation');
       return result.meta.changes === 1;

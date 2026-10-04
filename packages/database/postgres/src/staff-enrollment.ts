@@ -1,3 +1,4 @@
+import { postgresAuditInsert } from './audit-write.ts';
 import type { Pool } from 'pg';
 import {
   validateStaffEnrollmentInput,
@@ -10,7 +11,7 @@ export function createPostgresStaffEnrollmentStore(
   pool: Pool,
 ): StaffEnrollmentStore {
   return {
-    async enrollStaff(input) {
+    async enrollStaff(input, audit) {
       validateStaffEnrollmentInput(input);
       const record = parseAccountPasswordRecord(input.passwordRecord);
       const db = await pool.connect();
@@ -44,6 +45,7 @@ export function createPostgresStaffEnrollmentStore(
           "INSERT INTO instance_roles (principal_id, role, granted_at, granted_by) VALUES ($1, 'instance-administrator', $2, NULL)",
           [input.principalId, input.nowMs],
         );
+        await postgresAuditInsert(db, audit);
         await db.query('COMMIT');
         return { status: 'enrolled', principalId: input.principalId };
       } catch (error) {

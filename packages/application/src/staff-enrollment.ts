@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import { assertId, assertInstant } from '@hyperbug/domain';
 import type { AccountPasswordRecord } from './account-registration.ts';
 
@@ -21,7 +22,10 @@ export type StaffEnrollmentResult =
   | { status: 'handle-taken' };
 
 export interface StaffEnrollmentStore {
-  enrollStaff(input: StaffEnrollmentInput): Promise<StaffEnrollmentResult>;
+  enrollStaff(
+    input: StaffEnrollmentInput,
+    audit: PreparedAuditEvent,
+  ): Promise<StaffEnrollmentResult>;
   /** Readiness/reporting only; never an authorization decision by itself. */
   countActiveStaff(): Promise<number>;
 }

@@ -1,3 +1,5 @@
+import { AuditFailure } from '@hyperbug/security';
+import { d1AuditInsert } from './audit-write.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   validateRecoveryCodeReplacement,
@@ -21,7 +23,7 @@ export function createD1AccountRecoveryStore(
   db: D1Database,
 ): AccountRecoveryStore {
   return {
-    async replaceCodes(input) {
+    async replaceCodes(input, audit) {
       validateRecoveryCodeReplacement(
         input.identityId,
         input.digests,
@@ -42,24 +44,29 @@ export function createD1AccountRecoveryStore(
       )
         throw new Error('Invalid recovery generation');
       const generation = current.generation + 1;
-      await db.batch([
-        db
-          .prepare('DELETE FROM recovery_codes WHERE identity_id = ?')
-          .bind(input.identityId),
-        ...input.digests.map((digest) =>
+      try {
+        await db.batch([
           db
-            .prepare(
-              'INSERT INTO recovery_codes (id, identity_id, generation, digest, created_at, used_at) VALUES (?, ?, ?, ?, ?, NULL)',
-            )
-            .bind(
-              crypto.randomUUID(),
-              input.identityId,
-              generation,
-              digest,
-              input.nowMs,
-            ),
-        ),
-      ]);
+            .prepare('DELETE FROM recovery_codes WHERE identity_id = ?')
+            .bind(input.identityId),
+          ...input.digests.map((digest) =>
+            db
+              .prepare(
+                'INSERT INTO recovery_codes (id, identity_id, generation, digest, created_at, used_at) VALUES (?, ?, ?, ?, ?, NULL)',
+              )
+              .bind(
+                crypto.randomUUID(),
+                input.identityId,
+                generation,
+                digest,
+                input.nowMs,
+              ),
+          ),
+          d1AuditInsert(db, audit),
+        ]);
+      } catch {
+        throw new AuditFailure();
+      }
     },
     async listActive(identityId) {
       identityBound(identityId);

@@ -1,3 +1,4 @@
+import { passkeyCaptcha } from '../fixtures/passkey-captcha.ts';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { Pool } from 'pg';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
@@ -112,6 +113,8 @@ beforeAll(async () => {
         initialStandardPasswordPolicy.maximum.memoryKiB,
       ),
       passkey: passkeyConfig,
+      captcha: passkeyCaptcha('localhost').gate,
+      captchaSiteKey: 'public-fixture-key',
     }),
     0,
   );
@@ -139,7 +142,15 @@ const post = (
   fetch(new URL(path, base), {
     method: 'POST',
     headers: { 'content-type': 'application/json', origin: base, ...extra },
-    body: JSON.stringify(body),
+    body: JSON.stringify(
+      path === '/api/v1/accounts/register' || path === '/auth/login'
+        ? {
+            ...(body as object),
+            captchaToken:
+              path === '/auth/login' ? 'fixture-login' : 'fixture-register',
+          }
+        : body,
+    ),
   });
 
 it('registers a passkey and completes discoverable passkey login', async () => {
@@ -201,8 +212,16 @@ it('registers a passkey and completes discoverable passkey login', async () => {
   const challenge = ((await loginOptions.json()) as { challenge: string })
     .challenge;
   const assertion = await authenticator.assertion(challenge, 1);
+  const missingCaptcha = await post('/auth/passkey/login', {
+    response: assertion,
+  });
+  expect(missingCaptcha.status).toBe(403);
+  expect(await missingCaptcha.json()).toMatchObject({
+    error: { code: 'CAPTCHA_DENIED' },
+  });
   const passkeyLogin = await post('/auth/passkey/login', {
     response: assertion,
+    captchaToken: 'fixture-login',
   });
   expect(passkeyLogin.status).toBe(200);
   expect(await passkeyLogin.json()).toEqual({ authenticated: true });
@@ -219,6 +238,7 @@ it('registers a passkey and completes discoverable passkey login', async () => {
 
   const replay = await post('/auth/passkey/login', {
     response: await authenticator.assertion(challenge, 2),
+    captchaToken: 'fixture-login',
   });
   expect(replay.status).toBe(403);
   expect(await replay.json()).toMatchObject({

@@ -1,3 +1,5 @@
+import { postgresAuditedMutation } from './audit-write.ts';
+import type { PreparedAuditEvent } from '@hyperbug/application';
 import type { Pool } from 'pg';
 import {
   validatePluginRegistryRecord,
@@ -50,20 +52,28 @@ export function createPostgresPluginRegistryStore(
   pool: Pool,
 ): PluginRegistryStore {
   return {
-    async insert(record) {
+    async insert(record, audit) {
       validatePluginRegistryRecord(record);
-      const result = await pool.query(
-        'INSERT INTO plugin_registry (id, version, state, manifest, registered_at, updated_at) VALUES ($1, $2, $3, $4::jsonb, $5, $6) ON CONFLICT (id) DO NOTHING RETURNING id',
-        [
-          record.id,
-          record.version,
-          record.state,
-          JSON.stringify(record.manifest),
-          record.registeredAtMs,
-          record.updatedAtMs,
-        ],
-      );
-      return (result.rowCount ?? 0) === 1 ? 'inserted' : 'conflict';
+      return postgresAuditedMutation(pool, audit, async (db) => {
+        const result = await db.query(
+          'INSERT INTO plugin_registry (id, version, state, manifest, registered_at, updated_at) VALUES ($1, $2, $3, $4::jsonb, $5, $6) ON CONFLICT (id) DO NOTHING RETURNING id',
+          [
+            record.id,
+            record.version,
+            record.state,
+            JSON.stringify(record.manifest),
+            record.registeredAtMs,
+            record.updatedAtMs,
+          ],
+        );
+        return {
+          value:
+            result.rowCount === 1
+              ? ('inserted' as const)
+              : ('conflict' as const),
+          changed: result.rowCount === 1,
+        };
+      });
     },
     async load(id) {
       const result = await pool.query<RegistryRow>(
@@ -84,6 +94,7 @@ export function createPostgresPluginRegistryStore(
         readonly expectedState: PluginLifecycleState;
         readonly expectedVersion?: string;
       },
+      audit: PreparedAuditEvent,
     ) {
       validatePluginRegistryRecord({
         ...input,
@@ -112,18 +123,29 @@ export function createPostgresPluginRegistryStore(
             input.id,
             input.expectedState,
           ];
-      const result = await pool.query<RegistryRow>(sql, values);
-      const row = result.rows[0];
-      return row === undefined ? null : toRecord(row);
+      return postgresAuditedMutation(pool, audit, async (db) => {
+        const result = await db.query<RegistryRow>(sql, values);
+        const row = result.rows[0];
+        return {
+          value: row === undefined ? null : toRecord(row),
+          changed: result.rowCount === 1,
+        };
+      });
     },
-    async remove(id) {
-      const result = await pool.query(
-        'DELETE FROM plugin_registry WHERE id = $1',
-        [id],
-      );
-      if (result.rowCount !== null && result.rowCount > 1)
-        throw new Error('Invalid plugin registry deletion');
-      return result.rowCount === 1;
+    async remove(id, audit, deleteSettings = false) {
+      return postgresAuditedMutation(pool, audit, async (db) => {
+        const result = await db.query(
+          'DELETE FROM plugin_registry WHERE id = $1',
+          [id],
+        );
+        if (result.rowCount !== null && result.rowCount > 1)
+          throw new Error('Invalid plugin registry deletion');
+        if (result.rowCount === 1 && deleteSettings)
+          await db.query('DELETE FROM plugin_settings WHERE plugin_id = $1', [
+            id,
+          ]);
+        return { value: result.rowCount === 1, changed: result.rowCount === 1 };
+      });
     },
   };
 }

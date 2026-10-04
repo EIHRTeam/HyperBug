@@ -1,3 +1,4 @@
+import { postgresAuditInsert } from './audit-write.ts';
 import type { Pool } from 'pg';
 import {
   validateRecoveryCodeReplacement,
@@ -18,7 +19,7 @@ export function createPostgresAccountRecoveryStore(
   pool: Pool,
 ): AccountRecoveryStore {
   return {
-    async replaceCodes(input) {
+    async replaceCodes(input, audit) {
       validateRecoveryCodeReplacement(
         input.identityId,
         input.digests,
@@ -51,6 +52,7 @@ export function createPostgresAccountRecoveryStore(
             [input.identityId, previous + 1, digest, input.nowMs],
           );
         }
+        await postgresAuditInsert(db, audit);
         await db.query('COMMIT');
       } catch (error) {
         await db.query('ROLLBACK');

@@ -1,3 +1,5 @@
+import { AuditFailure } from '@hyperbug/security';
+import { d1AuditInsert } from './audit-write.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   validateStaffEnrollmentInput,
@@ -30,7 +32,7 @@ export function createD1StaffEnrollmentStore(
   db: D1Database,
 ): StaffEnrollmentStore {
   return {
-    async enrollStaff(input) {
+    async enrollStaff(input, audit) {
       validateStaffEnrollmentInput(input);
       const record = JSON.stringify(
         parseAccountPasswordRecord(input.passwordRecord),
@@ -64,11 +66,12 @@ export function createD1StaffEnrollmentStore(
               "INSERT INTO instance_roles (principal_id, role, granted_at, granted_by) VALUES (?, 'instance-administrator', ?, NULL)",
             )
             .bind(input.principalId, input.nowMs),
+          d1AuditInsert(db, audit),
         ]);
       } catch (error) {
         if (missingPrincipal(error)) return { status: 'staff-active' };
         if (duplicateHandle(error)) return { status: 'handle-taken' };
-        throw error;
+        throw new AuditFailure();
       }
       return { status: 'enrolled', principalId: input.principalId };
     },
