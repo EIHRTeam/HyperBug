@@ -18,6 +18,12 @@ import {
   RegistrationRequestSchema,
   LoginRequestSchema,
   LoginChallengeSchema,
+import {
+  listContentDefinitions,
+  readContentDefinition,
+  saveContentDefinition,
+  type ContentDefinitionContext,
+} from './content-definitions.ts';
   AccountSessionSchema,
   AccountDocumentSchema,
   BootstrapEnrollRequestSchema,
@@ -30,6 +36,22 @@ import {
   TokenResponseSchema,
   AccountSessionsSchema,
   PrincipalStatusSchema,
+  ContentDefinitionListSchema,
+  SaveIssueFormRequestSchema,
+  ReplaceIssueFormRequestSchema,
+  SaveIssueTemplateRequestSchema,
+  ReplaceIssueTemplateRequestSchema,
+  IssueFormDocumentSchema,
+  IssueTemplateDocumentSchema,
+  type ContentDefinitionList,
+  type SaveIssueFormRequest,
+  type ReplaceIssueFormRequest,
+  type SaveIssueTemplateRequest,
+  type ReplaceIssueTemplateRequest,
+  type IssueFormDocument,
+  type IssueTemplateDocument,
+  SubmitIssueFormRequestSchema,
+  type SubmitIssueFormRequest,
   ProjectMemberRoleRequestSchema,
   ProjectMemberRoleSchema,
   ProjectDocumentSchema,
@@ -167,7 +189,13 @@ import {
 import { appendRequiredAuditEvent } from './audit-emit.ts';
 import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
 import { registerAccount } from './account-registration.ts';
+  ContentDefinitionStore,
 import { loginAccount } from './account-login.ts';
+import {
+  createAttachmentMediaHandler,
+  parseMediaOrigin,
+  isAttachmentMediaRequest,
+} from './attachments.ts';
 import { enrollInitialStaff } from './bootstrap-enrollment.ts';
 import {
   passkeyLoginOptions,
@@ -336,6 +364,11 @@ export interface AppOptions {
   /** Append-only audit sink for the audited account/role mutations. */
   auditAppend?: AuditAppend | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
+  contentDefinitionStore?: ContentDefinitionStore | null;
+  uploads?: UploadDependencies | null;
+  attachmentStore?: AttachmentStore | null;
+  /** Explicit isolated media origin; absence leaves delivery disabled. */
+  mediaOrigin?: string | null;
   bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
 }
@@ -462,6 +495,10 @@ export function createApp({
     passwordHashPolicy: config.deployment.requiredPasswordAlgorithm,
   });
   const tierSelected = deployment.tier === 'cloudflare-free-minimum';
+  contentDefinitionStore = null,
+  uploads = null,
+  attachmentStore = null,
+  mediaOrigin = null,
   // Exactly one profile's password service may be composed, matching the
   // selected tier; the minimum tier's peppered service is mandatory because
   // bootstrap enrollment and recovery still write credentials on that tier.
@@ -784,6 +821,24 @@ export function createApp({
       infix: '/milestones',
     },
     {
+    {
+      label: 'project.upload',
+      methods: ['GET', 'POST', 'PUT'],
+      prefix: '/api/v1/projects/',
+      infix: '/uploads',
+    },
+    {
+      label: 'project.content',
+      methods: ['GET', 'POST', 'PUT'],
+      prefix: '/api/v1/projects/',
+      infix: '/forms',
+    },
+    {
+      label: 'project.content',
+      methods: ['GET', 'POST', 'PUT'],
+      prefix: '/api/v1/projects/',
+      infix: '/templates',
+    },
       label: 'issue.discussion',
       methods: null,
       prefix: '/api/v1/projects/',
@@ -870,8 +925,13 @@ export function createApp({
     return 'unmatched';
   }
 
-  const observeRequest = (request: Request, status: number): void => {
-    const label = routeLabelFor(new URL(request.url).pathname, request.method);
+  const observeRequest = (
+    request: Request,
+    status: number,
+    route?: RouteLabel,
+  ): void => {
+    const label =
+      route ?? routeLabelFor(new URL(request.url).pathname, request.method);
     try {
       telemetry.request({
         requestId: boundaryFor(request).requestId,
@@ -923,9 +983,21 @@ export function createApp({
     .decorate('keyProvider', keyProvider ?? unavailableKeyProvider)
     .decorate('sensitiveAdmission', boundSensitiveAdmission)
     .decorate('accountPassword', accountPasswordService)
+  const contentContext: ContentDefinitionContext = {
+    ...projectContext,
+    contentDefinitions: contentDefinitionStore,
+  };
+  const uploadContext: UploadContext = {
+    ...projectContext,
+    uploads,
+    issues: issueRepository,
+    comments: commentStore,
+    admission: boundSensitiveAdmission,
+  };
     .decorate(
       'minimumLoginAdmission',
       minimumLoginAdmission ?? unavailableMinimumLoginAdmission,
+    contentDefinitions: contentDefinitionStore,
     )
     .decorate(
       'pluginEventPublisher',
@@ -936,6 +1008,37 @@ export function createApp({
               point: string;
               payload: unknown;
             }) =>
+  const isolatedMediaOrigin =
+    mediaOrigin === null
+      ? null
+      : parseMediaOrigin(
+          mediaOrigin,
+          [
+            ...config.allowedOrigins,
+            ...(oauthClients ?? []).flatMap((client) => client.redirectUris),
+            ...(passkey ? [passkey.origin] : []),
+          ],
+          config.environment,
+        );
+  if (
+    isolatedMediaOrigin &&
+    (!attachmentStore || !uploads || !issueRepository || !authorizationResolver)
+  )
+    throw new Error('Invalid attachment media composition');
+  const mediaHandler = isolatedMediaOrigin
+    ? createAttachmentMediaHandler(
+        {
+          ...projectContext,
+          attachments: attachmentStore!,
+          blobs: uploads!.blobs,
+          issues: issueRepository!,
+          comments: commentStore,
+        },
+        config.allowedOrigins,
+        isolatedMediaOrigin,
+        config.runtime,
+      )
+    : null;
               publishPluginEvent(
                 { registry: pluginRegistry, events: pluginEventOutbox },
                 input,
@@ -967,6 +1070,23 @@ export function createApp({
       if (
         request.method === 'POST' &&
         (path === '/auth/login' ||
+      if (
+        mediaHandler &&
+        isAttachmentMediaRequest(request, isolatedMediaOrigin!)
+      ) {
+        const response = await mediaHandler(request);
+        // onRequest short-circuits all auth/parsing/routes and afterHandle;
+        // retain the media handler's independent conservative headers.
+        for (const name of Object.keys(set.headers)) delete set.headers[name];
+        for (const [name, value] of response.headers) set.headers[name] = value;
+        set.status = response.status;
+        boundaries.set(request, {
+          requestId: response.headers.get('x-request-id')!,
+          cors: {},
+        });
+        observeRequest(request, response.status, 'attachment.media');
+        return response;
+      }
           path === '/auth/logout' ||
           path === '/auth/bootstrap/enroll' ||
           path === '/auth/recovery-codes' ||
@@ -1083,6 +1203,14 @@ export function createApp({
       async ({ request, set }) => {
         try {
           const available = await withDeadline(
+      if (
+        response &&
+        typeof response === 'object' &&
+        'representationEtag' in response &&
+        typeof response.representationEtag === 'string' &&
+        /^"[a-zA-Z0-9_.-]+"$/.test(response.representationEtag)
+      )
+        set.headers.etag = response.representationEtag;
             request.signal,
             config.requestTimeoutMs,
             ready,
@@ -1691,6 +1819,487 @@ export function createApp({
             labelIds: body.labelIds,
             assigneeIds: body.assigneeIds,
           },
+    .put(
+      '/api/v1/projects/:projectId/uploads/:uploadId',
+      async ({ request, params, body }) => {
+        const { projectId, uploadId } = params;
+        if (!uuidPattern.test(projectId) || !uuidPattern.test(uploadId))
+          throw new RequestFailure('NOT_FOUND');
+        return (await uploadOperation(
+          request,
+          uploadContext,
+          projectId,
+          uploadId,
+          'reserve',
+          body,
+        )) as UploadDocument;
+      },
+      {
+        body: t.Unsafe<ReserveUploadRequest>(ReserveUploadRequestSchema),
+        response: t.Unsafe<UploadDocument>(UploadDocumentSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/uploads/:uploadId',
+      async ({ request, params }) => {
+        const { projectId, uploadId } = params;
+        if (!uuidPattern.test(projectId) || !uuidPattern.test(uploadId))
+          throw new RequestFailure('NOT_FOUND');
+        return (await uploadOperation(
+          request,
+          uploadContext,
+          projectId,
+          uploadId,
+          'read',
+        )) as UploadDocument;
+      },
+      { response: t.Unsafe<UploadDocument>(UploadDocumentSchema) },
+    )
+    .post(
+      '/api/v1/projects/:projectId/uploads/:uploadId/capability',
+      async ({ request, params }) => {
+        const { projectId, uploadId } = params;
+        if (!uuidPattern.test(projectId) || !uuidPattern.test(uploadId))
+          throw new RequestFailure('NOT_FOUND');
+        return (await uploadOperation(
+          request,
+          uploadContext,
+          projectId,
+          uploadId,
+          'capability',
+        )) as UploadCapabilityDocument;
+      },
+      {
+        body: t.Object({}, { additionalProperties: false }),
+        response: t.Unsafe<UploadCapabilityDocument>(UploadCapabilitySchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/uploads/:uploadId/finalize',
+      async ({ request, params, set }) => {
+        const { projectId, uploadId } = params;
+        if (!uuidPattern.test(projectId) || !uuidPattern.test(uploadId))
+          throw new RequestFailure('NOT_FOUND');
+        const result = (await uploadOperation(
+          request,
+          uploadContext,
+          projectId,
+          uploadId,
+          'finalize',
+        )) as UploadDocument;
+        set.status = ['quarantined', 'ready', 'rejected'].includes(result.state)
+          ? 200
+          : 202;
+        return result;
+      },
+      {
+        body: t.Object({}, { additionalProperties: false }),
+        response: {
+          200: t.Unsafe<UploadDocument>(UploadDocumentSchema),
+          202: t.Unsafe<UploadDocument>(UploadDocumentSchema),
+        },
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/uploads/:uploadId/multipart',
+      async ({ request, params }) => {
+        if (
+          !uuidPattern.test(params.projectId) ||
+          !uuidPattern.test(params.uploadId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await uploadOperation(
+          request,
+          uploadContext,
+          params.projectId,
+          params.uploadId,
+          'multipart-read',
+        )) as MultipartDocument;
+      },
+      { response: t.Unsafe<MultipartDocument>(MultipartDocumentSchema) },
+    )
+    .post(
+      '/api/v1/projects/:projectId/uploads/:uploadId/multipart',
+      async ({ request, params }) => {
+        if (
+          !uuidPattern.test(params.projectId) ||
+          !uuidPattern.test(params.uploadId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await uploadOperation(
+          request,
+          uploadContext,
+          params.projectId,
+          params.uploadId,
+          'multipart-create',
+        )) as MultipartDocument;
+      },
+      {
+        body: t.Object({}, { additionalProperties: false }),
+        response: t.Unsafe<MultipartDocument>(MultipartDocumentSchema),
+      },
+    )
+    .put(
+      '/api/v1/projects/:projectId/uploads/:uploadId/multipart/parts/:partNumber',
+      async ({ request, params, body }) => {
+        if (
+          !uuidPattern.test(params.projectId) ||
+          !uuidPattern.test(params.uploadId) ||
+          !/^[1-9][0-9]{0,3}$/.test(params.partNumber)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await uploadOperation(
+          request,
+          uploadContext,
+          params.projectId,
+          params.uploadId,
+          'multipart-part',
+          body,
+          Number(params.partNumber),
+        )) as MultipartDocument;
+      },
+      {
+        body: t.Unsafe<MultipartPartRequest>(MultipartPartRequestSchema),
+        response: t.Unsafe<MultipartDocument>(MultipartDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/uploads/:uploadId/multipart/parts/:partNumber/capability',
+      async ({ request, params }) => {
+        if (
+          !uuidPattern.test(params.projectId) ||
+          !uuidPattern.test(params.uploadId) ||
+          !/^[1-9][0-9]{0,3}$/.test(params.partNumber)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await uploadOperation(
+          request,
+          uploadContext,
+          params.projectId,
+          params.uploadId,
+          'multipart-part-capability',
+          undefined,
+          Number(params.partNumber),
+        )) as UploadCapabilityDocument;
+      },
+      {
+        body: t.Object({}, { additionalProperties: false }),
+        response: t.Unsafe<UploadCapabilityDocument>(UploadCapabilitySchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/uploads/:uploadId/multipart/complete',
+      async ({ request, params, body, set }) => {
+        if (
+          !uuidPattern.test(params.projectId) ||
+          !uuidPattern.test(params.uploadId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const result = (await uploadOperation(
+          request,
+          uploadContext,
+          params.projectId,
+          params.uploadId,
+          'multipart-complete',
+          body,
+        )) as UploadDocument;
+        set.status = result.state === 'awaiting-processing' ? 202 : 200;
+        return result;
+      },
+      {
+        body: t.Unsafe<MultipartCompleteRequest>(
+          MultipartCompleteRequestSchema,
+        ),
+        response: {
+          200: t.Unsafe<UploadDocument>(UploadDocumentSchema),
+          202: t.Unsafe<UploadDocument>(UploadDocumentSchema),
+        },
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/uploads/:uploadId/multipart/abort',
+      async ({ request, params }) => {
+        if (
+          !uuidPattern.test(params.projectId) ||
+          !uuidPattern.test(params.uploadId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await uploadOperation(
+          request,
+          uploadContext,
+          params.projectId,
+          params.uploadId,
+          'multipart-abort',
+        )) as MultipartDocument;
+      },
+      {
+        body: t.Object({}, { additionalProperties: false }),
+        response: t.Unsafe<MultipartDocument>(MultipartDocumentSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/forms',
+      async ({ request, params, query }) => {
+        const projectId = params.projectId;
+        if (!projectId || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return {
+          items: [
+            ...(await listContentDefinitions(
+              request,
+              contentContext,
+              projectId,
+              'form',
+              query.includeDisabled === 'true',
+            )),
+          ],
+        };
+      },
+      {
+        query: t.Object(
+          {
+            includeDisabled: t.Optional(
+              t.Union([t.Literal('true'), t.Literal('false')]),
+            ),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<ContentDefinitionList>(ContentDefinitionListSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/forms/:definitionId',
+      async ({ request, params, query }) => {
+        const { projectId, definitionId } = params;
+        if (
+          !projectId ||
+          !uuidPattern.test(projectId) ||
+          !definitionId ||
+          !uuidPattern.test(definitionId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await readContentDefinition(
+          request,
+          contentContext,
+          projectId,
+          'form',
+          definitionId,
+          query.version === undefined ? undefined : Number(query.version),
+        )) as IssueFormDocument;
+      },
+      {
+        query: t.Object(
+          {
+            version: t.Optional(t.Integer({ minimum: 1, maximum: 2147483647 })),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<IssueFormDocument>(IssueFormDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/forms',
+      async ({ request, params, body, set }) => {
+        const projectId = params.projectId;
+        if (!projectId || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        const result = await saveContentDefinition(
+          request,
+          contentContext,
+          projectId,
+          'form',
+          crypto.randomUUID(),
+          null,
+          body,
+        );
+        set.status = 201;
+        return result as IssueFormDocument;
+      },
+      {
+        body: t.Unsafe<SaveIssueFormRequest>(SaveIssueFormRequestSchema),
+        response: { 201: t.Unsafe<IssueFormDocument>(IssueFormDocumentSchema) },
+      },
+    )
+    .put(
+      '/api/v1/projects/:projectId/forms/:definitionId',
+      async ({ request, params, body }) => {
+        const { projectId, definitionId } = params;
+        if (
+          !projectId ||
+          !uuidPattern.test(projectId) ||
+          !definitionId ||
+          !uuidPattern.test(definitionId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await saveContentDefinition(
+          request,
+          contentContext,
+          projectId,
+          'form',
+          definitionId,
+          body.expectedRevision,
+          body,
+        )) as IssueFormDocument;
+      },
+      {
+        body: t.Unsafe<ReplaceIssueFormRequest>(ReplaceIssueFormRequestSchema),
+        response: t.Unsafe<IssueFormDocument>(IssueFormDocumentSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/templates',
+      async ({ request, params, query }) => {
+        const projectId = params.projectId;
+        if (!projectId || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return {
+          items: [
+            ...(await listContentDefinitions(
+              request,
+              contentContext,
+              projectId,
+              'template',
+              query.includeDisabled === 'true',
+            )),
+          ],
+        };
+      },
+      {
+        query: t.Object(
+          {
+            includeDisabled: t.Optional(
+              t.Union([t.Literal('true'), t.Literal('false')]),
+            ),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<ContentDefinitionList>(ContentDefinitionListSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/templates/:definitionId',
+      async ({ request, params, query }) => {
+        const { projectId, definitionId } = params;
+        if (
+          !projectId ||
+          !uuidPattern.test(projectId) ||
+          !definitionId ||
+          !uuidPattern.test(definitionId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await readContentDefinition(
+          request,
+          contentContext,
+          projectId,
+          'template',
+          definitionId,
+          query.version === undefined ? undefined : Number(query.version),
+        )) as IssueTemplateDocument;
+      },
+      {
+        query: t.Object(
+          {
+            version: t.Optional(t.Integer({ minimum: 1, maximum: 2147483647 })),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<IssueTemplateDocument>(IssueTemplateDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/templates',
+      async ({ request, params, body, set }) => {
+        const projectId = params.projectId;
+        if (!projectId || !uuidPattern.test(projectId))
+          throw new RequestFailure('NOT_FOUND');
+        const result = await saveContentDefinition(
+          request,
+          contentContext,
+          projectId,
+          'template',
+          crypto.randomUUID(),
+          null,
+          body,
+        );
+        set.status = 201;
+        return result as IssueTemplateDocument;
+      },
+      {
+        body: t.Unsafe<SaveIssueTemplateRequest>(
+          SaveIssueTemplateRequestSchema,
+        ),
+        response: {
+          201: t.Unsafe<IssueTemplateDocument>(IssueTemplateDocumentSchema),
+        },
+      },
+    )
+    .put(
+      '/api/v1/projects/:projectId/templates/:definitionId',
+      async ({ request, params, body }) => {
+        const { projectId, definitionId } = params;
+        if (
+          !projectId ||
+          !uuidPattern.test(projectId) ||
+          !definitionId ||
+          !uuidPattern.test(definitionId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        return (await saveContentDefinition(
+          request,
+          contentContext,
+          projectId,
+          'template',
+          definitionId,
+          body.expectedRevision,
+          body,
+        )) as IssueTemplateDocument;
+      },
+      {
+        body: t.Unsafe<ReplaceIssueTemplateRequest>(
+          ReplaceIssueTemplateRequestSchema,
+        ),
+        response: t.Unsafe<IssueTemplateDocument>(IssueTemplateDocumentSchema),
+      },
+    )
+    .post(
+      '/api/v1/projects/:projectId/forms/:definitionId/submissions',
+      async ({ request, params, body, set }) => {
+        const { projectId, definitionId } = params;
+        if (
+          !projectId ||
+          !uuidPattern.test(projectId) ||
+          !definitionId ||
+          !uuidPattern.test(definitionId)
+        )
+          throw new RequestFailure('NOT_FOUND');
+        const view = await createIssue(
+          request,
+          issueContext,
+          projectId,
+          boundaryFor(request).requestId,
+          {
+            title: body.title,
+            body: undefined,
+            typeId: undefined,
+            milestoneId: undefined,
+            labelIds: undefined,
+            assigneeIds: undefined,
+            form: {
+              id: definitionId,
+              version: body.formVersion,
+              ...(body.draftId ? { draftId: body.draftId } : {}),
+              values: body.values,
+            },
+          },
+        );
+        set.status = 201;
+        return view as IssueDocument;
+      },
+      {
+        body: t.Unsafe<SubmitIssueFormRequest>(SubmitIssueFormRequestSchema),
+        response: { 201: t.Unsafe<IssueDocument>(IssueDocumentSchema) },
+      },
+    )
         );
         set.status = 201;
         return view as IssueDocument;

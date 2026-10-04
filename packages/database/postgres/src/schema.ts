@@ -968,6 +968,55 @@ export const uploadMultipartSessions = table(
   ],
 );
 
+export const uploadScanResults = table(
+  'upload_scan_results',
+  {
+    intentId: id('intent_id').primaryKey(),
+    projectId: id('project_id').notNull(),
+    attemptId: id('attempt_id').notNull(),
+    sha256: text('sha256').notNull(),
+    sizeBytes: instant('size_bytes').notNull(),
+    policyVersion: text('policy_version').notNull(),
+    status: text('status').notNull(),
+    startedAt: instant('started_at').notNull(),
+    completedAt: instant('completed_at'),
+    evidence: json('evidence'),
+    failureCode: text('failure_code'),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.projectId, t.intentId],
+      foreignColumns: [uploadIntents.projectId, uploadIntents.id],
+      name: 'scan_intent_project_fk',
+    }),
+    check('scan_digest', sql`${t.sha256} ~ '^[0-9a-f]{64}$'`),
+    check(
+      'scan_size',
+      sql`${t.sizeBytes} BETWEEN 0 AND 9007199254740991 AND cast(${t.sizeBytes} as bigint) = ${t.sizeBytes}`,
+    ),
+    check('scan_policy', sql`length(${t.policyVersion}) BETWEEN 1 AND 64`),
+    check(
+      'scan_result',
+      sql`(${t.status} = 'pending' AND ${t.completedAt} IS NULL AND ${t.evidence} IS NULL AND ${t.failureCode} IS NULL) OR (${t.status} IN ('clean','infected') AND ${t.completedAt} IS NOT NULL AND ${t.evidence} IS NOT NULL AND ${t.failureCode} IS NULL) OR (${t.status} = 'failed' AND ${t.completedAt} IS NOT NULL AND ${t.evidence} IS NULL AND ${t.failureCode} IS NOT NULL AND ${t.failureCode} IN ('unavailable','timeout','partial','identity','invalid-result'))`,
+    ),
+    validId('scan_attempt_id', t.attemptId),
+    validTime('scan_started', t.startedAt),
+    check(
+      'scan_finished',
+      sql`${t.completedAt} IS NULL OR (${t.completedAt} BETWEEN ${t.startedAt} AND 8640000000000000 AND cast(${t.completedAt} as bigint) = ${t.completedAt})`,
+    ),
+    check(
+      'scan_evidence',
+      sql`${t.evidence} IS NULL OR length(${t.evidence}::text) <= 65536`,
+    ),
+    check(
+      'scan_evidence_object',
+      sql`${t.evidence} IS NULL OR (jsonb_typeof(${t.evidence}) = 'object' AND coalesce((jsonb_typeof(${t.evidence}->'engine') = 'string' AND length(${t.evidence}->>'engine') BETWEEN 1 AND 128) AND (jsonb_typeof(${t.evidence}->'engineVersion') = 'string' AND length(${t.evidence}->>'engineVersion') BETWEEN 1 AND 128) AND (jsonb_typeof(${t.evidence}->'signatureVersion') = 'string' AND length(${t.evidence}->>'signatureVersion') BETWEEN 1 AND 128), false))`,
+    ),
+    index('scan_pending_lookup').on(t.status, t.intentId),
+  ],
+);
+
 // Explicit operator recovery ledger; no current lifecycle/association is fabricated.
 export const uploadLegacyRecoveries = table(
   'upload_legacy_recoveries',

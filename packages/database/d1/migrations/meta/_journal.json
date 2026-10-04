@@ -162,6 +162,13 @@
       "when": 1791070224349,
       "tag": "0023_upload_legacy_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1791041180101,
+      "tag": "0022_upload_scans",
+      "breakpoints": true
     }
   ]
 }

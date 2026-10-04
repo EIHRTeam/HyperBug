@@ -1,4 +1,5 @@
 import { projectMarkdownText } from '@hyperbug/security/markdown';
+import { formAttachmentStatements } from './form-attachments.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 export { createD1RateCounterStore } from './rate-limit.ts';
 export { createD1AccountLockoutStore } from './account-lockout.ts';
