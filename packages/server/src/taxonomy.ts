@@ -21,7 +21,7 @@ import {
   requireVisibleProject,
   type ProjectContext,
 } from './projects.ts';
-import { requireAuthorizedAction } from './authorization.ts';
+import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
 import { withDeadline } from './bounds.ts';
 
 const storeTimeoutMs = 1_000;
@@ -52,6 +52,7 @@ async function requireTaxonomyManager(
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(principal),
   });
 }
 
@@ -73,6 +74,7 @@ async function requireProjectReader(
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(principal),
   });
 }
 

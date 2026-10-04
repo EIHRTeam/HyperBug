@@ -26,7 +26,7 @@ import {
 } from '@hyperbug/application';
 import type { Permission } from '@hyperbug/security';
 import type { BearerPrincipal } from './bearer-auth.ts';
-import { requireAuthorizedAction } from './authorization.ts';
+import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
 import type { BoundSensitiveActionAdmission } from './sensitive-admission.ts';
 import {
   projectBearer,
@@ -108,6 +108,7 @@ async function requireIssuePermission(
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(principal),
   });
 }
 

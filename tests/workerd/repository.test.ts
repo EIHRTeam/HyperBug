@@ -75,6 +75,8 @@ import {
   verifyKeyPurposeUpgrade,
 } from '../fixtures/key-purpose-migration.ts';
 import {
+  seedInstanceRoleUpgrade,
+  seedTokenAssuranceUpgrade,
   seedPreviousSchema,
   seedTemplateUpgrade,
   seedUploadUpgrade,
@@ -487,6 +489,8 @@ it.each(['reservation', 'verification'])(
   },
 );
 
+let verifyInstanceRoleUpgrade: () => Promise<void>;
+let verifyTokenAssuranceUpgrade: () => Promise<void>;
 beforeAll(async () => {
   execFileSync(process.execPath, ['tooling/build.ts', '--target=fixtures']);
   mf = new Miniflare(
@@ -615,6 +619,10 @@ beforeAll(async () => {
   };
   verifyUpgrade = await seedPreviousSchema(harness);
   for (const migration of migrations.slice(1)) {
+    if (migration.name === '0024_instance_roles')
+      verifyInstanceRoleUpgrade = await seedInstanceRoleUpgrade(harness);
+    if (migration.name === '0025_token_assurance')
+      verifyTokenAssuranceUpgrade = await seedTokenAssuranceUpgrade(harness);
     if (migration.name === '0019_template_versions')
       verifyTemplateUpgrade = await seedTemplateUpgrade(harness);
     if (migration.name === '0020_upload_reservations')
@@ -625,6 +633,8 @@ beforeAll(async () => {
       verifyLegacyRecoveryUpgrade =
         await snapshotLegacyRecoveryUpgrade(harness);
     await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+    if (migration.name === '0024_instance_roles')
+      await verifyInstanceRoleUpgrade();
   }
 });
 afterAll(async () => {
@@ -1171,7 +1181,7 @@ it('migrates a fresh database and keeps foreign keys enabled', async () => {
         "SELECT count(*) AS count FROM sqlite_master WHERE type = 'trigger'",
       )
       .first('count'),
-  ).toBe(35);
+  ).toBe(43);
 });
 it('widens key purpose on a populated D1 registry without losing guards', async () => {
   const db = await mf.getD1Database('KEY_UPGRADE');
@@ -1285,4 +1295,8 @@ it('scan migration quarantines unsupported legacy clean claims without changing 
 
 it('legacy recovery migration preserves populated identities, links, lifecycle and accounting without implicit decisions', async () => {
   await verifyLegacyRecoveryUpgrade();
+});
+
+it('backfills pre-existing session, code and token assurance without upgrading it', async () => {
+  await verifyTokenAssuranceUpgrade();
 });

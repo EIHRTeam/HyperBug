@@ -59,6 +59,11 @@ export function createD1StaffEnrollmentStore(
               'INSERT INTO password_credentials (identity_id, record, revision, created_at, updated_at) VALUES (?, ?, 1, ?, ?)',
             )
             .bind(input.identityId, record, input.nowMs, input.nowMs),
+          db
+            .prepare(
+              "INSERT INTO instance_roles (principal_id, role, granted_at, granted_by) VALUES (?, 'instance-administrator', ?, NULL)",
+            )
+            .bind(input.principalId, input.nowMs),
         ]);
       } catch (error) {
         if (missingPrincipal(error)) return { status: 'staff-active' };

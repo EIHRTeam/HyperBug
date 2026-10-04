@@ -1,23 +1,16 @@
 import type {
   AuthorizationFacts,
-  AuthorizationPolicy,
   AuthorizationResolver,
+  InstanceRoleFacts,
   PermissionRequest,
+  CredentialFacts,
   StaffRole,
 } from '@hyperbug/security';
 
-/**
- * Provisional recent-authentication bound from AUTH-FLOWS: 15 minutes, the
- * maximum the shared evaluator accepts, shared by every guarded management
- * route and the ceremony-assurance mapping below.
- */
-const recentAuthMaxAgeMs = 900_000;
-const timeoutMs = 1_000;
-
-/** Shared guard policy for the account and role management routes. */
-export const authorizationPolicy: AuthorizationPolicy = Object.freeze({
-  recentAuthMaxAgeMs,
-  timeoutMs,
+/** Default policy for isolated callers; createApp uses parsed runtime config. */
+export const authorizationPolicy = Object.freeze({
+  recentAuthMaxAgeMs: 300_000,
+  timeoutMs: 1_000,
 });
 
 /**
@@ -32,8 +25,8 @@ export interface DbAuthorizationDependencies {
     kind: 'user' | 'staff';
     status: 'active' | 'suspended' | 'deleted';
     credentialActive: boolean;
-    passkeyUsedAtMs: number | null;
   } | null>;
+  loadInstanceRole(principalId: string): Promise<InstanceRoleFacts | null>;
   loadProject(projectId: string): Promise<{
     visibility: 'public' | 'private';
     state: 'active' | 'archived';
@@ -42,26 +35,6 @@ export interface DbAuthorizationDependencies {
     projectId: string,
     principalId: string,
   ): Promise<{ role: StaffRole } | null>;
-  tokenIssuedAtMs(principalId: string): Promise<number | null>;
-}
-
-/**
- * Module 04 ceremony mapping under the SECURITY permission-and-assurance
- * contract: password is single-factor assurance 1. A passkey login ceremony
- * performed required cryptographic user verification, which the passkey
- * store stamps server-side at each login; while that ceremony is within the
- * recent-authentication bound the principal carries assurance 2, and outside
- * it the mapping falls back to 1 so no stale ceremony keeps elevating an
- * account. No client claim is ever consulted.
- */
-function ceremonyAssurance(
-  passkeyUsedAtMs: number | null,
-  nowMs: number,
-): 1 | 2 {
-  if (passkeyUsedAtMs === null || !Number.isSafeInteger(passkeyUsedAtMs))
-    return 1;
-  const ageMs = nowMs - passkeyUsedAtMs;
-  return ageMs >= 0 && ageMs <= recentAuthMaxAgeMs ? 2 : 1;
 }
 
 /** A missing project row becomes deny-shaped facts, not an error. */
@@ -73,15 +46,6 @@ function deniedProject(projectId: string) {
   });
 }
 
-/**
- * Builds AuthorizationFacts from current primary state for a bearer
- * principal: identity, membership and token issuance all come from the
- * authoritative stores, never from request claims. Lookup failures throw so
- * the shared guard maps them to AUTHORIZATION_UNAVAILABLE. The resource
- * block reflects the standing feature-policy hook — module 06 refines
- * `permissionGranted` per object; until then the routes themselves own the
- * remaining object checks.
- */
 export function createDbAuthorizationResolver(
   deps: DbAuthorizationDependencies,
 ): AuthorizationResolver {
@@ -89,31 +53,39 @@ export function createDbAuthorizationResolver(
     async resolve(
       request: PermissionRequest,
       signal: AbortSignal,
+      credential: CredentialFacts | null = null,
     ): Promise<AuthorizationFacts> {
       if (signal.aborted) throw new Error('Aborted');
-      const nowMs = Date.now();
       const actorId = request.actorId;
+      const scoped = request.target.type === 'instance';
       const principalRow =
         actorId === null ? null : await deps.loadPrincipal(actorId);
-      const [projectRow, membershipRow, issuedAtMs] = await Promise.all([
-        deps.loadProject(request.target.projectId),
-        actorId === null
+      const [projectRow, membershipRow, instanceRoleRow] = await Promise.all([
+        scoped
+          ? Promise.resolve(null)
+          : deps.loadProject(request.target.projectId),
+        actorId === null || scoped
           ? Promise.resolve(null)
           : deps.loadMembership(request.target.projectId, actorId),
-        actorId === null
+        actorId === null || !scoped
           ? Promise.resolve(null)
-          : deps.tokenIssuedAtMs(actorId),
+          : deps.loadInstanceRole(actorId),
       ]);
       if (signal.aborted) throw new Error('Aborted');
       // Row shapes come validated from the adapters and the database CHECKs
       // (application validate*Insert/Input on writes, adapter mapping on
       // reads); this resolver adds no third shape layer. Only the semantic
       // guarantee below is enforced here.
-      if (actorId !== null) {
-        // A verified bearer credential implies an unrevoked issuance; a null
-        // answer still fails closed rather than guessing an instant.
-        if (issuedAtMs === null)
-          throw new Error('No unrevoked token issuance for principal');
+      let authenticatedAtMs: number | null = null;
+      let assurance: CredentialFacts['assurance'] | null = null;
+      if (actorId !== null && credential !== null) {
+        authenticatedAtMs = credential.authenticatedAtMs;
+        assurance = credential.assurance;
+      }
+      if (actorId !== null && authenticatedAtMs === null) {
+        // A verified bearer credential always carries its own ceremony facts;
+        // a wiring gap fails closed rather than guessing an instant.
+        throw new Error('Missing credential ceremony facts');
       }
       const principal =
         principalRow !== null && actorId !== null
@@ -123,8 +95,8 @@ export function createDbAuthorizationResolver(
               status: principalRow.status,
               credentialActive: principalRow.credentialActive,
               expiresAtMs: principalRow.credentialActive ? farFutureMs : 0,
-              authenticatedAtMs: issuedAtMs as number,
-              assurance: ceremonyAssurance(principalRow.passkeyUsedAtMs, nowMs),
+              authenticatedAtMs: authenticatedAtMs as number,
+              assurance: assurance as CredentialFacts['assurance'],
             })
           : null;
       // Membership is active only for staff principals holding a role row.
@@ -141,8 +113,14 @@ export function createDbAuthorizationResolver(
       return Object.freeze({
         binding: Object.freeze({ ...request, target }),
         principal,
-        project:
-          projectRow === null
+        instanceRole: instanceRoleRow,
+        project: scoped
+          ? Object.freeze({
+              id: request.target.projectId,
+              visibility: 'private' as const,
+              state: 'active' as const,
+            })
+          : projectRow === null
             ? deniedProject(request.target.projectId)
             : Object.freeze({
                 id: request.target.projectId,
@@ -153,7 +131,7 @@ export function createDbAuthorizationResolver(
         resource: Object.freeze({
           ref: target,
           deleted: false,
-          publicReadable: true,
+          publicReadable: !scoped,
           permissionGranted: true,
         }),
       });

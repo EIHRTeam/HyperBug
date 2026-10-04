@@ -16,6 +16,7 @@ export function createPostgresStaffEnrollmentStore(
       const db = await pool.connect();
       try {
         await db.query('BEGIN');
+        await db.query('SELECT pg_advisory_xact_lock(1212371531, 1)');
         const principal = await db.query(
           "INSERT INTO principals (id, kind, display_name, status, created_at, revision) SELECT $1, 'staff', $2, 'active', $3, 1 WHERE NOT EXISTS (SELECT 1 FROM principals WHERE kind = 'staff' AND status = 'active')",
           [input.principalId, input.handle, input.nowMs],
@@ -38,6 +39,10 @@ export function createPostgresStaffEnrollmentStore(
         await db.query(
           'INSERT INTO password_credentials (identity_id, record, revision, created_at, updated_at) VALUES ($1, $2, 1, $3, $3)',
           [input.identityId, JSON.stringify(record), input.nowMs],
+        );
+        await db.query(
+          "INSERT INTO instance_roles (principal_id, role, granted_at, granted_by) VALUES ($1, 'instance-administrator', $2, NULL)",
+          [input.principalId, input.nowMs],
         );
         await db.query('COMMIT');
         return { status: 'enrolled', principalId: input.principalId };

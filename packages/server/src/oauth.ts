@@ -1,5 +1,7 @@
 import type {
   AccountSessionStore,
+  Assurance,
+  AuthMethod,
   OAuthAccessTokenStore,
   OAuthCodeStore,
 } from '@hyperbug/application';
@@ -282,6 +284,11 @@ export async function issueAuthorizationCode(input: {
     nowMs,
     principalId: session.principalId,
     identityId: session.identityId,
+    ceremony: {
+      method: session.authMethod,
+      authenticatedAtMs: session.authenticatedAtMs,
+      assurance: session.assurance,
+    },
     signal: input.request.signal,
   });
 }
@@ -295,6 +302,12 @@ export async function issueCodeForSession(input: {
   readonly nowMs: number;
   readonly principalId: string;
   readonly identityId: string;
+  /** Ceremony facts copied from the authorizing session, never re-derived. */
+  readonly ceremony: {
+    readonly method: AuthMethod;
+    readonly authenticatedAtMs: number;
+    readonly assurance: Assurance;
+  };
   readonly signal: AbortSignal;
 }): Promise<{ redirectUri: string }> {
   const { query, keyProvider, codeStore, clients, nowMs, signal } = input;
@@ -320,6 +333,9 @@ export async function issueCodeForSession(input: {
         identityId: input.identityId,
         nowMs,
         expiresAtMs: nowMs + codeLifetimeMs,
+        authMethod: input.ceremony.method,
+        authenticatedAtMs: input.ceremony.authenticatedAtMs,
+        assurance: input.ceremony.assurance,
       }),
     );
   } catch (error) {
@@ -419,6 +435,9 @@ export async function exchangeAuthorizationCode(input: {
         scope: consumed.scope,
         nowMs,
         expiresAtMs: nowMs + tokenLifetimeMs,
+        authMethod: consumed.authMethod,
+        authenticatedAtMs: consumed.authenticatedAtMs,
+        assurance: consumed.assurance,
       }),
     );
   } catch (error) {

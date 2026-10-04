@@ -91,6 +91,7 @@ export function createProofApp(
   };
   const permissionFacts: AuthorizationFacts = {
     binding: permissionRequest,
+    instanceRole: null,
     principal: {
       id: actorId,
       kind: 'staff',

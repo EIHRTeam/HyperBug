@@ -35,6 +35,7 @@ export async function loginAccount(input: {
   cookie: string;
   principalId: string;
   identityId: string;
+  authenticatedAtMs: number;
 }> {
   const {
     request,
@@ -78,6 +79,7 @@ export async function loginAccount(input: {
   if (!account) throw new RequestFailure('LOGIN_DENIED');
   const cookie = await issueSessionCookieFor({
     account,
+    ceremony: { method: 'password', assurance: 1 },
     provider: keyProvider,
     store: sessionStore,
     signal: request.signal,
@@ -87,5 +89,6 @@ export async function loginAccount(input: {
     cookie,
     principalId: account.principalId,
     identityId: account.identityId,
+    authenticatedAtMs: nowMs,
   };
 }

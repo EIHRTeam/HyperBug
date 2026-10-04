@@ -1,6 +1,7 @@
 import {
   authorize,
   type AuthorizationPolicy,
+  type CredentialFacts,
   type AuthorizationResolver,
   type PermissionRequest,
 } from '@hyperbug/security';
@@ -12,6 +13,26 @@ export interface AuthorizationIntent {
   readonly policy: AuthorizationPolicy;
   readonly signal: AbortSignal;
   readonly now?: () => number;
+  /**
+   * Ceremony facts of the credential that authenticated this request. A
+   * verified bearer principal supplies them; omitted means anonymous.
+   */
+  readonly credential?: CredentialFacts | null;
+}
+
+/**
+ * The presented credential's ceremony facts, or null for anonymous callers.
+ * Routes pass this so assurance binds to the token, not the account.
+ */
+export function credentialFactsOf(
+  principal: { authenticatedAtMs: number; assurance: 1 | 2 } | null,
+): CredentialFacts | null {
+  return principal === null
+    ? null
+    : {
+        authenticatedAtMs: principal.authenticatedAtMs,
+        assurance: principal.assurance,
+      };
 }
 
 /** Resolve current server-side facts and stop the protected route on every denial. */
@@ -26,7 +47,11 @@ export async function requireAuthorizedAction(
       intent.request,
       intent.resolver,
       intent.policy,
-      { signal, ...(intent.now ? { now: intent.now } : {}) },
+      {
+        signal,
+        credential: intent.credential ?? null,
+        ...(intent.now ? { now: intent.now } : {}),
+      },
     );
     if (signal.aborted) throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
     if (decision.allowed === true) return;

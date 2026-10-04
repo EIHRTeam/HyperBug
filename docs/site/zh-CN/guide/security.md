@@ -36,7 +36,9 @@
 
 ## 了解敏感管理操作的要求
 
-权限契约要求敏感管理操作具备项目管理员权限、经验证的认证可信度和近期认证。`ADMIN_RECENT_AUTH_SECONDS` 默认为 300，不能超过 900；`AUTHORIZATION_TIMEOUT_MS` 默认为 1000，不能超过 5000，验证错误或超时会拒绝访问。账号流程和功能端点仍需在各自的实施阶段接入这一契约。
+敏感项目管理需要该项目的管理员角色。实例账号和插件管理需要独立的 `instance-administrator` 角色；创建项目不会授予该角色。首次初始化会授予实例角色，升级时则选择最早创建的活跃 Staff 账号，因此迁移前请核对接收者。最后一个活跃实例管理员不能被停用。
+
+敏感操作需要最近通过验证的通行密钥登录。认证强度与认证时间属于当前提交的会话或令牌；在另一设备登录不会提升旧令牌的权限。认证强度迁移前签发的令牌需要重新通过通行密钥登录。`ADMIN_RECENT_AUTH_SECONDS` 默认为 300（此前硬编码窗口为 900），范围为 1–900。`AUTHORIZATION_TIMEOUT_MS` 默认为 1000，范围为 10–5000；两种运行配置都会使用这些设置，验证错误或超时将拒绝访问。
 
 CAPTCHA 配置是可选的。不设置 `TURNSTILE_SECRET`、`TURNSTILE_SITE_KEY` 和 `TURNSTILE_HOSTNAME` 即可在没有服务商的情况下运行。通过合适的后端绑定同时提供这三项时，Turnstile 会自动选用；只提供一部分会阻止启动。Cloudflare 公开的测试密钥仅可用于本地开发；预发布和生产环境会拒绝使用。密钥仅保存在后端。如需在本地 Workers 开发中启用 Turnstile，请把这三项绑定和两个必需的密钥环写入已忽略的 `apps/api-cloudflare/.dev.vars.local-turnstile` 文件，或通过 shell 导出。文件或任意 Turnstile shell 绑定存在时，普通的 `corepack pnpm dev:cloudflare` 命令会自动选择该配置；两者都不存在时，无需 CAPTCHA 配置即可启动。`GET /api/v1/accounts/register` 会公开所选站点密钥及 `register` 验证动作。`POST` 在限流通过后、密码哈希前执行已配置的验证；未配置服务商时无需验证令牌。验证失败或不可用时会拒绝注册，CAPTCHA 不能替代限流或权限检查。本地 workerd 测试通过签名入口和模拟服务商验证了已配置分支：缺少令牌或服务商不可用时，会在账号写入前拒绝；真实服务商行为仍待验证。
 

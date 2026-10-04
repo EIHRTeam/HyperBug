@@ -1,3 +1,4 @@
+import { instanceEscalationContract } from '../fixtures/instance-escalation-contract.ts';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { Pool } from 'pg';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
@@ -218,6 +219,8 @@ beforeAll(async () => {
       oauthClients: clients,
       oauthCodeStore: configured.oauthCodeStore,
       projectRoleStore: configured.projectRoleStore,
+      projectStore: configured.projectStore,
+      pluginRegistry: configured.pluginRegistryStore,
       accountAdministration: configured.accountAdministration,
       auditAppend: configured.auditAppend,
       bootstrapCode: enrollmentCode,
@@ -455,6 +458,22 @@ it('manages sessions, project roles and principal suspension end to end', async 
   const steppedUpToken = (
     (await steppedExchange.json()) as { accessToken: string }
   ).accessToken;
+  const oldTokenGrant = await fetch(
+    new URL(`/api/v1/projects/${projectId}/members/${staff.principalId}`, base),
+    {
+      method: 'PUT',
+      headers: {
+        authorization: `Bearer ${staff.token}`,
+        'content-type': 'application/json',
+        origin: base,
+      },
+      body: JSON.stringify({ role: 'administrator' }),
+    },
+  );
+  expect(oldTokenGrant.status).toBe(403);
+  expect(await oldTokenGrant.json()).toMatchObject({
+    error: { code: 'REAUTHENTICATION_REQUIRED' },
+  });
   const userGrant = await fetch(
     new URL(`/api/v1/projects/${projectId}/members/${user.principalId}`, base),
     {
@@ -751,4 +770,29 @@ it('closes the 04.V3 role-behavior matrix', async () => {
     },
   );
   expect(afterRemoval.status).toBe(403);
+});
+
+it('denies instance powers to a Staff principal after creating their own project', async () => {
+  await instanceEscalationContract(
+    async (sql, values = []) => {
+      let index = 0;
+      return pool.query(
+        sql.replace(/\?/g, () => `$${++index}`),
+        values,
+      );
+    },
+    (path, init = {}) =>
+      fetch(new URL(path, base), {
+        method: init.method ?? 'GET',
+        headers: {
+          origin: base,
+          ...(init.token ? { authorization: `Bearer ${init.token}` } : {}),
+          ...(init.body === undefined
+            ? {}
+            : { 'content-type': 'application/json' }),
+        },
+        ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
+      }),
+    sessionKeys.provider,
+  );
 });

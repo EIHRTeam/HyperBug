@@ -162,6 +162,20 @@
       "when": 1791070243271,
       "tag": "0022_upload_legacy_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791134175780,
+      "tag": "0023_instance_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1791134175781,
+      "tag": "0024_token_assurance",
+      "breakpoints": true
     }
   ]
 }

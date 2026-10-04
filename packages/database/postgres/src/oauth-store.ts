@@ -1,5 +1,6 @@
 import type { Pool } from 'pg';
-import { assertId, assertInstant } from '@hyperbug/domain';
+import { assertId, assertInstant, authMethods } from '@hyperbug/domain';
+import type { Assurance, AuthMethod } from '@hyperbug/domain';
 import {
   validateOAuthAccessTokenInsert,
   validateOAuthCodeInsert,
@@ -22,6 +23,9 @@ function exchanged(row: {
   redirect_uri: string;
   scope: string;
   code_challenge: string;
+  auth_method: string;
+  authenticated_at: string;
+  assurance: number;
 }): OAuthCodeExchange {
   if (
     !/^[0-9a-f-]{36}$/.test(row.principal_id) ||
@@ -36,7 +40,10 @@ function exchanged(row: {
     row.scope.length < 1 ||
     row.scope.length > 256 ||
     typeof row.code_challenge !== 'string' ||
-    !/^[A-Za-z0-9_-]{43,128}$/.test(row.code_challenge)
+    !/^[A-Za-z0-9_-]{43,128}$/.test(row.code_challenge) ||
+    !authMethods.includes(row.auth_method as AuthMethod) ||
+    !Number.isSafeInteger(Number(row.authenticated_at)) ||
+    (row.assurance !== 1 && row.assurance !== 2)
   )
     throw new Error('Invalid authorization code record');
   return Object.freeze({
@@ -46,6 +53,9 @@ function exchanged(row: {
     redirectUri: row.redirect_uri,
     scope: row.scope,
     codeChallenge: row.code_challenge,
+    authMethod: row.auth_method as AuthMethod,
+    authenticatedAtMs: Number(row.authenticated_at),
+    assurance: row.assurance as Assurance,
   });
 }
 
@@ -61,7 +71,7 @@ export function createPostgresOAuthStores(
     async insert(input) {
       validateOAuthCodeInsert(input);
       const result = await pool.query(
-        'INSERT INTO oauth_codes (id, digest, client_id, redirect_uri, scope, code_challenge, principal_id, identity_id, created_at, expires_at) VALUES ($1, $2::jsonb, $3, $4, $5, $6, $7, $8, $9, $10)',
+        'INSERT INTO oauth_codes (id, digest, client_id, redirect_uri, scope, code_challenge, principal_id, identity_id, created_at, expires_at, auth_method, authenticated_at, assurance) VALUES ($1, $2::jsonb, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
         [
           input.id,
           input.digest,
@@ -73,6 +83,9 @@ export function createPostgresOAuthStores(
           input.identityId,
           input.nowMs,
           input.expiresAtMs,
+          input.authMethod,
+          input.authenticatedAtMs,
+          input.assurance,
         ],
       );
       if (result.rowCount !== 1)
@@ -88,8 +101,11 @@ export function createPostgresOAuthStores(
         redirect_uri: string;
         scope: string;
         code_challenge: string;
+        auth_method: string;
+        authenticated_at: string;
+        assurance: number;
       }>(
-        'UPDATE oauth_codes SET consumed_at = $2 WHERE id = $1::uuid AND consumed_at IS NULL AND expires_at > $2 RETURNING principal_id, identity_id, client_id, redirect_uri, scope, code_challenge',
+        'UPDATE oauth_codes SET consumed_at = $2 WHERE id = $1::uuid AND consumed_at IS NULL AND expires_at > $2 RETURNING principal_id, identity_id, client_id, redirect_uri, scope, code_challenge, auth_method, authenticated_at, assurance',
         [id, nowMs],
       );
       const row = result.rows[0];
@@ -98,7 +114,7 @@ export function createPostgresOAuthStores(
     async insertAccessToken(input) {
       validateOAuthAccessTokenInsert(input);
       const result = await pool.query(
-        'INSERT INTO oauth_access_tokens (id, digest, principal_id, identity_id, client_id, scope, created_at, expires_at) VALUES ($1, $2::jsonb, $3, $4, $5, $6, $7, $8)',
+        'INSERT INTO oauth_access_tokens (id, digest, principal_id, identity_id, client_id, scope, created_at, expires_at, auth_method, authenticated_at, assurance) VALUES ($1, $2::jsonb, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
         [
           input.id,
           input.digest,
@@ -108,6 +124,9 @@ export function createPostgresOAuthStores(
           input.scope,
           input.nowMs,
           input.expiresAtMs,
+          input.authMethod,
+          input.authenticatedAtMs,
+          input.assurance,
         ],
       );
       if (result.rowCount !== 1) throw new Error('Invalid access token insert');
@@ -121,8 +140,11 @@ export function createPostgresOAuthStores(
         client_id: string;
         scope: string;
         digest: unknown;
+        auth_method: string;
+        authenticated_at: string;
+        assurance: number;
       }>(
-        'SELECT principal_id, identity_id, client_id, scope, digest FROM oauth_access_tokens WHERE id = $1::uuid AND revoked_at IS NULL AND expires_at > $2 LIMIT 1',
+        'SELECT principal_id, identity_id, client_id, scope, digest, auth_method, authenticated_at, assurance FROM oauth_access_tokens WHERE id = $1::uuid AND revoked_at IS NULL AND expires_at > $2 LIMIT 1',
         [id, nowMs],
       );
       const row = result.rows[0];
@@ -138,7 +160,10 @@ export function createPostgresOAuthStores(
         row.scope.length < 1 ||
         row.scope.length > 256 ||
         digest.length < 1 ||
-        digest.length > 1024
+        digest.length > 1024 ||
+        !authMethods.includes(row.auth_method as AuthMethod) ||
+        !Number.isSafeInteger(Number(row.authenticated_at)) ||
+        (row.assurance !== 1 && row.assurance !== 2)
       )
         throw new Error('Invalid access token record');
       const record: OAuthAccessTokenRecord = Object.freeze({
@@ -147,6 +172,9 @@ export function createPostgresOAuthStores(
         clientId: row.client_id,
         scope: row.scope,
         digest,
+        authMethod: row.auth_method as AuthMethod,
+        authenticatedAtMs: Number(row.authenticated_at),
+        assurance: row.assurance as Assurance,
       });
       return record;
     },

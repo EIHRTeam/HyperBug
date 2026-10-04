@@ -1,4 +1,8 @@
-import type { OAuthAccessTokenStore } from '@hyperbug/application';
+import type {
+  Assurance,
+  AuthMethod,
+  OAuthAccessTokenStore,
+} from '@hyperbug/application';
 import { verifyCredential, type KeyProvider } from '@hyperbug/security';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
@@ -13,6 +17,10 @@ export interface BearerPrincipal {
   readonly identityId: string;
   readonly clientId: string;
   readonly scope: string;
+  /** Ceremony bound to this token when it was issued; never account-wide. */
+  readonly authMethod: AuthMethod;
+  readonly authenticatedAtMs: number;
+  readonly assurance: Assurance;
 }
 
 /** The token pattern's own anchors make a plain concatenation unmatchable. */
@@ -62,6 +70,9 @@ export async function authenticateBearer(
       identityId: record.identityId,
       clientId: record.clientId,
       scope: record.scope,
+      authMethod: record.authMethod,
+      authenticatedAtMs: record.authenticatedAtMs,
+      assurance: record.assurance,
     });
   } catch (error) {
     if (error instanceof RequestFailure) throw error;

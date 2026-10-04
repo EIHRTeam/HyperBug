@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import { assertId, assertInstant } from '@hyperbug/domain';
+import { assertId, assertInstant, authMethods } from '@hyperbug/domain';
+import type { Assurance, AuthMethod } from '@hyperbug/domain';
 import {
   validateOAuthAccessTokenInsert,
   validateOAuthCodeInsert,
@@ -21,6 +22,9 @@ function exchanged(row: {
   redirect_uri: string;
   scope: string;
   code_challenge: string;
+  auth_method: string;
+  authenticated_at: number;
+  assurance: number;
 }): OAuthCodeExchange {
   if (
     !/^[0-9a-f-]{36}$/.test(row.principal_id) ||
@@ -35,7 +39,10 @@ function exchanged(row: {
     row.scope.length < 1 ||
     row.scope.length > 256 ||
     typeof row.code_challenge !== 'string' ||
-    !/^[A-Za-z0-9_-]{43,128}$/.test(row.code_challenge)
+    !/^[A-Za-z0-9_-]{43,128}$/.test(row.code_challenge) ||
+    !authMethods.includes(row.auth_method as AuthMethod) ||
+    !Number.isSafeInteger(row.authenticated_at) ||
+    (row.assurance !== 1 && row.assurance !== 2)
   )
     throw new Error('Invalid authorization code record');
   return Object.freeze({
@@ -45,6 +52,9 @@ function exchanged(row: {
     redirectUri: row.redirect_uri,
     scope: row.scope,
     codeChallenge: row.code_challenge,
+    authMethod: row.auth_method as AuthMethod,
+    authenticatedAtMs: row.authenticated_at,
+    assurance: row.assurance as Assurance,
   });
 }
 
@@ -61,7 +71,7 @@ export function createD1OAuthStores(
       validateOAuthCodeInsert(input);
       const result = await db
         .prepare(
-          'INSERT INTO oauth_codes (id, digest, client_id, redirect_uri, scope, code_challenge, principal_id, identity_id, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO oauth_codes (id, digest, client_id, redirect_uri, scope, code_challenge, principal_id, identity_id, created_at, expires_at, auth_method, authenticated_at, assurance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         )
         .bind(
           input.id,
@@ -74,6 +84,9 @@ export function createD1OAuthStores(
           input.identityId,
           input.nowMs,
           input.expiresAtMs,
+          input.authMethod,
+          input.authenticatedAtMs,
+          input.assurance,
         )
         .run();
       if (result.meta.changes !== 1)
@@ -84,7 +97,7 @@ export function createD1OAuthStores(
       assertInstant(nowMs);
       const row = await db
         .prepare(
-          'UPDATE oauth_codes SET consumed_at = ? WHERE id = ? AND consumed_at IS NULL AND expires_at > ? RETURNING principal_id, identity_id, client_id, redirect_uri, scope, code_challenge',
+          'UPDATE oauth_codes SET consumed_at = ? WHERE id = ? AND consumed_at IS NULL AND expires_at > ? RETURNING principal_id, identity_id, client_id, redirect_uri, scope, code_challenge, auth_method, authenticated_at, assurance',
         )
         .bind(nowMs, id, nowMs)
         .first<{
@@ -94,6 +107,9 @@ export function createD1OAuthStores(
           redirect_uri: string;
           scope: string;
           code_challenge: string;
+          auth_method: string;
+          authenticated_at: number;
+          assurance: number;
         }>();
       return row === null ? null : exchanged(row);
     },
@@ -101,7 +117,7 @@ export function createD1OAuthStores(
       validateOAuthAccessTokenInsert(input);
       const result = await db
         .prepare(
-          'INSERT INTO oauth_access_tokens (id, digest, principal_id, identity_id, client_id, scope, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO oauth_access_tokens (id, digest, principal_id, identity_id, client_id, scope, created_at, expires_at, auth_method, authenticated_at, assurance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         )
         .bind(
           input.id,
@@ -112,6 +128,9 @@ export function createD1OAuthStores(
           input.scope,
           input.nowMs,
           input.expiresAtMs,
+          input.authMethod,
+          input.authenticatedAtMs,
+          input.assurance,
         )
         .run();
       if (result.meta.changes !== 1)
@@ -122,7 +141,7 @@ export function createD1OAuthStores(
       assertInstant(nowMs);
       const row = await db
         .prepare(
-          'SELECT principal_id, identity_id, client_id, scope, digest FROM oauth_access_tokens WHERE id = ? AND revoked_at IS NULL AND expires_at > ? LIMIT 1',
+          'SELECT principal_id, identity_id, client_id, scope, digest, auth_method, authenticated_at, assurance FROM oauth_access_tokens WHERE id = ? AND revoked_at IS NULL AND expires_at > ? LIMIT 1',
         )
         .bind(id, nowMs)
         .first<{
@@ -131,6 +150,9 @@ export function createD1OAuthStores(
           client_id: string;
           scope: string;
           digest: string;
+          auth_method: string;
+          authenticated_at: number;
+          assurance: number;
         }>();
       if (!row) return null;
       if (
@@ -144,7 +166,10 @@ export function createD1OAuthStores(
         row.scope.length > 256 ||
         typeof row.digest !== 'string' ||
         row.digest.length < 1 ||
-        row.digest.length > 1024
+        row.digest.length > 1024 ||
+        !authMethods.includes(row.auth_method as AuthMethod) ||
+        !Number.isSafeInteger(row.authenticated_at) ||
+        (row.assurance !== 1 && row.assurance !== 2)
       )
         throw new Error('Invalid access token record');
       return Object.freeze({
@@ -153,6 +178,9 @@ export function createD1OAuthStores(
         clientId: row.client_id,
         scope: row.scope,
         digest: row.digest,
+        authMethod: row.auth_method as AuthMethod,
+        authenticatedAtMs: row.authenticated_at,
+        assurance: row.assurance as Assurance,
       });
     },
     async revoke(id, nowMs) {

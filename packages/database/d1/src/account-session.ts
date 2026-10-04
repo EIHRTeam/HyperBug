@@ -3,7 +3,10 @@ import { assertId, assertInstant } from '@hyperbug/domain';
 import {
   validateAccountSessionCreate,
   type AccountSessionStore,
+  type Assurance,
+  type AuthMethod,
 } from '@hyperbug/application';
+import { authMethods } from '@hyperbug/domain';
 
 function changed(count: number): boolean {
   if (count !== 0 && count !== 1)
@@ -19,7 +22,7 @@ export function createD1AccountSessionStore(
       validateAccountSessionCreate(input);
       const result = await db
         .prepare(
-          "INSERT INTO authorization_sessions (id, principal_id, identity_id, credential_revision, digest, created_at, idle_expires_at, absolute_expires_at) SELECT ?, p.id, i.id, ?, ?, ?, ?, ? FROM identities i JOIN principals p ON p.id = i.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE i.id = ? AND p.id = ? AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = ?",
+          "INSERT INTO authorization_sessions (id, principal_id, identity_id, credential_revision, digest, created_at, idle_expires_at, absolute_expires_at, auth_method, authenticated_at, assurance) SELECT ?, p.id, i.id, ?, ?, ?, ?, ?, ?, ?, ? FROM identities i JOIN principals p ON p.id = i.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE i.id = ? AND p.id = ? AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = ?",
         )
         .bind(
           input.id,
@@ -28,6 +31,9 @@ export function createD1AccountSessionStore(
           input.nowMs,
           input.idleExpiresAtMs,
           input.absoluteExpiresAtMs,
+          input.authMethod,
+          input.authenticatedAtMs,
+          input.assurance,
           input.identityId,
           input.principalId,
           input.credentialRevision,
@@ -41,7 +47,7 @@ export function createD1AccountSessionStore(
       const row = await db
         .withSession('first-primary')
         .prepare(
-          "SELECT s.principal_id, s.identity_id, s.digest, s.absolute_expires_at FROM authorization_sessions s JOIN identities i ON i.id = s.identity_id AND i.principal_id = s.principal_id JOIN principals p ON p.id = s.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE s.id = ? AND s.revoked_at IS NULL AND s.idle_expires_at > ? AND s.absolute_expires_at > ? AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = s.credential_revision LIMIT 1",
+          "SELECT s.principal_id, s.identity_id, s.digest, s.absolute_expires_at, s.auth_method, s.authenticated_at, s.assurance FROM authorization_sessions s JOIN identities i ON i.id = s.identity_id AND i.principal_id = s.principal_id JOIN principals p ON p.id = s.principal_id JOIN password_credentials c ON c.identity_id = i.id WHERE s.id = ? AND s.revoked_at IS NULL AND s.idle_expires_at > ? AND s.absolute_expires_at > ? AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.kind IN ('user', 'staff') AND p.status = 'active' AND c.revision = s.credential_revision LIMIT 1",
         )
         .bind(id, nowMs, nowMs)
         .first<{
@@ -49,6 +55,9 @@ export function createD1AccountSessionStore(
           identity_id: string;
           digest: string;
           absolute_expires_at: number;
+          auth_method: string;
+          authenticated_at: number;
+          assurance: number;
         }>();
       if (!row) return null;
       if (
@@ -56,7 +65,10 @@ export function createD1AccountSessionStore(
         !/^[0-9a-f-]{36}$/.test(row.identity_id) ||
         typeof row.digest !== 'string' ||
         row.digest.length > 1024 ||
-        !Number.isSafeInteger(row.absolute_expires_at)
+        !Number.isSafeInteger(row.absolute_expires_at) ||
+        !authMethods.includes(row.auth_method as AuthMethod) ||
+        !Number.isSafeInteger(row.authenticated_at) ||
+        (row.assurance !== 1 && row.assurance !== 2)
       )
         throw new Error('Invalid authorization session record');
       return {
@@ -64,6 +76,9 @@ export function createD1AccountSessionStore(
         identityId: row.identity_id,
         digest: row.digest,
         absoluteExpiresAtMs: row.absolute_expires_at,
+        authMethod: row.auth_method as AuthMethod,
+        authenticatedAtMs: row.authenticated_at,
+        assurance: row.assurance as Assurance,
       };
     },
     async touch(input) {

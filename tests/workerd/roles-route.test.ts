@@ -1,3 +1,4 @@
+import { instanceEscalationContract } from '../fixtures/instance-escalation-contract.ts';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
@@ -14,6 +15,7 @@ const enrollmentCode =
   'hbbs1_' +
   Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url');
 const projectId = crypto.randomUUID();
+const sessionKeys = cryptoFixture();
 let mf: Miniflare;
 let authenticator: Awaited<ReturnType<typeof createFakeAuthenticator>>;
 
@@ -125,7 +127,7 @@ beforeAll(async () => {
         HYPERBUG_ENV: 'local',
         ALLOWED_ORIGINS: authOrigin,
         HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
-        HYPERBUG_KEY_RING: await cryptoFixture().source.read(),
+        HYPERBUG_KEY_RING: await sessionKeys.source.read(),
         HYPERBUG_TEST_OAUTH_CLIENTS: JSON.stringify([
           {
             clientId: 'roles-cli',
@@ -289,6 +291,19 @@ it('manages sessions, roles and suspension with step-up on workerd/D1', async ()
   if (passkeyCookie === undefined) throw new Error('Missing passkey cookie');
 
   const steppedToken = await tokenFromCookie(passkeyCookie!, 'stepped-state');
+  const oldTokenGrant = await call(
+    `/api/v1/projects/${projectId}/members/${staffPrincipalId}`,
+    {
+      method: 'PUT',
+      token: staffToken,
+      body: { role: 'administrator' },
+    },
+  );
+  expect(oldTokenGrant.status).toBe(403);
+  expect(await oldTokenGrant.json()).toMatchObject({
+    error: { code: 'REAUTHENTICATION_REQUIRED' },
+  });
+
   const userGrant = await call(
     `/api/v1/projects/${projectId}/members/${userPrincipalId}`,
     { method: 'PUT', token: steppedToken, body: { role: 'triage' } },
@@ -383,4 +398,17 @@ it('manages sessions, roles and suspension with step-up on workerd/D1', async ()
       target_id: staffPrincipalId,
     },
   ]);
+});
+
+it('denies instance powers to a Staff principal after creating their own project', async () => {
+  const db = await mf.getD1Database('DB');
+  await instanceEscalationContract(
+    async (sql, values = []) =>
+      db
+        .prepare(sql)
+        .bind(...values)
+        .all(),
+    call,
+    sessionKeys.provider,
+  );
 });

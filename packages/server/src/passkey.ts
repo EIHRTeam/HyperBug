@@ -346,6 +346,8 @@ export async function passkeyLoginVerify(input: {
       identityId: account.identityId,
       credentialRevision: account.revision,
     },
+    // A verified passkey ceremony carries assurance 2 for this session only.
+    ceremony: { method: 'passkey', assurance: 2 },
     provider: relyingParty.keyProvider,
     store: relyingParty.sessionStore,
     signal: request.signal,

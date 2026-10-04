@@ -18,7 +18,7 @@ import type {
   KeyProvider,
 } from '@hyperbug/security';
 import { authenticateBearer, type BearerPrincipal } from './bearer-auth.ts';
-import { requireAuthorizedAction } from './authorization.ts';
+import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
@@ -160,6 +160,7 @@ export async function readProject(
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(principal),
   });
   const record = await withDeadline(request.signal, storeTimeoutMs, () =>
     store(context).load(projectId),
@@ -193,6 +194,7 @@ export async function configureProject(
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(principal),
   });
   if (
     !Number.isSafeInteger(input.expectedRevision) ||
@@ -249,6 +251,7 @@ export async function archiveProject(
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(principal),
   });
   if (
     !Number.isSafeInteger(expectedRevision) ||

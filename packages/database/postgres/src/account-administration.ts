@@ -10,7 +10,6 @@ interface PrincipalRow {
   kind: string;
   status: string;
   credential_active: boolean;
-  passkey_used_at: string | null;
 }
 
 function principalFacts(
@@ -25,18 +24,10 @@ function principalFacts(
     row.status !== 'deleted'
   )
     throw new Error('Invalid principal status');
-  const passkeyUsedAtMs =
-    row.passkey_used_at === null ? null : Number(row.passkey_used_at);
-  if (
-    passkeyUsedAtMs !== null &&
-    (!Number.isSafeInteger(passkeyUsedAtMs) || passkeyUsedAtMs < 0)
-  )
-    throw new Error('Invalid passkey ceremony record');
   return {
     kind: row.kind,
     status: row.status,
     credentialActive: row.credential_active === true,
-    passkeyUsedAtMs,
   };
 }
 
@@ -52,7 +43,7 @@ export function createPostgresAccountAdministration(
     async loadPrincipal(principalId) {
       assertId(principalId);
       const result = await pool.query<PrincipalRow>(
-        "SELECT p.kind, p.status, EXISTS (SELECT 1 FROM identities i JOIN password_credentials c ON c.identity_id = i.id WHERE i.principal_id = p.id AND i.provider = 'local-password') AS credential_active, (SELECT max(k.last_used_at) FROM identities i2 JOIN passkey_credentials k ON k.identity_id = i2.id WHERE i2.principal_id = p.id) AS passkey_used_at FROM principals p WHERE p.id = $1 LIMIT 1",
+        "SELECT p.kind, p.status, EXISTS (SELECT 1 FROM identities i JOIN password_credentials c ON c.identity_id = i.id WHERE i.principal_id = p.id AND i.provider = 'local-password') AS credential_active FROM principals p WHERE p.id = $1 LIMIT 1",
         [principalId],
       );
       return principalFacts(result.rows[0]);
@@ -77,29 +68,40 @@ export function createPostgresAccountAdministration(
       };
       return facts;
     },
-    async tokenIssuedAtMs(principalId) {
+    async loadInstanceRole(principalId) {
       assertId(principalId);
-      const result = await pool.query<{ issued_at: string | null }>(
-        'SELECT max(created_at) AS issued_at FROM oauth_access_tokens WHERE principal_id = $1 AND revoked_at IS NULL',
+      const result = await pool.query<{ role: string }>(
+        'SELECT role FROM instance_roles WHERE principal_id = $1 LIMIT 1',
         [principalId],
       );
-      const issuedAtMs = Number(result.rows[0]?.issued_at);
-      if (
-        result.rows[0]?.issued_at !== null &&
-        (!Number.isSafeInteger(issuedAtMs) || issuedAtMs < 0)
-      )
-        throw new Error('Invalid token issuance record');
-      return result.rows[0]?.issued_at === null ? null : issuedAtMs;
+      const role = result.rows[0]?.role;
+      if (role === undefined) return null;
+      if (role !== 'instance-administrator')
+        throw new Error('Invalid instance role record');
+      return { principalId, role };
     },
     async suspendPrincipal(principalId) {
       assertId(principalId);
-      const result = await pool.query(
-        "UPDATE principals SET status = 'suspended' WHERE id = $1 AND status IN ('active', 'suspended')",
-        [principalId],
-      );
-      if (result.rowCount !== null && result.rowCount > 1)
-        throw new Error('Invalid principal suspension');
-      return result.rowCount === 1;
+      const db = await pool.connect();
+      try {
+        await db.query('BEGIN');
+        // Serialize suspensions before the UPDATE takes its READ COMMITTED
+        // snapshot; a COUNT subquery alone would allow cross-row write skew.
+        await db.query('SELECT pg_advisory_xact_lock(1212371531, 1)');
+        const result = await db.query(
+          "UPDATE principals SET status = 'suspended' WHERE id = $1 AND status IN ('active', 'suspended') AND (status = 'suspended' OR NOT EXISTS (SELECT 1 FROM instance_roles r WHERE r.principal_id = principals.id) OR (SELECT count(*) FROM instance_roles r JOIN principals p ON p.id = r.principal_id WHERE p.kind = 'staff' AND p.status = 'active') > 1)",
+          [principalId],
+        );
+        if (result.rowCount !== null && result.rowCount > 1)
+          throw new Error('Invalid principal suspension');
+        await db.query('COMMIT');
+        return result.rowCount === 1;
+      } catch (error) {
+        await db.query('ROLLBACK');
+        throw error;
+      } finally {
+        db.release();
+      }
     },
     async activatePrincipal(principalId) {
       assertId(principalId);

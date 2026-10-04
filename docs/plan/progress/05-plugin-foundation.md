@@ -338,3 +338,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None new. The G1 audit-governance decision remains with the user, now covering modules 06–09's suspended audit portions only.
 - Next actions: None for module 05 — module complete with no remainders. Module 06 is the next executable module per the plan's order, awaiting user direction.
 - Next-session cautions: Later modules' audit portions must not resume implicitly; keep the root `SECURITY.md` draft uncommitted; migrations are at D1 0017 / PostgreSQL 0016 with no remote applications; the postgres evidence file `03-postgres-audit-query.json` regenerates its measurements whenever the postgres lane runs — do not commit unrelated measurement drift with plugin batches.
+
+### 2026-10-05 — Review remediation B3 verified
+
+- Scope and checklist IDs: 05.2a, 05.3b (post-completion B3).
+- Progress: B3 complete locally; overall mission continues at B4. Existing module status/checklists and G1/G2/13.G6 are unchanged.
+- Change summary: Plugin administration requires an instance administrator; project creation grants no instance privilege. Atomic plugin audit remains B4.
+- Files/artifacts: Owning stores/routes/schema/tests and specifications listed in the [cross-module remediation record](../evidence/2026-10-05-review-remediation.md#b3-instance-roles-and-token-bound-assurance-2026-10-05). D1 0024/0025; PostgreSQL 0023/0024.
+- Verification: Final local matrix **916 passed / 18 optional-provider skips** (349 unit, 1 contract, 121 Node, 262 workerd/D1 emulation, 183 real isolated PostgreSQL 18.6). Typecheck, lint, Drizzle check (old timestamp warnings), docs build, tracked/new-source formatting and diff checks pass. Root formatting flags only supplied untracked review files; reports untouched. No actual deployment/provider claim. Initial wiring/schema/fixture failures and focused primary-agent security review are recorded in the linked evidence.
+- Decisions and deviations: Independent instance role and immutable presented-credential facts; configured default 300 s replaces hardcoded 900 s. No policy weakening, new protocol or new ADR required for B3; formal Minimum ADR remains B8.
+- Blockers/open questions: None for B3. Independent Sonnet review unavailable (model not callable); no independent review claimed. Atomic account/role/plugin audit remains B4.
+- Next actions: B4 audit transaction/failure cases, recovery-code step-up and passkey CAPTCHA forwarding, then B5–B15 in the approved order.
+- Next-session cautions: Never stage SECURITY.md or supplied reviews; preserve historical migration/audit rows, apply schema before adapters, inspect upgrade role recipient, and require new passkey login for old tokens. No SPA or later-module audit resume.

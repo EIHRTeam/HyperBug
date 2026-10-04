@@ -1,6 +1,10 @@
-import { assertId, assertInstant } from '@hyperbug/domain';
+import { assertId, assertInstant, authMethods } from '@hyperbug/domain';
+import type { Assurance, AuthMethod } from '@hyperbug/domain';
 
 /** A first-party authorization session, never a business API bearer token. */
+/** How the credential behind a session was established. */
+export type { Assurance, AuthMethod } from '@hyperbug/domain';
+
 export interface AccountSessionCreate {
   readonly id: string;
   readonly principalId: string;
@@ -11,6 +15,10 @@ export interface AccountSessionCreate {
   readonly nowMs: number;
   readonly idleExpiresAtMs: number;
   readonly absoluteExpiresAtMs: number;
+  readonly authMethod: AuthMethod;
+  /** Ceremony instant; never later than the session's own creation. */
+  readonly authenticatedAtMs: number;
+  readonly assurance: Assurance;
 }
 
 export interface AccountSessionRecord {
@@ -18,6 +26,9 @@ export interface AccountSessionRecord {
   readonly identityId: string;
   readonly digest: string;
   readonly absoluteExpiresAtMs: number;
+  readonly authMethod: AuthMethod;
+  readonly authenticatedAtMs: number;
+  readonly assurance: Assurance;
 }
 
 /** One active session of a principal, without its credential digest. */
@@ -73,7 +84,12 @@ export function validateAccountSessionCreate(
     input.digest.length < 1 ||
     input.digest.length > 1024 ||
     input.idleExpiresAtMs <= input.nowMs ||
-    input.absoluteExpiresAtMs < input.idleExpiresAtMs
+    input.absoluteExpiresAtMs < input.idleExpiresAtMs ||
+    !authMethods.includes(input.authMethod as AuthMethod) ||
+    (input.assurance !== 1 && input.assurance !== 2) ||
+    !Number.isSafeInteger(input.authenticatedAtMs) ||
+    input.authenticatedAtMs < 0 ||
+    input.authenticatedAtMs > input.nowMs
   )
     throw new Error('Invalid authorization session');
 }

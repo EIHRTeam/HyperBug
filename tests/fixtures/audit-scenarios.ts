@@ -19,6 +19,7 @@ export function auditFacts(
 ): AuthorizationFacts {
   return {
     binding: request,
+    instanceRole: null,
     principal:
       request.actorId === null
         ? null

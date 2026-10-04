@@ -342,3 +342,24 @@ it('rejects invalid admission configuration before any work', () => {
       }),
     ).toThrow();
 });
+
+it('records an instance-role backfill with a closed system event', () => {
+  const event = {
+    ...auditFixture(),
+    projectId: null,
+    actorId: null,
+    systemActor: 'core.deployment',
+    action: 'instance-role.backfilled',
+    targetId: auditActor,
+    result: 'success',
+    metadata: { v: 1, role: 'instance-administrator' },
+  };
+  expect(auditEvent(event).action).toBe('instance-role.backfilled');
+  for (const change of [
+    { actorId: auditActor },
+    { projectId: auditProject },
+    { metadata: { v: 1, role: 'administrator' } },
+    { metadata: { v: 1, role: 'instance-administrator', source: 'unbounded' } },
+  ])
+    expect(() => auditEvent({ ...event, ...change })).toThrow('AUDIT_INVALID');
+});

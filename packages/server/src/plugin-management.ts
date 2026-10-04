@@ -1,3 +1,4 @@
+import { instanceId } from '@hyperbug/security';
 import {
   decideEnable,
   decideRegistration,
@@ -18,7 +19,6 @@ import {
   type PluginRegistryRecord,
   type PluginRegistryStore,
   type PluginRegistryView,
-  type ProjectRoleStore,
 } from '@hyperbug/application';
 import type {
   AuthorizationPolicy,
@@ -34,7 +34,7 @@ import {
 import { authenticateBearer, type BearerPrincipal } from './bearer-auth.ts';
 import { appendRequiredAuditEvent, auditRequestId } from './audit-emit.ts';
 import type { AuditAppend } from './sensitive-admission.ts';
-import { requireAuthorizedAction } from './authorization.ts';
+import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
@@ -44,7 +44,6 @@ export interface PluginManagementContext {
   readonly tokenStore: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   readonly authorizationResolver: AuthorizationResolver | null;
   readonly authorizationPolicy: AuthorizationPolicy;
-  readonly roleStore: ProjectRoleStore | null;
   readonly registry: PluginRegistryStore | null;
   readonly settings: PluginSettingsStore | null;
   readonly auditAppend: AuditAppend | null;
@@ -54,12 +53,10 @@ const storeTimeoutMs = 1_000;
 
 /**
  * Plugin administration is deployment-level sensitive administration
- * (SECURITY §39). Like deployment-level staff administration, the permission
- * inventory has no deployment scope yet, so the guard anchors to an active
- * project the actor administrates — but under the plugin permissions
- * themselves ('plugin:install' for registry membership changes,
- * 'plugin:configure' for state/configuration), whose sensitive flag makes the
- * shared evaluator enforce recent authentication.
+ * (SECURITY §39) and uses the dedicated `instance:plugins.manage` permission
+ * on the instance scope, so a project administrator gains no deployment
+ * powers; the sensitive flag makes the evaluator require recent
+ * authentication of the presented token.
  */
 async function requirePluginAdministrator(
   request: Request,
@@ -70,26 +67,18 @@ async function requirePluginAdministrator(
     tokenStore: context.tokenStore,
   });
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-  if (!context.authorizationResolver || !context.roleStore || !context.registry)
+  if (!context.authorizationResolver || !context.registry)
     throw new RequestFailure('PLUGIN_UNAVAILABLE');
-  const anchors = await withDeadline(request.signal, storeTimeoutMs, () =>
-    context.roleStore!.listAdministratorProjectIds(principal.principalId),
-  );
-  const projectId = anchors[0];
-  if (projectId === undefined) throw new RequestFailure('FORBIDDEN');
   await requireAuthorizedAction({
     request: {
       actorId: principal.principalId,
-      // Every 05.2a operation anchors to the administrated project under
-      // 'plugin:install'. 'plugin:configure' (resource type 'plugin') needs a
-      // plugin-scoped facts loader in the resolver and arrives with the
-      // configuration interfaces in 05.2b.
-      permission: 'plugin:install',
-      target: { projectId, type: 'project', id: projectId },
+      permission: 'instance:plugins.manage',
+      target: { projectId: instanceId, type: 'instance', id: instanceId },
     },
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(principal),
   });
   return principal;
 }

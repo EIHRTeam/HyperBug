@@ -210,7 +210,7 @@ function fixture() {
     authorizationResolver: createDbAuthorizationResolver({
       loadPrincipal: async () => null,
       loadMembership: async () => null,
-      tokenIssuedAtMs: async () => null,
+      loadInstanceRole: async () => null,
       loadProject: async () => ({
         visibility: state.visibility,
         state: 'active',
@@ -390,8 +390,9 @@ it.each(['revoked', 'suspended', 'membership'] as const)(
                 identityId: nextId(),
                 clientId: 'media-test',
                 scope: 'public-api',
-                createdAtMs: 1,
-                expiresAtMs: Date.now() + 60000,
+                authMethod: 'passkey',
+                authenticatedAtMs: 1,
+                assurance: 2,
               },
         insert: unexpected,
         insertAccessToken: unexpected,
@@ -410,10 +411,9 @@ it.each(['revoked', 'suspended', 'membership'] as const)(
           kind: 'staff',
           status: suspended ? 'suspended' : 'active',
           credentialActive: true,
-          passkeyUsedAtMs: null,
         }),
         loadMembership: async () => (membership ? { role: 'triage' } : null),
-        tokenIssuedAtMs: async () => 1,
+        loadInstanceRole: async () => null,
         loadProject: async () => ({ visibility: 'private', state: 'active' }),
       }),
     };

@@ -84,6 +84,79 @@ export function mvpSchemaContract(get: () => RepositoryHarness) {
       ).rejects.toThrow();
     });
 
+    it('constrains instance grants independently of project roles', async () => {
+      await expect(
+        query(
+          'INSERT INTO instance_roles (principal_id, granted_at) VALUES (?, ?)',
+          [user, now],
+        ),
+      ).rejects.toThrow();
+      await expect(
+        query(
+          'INSERT INTO instance_roles (principal_id, granted_at, granted_by) VALUES (?, ?, ?)',
+          [staff, now, staff],
+        ),
+      ).rejects.toThrow();
+      await query(
+        'INSERT INTO instance_roles (principal_id, granted_at) VALUES (?, ?)',
+        [staff, now],
+      );
+      await expect(
+        query(
+          'UPDATE instance_roles SET granted_at = ? WHERE principal_id = ?',
+          [now + 1, staff],
+        ),
+      ).rejects.toThrow();
+    });
+
+    it('preserves ceremony time across code/token creation and rejects changed assurance', async () => {
+      const identity = nextId();
+      await query(
+        "INSERT INTO identities (id, principal_id, provider, issuer, subject, created_at) VALUES (?, ?, 'local-password', 'hyperbug', ?, ?)",
+        [identity, staff, identity, now],
+      );
+      const insert = (
+        id: string,
+        method: string,
+        authenticated: number,
+        assurance: number,
+      ) =>
+        query(
+          "INSERT INTO oauth_access_tokens (id, digest, principal_id, identity_id, client_id, scope, created_at, expires_at, auth_method, authenticated_at, assurance) VALUES (?, '{}', ?, ?, 'fixture', 'public-api', ?, ?, ?, ?, ?)",
+          [
+            id,
+            staff,
+            identity,
+            now,
+            now + 600000,
+            method,
+            authenticated,
+            assurance,
+          ],
+        );
+      const token = nextId();
+      await insert(token, 'passkey', now - 60000, 2);
+      await expect(insert(nextId(), 'unknown', now, 2)).rejects.toThrow();
+      await expect(insert(nextId(), 'passkey', now + 1, 2)).rejects.toThrow();
+      await expect(insert(nextId(), 'passkey', -1, 2)).rejects.toThrow();
+      await expect(insert(nextId(), 'passkey', now, 3)).rejects.toThrow();
+      await expect(
+        query(
+          'UPDATE oauth_access_tokens SET authenticated_at = ? WHERE id = ?',
+          [now, token],
+        ),
+      ).rejects.toThrow();
+      await expect(
+        query('UPDATE oauth_access_tokens SET assurance = 1 WHERE id = ?', [
+          token,
+        ]),
+      ).rejects.toThrow();
+      await query(
+        'UPDATE oauth_access_tokens SET revoked_at = ? WHERE id = ?',
+        [now, token],
+      );
+    });
+
     it('keeps labels, issue types and milestones within their owning project', async () => {
       const label = nextId();
       const type = nextId();

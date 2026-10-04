@@ -15,7 +15,7 @@ import {
   deriveMarkdownTree,
   markdownRepresentationEtag,
 } from '@hyperbug/security/markdown';
-import { requireAuthorizedAction } from './authorization.ts';
+import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
 import {
   projectBearer,
   requireVisibleProject,
@@ -54,6 +54,7 @@ async function permit(
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(principal),
   });
 }
 /** Derive only after visibility checks. Canonical definitions remain editor data. */

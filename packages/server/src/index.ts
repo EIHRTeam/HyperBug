@@ -16,6 +16,7 @@ import type {
   UploadDependencies,
   AttachmentStore,
 } from '@hyperbug/application';
+import type { Assurance, AuthMethod } from '@hyperbug/application';
 import { uploadOperation, type UploadContext } from './uploads.ts';
 import { Elysia, t } from 'elysia';
 import {
@@ -312,10 +313,9 @@ export {
   type PluginEventPublisherDependencies,
 } from './plugin-events.ts';
 import type { PluginEventOutboxStore } from '@hyperbug/application';
-import {
-  authorizationPolicy,
-  createDbAuthorizationResolver,
-} from './authorization-facts.ts';
+import { createDbAuthorizationResolver } from './authorization-facts.ts';
+import { instanceId } from '@hyperbug/security';
+import { credentialFactsOf } from './authorization.ts';
 import {
   clearedSessionCookie,
   currentAccountSession,
@@ -634,6 +634,7 @@ export function createApp({
   if (registeredClients.length > 0 && (!oauthCodeStore || !keyProvider))
     throw new Error('Invalid OAuth client configuration');
   const publicCaptchaSiteKey = captchaSiteKey ?? null;
+  const authorizationPolicy = config.security.authorization;
   const administration = accountAdministration;
   const roleStore = projectRoleStore;
   // The resolver binds the authorization-facts loaders to the staff role
@@ -644,8 +645,8 @@ export function createApp({
           loadPrincipal: (principalId) =>
             administration.loadPrincipal(principalId),
           loadProject: (projectId) => administration.loadProject(projectId),
-          tokenIssuedAtMs: (principalId) =>
-            administration.tokenIssuedAtMs(principalId),
+          loadInstanceRole: (principalId) =>
+            administration.loadInstanceRole(principalId),
           loadMembership: (projectId, principalId) =>
             roleStore.loadRole(projectId, principalId),
         })
@@ -672,12 +673,9 @@ export function createApp({
       throw new RequestFailure('AUTHENTICATION_REQUIRED');
     return kind;
   };
-  // Deployment-level staff account administration. The permission inventory
-  // has no deployment-scope resource type yet and the shared evaluator is
-  // project-centric, so the guard anchors to an active project the actor
-  // administrates under the closest deployment-wide sensitive permission
-  // ('data:export'); a deployment-role model or a dedicated permission
-  // replaces this anchor when the inventory grows one.
+  // Deployment-level staff account administration. The guard uses the
+  // dedicated instance scope and `instance:principals.manage`, so a project
+  // administrator never gains deployment powers by creating a project.
   const suspendPrincipal = async (
     request: Request,
     targetId: string | undefined,
@@ -690,47 +688,32 @@ export function createApp({
       tokenStore: oauthCodeStore ?? null,
     });
     if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-    if (
-      !authorizationResolver ||
-      !administration ||
-      !roleStore ||
-      !staffEnrollmentStore
-    )
+    if (!authorizationResolver || !administration)
       throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
     try {
-      const anchors = await withDeadline(request.signal, 1000, () =>
-        roleStore.listAdministratorProjectIds(principal.principalId),
-      );
-      const projectId = anchors[0];
-      if (projectId === undefined) throw new RequestFailure('FORBIDDEN');
       await requireAuthorizedAction({
         request: {
           actorId: principal.principalId,
-          permission: 'data:export',
-          target: { projectId, type: 'export', id: targetId },
+          permission: 'instance:principals.manage',
+          target: { projectId: instanceId, type: 'instance', id: instanceId },
         },
         resolver: authorizationResolver,
         policy: authorizationPolicy,
         signal: request.signal,
+        credential: credentialFactsOf(principal),
       });
       const facts = await withDeadline(request.signal, 1000, () =>
         administration.loadPrincipal(targetId),
       );
       if (!facts) throw new RequestFailure('NOT_FOUND');
-      if (suspend && facts.kind === 'staff' && facts.status === 'active') {
-        const activeStaff = await withDeadline(request.signal, 1000, () =>
-          staffEnrollmentStore.countActiveStaff(),
-        );
-        // Suspending the last active staff principal would strand the
-        // deployment behind the operator-channel bootstrap re-arm.
-        if (activeStaff <= 1) throw new RequestFailure('FORBIDDEN');
-      }
       const applied = await withDeadline(request.signal, 1000, () =>
         suspend
           ? administration.suspendPrincipal(targetId)
           : administration.activatePrincipal(targetId),
       );
-      if (!applied) throw new RequestFailure('NOT_FOUND');
+      // The store refuses the last instance administrator atomically, so two
+      // concurrent suspensions cannot both strand the deployment.
+      if (!applied) throw new RequestFailure('FORBIDDEN');
       await appendRequiredAuditEvent({
         append: auditAppend,
         event: auditEvent({
@@ -968,7 +951,6 @@ export function createApp({
     tokenStore: oauthCodeStore,
     authorizationResolver,
     authorizationPolicy,
-    roleStore,
     registry: pluginRegistry,
     settings: pluginSettings,
     auditAppend,
@@ -1419,6 +1401,7 @@ export function createApp({
           resolver: authorizationResolver,
           policy: authorizationPolicy,
           signal: request.signal,
+          credential: credentialFactsOf(principal),
         });
         try {
           const target = await withDeadline(request.signal, 1000, () =>
@@ -1493,6 +1476,7 @@ export function createApp({
           resolver: authorizationResolver,
           policy: authorizationPolicy,
           signal: request.signal,
+          credential: credentialFactsOf(principal),
         });
         let removed: boolean;
         try {
@@ -3230,6 +3214,7 @@ export function createApp({
               identityId: result.identityId,
               credentialRevision: credential.revision,
             },
+            ceremony: { method: 'bootstrap', assurance: 1 },
             provider: keyProvider,
             store: sessionStore,
             signal: request.signal,
@@ -3418,24 +3403,38 @@ export function createApp({
             ? fields.captchaToken
             : undefined;
         const loginFailure = 'Sign-in failed. Check your credentials.';
-        let sessionFacts: { principalId: string; identityId: string };
+        let sessionFacts: {
+          principalId: string;
+          identityId: string;
+          authMethod: AuthMethod;
+          authenticatedAtMs: number;
+          assurance: Assurance;
+        };
         try {
-          const { cookie, principalId, identityId } = await loginAccount({
-            request,
-            body: {
-              handle: String(fields.handle ?? ''),
-              password: String(fields.password ?? ''),
-              ...(captchaToken === undefined ? {} : { captchaToken }),
-            },
-            admission: sensitiveAdmission,
-            requestId: boundaryFor(request).requestId,
-            passwordService: accountPasswordService,
-            passwordStore: passwordStore ?? null,
-            keyProvider: keyProvider ?? null,
-            sessionStore: sessionStore ?? null,
-          });
+          const { cookie, principalId, identityId, authenticatedAtMs } =
+            await loginAccount({
+              request,
+              body: {
+                handle: String(fields.handle ?? ''),
+                password: String(fields.password ?? ''),
+                ...(captchaToken === undefined ? {} : { captchaToken }),
+              },
+              admission: sensitiveAdmission,
+              requestId: boundaryFor(request).requestId,
+              passwordService: accountPasswordService,
+              passwordStore: passwordStore ?? null,
+              keyProvider: keyProvider ?? null,
+              sessionStore: sessionStore ?? null,
+            });
           set.headers['set-cookie'] = cookie;
-          sessionFacts = { principalId, identityId };
+          // A password sign-in ceremony, recorded on the session it created.
+          sessionFacts = {
+            principalId,
+            identityId,
+            authMethod: 'password',
+            authenticatedAtMs,
+            assurance: 1,
+          };
         } catch {
           set.status = 401;
           return authorizeLoginPage({
@@ -3455,6 +3454,11 @@ export function createApp({
           nowMs: Date.now(),
           principalId: sessionFacts.principalId,
           identityId: sessionFacts.identityId,
+          ceremony: {
+            method: sessionFacts.authMethod,
+            authenticatedAtMs: sessionFacts.authenticatedAtMs,
+            assurance: sessionFacts.assurance,
+          },
           signal: request.signal,
         });
         return new Response(null, {

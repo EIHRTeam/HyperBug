@@ -76,6 +76,8 @@ import {
   verifyKeyPurposeUpgrade,
 } from '../fixtures/key-purpose-migration.ts';
 import {
+  seedInstanceRoleUpgrade,
+  seedTokenAssuranceUpgrade,
   seedPreviousSchema,
   seedTemplateUpgrade,
   seedUploadUpgrade,
@@ -204,6 +206,8 @@ it('legacy recovery PostgreSQL reference guard observes a decision committed aft
     gate.release();
   }
 });
+let verifyInstanceRoleUpgrade: () => Promise<void>;
+let verifyTokenAssuranceUpgrade: () => Promise<void>;
 let measuredQueries: () => string[];
 beforeAll(async () => {
   if (process.env.HYPERBUG_TEST_POSTGRES !== '1')
@@ -244,6 +248,10 @@ beforeAll(async () => {
   };
   verifyUpgrade = await seedPreviousSchema(harness);
   for (const migration of migrations.slice(1)) {
+    if (migration.name === '0023_instance_roles')
+      verifyInstanceRoleUpgrade = await seedInstanceRoleUpgrade(harness);
+    if (migration.name === '0024_token_assurance')
+      verifyTokenAssuranceUpgrade = await seedTokenAssuranceUpgrade(harness);
     if (migration.name === '0018_template_versions')
       verifyTemplateUpgrade = await seedTemplateUpgrade(harness);
     if (migration.name === '0019_upload_reservations')
@@ -254,6 +262,8 @@ beforeAll(async () => {
       verifyLegacyRecoveryUpgrade =
         await snapshotLegacyRecoveryUpgrade(harness);
     await apply(migration.statements);
+    if (migration.name === '0023_instance_roles')
+      await verifyInstanceRoleUpgrade();
   }
 });
 afterAll(async () => {
@@ -594,8 +604,8 @@ it('migrates a fresh database and protects history from truncation', async () =>
   await pool.query('CREATE DATABASE hyperbug_fresh');
   const fresh = new Pool({ database: 'hyperbug_fresh' });
   try {
-    expect((await migratePostgres(fresh)).pending).toHaveLength(23);
-    expect((await migratePostgres(fresh, true)).applied).toHaveLength(23);
+    expect((await migratePostgres(fresh)).pending).toHaveLength(25);
+    expect((await migratePostgres(fresh, true)).applied).toHaveLength(25);
     expect(await migratePostgres(fresh, true)).toEqual({
       applied: [],
       pending: [],
@@ -606,7 +616,7 @@ it('migrates a fresh database and protects history from truncation', async () =>
           "SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema = 'public' AND table_name != 'hyperbug_schema_migrations'",
         )
       ).rows[0].count,
-    ).toBe(48);
+    ).toBe(49);
     await expect(
       fresh.query('TRUNCATE upload_legacy_recoveries'),
     ).rejects.toThrow('Retain legacy cleanup target');
@@ -783,4 +793,8 @@ it('scan migration quarantines unsupported legacy clean claims without changing 
 
 it('legacy recovery migration preserves populated identities, links, lifecycle and accounting without implicit decisions', async () => {
   await verifyLegacyRecoveryUpgrade();
+});
+
+it('backfills pre-existing session, code and token assurance without upgrading it', async () => {
+  await verifyTokenAssuranceUpgrade();
 });

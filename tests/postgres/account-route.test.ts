@@ -83,7 +83,10 @@ beforeAll(async () => {
     (migration) => migration.name === '0013_oauth_codes',
   );
   if (!oauthMigration) throw new Error('OAuth migration missing');
-  oauthStatements = oauthMigration.statements;
+  oauthStatements = [
+    ...oauthMigration.statements,
+    ...migrations.find((m) => m.name === '0024_token_assurance')!.statements,
+  ];
   for (const migration of migrations.slice(
     0,
     migrations.findIndex((entry) => entry.name === '0009_password_credentials'),

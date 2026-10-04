@@ -1432,6 +1432,26 @@ export const accountLockouts = table(
   ],
 );
 
+/** Deployment-scoped roles; separate from project roles (04.3b). */
+export const instanceRoles = table(
+  'instance_roles',
+  {
+    principalId: id('principal_id')
+      .primaryKey()
+      .references(() => principals.id),
+    role: text('role').notNull().default('instance-administrator'),
+    grantedAt: instant('granted_at').notNull(),
+    grantedBy: id('granted_by').references(() => principals.id),
+  },
+  (t) => [
+    check('instance_role_value', sql`${t.role} = 'instance-administrator'`),
+    check(
+      'instance_role_no_self_grant',
+      sql`${t.grantedBy} IS NULL OR ${t.grantedBy} <> ${t.principalId}`,
+    ),
+    validTime('instance_role_granted_at', t.grantedAt),
+  ],
+);
 /** First-party authorization sessions; no plaintext cookie credential. */
 export const authorizationSessions = table(
   'authorization_sessions',
@@ -1444,6 +1464,9 @@ export const authorizationSessions = table(
       .notNull()
       .references(() => identities.id),
     credentialRevision: integer('credential_revision').notNull(),
+    authMethod: text('auth_method').notNull().default('password'),
+    authenticatedAt: instant('authenticated_at').notNull(),
+    assurance: integer('assurance').notNull().default(1),
     digest: json('digest').notNull(),
     createdAt: instant('created_at').notNull(),
     idleExpiresAt: instant('idle_expires_at').notNull(),
@@ -1451,6 +1474,10 @@ export const authorizationSessions = table(
     revokedAt: instant('revoked_at'),
   },
   (t) => [
+    check(
+      'authorization_session_auth_method',
+      sql`${t.authMethod} IN ('password','passkey','recovery','bootstrap')`,
+    ),
     index('authorization_session_principal').on(t.principalId, t.id),
     index('authorization_session_expiry').on(t.absoluteExpiresAt),
     validId('authorization_session_id', t.id),
@@ -1459,6 +1486,11 @@ export const authorizationSessions = table(
     validTime('authorization_session_absolute', t.absoluteExpiresAt),
     validTime('authorization_session_revoked', t.revokedAt),
     validJson('authorization_session_digest', t.digest),
+    check('authorization_session_assurance', sql`${t.assurance} IN (1,2)`),
+    check(
+      'authorization_session_authenticated',
+      sql`${t.authenticatedAt} BETWEEN 0 AND ${t.createdAt}`,
+    ),
     check(
       'authorization_session_revision',
       sql`${t.credentialRevision} BETWEEN 1 AND 2147483647`,
@@ -1584,11 +1616,18 @@ export const oauthCodes = table(
     identityId: id('identity_id')
       .notNull()
       .references(() => identities.id),
+    authMethod: text('auth_method').notNull().default('password'),
+    authenticatedAt: instant('authenticated_at').notNull(),
+    assurance: integer('assurance').notNull().default(1),
     createdAt: instant('created_at').notNull(),
     expiresAt: instant('expires_at').notNull(),
     consumedAt: instant('consumed_at'),
   },
   (t) => [
+    check(
+      'oauth_code_auth_method',
+      sql`${t.authMethod} IN ('password','passkey','recovery','bootstrap')`,
+    ),
     index('oauth_code_expiry').on(t.expiresAt),
     validId('oauth_code_id', t.id),
     check(
@@ -1629,11 +1668,18 @@ export const oauthAccessTokens = table(
       .references(() => identities.id),
     clientId: text('client_id').notNull(),
     scope: text('scope').notNull(),
+    authMethod: text('auth_method').notNull().default('password'),
+    authenticatedAt: instant('authenticated_at').notNull(),
+    assurance: integer('assurance').notNull().default(1),
     createdAt: instant('created_at').notNull(),
     expiresAt: instant('expires_at').notNull(),
     revokedAt: instant('revoked_at'),
   },
   (t) => [
+    check(
+      'oauth_token_auth_method',
+      sql`${t.authMethod} IN ('password','passkey','recovery','bootstrap')`,
+    ),
     index('oauth_access_token_principal').on(t.principalId, t.id),
     index('oauth_access_token_expiry').on(t.expiresAt),
     validId('oauth_token_id', t.id),

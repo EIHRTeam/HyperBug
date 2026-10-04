@@ -1,4 +1,5 @@
-import { assertId, assertInstant } from '@hyperbug/domain';
+import { assertId, assertInstant, authMethods } from '@hyperbug/domain';
+import type { Assurance, AuthMethod } from '@hyperbug/domain';
 
 /** A single-use authorization code issued for one session-bound principal. */
 export interface OAuthCodeInsert {
@@ -13,6 +14,10 @@ export interface OAuthCodeInsert {
   readonly identityId: string;
   readonly nowMs: number;
   readonly expiresAtMs: number;
+  readonly authMethod: AuthMethod;
+  /** Ceremony instant copied from the authorizing session. */
+  readonly authenticatedAtMs: number;
+  readonly assurance: Assurance;
 }
 
 /** The consumed code row, returned once to the single winning redemption. */
@@ -23,6 +28,10 @@ export interface OAuthCodeExchange {
   readonly redirectUri: string;
   readonly scope: string;
   readonly codeChallenge: string;
+  readonly authMethod: AuthMethod;
+  /** Ceremony instant copied from the authorizing session. */
+  readonly authenticatedAtMs: number;
+  readonly assurance: Assurance;
 }
 
 export interface OAuthCodeStore {
@@ -44,6 +53,10 @@ export interface OAuthAccessTokenInsert {
   readonly scope: string;
   readonly nowMs: number;
   readonly expiresAtMs: number;
+  readonly authMethod: AuthMethod;
+  /** Ceremony instant copied from the authorizing session. */
+  readonly authenticatedAtMs: number;
+  readonly assurance: Assurance;
 }
 
 /** An unrevoked, unexpired token record with its stored keyed digest. */
@@ -53,6 +66,10 @@ export interface OAuthAccessTokenRecord {
   readonly clientId: string;
   readonly scope: string;
   readonly digest: string;
+  readonly authMethod: AuthMethod;
+  /** Ceremony instant copied from the authorizing session. */
+  readonly authenticatedAtMs: number;
+  readonly assurance: Assurance;
 }
 
 export interface OAuthAccessTokenStore {
@@ -75,6 +92,21 @@ function boundedText(value: string, minimum: number, maximum: number): boolean {
   return value.length >= minimum && value.length <= maximum;
 }
 
+function validCeremony(input: {
+  readonly authMethod: AuthMethod;
+  readonly authenticatedAtMs: number;
+  readonly assurance: Assurance;
+  readonly nowMs: number;
+}): boolean {
+  return (
+    authMethods.includes(input.authMethod) &&
+    (input.assurance === 1 || input.assurance === 2) &&
+    Number.isSafeInteger(input.authenticatedAtMs) &&
+    input.authenticatedAtMs >= 0 &&
+    input.authenticatedAtMs <= input.nowMs
+  );
+}
+
 export function validateOAuthCodeInsert(input: OAuthCodeInsert): void {
   assertId(input.id);
   assertId(input.principalId);
@@ -90,7 +122,8 @@ export function validateOAuthCodeInsert(input: OAuthCodeInsert): void {
     input.digest.length < 1 ||
     input.digest.length > 1024 ||
     input.expiresAtMs <= input.nowMs ||
-    input.expiresAtMs - input.nowMs > 60000
+    input.expiresAtMs - input.nowMs > 60000 ||
+    !validCeremony(input)
   )
     throw new Error('Invalid authorization code');
 }
@@ -111,7 +144,8 @@ export function validateOAuthAccessTokenInsert(
     input.digest.length > 1024 ||
     input.expiresAtMs <= input.nowMs ||
     input.expiresAtMs - input.nowMs < 300000 ||
-    input.expiresAtMs - input.nowMs > 900000
+    input.expiresAtMs - input.nowMs > 900000 ||
+    !validCeremony(input)
   )
     throw new Error('Invalid access token');
 }

@@ -405,3 +405,84 @@ export async function seedScanUpgrade(harness: RepositoryHarness) {
     }
   };
 }
+
+/** Both new migrations preserve prior credentials and grant only the oldest active Staff. */
+export async function seedInstanceRoleUpgrade(harness: RepositoryHarness) {
+  const oldest = (
+    await harness.query(
+      "SELECT id FROM principals WHERE kind = 'staff' AND status = 'active' ORDER BY created_at, id LIMIT 1",
+    )
+  )[0];
+  if (!oldest) throw new Error('Staff upgrade fixture missing');
+  return async () => {
+    expect(
+      await harness.query('SELECT principal_id, role FROM instance_roles'),
+    ).toEqual([{ principal_id: oldest.id, role: 'instance-administrator' }]);
+    const event = (
+      await harness.query(
+        "SELECT target_id, action, metadata FROM audit_events WHERE action = 'instance-role.backfilled'",
+      )
+    )[0];
+    expect(event?.target_id).toBe(oldest.id);
+    expect(
+      typeof event?.metadata === 'string'
+        ? JSON.parse(event.metadata)
+        : event?.metadata,
+    ).toEqual({ v: 1, role: 'instance-administrator' });
+  };
+}
+
+export async function seedTokenAssuranceUpgrade(harness: RepositoryHarness) {
+  const principal = nextId(),
+    identity = nextId(),
+    now = 1789689600000;
+  await harness.query(
+    "INSERT INTO principals (id, kind, display_name, created_at) VALUES (?, 'user', 'Assurance upgrade', ?)",
+    [principal, now],
+  );
+  await harness.query(
+    "INSERT INTO identities (id, principal_id, provider, issuer, subject, created_at) VALUES (?, ?, 'local-password', 'hyperbug', ?, ?)",
+    [identity, principal, identity, now],
+  );
+  const ids = [nextId(), nextId(), nextId()];
+  await harness.query(
+    "INSERT INTO authorization_sessions (id, principal_id, identity_id, credential_revision, digest, created_at, idle_expires_at, absolute_expires_at) VALUES (?, ?, ?, 1, '{}', ?, ?, ?)",
+    [ids[0]!, principal, identity, now, now + 60000, now + 900000],
+  );
+  await harness.query(
+    "INSERT INTO oauth_codes (id, digest, client_id, redirect_uri, scope, code_challenge, principal_id, identity_id, created_at, expires_at) VALUES (?, '{}', 'upgrade', 'https://app.example/callback', 'public-api', ?, ?, ?, ?, ?)",
+    [ids[1]!, 'a'.repeat(43), principal, identity, now, now + 60000],
+  );
+  await harness.query(
+    "INSERT INTO oauth_access_tokens (id, digest, principal_id, identity_id, client_id, scope, created_at, expires_at) VALUES (?, '{}', ?, ?, 'upgrade', 'public-api', ?, ?)",
+    [ids[2]!, principal, identity, now, now + 900000],
+  );
+  return async () => {
+    for (const [index, table] of [
+      'authorization_sessions',
+      'oauth_codes',
+      'oauth_access_tokens',
+    ].entries()) {
+      const row = (
+        await harness.query(
+          `SELECT auth_method, authenticated_at, assurance FROM ${table} WHERE id = ?`,
+          [ids[index]!],
+        )
+      )[0];
+      expect(row?.auth_method).toBe('password');
+      expect(Number(row?.authenticated_at)).toBe(now);
+      expect(row?.assurance).toBe(1);
+      await expect(
+        harness.query(`UPDATE ${table} SET assurance = 2 WHERE id = ?`, [
+          ids[index]!,
+        ]),
+      ).rejects.toThrow();
+      await expect(
+        harness.query(
+          `UPDATE ${table} SET authenticated_at = NULL WHERE id = ?`,
+          [ids[index]!],
+        ),
+      ).rejects.toThrow();
+    }
+  };
+}

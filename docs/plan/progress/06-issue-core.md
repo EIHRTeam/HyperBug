@@ -303,3 +303,15 @@ Every session affecting this module MUST append an entry following the [required
 - Next-session cautions: New issue sub-resources must call `requireIssueAccess`. The resolver's resource facts remain a stub, so routes own object visibility.
 
 - 2026-10-05 review follow-up (commit `aff2790` reviewed by a Sonnet subagent): no critical or high findings. The comment edit/delete existence oracle is closed through the shared `requireCommentKnown` rule (a moderated or deleted comment is 404 for everyone but moderators and its author), moderation and history order the parent and comment checks before the moderator permission check, and the shared matrix now covers a non-moderator outsider, anonymous, hidden and redacted comments on a visible issue, comment-reaction removal, cross-issue addressing on every comment route, moderator writes to a hidden parent, and deleted-parent writes. Re-verified on workerd and PostgreSQL.
+
+### 2026-10-05 — Review remediation B3 verified
+
+- Scope and checklist IDs: 06.1a/06.2a/06.3a (B3 dependency remediation).
+- Progress: B3 complete locally; overall mission continues at B4. Existing module status/checklists and G1/G2/13.G6 are unchanged.
+- Change summary: All project/issue/discussion/taxonomy guards pass presented-token ceremony facts. Object visibility remains enforced and later audit stays suspended.
+- Files/artifacts: Owning stores/routes/schema/tests and specifications listed in the [cross-module remediation record](../evidence/2026-10-05-review-remediation.md#b3-instance-roles-and-token-bound-assurance-2026-10-05). D1 0024/0025; PostgreSQL 0023/0024.
+- Verification: Final local matrix **916 passed / 18 optional-provider skips** (349 unit, 1 contract, 121 Node, 262 workerd/D1 emulation, 183 real isolated PostgreSQL 18.6). Typecheck, lint, Drizzle check (old timestamp warnings), docs build, tracked/new-source formatting and diff checks pass. Root formatting flags only supplied untracked review files; reports untouched. No actual deployment/provider claim. Initial wiring/schema/fixture failures and focused primary-agent security review are recorded in the linked evidence.
+- Decisions and deviations: Independent instance role and immutable presented-credential facts; configured default 300 s replaces hardcoded 900 s. No policy weakening, new protocol or new ADR required for B3; formal Minimum ADR remains B8.
+- Blockers/open questions: None for B3. Independent Sonnet review unavailable (model not callable); no independent review claimed. Atomic account/role/plugin audit remains B4.
+- Next actions: B4 audit transaction/failure cases, recovery-code step-up and passkey CAPTCHA forwarding, then B5–B15 in the approved order.
+- Next-session cautions: Never stage SECURITY.md or supplied reviews; preserve historical migration/audit rows, apply schema before adapters, inspect upgrade role recipient, and require new passkey login for old tokens. No SPA or later-module audit resume.

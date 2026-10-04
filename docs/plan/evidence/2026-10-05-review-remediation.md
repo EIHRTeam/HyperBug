@@ -17,8 +17,8 @@ Cross-module record for the remediation of two review reports supplied by the us
 | D1 relation query over the 100 bind-parameter limit (PERF 3.1) | B1 | Fixed |
 | Issue create approaching the 50-query invocation limit (PERF 3.2) | B1 | Fixed |
 | Hidden-issue sub-resource visibility (PERF 3.3) | B2 | Fixed |
-| Instance vs project permission mixing (DESIGN 3.1) | B3 | Pending |
-| Assurance not bound to the presented token; `ADMIN_RECENT_AUTH_SECONDS` unused (DESIGN 3.2) | B3 | Pending |
+| Instance vs project permission mixing (DESIGN 3.1) | B3 | Fixed |
+| Assurance not bound to the presented token; `ADMIN_RECENT_AUTH_SECONDS` unused (DESIGN 3.2) | B3 | Fixed |
 | Recovery-code regeneration without step-up (DESIGN 3.3) | B4 | Pending |
 | Audit committed separately from Module 04/05 mutations (DESIGN 3.4) | B4 | Pending; 06+ audit stays suspended |
 | Passkey login fails when CAPTCHA is configured (DESIGN §8 P1) | B4 | Pending |
@@ -89,6 +89,22 @@ Cross-module record for the remediation of two review reports supplied by the us
   - Authenticated callers that previously skipped the moderator lookup (comment create, reactions) now perform it. B6 removes the repeated authorization reads per request.
   - No shared cache is enabled for these resources.
 
+### B3 — Instance roles and token-bound assurance (2026-10-05)
+
+- Progress: Complete locally; migrations are prepared for shared rollout. The old role/token/account sources no longer authorize instance administration or upgrade older tokens.
+- Changes:
+  - Dedicated `instance-administrator` facts and sensitive `instance:principals.manage`, `instance:plugins.manage`, `instance:keys.manage` permissions. Project creation grants no instance role. Bootstrap enrollment creates the role with the principal/identity/credential; upgrade selects only the oldest active Staff principal (creation time, ID tie-break). Grant/revoke APIs remain deferred.
+  - D1 0024/0025 and PostgreSQL 0023/0024 add the role table and immutable session/code/token `auth_method`, `authenticated_at`, `assurance`. Prior credentials become password/1 at their own creation instant. Negative/future/null/change cases fail closed. The backfill records a closed `instance-role.backfilled` event with a principal target; it does not claim Minimum activation. Prepared uncommitted SQL was corrected before any shared rollout; previously committed SQL is unchanged.
+  - Every guarded route supplies its presented token's ceremony facts, including attachment/content routes. Password login's direct authorization-code path preserves the session's exact timestamp. A newer passkey login cannot upgrade an older token. Ceremony options are snapshotted before asynchronous resolution. Account-wide token-max and passkey-last-use queries are removed.
+  - Both roots already pass parsed runtime config; `createApp` now consumes `config.security.authorization`. The age default is 300 s (formerly hardcoded 900 s), with configured timeout. Project-scope resolves do not read instance roles; instance-scope resolves do not read projects/memberships.
+  - Last-active-instance-admin suspension is a conditional D1 writer UPDATE; PostgreSQL obtains a transaction-scoped advisory lock before the UPDATE takes its fresh READ COMMITTED snapshot. Plain Staff may be suspended independently. PostgreSQL bootstrap uses the same lock for its single-shot check.
+- Files/artifacts: `packages/{domain,application,security,server}`, both database migrations/schema/account/session/OAuth/enrollment stores; shared migration/schema/escalation/concurrency fixtures and both-runtime route suites; AUTH-FLOWS, DATA-MODEL, SECURITY-FOUNDATION, API-CONVENTIONS, MIGRATIONS and synchronized EN/ZH security reader guides.
+- Verification (Node 24.21.0): final `pnpm test:unit` **349 passed**, `test:contract` **1 passed**, `test:node` **121 passed / 14 optional-provider skips**, `test:workerd` **262 passed / 2 optional-provider skips**, `test:postgres` **183 passed / 2 optional-provider skips**, real isolated PostgreSQL **18.6**. Total **916 passed / 18 skipped**. Final affected runtime lanes include fresh/upgrade and cross-row concurrency cases. Typecheck, lint/boundaries, `db:check`, docs build, tracked/new implementation formatting and `git diff --check` pass. `db:check` retains its pre-existing reconstructed-journal timestamp warnings. Full `format:check` reports the user-supplied untracked review documents and old HANDOFF; reports are untouched, handoff is refreshed, and every tracked/new implementation file passes. Actual deployments/provider lanes were not run in B3.
+- Failed attempts/corrections: initial authenticated content/attachment requests returned closed 503 from missing ceremony wiring; corrected all guards. Prior fresh schema counts and PostgreSQL's staged OAuth migration fixture needed updating. The new project-creator denial test initially lacked project/plugin composition in its PostgreSQL fixture; fixed the fixture and final full lanes pass. A unit test used an unavailable root package import; corrected to the existing source import convention.
+- Focused security/performance review: checked instance/project separation, token provenance and time propagation, ceremony snapshot mutability, NULL/negative/future/immutable database constraints, staff-only/self-grant checks, append-only backfill metadata, fail-closed wiring and cross-row concurrency. Corrections include SQLite NULL-safe comparison, PostgreSQL serialization and exact authorize-login timestamp propagation. No known critical/high residual in B3's scope; atomic Module 04/05 audit writes remain B4. Review performed by the primary agent; no Sonnet agent is callable in this environment, so no independent/Sonnet review is claimed.
+- Decisions/blockers: no new auth protocol or weakened assurance policy. Instance-role APIs and suspension-driven token-row revocation stay deferred; current state denies on the next request. B8 formal Minimum/profile ADR and B15 real-Free evidence remain pending; G1/G2/13.G6 stay open.
+- Next actions/cautions: B4 atomic account/role/plugin/recovery/enrollment audit, recovery-code step-up, passkey CAPTCHA forwarding. Never stage the protected draft or supplied reports; preserve old migrations and audit history. Apply the new schema before deploying these adapters and verify the selected upgrade administrator; old credentials require fresh passkey login.
+
 ## Documentation lookups
 
 - 2026-10-05, Context7 `/llmstxt/developers_cloudflare_d1_llms-full_txt`:
@@ -96,3 +112,6 @@ Cross-module record for the remediation of two review reports supplied by the us
   - `json_each` expansion of a JSON array bound parameter for `IN` queries.
   - `batch()` executes statements sequentially as one transaction that rolls back on failure.
   - Gap: per-statement accounting of batch members against the invocation query limit is not documented.
+
+- 2026-10-05, Context7 resolve→query `/websites/postgresql_18`: [READ COMMITTED snapshots](https://www.postgresql.org/docs/18/transaction-iso.html), [explicit consistency locks](https://www.postgresql.org/docs/18/applevel-consistency.html), [transaction advisory locks](https://www.postgresql.org/docs/18/functions-admin.html). A count predicate alone cannot prevent cross-row write skew; the suspension lock precedes the later UPDATE snapshot. Verified by the actual PostgreSQL 18.6 concurrency contract.
+- 2026-10-05, Context7 resolve→query `/llmstxt/developers_cloudflare_d1_llms-full_txt`: [D1 batch](https://developers.cloudflare.com/d1/worker-api/d1-database) sequential execution and rollback of the entire batch on failed statements. Bootstrap role creation remains in that batch; the last-administrator predicate is in the authoritative UPDATE. Local workerd proves recorded emulator scope, not deployed concurrency.

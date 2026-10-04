@@ -10,7 +10,7 @@ import {
   type IssueRepository,
   type CommentStore,
 } from '@hyperbug/application';
-import { requireAuthorizedAction } from './authorization.ts';
+import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
 import {
   projectBearer,
   requireVisibleProject,
@@ -292,6 +292,7 @@ async function permit(
     resolver: context.authorizationResolver,
     policy: context.authorizationPolicy,
     signal: request.signal,
+    credential: credentialFactsOf(actor),
   });
 }
 function disposition(filename: string, id: string): string {

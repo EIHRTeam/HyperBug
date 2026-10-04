@@ -7,7 +7,8 @@ export type ResourceType =
   | 'plugin'
   | 'secret'
   | 'key'
-  | 'export';
+  | 'export'
+  | 'instance';
 export type StaffRole = 'triage' | 'maintainer' | 'administrator';
 type Rule = {
   types: readonly ResourceType[];
@@ -15,6 +16,8 @@ type Rule = {
   publicRead?: boolean;
   role?: StaffRole;
   sensitive?: boolean;
+  /** Deployment scope: no project, membership or visibility applies. */
+  scope?: 'instance';
 };
 const rules = {
   'project:read': { types: ['project'], publicRead: true },
@@ -95,7 +98,34 @@ const rules = {
     role: 'administrator',
     sensitive: true,
   },
+  // Deployment-scoped administration is never borrowed from a project role.
+  'instance:principals.manage': {
+    types: ['instance'],
+    write: true,
+    sensitive: true,
+    scope: 'instance',
+  },
+  'instance:plugins.manage': {
+    types: ['instance'],
+    write: true,
+    sensitive: true,
+    scope: 'instance',
+  },
+  'instance:keys.manage': {
+    types: ['instance'],
+    write: true,
+    sensitive: true,
+    scope: 'instance',
+  },
 } as const satisfies Record<string, Rule>;
+
+/** Fixed target for deployment-scoped requests; never a real project. */
+export const instanceId = '00000000-0000-4000-8000-000000000000';
+/** An instance administrator, keyed by principal; null for project rules. */
+export interface InstanceRoleFacts {
+  readonly principalId: string;
+  readonly role: 'instance-administrator';
+}
 
 export type Permission = keyof typeof rules;
 export function isPermission(value: unknown): value is Permission {
@@ -129,6 +159,8 @@ export interface AuthorizationFacts {
     readonly visibility: 'public' | 'private';
     readonly state: 'active' | 'archived' | 'deleted';
   };
+  /** Deployment role facts; only consulted for instance-scoped rules. */
+  readonly instanceRole: InstanceRoleFacts | null;
   readonly membership: null | {
     readonly principalId: string;
     readonly projectId: string;
@@ -156,10 +188,20 @@ export type AuthorizationDecision =
         | 'reauthentication_required'
         | 'unavailable';
     };
+/** The presented credential's own ceremony facts; never account-wide state. */
+export interface CredentialFacts {
+  readonly authenticatedAtMs: number;
+  readonly assurance: 1 | 2 | 3;
+}
+/** 1 = single factor, 2 = a verified passkey ceremony. */
+export type Assurance = 1 | 2;
+
 export interface AuthorizationResolver {
   resolve(
     request: PermissionRequest,
     signal: AbortSignal,
+    /** Ceremony facts of the token/session that authenticated this request. */
+    credential?: CredentialFacts | null,
   ): Promise<AuthorizationFacts>;
 }
 
@@ -209,6 +251,51 @@ function evaluateFacts(
     request.target.id !== request.target.projectId
   )
     return forbidden;
+  // Deployment scope: an instance target, a project-shaped request and the
+  // instance-role fact are all required; no project state is consulted.
+  if (rule.scope === 'instance') {
+    if (
+      request.target.type !== 'instance' ||
+      request.target.id !== instanceId ||
+      request.target.projectId !== instanceId ||
+      facts.binding.actorId !== request.actorId ||
+      facts.binding.permission !== request.permission ||
+      !sameResource(facts.binding.target, request.target)
+    )
+      return forbidden;
+    const role = facts.instanceRole;
+    const admin = facts.principal;
+    if (
+      request.actorId === null ||
+      !uuid.test(request.actorId) ||
+      !admin ||
+      admin.id !== request.actorId ||
+      admin.kind !== 'staff' ||
+      admin.status !== 'active' ||
+      admin.credentialActive !== true ||
+      role === null ||
+      role.principalId !== admin.id ||
+      role.role !== 'instance-administrator'
+    )
+      return forbidden;
+    if (
+      !Number.isSafeInteger(admin.expiresAtMs) ||
+      admin.expiresAtMs <= nowMs ||
+      !Number.isSafeInteger(admin.authenticatedAtMs) ||
+      admin.authenticatedAtMs < 0 ||
+      admin.authenticatedAtMs > nowMs ||
+      ![1, 2, 3].includes(admin.assurance)
+    )
+      return forbidden;
+    if (
+      rule.sensitive &&
+      (admin.assurance < 2 ||
+        nowMs - admin.authenticatedAtMs > policy.recentAuthMaxAgeMs)
+    )
+      return { allowed: false, reason: 'reauthentication_required' };
+    return { allowed: true };
+  }
+  if (request.target.type === 'instance') return forbidden;
   if (
     facts.binding.actorId !== request.actorId ||
     facts.binding.permission !== request.permission ||
@@ -297,16 +384,29 @@ export async function authorize(
   request: PermissionRequest,
   resolver: AuthorizationResolver,
   policy: AuthorizationPolicy,
-  options: { signal?: AbortSignal; now?: () => number } = {},
+  options: {
+    signal?: AbortSignal;
+    now?: () => number;
+    credential?: CredentialFacts | null;
+  } = {},
 ): Promise<AuthorizationDecision> {
   let policySnapshot: AuthorizationPolicy;
   let callerSignal: AbortSignal | undefined;
+  let credentialSnapshot: CredentialFacts | null;
   let now: () => number;
   try {
     policySnapshot = Object.freeze({
       recentAuthMaxAgeMs: policy.recentAuthMaxAgeMs,
       timeoutMs: policy.timeoutMs,
     });
+    const credential = options.credential;
+    credentialSnapshot =
+      credential == null
+        ? null
+        : Object.freeze({
+            authenticatedAtMs: credential.authenticatedAtMs,
+            assurance: credential.assurance,
+          });
     callerSignal = options.signal;
     now = options.now ?? Date.now;
     if (!validPolicy(policySnapshot) || callerSignal?.aborted)
@@ -339,7 +439,11 @@ export async function authorize(
       aborted,
       Promise.resolve().then(async () => {
         if (signal.aborted) return unavailable;
-        const facts = await resolver.resolve(snapshot, signal);
+        const facts = await resolver.resolve(
+          snapshot,
+          signal,
+          credentialSnapshot,
+        );
         if (signal.aborted) return unavailable;
         return evaluatePermission(snapshot, facts, policySnapshot, now());
       }),

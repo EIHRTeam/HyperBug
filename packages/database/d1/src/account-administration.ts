@@ -10,7 +10,6 @@ interface PrincipalRow {
   kind: string;
   status: string;
   credential_active: number | boolean;
-  passkey_used_at: number | null;
 }
 
 function principalFacts(
@@ -25,18 +24,11 @@ function principalFacts(
     row.status !== 'deleted'
   )
     throw new Error('Invalid principal status');
-  const passkeyUsedAtMs = row.passkey_used_at;
-  if (
-    passkeyUsedAtMs !== null &&
-    (!Number.isSafeInteger(passkeyUsedAtMs) || passkeyUsedAtMs < 0)
-  )
-    throw new Error('Invalid passkey ceremony record');
   return {
     kind: row.kind,
     status: row.status,
     credentialActive:
       row.credential_active === true || row.credential_active === 1,
-    passkeyUsedAtMs,
   };
 }
 
@@ -54,7 +46,7 @@ export function createD1AccountAdministration(
       const row = await db
         .withSession('first-primary')
         .prepare(
-          "SELECT p.kind, p.status, EXISTS (SELECT 1 FROM identities i JOIN password_credentials c ON c.identity_id = i.id WHERE i.principal_id = p.id AND i.provider = 'local-password') AS credential_active, (SELECT max(k.last_used_at) FROM identities i2 JOIN passkey_credentials k ON k.identity_id = i2.id WHERE i2.principal_id = p.id) AS passkey_used_at FROM principals p WHERE p.id = ? LIMIT 1",
+          "SELECT p.kind, p.status, EXISTS (SELECT 1 FROM identities i JOIN password_credentials c ON c.identity_id = i.id WHERE i.principal_id = p.id AND i.provider = 'local-password') AS credential_active FROM principals p WHERE p.id = ? LIMIT 1",
         )
         .bind(principalId)
         .first<PrincipalRow>();
@@ -78,27 +70,25 @@ export function createD1AccountAdministration(
       };
       return facts;
     },
-    async tokenIssuedAtMs(principalId) {
+    async loadInstanceRole(principalId) {
       assertId(principalId);
       const row = await db
+        .withSession('first-primary')
         .prepare(
-          'SELECT max(created_at) AS issued_at FROM oauth_access_tokens WHERE principal_id = ? AND revoked_at IS NULL',
+          'SELECT role FROM instance_roles WHERE principal_id = ? LIMIT 1',
         )
         .bind(principalId)
-        .first<{ issued_at: number | null }>();
-      const issuedAtMs = row?.issued_at ?? null;
-      if (
-        issuedAtMs !== null &&
-        (!Number.isSafeInteger(issuedAtMs) || issuedAtMs < 0)
-      )
-        throw new Error('Invalid token issuance record');
-      return issuedAtMs;
+        .first<{ role: string }>();
+      if (row === null) return null;
+      if (row.role !== 'instance-administrator')
+        throw new Error('Invalid instance role record');
+      return { principalId, role: row.role };
     },
     async suspendPrincipal(principalId) {
       assertId(principalId);
       const result = await db
         .prepare(
-          "UPDATE principals SET status = 'suspended' WHERE id = ? AND status IN ('active', 'suspended')",
+          "UPDATE principals SET status = 'suspended' WHERE id = ? AND status IN ('active', 'suspended') AND (status = 'suspended' OR NOT EXISTS (SELECT 1 FROM instance_roles r WHERE r.principal_id = principals.id) OR (SELECT count(*) FROM instance_roles r JOIN principals p ON p.id = r.principal_id WHERE p.kind = 'staff' AND p.status = 'active') > 1)",
         )
         .bind(principalId)
         .run();

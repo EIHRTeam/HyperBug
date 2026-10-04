@@ -106,7 +106,8 @@ export type AuditAction =
   | (typeof pluginActions)[number]
   | 'authorization.checked'
   | 'provider.outage'
-  | 'deployment.enablement';
+  | 'deployment.enablement'
+  | 'instance-role.backfilled';
 export interface AuditEvent {
   readonly id: string;
   readonly projectId: string | null;
@@ -194,6 +195,19 @@ export function auditEvent(input: unknown): AuditEvent {
         resourceType: m.resourceType as string,
         decision: m.decision as string,
       });
+    } else if (r.action === 'instance-role.backfilled') {
+      if (
+        r.projectId !== null ||
+        r.actorId !== null ||
+        r.systemActor !== 'core.deployment' ||
+        r.result !== 'success'
+      )
+        throw invalid();
+      id(r.targetId);
+      const grant = record(r.metadata, ['v', 'role']);
+      if (grant.v !== 1 || grant.role !== 'instance-administrator')
+        throw invalid();
+      metadata = Object.freeze({ v: 1, role: 'instance-administrator' });
     } else if (r.action === 'deployment.enablement') {
       if (
         r.projectId !== null ||

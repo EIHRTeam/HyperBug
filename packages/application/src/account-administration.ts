@@ -1,15 +1,14 @@
+/** A deployment-scoped role fact; matches the security evaluator's shape. */
+export interface InstanceRoleFacts {
+  readonly principalId: string;
+  readonly role: 'instance-administrator';
+}
 /** Current principal state for authorization facts and staff administration. */
 export interface PrincipalAccountFacts {
   readonly kind: 'user' | 'staff';
   readonly status: 'active' | 'suspended' | 'deleted';
   /** A current local-password credential still backs the principal. */
   readonly credentialActive: boolean;
-  /**
-   * The principal's most recent server-verified passkey user-verification
-   * ceremony, or null when no passkey has been used. Only login ceremonies
-   * advance this stamp; it is evidence, never a client claim.
-   */
-  readonly passkeyUsedAtMs: number | null;
 }
 
 /**
@@ -22,15 +21,14 @@ export interface ProjectVisibilityFacts {
   readonly state: 'active' | 'archived';
 }
 
-export interface AccountAdministrationStore {
+export interface InstanceRoleStore {
+  /** Independent of project roles; project administration grants no instance powers. */
+  loadInstanceRole(principalId: string): Promise<InstanceRoleFacts | null>;
+}
+
+export interface AccountAdministrationStore extends InstanceRoleStore {
   loadPrincipal(principalId: string): Promise<PrincipalAccountFacts | null>;
   loadProject(projectId: string): Promise<ProjectVisibilityFacts | null>;
-  /**
-   * The principal's newest unrevoked access-token issuance, or null when no
-   * unrevoked token exists. Tokens are bounded to minutes, so behind a
-   * verified bearer credential this is the freshest authorization instant.
-   */
-  tokenIssuedAtMs(principalId: string): Promise<number | null>;
   /** Suspend an existing, non-deleted principal; false when it cannot apply. */
   suspendPrincipal(principalId: string): Promise<boolean>;
   /** Restore a suspended principal; false when it cannot apply. */

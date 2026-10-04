@@ -51,6 +51,17 @@ export class DomainError extends Error {
     this.code = code;
   }
 }
+/** How a credential behind a session or token was established. */
+export const authMethods = [
+  'password',
+  'passkey',
+  'recovery',
+  'bootstrap',
+] as const;
+export type AuthMethod = (typeof authMethods)[number];
+/** 1 = single factor, 2 = a verified passkey ceremony. */
+export type Assurance = 1 | 2;
+
 export const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 export function assertId(value: unknown): asserts value is string {

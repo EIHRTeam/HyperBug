@@ -37,6 +37,7 @@ export async function securityScenarios(): Promise<
   const facts: AuthorizationFacts = {
     binding: request,
     principal,
+    instanceRole: null,
     membership,
     project: { id: projectId, visibility: 'private', state: 'active' },
     resource: {

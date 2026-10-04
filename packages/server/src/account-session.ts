@@ -1,4 +1,8 @@
-import type { AccountSessionStore } from '@hyperbug/application';
+import type {
+  AccountSessionStore,
+  Assurance,
+  AuthMethod,
+} from '@hyperbug/application';
 import {
   digestCredential,
   generateOpaqueCredential,
@@ -74,12 +78,17 @@ export async function issueSessionCookieFor(input: {
     readonly identityId: string;
     readonly credentialRevision: number;
   };
+  /** How this credential was established; bound to the session, not the account. */
+  readonly ceremony: {
+    readonly method: AuthMethod;
+    readonly assurance: Assurance;
+  };
   readonly provider: KeyProvider | null;
   readonly store: AccountSessionStore | null;
   readonly signal: AbortSignal;
   readonly nowMs: number;
 }): Promise<string> {
-  const { account, provider, store, signal, nowMs } = input;
+  const { account, ceremony, provider, store, signal, nowMs } = input;
   if (!provider || !store || signal.aborted)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   const id = crypto.randomUUID();
@@ -98,6 +107,9 @@ export async function issueSessionCookieFor(input: {
         nowMs,
         idleExpiresAtMs: nowMs + idleMs,
         absoluteExpiresAtMs: nowMs + absoluteMs,
+        authMethod: ceremony.method,
+        authenticatedAtMs: nowMs,
+        assurance: ceremony.assurance,
       }),
     );
     if (!created || signal.aborted) throw new Error('Session not current');
@@ -113,7 +125,13 @@ export async function currentAccountSession(input: {
   readonly provider: KeyProvider | null;
   readonly store: AccountSessionStore | null;
   readonly nowMs: number;
-}): Promise<{ principalId: string; identityId: string } | null> {
+}): Promise<{
+  principalId: string;
+  identityId: string;
+  authMethod: AuthMethod;
+  authenticatedAtMs: number;
+  assurance: Assurance;
+} | null> {
   const { request, provider, store, nowMs } = input;
   const cookie = parseCookie(request);
   if (!cookie) return null;
@@ -143,7 +161,13 @@ export async function currentAccountSession(input: {
     );
     if (!touched || request.signal.aborted)
       throw new Error('Session changed during validation');
-    return { principalId: record.principalId, identityId: record.identityId };
+    return {
+      principalId: record.principalId,
+      identityId: record.identityId,
+      authMethod: record.authMethod,
+      authenticatedAtMs: record.authenticatedAtMs,
+      assurance: record.assurance,
+    };
   } catch {
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   }
