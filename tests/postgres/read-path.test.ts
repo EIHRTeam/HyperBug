@@ -1,5 +1,7 @@
+import { oneShotContract } from '../fixtures/one-shot-contract.ts';
+import { createPostgresCommentStore } from '@hyperbug/database-postgres';
 import { it, vi } from 'vitest';
-import { Pool } from 'pg';
+import { Pool, Client } from 'pg';
 import {
   createPostgresAccountAdministration,
   createPostgresProjectRoleStore,
@@ -33,7 +35,7 @@ it('reuses PostgreSQL authorization facts within a request and reloads revoked f
       }
     }
     const readyPool = pool;
-    const spy = vi.spyOn(readyPool, 'query');
+    const spy = vi.spyOn(Client.prototype, 'query');
     const measure = async <T>(run: () => Promise<T>) => {
       const offset = spy.mock.calls.length;
       const value = await run();
@@ -61,6 +63,23 @@ it('reuses PostgreSQL authorization facts within a request and reloads revoked f
       },
       measure,
     );
+    await oneShotContract(
+      {
+        repository: createPostgresRepository(readyPool),
+        query: async (sql, values = []) => {
+          let i = 0;
+          return (
+            await readyPool.query(
+              sql.replace(/\?/g, () => `$${++i}`),
+              values,
+            )
+          ).rows;
+        },
+      },
+      createPostgresCommentStore(readyPool),
+      measure,
+    );
+    spy.mockRestore();
   } finally {
     await pool?.end();
     await bootstrap.query(`DROP DATABASE IF EXISTS ${database}`);

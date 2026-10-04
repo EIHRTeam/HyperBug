@@ -71,6 +71,7 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
     intent: CommentMutationIdentity,
     operation: string,
   ): Promise<CommentMutationOutcome | null> {
+    if (intent.persistReceipt === false) return null;
     const { rows } = await db.query<{
       payload_hash: string;
       expires_at: string;
@@ -102,23 +103,24 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
     const db = await pool.connect();
     try {
       await db.query('BEGIN');
-      await db.query(
-        "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES ($1, $2, $3, $4, $5, $6, 'null'::jsonb, $7, $8)",
-        [
-          intent.mutationId,
-          intent.principalId,
-          intent.projectId,
-          operation,
-          intent.keyHash,
-          intent.payloadHash,
-          intent.now,
-          intent.expiresAt,
-        ],
-      );
+      if (intent.persistReceipt !== false)
+        await db.query(
+          "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES ($1, $2, $3, $4, $5, $6, 'null'::jsonb, $7, $8)",
+          [
+            intent.mutationId,
+            intent.principalId,
+            intent.projectId,
+            operation,
+            intent.keyHash,
+            intent.payloadHash,
+            intent.now,
+            intent.expiresAt,
+          ],
+        );
       let row: CommentRow | undefined;
       if (operation === 'comment.create') {
         const inserted = await db.query<CommentRow>(
-          "INSERT INTO comments (id, project_id, issue_id, author_id, body, revision, moderation, created_at, updated_at, body_text, body_text_version) VALUES ($1, $2, $3, $4, $5, 1, 'visible', $6, $6, $7, $8) RETURNING " +
+          "INSERT INTO comments (id, project_id, issue_id, author_id, body, revision, moderation, created_at, updated_at, body_text, body_text_version, last_mutation_id) VALUES ($1, $2, $3, $4, $5, 1, 'visible', $6, $6, $7, $8, $9) RETURNING " +
             commentColumns,
           [
             intent.id,
@@ -129,6 +131,7 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
             intent.now,
             projection.text,
             projection.version,
+            intent.mutationId,
           ],
         );
         row = inserted.rows[0];
@@ -145,7 +148,7 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
         );
       } else {
         const updated = await db.query<CommentRow>(
-          'UPDATE comments SET body = $1, body_text = $7, body_text_version = $8, revision = revision + 1, updated_at = GREATEST(updated_at, $2) WHERE project_id = $3 AND issue_id = $4 AND id = $5 AND revision = $6 RETURNING ' +
+          'UPDATE comments SET body = $1, body_text = $7, body_text_version = $8, revision = revision + 1, updated_at = GREATEST(updated_at, $2), last_mutation_id = $9 WHERE project_id = $3 AND issue_id = $4 AND id = $5 AND revision = $6 RETURNING ' +
             commentColumns,
           [
             intent.body,
@@ -157,6 +160,7 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
               .expectedRevision,
             projection.text,
             projection.version,
+            intent.mutationId,
           ],
         );
         row = updated.rows[0];
@@ -205,10 +209,11 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
           intent.now,
         ],
       );
-      await db.query('UPDATE mutation_receipts SET result = $1 WHERE id = $2', [
-        JSON.stringify(result),
-        intent.mutationId,
-      ]);
+      if (intent.persistReceipt !== false)
+        await db.query(
+          'UPDATE mutation_receipts SET result = $1 WHERE id = $2',
+          [JSON.stringify(result), intent.mutationId],
+        );
       await db.query('COMMIT');
       return { result, replayed: false };
     } catch (error) {

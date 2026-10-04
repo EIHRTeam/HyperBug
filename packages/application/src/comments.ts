@@ -35,6 +35,7 @@ export interface CommentMutationIdentity {
   readonly mutationId: string;
   readonly principalId: string;
   readonly projectId: string;
+  readonly persistReceipt?: boolean;
   readonly keyHash: string;
   readonly payloadHash: string;
   readonly now: number;

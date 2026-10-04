@@ -75,6 +75,7 @@ export function createD1CommentStore(db: D1Database): CommentStore {
     intent: CommentMutationIdentity,
     operation: string,
   ): Promise<CommentMutationOutcome | null> {
+    if (intent.persistReceipt === false) return null;
     const row = await db
       .prepare(
         'SELECT payload_hash, expires_at, result FROM mutation_receipts WHERE principal_id = ? AND project_id = ? AND operation = ? AND key_hash = ?',
@@ -108,27 +109,30 @@ export function createD1CommentStore(db: D1Database): CommentStore {
     const projection = projectMarkdownText(intent.body);
     const replay = await receipt(intent, operation);
     if (replay) return replay;
-    const statements = [
-      db
-        .prepare(
-          "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, 'null', ?, ?)",
-        )
-        .bind(
-          intent.mutationId,
-          intent.principalId,
-          intent.projectId,
-          operation,
-          intent.keyHash,
-          intent.payloadHash,
-          intent.now,
-          intent.expiresAt,
-        ),
-    ];
+    const statements =
+      intent.persistReceipt === false
+        ? []
+        : [
+            db
+              .prepare(
+                "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, 'null', ?, ?)",
+              )
+              .bind(
+                intent.mutationId,
+                intent.principalId,
+                intent.projectId,
+                operation,
+                intent.keyHash,
+                intent.payloadHash,
+                intent.now,
+                intent.expiresAt,
+              ),
+          ];
     if (operation === 'comment.create') {
       statements.push(
         db
           .prepare(
-            "INSERT INTO comments (id, project_id, issue_id, author_id, body, revision, moderation, created_at, updated_at, body_text, body_text_version) VALUES (?, ?, ?, ?, ?, 1, 'visible', ?, ?, ?, ?)",
+            "INSERT INTO comments (id, project_id, issue_id, author_id, body, revision, moderation, created_at, updated_at, body_text, body_text_version, last_mutation_id) VALUES (?, ?, ?, ?, ?, 1, 'visible', ?, ?, ?, ?, ?)",
           )
           .bind(
             intent.id,
@@ -140,6 +144,7 @@ export function createD1CommentStore(db: D1Database): CommentStore {
             intent.now,
             projection.text,
             projection.version,
+            intent.mutationId,
           ),
         db
           .prepare(
@@ -163,13 +168,14 @@ export function createD1CommentStore(db: D1Database): CommentStore {
       statements.push(
         db
           .prepare(
-            'UPDATE comments SET body = ?, body_text = ?, body_text_version = ?, revision = revision + 1, updated_at = max(updated_at, ?) WHERE project_id = ? AND issue_id = ? AND id = ? AND revision = ?',
+            'UPDATE comments SET body = ?, body_text = ?, body_text_version = ?, revision = revision + 1, updated_at = max(updated_at, ?), last_mutation_id = ? WHERE project_id = ? AND issue_id = ? AND id = ? AND revision = ?',
           )
           .bind(
             intent.body,
             projection.text,
             projection.version,
             intent.now,
+            intent.mutationId,
             intent.projectId,
             intent.issueId,
             intent.id,
@@ -178,7 +184,7 @@ export function createD1CommentStore(db: D1Database): CommentStore {
           ),
         db
           .prepare(
-            'INSERT INTO comment_history (id, project_id, comment_id, revision, editor_id, body, changed_at) VALUES (?, ?, ?, (SELECT revision FROM comments WHERE id = ? AND project_id = ?), ?, ?, ?)',
+            'INSERT INTO comment_history (id, project_id, comment_id, revision, editor_id, body, changed_at) VALUES (?, ?, ?, (SELECT revision FROM comments WHERE id = ? AND project_id = ? AND last_mutation_id = ?), ?, ?, ?)',
           )
           .bind(
             crypto.randomUUID(),
@@ -186,6 +192,7 @@ export function createD1CommentStore(db: D1Database): CommentStore {
             intent.id,
             intent.id,
             intent.projectId,
+            intent.mutationId,
             intent.principalId,
             intent.body,
             intent.now,
@@ -208,18 +215,59 @@ export function createD1CommentStore(db: D1Database): CommentStore {
           intent.now,
           intent.now,
         ),
-      db
-        .prepare(
-          "UPDATE mutation_receipts SET result = (SELECT json_object('id', id, 'projectId', project_id, 'issueId', issue_id, 'revision', revision, 'createdAtMs', created_at, 'updatedAtMs', updated_at) FROM comments WHERE id = ? AND project_id = ?) WHERE id = ?",
-        )
-        .bind(intent.id, intent.projectId, intent.mutationId),
     );
+    if (intent.persistReceipt !== false)
+      statements.push(
+        db
+          .prepare(
+            "UPDATE mutation_receipts SET result = (SELECT json_object('id', id, 'projectId', project_id, 'issueId', issue_id, 'revision', revision, 'createdAtMs', created_at, 'updatedAtMs', updated_at) FROM comments WHERE id = ? AND project_id = ?) WHERE id = ?",
+          )
+          .bind(intent.id, intent.projectId, intent.mutationId),
+      );
+    if (intent.persistReceipt === false)
+      statements.push(
+        db
+          .prepare(
+            `SELECT ${commentColumns} FROM comments WHERE project_id = ? AND id = ? AND last_mutation_id = ?`,
+          )
+          .bind(intent.projectId, intent.id, intent.mutationId),
+      );
+    let committed: CommentRow | undefined;
     try {
-      await db.batch(statements);
+      const batch = await db.batch(statements);
+      if (intent.persistReceipt === false)
+        committed = batch.at(-1)?.results?.[0] as unknown as
+          | CommentRow
+          | undefined;
     } catch (error) {
       const concurrentReplay = await receipt(intent, operation);
       if (concurrentReplay) return concurrentReplay;
+      if (operation === 'comment.edit') {
+        const existing = await load(
+          intent.projectId,
+          intent.issueId,
+          intent.id,
+        );
+        throw new Error(existing ? 'revision-conflict' : 'not-found', {
+          cause: error,
+        });
+      }
       throw error;
+    }
+    if (intent.persistReceipt === false) {
+      if (!committed) throw new Error('Committed one-shot comment is missing');
+      const row = toRecord(committed);
+      return {
+        result: {
+          id: row.id,
+          projectId: row.projectId,
+          issueId: row.issueId,
+          revision: row.revision,
+          createdAtMs: row.createdAtMs,
+          updatedAtMs: row.updatedAtMs,
+        },
+        replayed: false,
+      };
     }
     const result = await receipt(intent, operation);
     if (!result) throw new Error('Committed comment receipt is missing');

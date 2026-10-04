@@ -342,3 +342,12 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Selected Node/workerd HTTP 6 passed / 62 intentionally deselected; typecheck/lint/boundaries/scoped format/diff/docs pass. Native/set override defenses and Origin errors remain closed. Initial response-inference issue corrected.
 - Decisions/blockers: No schema/deployment or blocker. Context7 cache/pricing gaps recorded; real Free request accounting B15. Gates unchanged.
 - Next actions/cautions: Commit B10, then B11 bounded expired cleanup only. Keep global Origin checks, credential/cache separation, metadata Vary, no shared content cache and audit history/protected drafts.
+
+### 2026-10-05 — Review remediation B12 one-shot receipts
+
+- Scope/checklist IDs: Approved B12, 06.2c non-audit/V3 and dependent data/acceptance contracts.
+- Progress/change summary: Explicit unkeyed issue/comment intents skip receipts; keyed replay remains 24 hours. D1 captures committed result within batch; comment last-mutation witness fences edit history.
+- Files/artifacts: [B12 record](../evidence/2026-10-05-review-remediation.md#b12-one-shot-mutation-receipts-2026-10-05), identity/intents/adapters, D1 0027/PG 0026 and specs.
+- Verification: Focused D1/workerd 4 and PostgreSQL 18.6 4 pass, including three-statement reductions and concurrent losers/keyed replay; types/lint/boundaries/docs pass. Broad matrix B15.
+- Decisions/blockers: No gate or suspended-audit closure; nullable column leaves history unchanged.
+- Next actions/cautions: Commit B12 then B13; migrate before adapters, preserve atomic side records, protected drafts and old SQL.

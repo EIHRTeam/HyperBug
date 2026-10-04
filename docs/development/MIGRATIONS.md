@@ -102,3 +102,5 @@ D1 0025 / PostgreSQL 0024 preserve old credentials but mark them password/assura
 ### Expired cleanup indexes (2026-10-05)
 
 D1 `0026_expired_cleanup_indexes` and PostgreSQL `0025_expired_cleanup_indexes` add only session `(idle_expires_at,id)` and `(revoked_at,id)` indexes. They are additive and need no data backfill or rollback deletion. Installed Drizzle Kit 0.31.11 generated a current snapshot; its initial SQL repeated earlier custom B3 changes lacking generated snapshots. The reviewed forward SQL removes those duplicates while retaining the new current snapshot and all historical artifacts. Inspect SQL before applying; never reapply the repeated role/ceremony DDL. Actual remote application is reserved for B15 after backup/list checks.
+
+D1 `0027_comment_mutation_witness` / PostgreSQL `0026_comment_mutation_witness` add only nullable comment `last_mutation_id`. Historical content/history remains unchanged; deploy migration before the adapter. Retaining the nullable column permits application rollback.

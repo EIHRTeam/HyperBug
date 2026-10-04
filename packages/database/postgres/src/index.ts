@@ -90,6 +90,7 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
     intent: MutationIdentity,
     operation: string,
   ): Promise<MutationOutcome | null> {
+    if (intent.persistReceipt === false) return null;
     const { rows } = await db.query<{
       payload_hash: string;
       expires_at: string;
@@ -157,19 +158,20 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
       );
       if (project.rows[0]?.status !== 'active')
         throw new DomainError('NOT_FOUND');
-      await db.query(
-        "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES ($1, $2, $3, $4, $5, $6, 'null'::jsonb, $7, $8)",
-        [
-          intent.mutationId,
-          intent.principalId,
-          intent.projectId,
-          operation,
-          intent.keyHash,
-          intent.payloadHash,
-          intent.now,
-          intent.expiresAt,
-        ],
-      );
+      if (intent.persistReceipt !== false)
+        await db.query(
+          "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES ($1, $2, $3, $4, $5, $6, 'null'::jsonb, $7, $8)",
+          [
+            intent.mutationId,
+            intent.principalId,
+            intent.projectId,
+            operation,
+            intent.keyHash,
+            intent.payloadHash,
+            intent.now,
+            intent.expiresAt,
+          ],
+        );
       let row: IssueRow | undefined;
       let metadata: Record<string, unknown> = { v: 1 };
       if (operation === 'issue.create') {
@@ -543,10 +545,11 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
           intent.now,
         ],
       );
-      await db.query('UPDATE mutation_receipts SET result = $1 WHERE id = $2', [
-        JSON.stringify(result),
-        intent.mutationId,
-      ]);
+      if (intent.persistReceipt !== false)
+        await db.query(
+          'UPDATE mutation_receipts SET result = $1 WHERE id = $2',
+          [JSON.stringify(result), intent.mutationId],
+        );
       await db.query('COMMIT');
       return { result, replayed: false };
     } catch (error) {

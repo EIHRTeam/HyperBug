@@ -1,3 +1,5 @@
+import { oneShotContract } from '../fixtures/one-shot-contract.ts';
+import { createD1CommentStore } from '@hyperbug/database-d1';
 import { expect, it } from 'vitest';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import {
@@ -26,6 +28,7 @@ it('reuses D1 authorization facts within a request and reloads revoked facts', a
       await db.batch(migration.statements.map((sql) => db.prepare(sql)));
     const statements: string[] = [];
     const measured = {
+      batch: db.batch.bind(db),
       prepare(sql: string) {
         statements.push(sql);
         return db.prepare(sql);
@@ -60,6 +63,20 @@ it('reuses D1 authorization facts within a request and reloads revoked facts', a
         issues: createD1Repository(measured),
         tokenStore: createD1OAuthStores(measured),
       },
+      measure,
+    );
+    await oneShotContract(
+      {
+        repository: createD1Repository(measured),
+        query: async (sql, values = []) =>
+          (
+            await db
+              .prepare(sql)
+              .bind(...values)
+              .all<Record<string, unknown>>()
+          ).results,
+      },
+      createD1CommentStore(measured),
       measure,
     );
     expect(

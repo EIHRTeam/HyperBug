@@ -37,6 +37,8 @@ export interface MutationIdentity {
   mutationId: string;
   principalId: string;
   projectId: string;
+  /** false only for an unkeyed one-shot request; omitted retains keyed compatibility. */
+  persistReceipt?: boolean;
   keyHash: string;
   payloadHash: string;
   now: number;

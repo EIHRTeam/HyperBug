@@ -98,6 +98,7 @@ export function createD1Repository(db: D1Database): IssueRepository {
     intent: MutationIdentity,
     operation: string,
   ): Promise<MutationOutcome | null> {
+    if (intent.persistReceipt === false) return null;
     const row = await db
       .prepare(
         'SELECT payload_hash, expires_at, result FROM mutation_receipts WHERE principal_id = ? AND project_id = ? AND operation = ? AND key_hash = ?',
@@ -152,22 +153,25 @@ export function createD1Repository(db: D1Database): IssueRepository {
       },
       replayed: false,
     });
-    const statements = [
-      db
-        .prepare(
-          "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, 'null', ?, ?)",
-        )
-        .bind(
-          intent.mutationId,
-          intent.principalId,
-          intent.projectId,
-          operation,
-          intent.keyHash,
-          intent.payloadHash,
-          intent.now,
-          intent.expiresAt,
-        ),
-    ];
+    const statements =
+      intent.persistReceipt === false
+        ? []
+        : [
+            db
+              .prepare(
+                "INSERT INTO mutation_receipts (id, principal_id, project_id, operation, key_hash, payload_hash, result, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, 'null', ?, ?)",
+              )
+              .bind(
+                intent.mutationId,
+                intent.principalId,
+                intent.projectId,
+                operation,
+                intent.keyHash,
+                intent.payloadHash,
+                intent.now,
+                intent.expiresAt,
+              ),
+          ];
     let metadata = '{}';
     if (operation === 'issue.create') {
       let create = intent as CreateIssueIntent;
@@ -578,20 +582,34 @@ export function createD1Repository(db: D1Database): IssueRepository {
           intent.now,
         ),
     );
-    statements.push(
-      db
-        .prepare(
-          "UPDATE mutation_receipts SET result = (SELECT json_object('id', id, 'projectId', project_id, 'number', number, 'revision', revision, 'createdAt', created_at, 'updatedAt', updated_at) FROM issues WHERE id = ? AND project_id = ? AND last_mutation_id = ?) WHERE id = ?",
-        )
-        .bind(
-          intent.id,
-          intent.projectId,
-          intent.mutationId,
-          intent.mutationId,
-        ),
-    );
+    if (intent.persistReceipt !== false)
+      statements.push(
+        db
+          .prepare(
+            "UPDATE mutation_receipts SET result = (SELECT json_object('id', id, 'projectId', project_id, 'number', number, 'revision', revision, 'createdAt', created_at, 'updatedAt', updated_at) FROM issues WHERE id = ? AND project_id = ? AND last_mutation_id = ?) WHERE id = ?",
+          )
+          .bind(
+            intent.id,
+            intent.projectId,
+            intent.mutationId,
+            intent.mutationId,
+          ),
+      );
+    if (intent.persistReceipt === false)
+      statements.push(
+        db
+          .prepare(
+            `SELECT ${issueColumns} FROM issues WHERE project_id = ? AND id = ? AND last_mutation_id = ?`,
+          )
+          .bind(intent.projectId, intent.id, intent.mutationId),
+      );
+    let committed: IssueRow | undefined;
     try {
-      await db.batch(statements);
+      const batch = await db.batch(statements);
+      if (intent.persistReceipt === false)
+        committed = batch.at(-1)?.results?.[0] as unknown as
+          | IssueRow
+          | undefined;
     } catch (error) {
       // A competing identical request may have won the unique receipt scope.
       const concurrentReplay = await receipt(intent, operation);
@@ -640,6 +658,10 @@ export function createD1Repository(db: D1Database): IssueRepository {
         );
       }
       throw error;
+    }
+    if (intent.persistReceipt === false) {
+      if (!committed) throw new Error('Committed one-shot issue is missing');
+      return snapshotOf(committed);
     }
     const result = await receipt(intent, operation);
     if (!result) throw new Error('Committed mutation receipt is missing');

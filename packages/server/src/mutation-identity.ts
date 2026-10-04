@@ -12,6 +12,7 @@ async function sha256Hex(value: string): Promise<string> {
 
 export interface MutationIdentityFields {
   readonly mutationId: string;
+  readonly persistReceipt: boolean;
   readonly keyHash: string;
   readonly payloadHash: string;
   readonly now: number;
@@ -25,8 +26,7 @@ export interface MutationIdentityFields {
  * The mutation identity per DATA-MODEL: a present Idempotency-Key (16–128
  * ASCII characters) scopes the receipt, and the canonical payload hash makes
  * a same-key/different-payload retry a conflict. Without a header the
- * mutation is one-shot: the receipt row still participates in the atomic
- * write but no retry can ever match it.
+ * mutation is one-shot and omits receipt persistence and replay reads.
  */
 export async function mutationIdentityOf(
   request: Request,
@@ -43,10 +43,9 @@ export async function mutationIdentityOf(
   const keyed = header !== null && idempotencyKeyPattern.test(header);
   return {
     mutationId,
-    keyHash: await sha256Hex(
-      keyed ? `${operation}:${header}` : `one-shot:${mutationId}`,
-    ),
-    payloadHash: await sha256Hex(keyed ? payload : `one-shot:${mutationId}`),
+    persistReceipt: keyed,
+    keyHash: keyed ? await sha256Hex(`${operation}:${header}`) : '0'.repeat(64),
+    payloadHash: keyed ? await sha256Hex(payload) : '0'.repeat(64),
     now,
     expiresAt: now + validityMs,
     principalId,

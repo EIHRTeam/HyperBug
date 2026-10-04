@@ -531,6 +531,7 @@ export const comments = table(
     body: text('body').notNull(),
     bodyText: text('body_text'),
     bodyTextVersion: text('body_text_version'),
+    lastMutationId: id('last_mutation_id'),
     revision: integer('revision').notNull().default(1),
     moderation: text('moderation').notNull().default('visible'),
     deletedAt: instant('deleted_at'),
