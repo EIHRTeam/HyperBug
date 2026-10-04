@@ -1,3 +1,7 @@
+import { SafeMarkdownTreeSchema } from './markdown.ts';
+export * from './markdown.ts';
+export * from './uploads.ts';
+export * from './content-definitions.ts';
 import { Type, type Static } from '@sinclair/typebox';
 
 export const ErrorSchema = Type.Object(
@@ -516,6 +520,20 @@ const CloseReasonSchema = Type.Union([
   Type.Literal('invalid'),
   Type.Literal('cannot_reproduce'),
 ]);
+/** Public safe element tree; no HTML strings or executable DOM properties. */
+const ContentRepresentationFields = {
+  bodyTree: Type.Optional(SafeMarkdownTreeSchema),
+  contentPolicyVersion: Type.Optional(Type.String({ maxLength: 80 })),
+  representationEtag: Type.Optional(Type.String({ maxLength: 200 })),
+};
+const ContentPreviewFields = {
+  preview: Type.Union([Type.Null(), Type.String({ maxLength: 1120 })]),
+  textProjectionVersion: Type.Union([
+    Type.Null(),
+    Type.String({ maxLength: 64 }),
+  ]),
+};
+
 const IssueBaseSchema = {
   id: Type.String({ format: 'uuid' }),
   projectId: Type.String({ format: 'uuid' }),
@@ -537,6 +555,8 @@ const IssueBaseSchema = {
 export const IssueDocumentSchema = Type.Object(
   {
     ...IssueBaseSchema,
+    ...ContentPreviewFields,
+    ...ContentRepresentationFields,
     body: Type.String({ maxLength: 32768 }),
   },
   { additionalProperties: false },
@@ -545,6 +565,7 @@ export type IssueDocument = Static<typeof IssueDocumentSchema>;
 export const IssueSummarySchema = Type.Object(
   {
     ...IssueBaseSchema,
+    ...ContentPreviewFields,
     /** List projections never carry the Markdown body. */
     body: Type.Null(),
   },
@@ -659,6 +680,8 @@ export const CommentDocumentSchema = Type.Object(
     projectId: Type.String({ format: 'uuid' }),
     issueId: Type.String({ format: 'uuid' }),
     authorId: Type.String({ format: 'uuid' }),
+    ...ContentPreviewFields,
+    ...ContentRepresentationFields,
     body: Type.Optional(Type.String({ maxLength: 32768 })),
     revision: Type.Integer({ minimum: 1 }),
     moderation: CommentModerationSchema,
@@ -761,6 +784,7 @@ export const TimelineItemSchema = Type.Object(
     ),
     moderation: Type.Optional(CommentModerationSchema),
     deleted: Type.Optional(Type.Boolean()),
+    ...ContentRepresentationFields,
     body: Type.Optional(Type.String({ maxLength: 32768 })),
   },
   { additionalProperties: false },

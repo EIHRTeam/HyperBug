@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-03",
+  "node": "v24.21.0",
+  "workerdVersion": "1.20260926.1",
+  "method": "one warmup, five single derivations, 100 sequential derivations; wall time in ms; local emulator, no paid CPU measurement",
+  "results": {
+    "node": [
+      {
+        "name": "maximum-plain",
+        "codePoints": 32768,
+        "bytes": 32768,
+        "singleMeanMs": 4.558808399999998,
+        "page100Ms": 340.196
+      },
+      {
+        "name": "maximum-gfm",
+        "codePoints": 32768,
+        "bytes": 32768,
+        "singleMeanMs": 30.588766600000007,
+        "page100Ms": 2394.7222920000004
+      },
+      {
+        "name": "maximum-unicode",
+        "codePoints": 32768,
+        "bytes": 131072,
+        "singleMeanMs": 4.616024999999991,
+        "page100Ms": 427.40545900000006
+      }
+    ],
+    "workerd": [
+      {
+        "name": "maximum-plain",
+        "codePoints": 32768,
+        "bytes": 32768,
+        "singleMeanMs": 3.8,
+        "page100Ms": 282
+      },
+      {
+        "name": "maximum-gfm",
+        "codePoints": 32768,
+        "bytes": 32768,
+        "singleMeanMs": 22.8,
+        "page100Ms": 1893
+      },
+      {
+        "name": "maximum-unicode",
+        "codePoints": 32768,
+        "bytes": 131072,
+        "singleMeanMs": 4,
+        "page100Ms": 353
+      }
+    ]
+  }
+}

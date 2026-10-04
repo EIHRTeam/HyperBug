@@ -1,6 +1,6 @@
 # HyperBug Markdown content policy
 
-Status: Phase 07 policy specification. Adopted as the project direction by [ADR 0003](decisions/0003-markdown-representation-and-pagination.md). The element/attribute/URL allowlist, the concrete `content-policy` version identifier and the pipeline implementation remain module 07 work; until 07.1 is implemented and verified, no public content endpoint exists.
+Status: Module 07 implementation in progress. `hyperbug-content-1` is implemented in `packages/security/src/markdown` and verified with the adversarial corpus on Node and local workerd. Endpoint transport/projection integration and broader acceptance are tracked in the Module 07 checklist. [ADR 0003](decisions/0003-markdown-representation-and-pagination.md) remains authoritative.
 
 ## Canonical data and representations
 
@@ -69,13 +69,9 @@ Collections use the bounded cursor pagination already defined in [API-CONVENTION
 - A client that needs many bodies pages for them explicitly; it does not request an unbounded body list.
 - Cursor semantics are unchanged: a cursor is not an authorization capability, every page is reauthorized, and a rendering or policy change does not invalidate stored cursors.
 
-## Open items owned by module 07
+## Remaining acceptance
 
-- The concrete allowlist and its initial `content-policy` version identifier (07.1a).
-- The pipeline implementation and both-profile parity tests (07.1b–07.1c).
-- External image handling, attachment URL presentation and their rendered markers (07.1d).
-- The bounded `text` projection algorithm, its exact bounds and its backfill procedure (07.1g).
-- Measured per-body and per-page derivation cost on both runtimes, recorded as evidence (07.1i).
+The implementation and local evidence below cover the initial policy. Module 07 still owns complete forms/attachment integration, real-provider storage acceptance, and runtime validation of an actual upgraded policy bundle. No SPA, image proxy, shared-cache enablement or Module 09 scheduling is included.
 
 ## References
 
@@ -86,3 +82,47 @@ Collections use the bounded cursor pagination already defined in [API-CONVENTION
 - [PERFORMANCE §§5, 19–21, 29–30, 73, 76](initial-architecture/PERFORMANCE.md)
 - [Data model](DATA-MODEL.md), [API conventions](API-CONVENTIONS.md), [API operations](API-OPERATIONS.md)
 - [ADR 0003: Markdown representation, transport and pagination](decisions/0003-markdown-representation-and-pagination.md)
+
+
+## Version 1 allowlist and bounds
+
+`hyperbug-content-1` pins unified 11.0.5, remark-parse 11.0.0, remark-gfm 4.0.1, remark-rehype 11.1.2, rehype-raw 7.0.0, rehype-sanitize 6.0.0 and hast-util-to-html 9.0.5. Raw HTML expansion precedes the final explicit sanitizer schema. Default library schemas are never spread into Core policy. No plugins run after sanitization; the final conversion only narrows attributes/URLs and replaces images with inert references.
+
+Allowed tags: `p`, `br`, `hr`, `h1`–`h6`, `blockquote`, `ul`, `ol`, `li`, `pre`, `code`, `strong`, `em`, `del`, `a`, `img`, `table`, `thead`, `tbody`, `tr`, `th`, `td`, and disabled checkbox `input`. Unknown tags are unwrapped; `script`, `style`, `iframe`, `object`, `embed`, `svg`, `math`, `template`, `form`, `textarea`, `select`, and `button` lose their entire subtrees. Comments and doctypes are removed. No global attributes, IDs, names, styles, event attributes, arbitrary data attributes or namespaces survive.
+
+| Element | Permitted properties |
+| --- | --- |
+| `a` | `href`, `title`; trusted `rel=nofollow ugc noreferrer noopener` added to links |
+| `img` | `src`, `alt`, `title`, subsequently replaced by an inert image node |
+| `code` | A single `language-` class suffix matching 1–32 ASCII letters/digits/underscore/hyphen |
+| `input` | `type=checkbox`, `disabled=true`, optional `checked=true`; arbitrary inputs become disabled checkboxes |
+| `ul`, `ol`, `li` | Exact GFM task-list classes; `ol.start` restricted to integers 1–1,000,000 |
+| `th`, `td` | `align=left/right/center` |
+| Other allowed elements | None |
+
+Links accept absolute HTTP/HTTPS, a simple `mailto:` address without query, a single-leading-slash local path, or a safe fragment. Images accept only absolute HTTPS or `/attachments/<canonical UUID>`. Protocol-relative, credential-bearing, control/whitespace/backslash-containing and encoded-control/backslash URLs are rejected. Sanitization decodes HTML entities before the stricter URL check. No URL uses a request host or environment-derived base.
+
+Source limits: 32,768 scalar code points, 131,072 UTF-8 bytes, no NUL or unpaired surrogate, 8,192 syntax characters, 2,048 HTML tags, bracket/block-quote/HTML nesting of at most 32 and at most 128 leading indentation characters. These conservative lexical checks apply even inside code examples; rejected content must be simplified. Before transforming the Markdown AST, after raw HTML expansion and after sanitization, trees are bounded to 8,192 nodes and depth 32. Synchronous parsers cannot be preempted by an asynchronous timer: these deterministic work limits and measured budgets are the processing-time defense. Endpoint cooperative deadlines remain additional protection, not a claim to interrupt synchronous parsing.
+
+## Images, privacy and attachment references
+
+The public tree contains an `image` node with `alt`, optional title, and either `{kind: external, url}` or `{kind: attachment, id}`; it contains no active `img.src`. The future SPA must show a keyboard-accessible click-to-load control, explain that loading contacts the external host, and use `referrerPolicy=no-referrer` after explicit activation. No browser renderer or SPA is implemented here. Core never fetches these images. Internal HTML consumers get a safe link in place of the image, also preventing automatic tracking requests.
+
+Attachment IDs are presentation references, never permission grants. The attachment service must reauthorize resolution and supply short-lived isolated-origin delivery at use time. Signed capabilities are never embedded in the deterministic tree or persisted with Markdown. Attachment-like paths with query parameters fail this reference grammar.
+
+## Projection and validator algorithm
+
+`hyperbug-text-1` flattens sanitized textual content and image alternate text, collapses Unicode whitespace, trims, and truncates to 4,096 scalar code points; its preview is at most 280 scalar code points. This projection is computed only on body-changing writes or explicit bounded backfill. Parser, flattening, normalization or truncation changes require a projection-version change.
+
+Representation validators encode resource identity, revision, representation kind and content-policy version. Resource identity prevents collisions among distinct revision-1 rows. Every output change (including parser upgrades) requires a content-policy version bump; changing policy does not alter cursor tuples. No rendered output is cached or persisted by this implementation.
+
+Local wall-time measurements for maximum accepted plain/GFM/Unicode bodies and 100-item pages are recorded in [the measured fixture](plan/evidence/07-markdown-derivation.json). They are neither paid Workers CPU measurements nor deployment acceptance. Initial regression ceilings are 1,000 ms mean per body and 8,000 ms per 100-body page, leaving space below the existing 10-second endpoint deadline. These are generous regression ceilings for the observed fixture, not proof that every permitted construct has its worst-case cost measured.
+
+
+## Persistence, backfill and recovery
+
+D1 migration `0018_content_projection` and PostgreSQL migration `0017_content_projection` add nullable `body_text` and `body_text_version` to issues/comments. Body-changing repository writes produce text through the central policy and atomically commit it with the body/revision, receipt and existing events. Other mutations retain the text. Histories keep canonical Markdown, not derived renderings. Lists take at most 280 scalar code points from the stored projection; they never parse Markdown. Unprojected legacy rows expose a null preview/version rather than silently changing a read into a write or re-derivation.
+
+The explicit `ContentProjectionStore.backfill` task takes a project ID, resource (`issues` or `comments`), optional ID cursor and a limit (default 20, maximum 100). It selects at most limit+1 rows ordered by ID, computes the central projection, and compare-and-sets each row at the observed revision if its projection version is still stale. Concurrent body writes win; replay skips rows already upgraded. A crash may leave a completed prefix on PostgreSQL; rerunning the page is safe. D1 commits each bounded page's updates as a batch. Neither adapter changes content revisions, canonical history or events. The caller persists the checkpoint only after the call succeeds, records rejected IDs without bodies, revisits conflicts/rejections, and starts another project-local sweep to capture rows skipped by concurrent writes. Invalid legacy bodies require explicit content repair through the authorized editing service; they are never assigned fabricated text. No scheduler is wired under the Module 09 hold.
+
+This additive migration does not rewrite existing data or remove columns. Application rollback retains the nullable columns; forward recovery reruns bounded backfill. A projection algorithm/version upgrade changes the writer and explicit task version together, keeps reads on each row's recorded version, then repeats the bounded sweep. There is no read-path backfill.

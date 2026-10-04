@@ -1,3 +1,4 @@
+import { deriveMarkdownTree } from '../../packages/security/src/markdown/index.ts';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
@@ -262,20 +263,55 @@ it('delivers discussion and timeline on workerd/D1', async () => {
     { origin: null },
   );
   expect(permalink.status).toBe(200);
-  expect(((await permalink.json()) as { body: string }).body).toBe(
-    'First comment 🎉',
+  const permalinkData = (await permalink.json()) as {
+    body: string;
+    bodyTree: unknown;
+    preview: string;
+    contentPolicyVersion: string;
+    representationEtag: string;
+  };
+  expect(permalinkData.body).toBe('First comment 🎉');
+  expect(permalinkData.bodyTree).toEqual(
+    deriveMarkdownTree('First comment 🎉'),
   );
+  expect(permalinkData.preview).toBe('First comment 🎉');
+  expect(permalinkData.contentPolicyVersion).toBe('hyperbug-content-1');
+  expect(permalink.headers.get('etag')).toBe(permalinkData.representationEtag);
+  const repeated = await call(
+    `/api/v1/projects/${project.id}/issues/${issue.id}/comments/${comment.id}`,
+    { origin: null },
+  );
+  expect(await repeated.json()).toEqual(permalinkData);
   const list = await call(
     `/api/v1/projects/${project.id}/issues/${issue.id}/comments`,
     { origin: null },
   );
   const page = (await list.json()) as {
-    comments: { id: string; body?: string }[];
+    comments: {
+      id: string;
+      body?: string;
+      bodyTree?: unknown;
+      preview: string;
+      textProjectionVersion: string;
+    }[];
   };
   expect(page.comments.map((item) => item.id)).toEqual([
     comment.id,
     secondComment.id,
   ]);
+
+  expect(
+    page.comments.every(
+      (item) => item.body === undefined && item.bodyTree === undefined,
+    ),
+  ).toBe(true);
+  expect(page.comments[0]!.preview).toBe('First comment 🎉');
+  expect(page.comments[0]!.textProjectionVersion).toBe('hyperbug-text-1');
+  const tooDeep = await call(
+    `/api/v1/projects/${project.id}/issues/${issue.id}/comments`,
+    { method: 'POST', token: authorToken, body: { body: '['.repeat(33) } },
+  );
+  expect(tooDeep.status).toBe(400);
 
   // Editing: the author succeeds, a stranger is forbidden, stale revisions
   // conflict, and every edit lands in the immutable history.

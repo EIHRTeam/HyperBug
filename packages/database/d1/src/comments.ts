@@ -1,3 +1,4 @@
+import { projectMarkdownText } from '@hyperbug/security/markdown';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   commentPage,
@@ -27,6 +28,8 @@ interface CommentRow {
   issue_id: string;
   author_id: string;
   body: string;
+  body_text: string | null;
+  body_text_version: string | null;
   revision: number;
   moderation: 'visible' | 'hidden' | 'redacted';
   deleted_at: number | null;
@@ -41,6 +44,8 @@ function toRecord(row: CommentRow): CommentRecord {
     issueId: row.issue_id,
     authorId: row.author_id,
     body: row.body,
+    bodyText: row.body_text,
+    bodyTextVersion: row.body_text_version,
     revision: row.revision,
     moderation: row.moderation,
     deletedAt: row.deleted_at,
@@ -53,7 +58,7 @@ function toRecord(row: CommentRow): CommentRecord {
 }
 
 const commentColumns =
-  'id, project_id, issue_id, author_id, body, revision, moderation, deleted_at, created_at, updated_at';
+  'id, project_id, issue_id, author_id, body, body_text, body_text_version, revision, moderation, deleted_at, created_at, updated_at';
 
 const placeholders = (count: number) =>
   Array.from({ length: count }, () => '?').join(', ');
@@ -100,6 +105,7 @@ export function createD1CommentStore(db: D1Database): CommentStore {
     operation: 'comment.create' | 'comment.edit',
   ): Promise<CommentMutationOutcome> {
     validateCommentIntent(intent, operation);
+    const projection = projectMarkdownText(intent.body);
     const replay = await receipt(intent, operation);
     if (replay) return replay;
     const statements = [
@@ -122,7 +128,7 @@ export function createD1CommentStore(db: D1Database): CommentStore {
       statements.push(
         db
           .prepare(
-            "INSERT INTO comments (id, project_id, issue_id, author_id, body, revision, moderation, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 1, 'visible', ?, ?)",
+            "INSERT INTO comments (id, project_id, issue_id, author_id, body, revision, moderation, created_at, updated_at, body_text, body_text_version) VALUES (?, ?, ?, ?, ?, 1, 'visible', ?, ?, ?, ?)",
           )
           .bind(
             intent.id,
@@ -132,6 +138,8 @@ export function createD1CommentStore(db: D1Database): CommentStore {
             intent.body,
             intent.now,
             intent.now,
+            projection.text,
+            projection.version,
           ),
         db
           .prepare(
@@ -155,10 +163,12 @@ export function createD1CommentStore(db: D1Database): CommentStore {
       statements.push(
         db
           .prepare(
-            'UPDATE comments SET body = ?, revision = revision + 1, updated_at = max(updated_at, ?) WHERE project_id = ? AND issue_id = ? AND id = ? AND revision = ?',
+            'UPDATE comments SET body = ?, body_text = ?, body_text_version = ?, revision = revision + 1, updated_at = max(updated_at, ?) WHERE project_id = ? AND issue_id = ? AND id = ? AND revision = ?',
           )
           .bind(
             intent.body,
+            projection.text,
+            projection.version,
             intent.now,
             intent.projectId,
             intent.issueId,
@@ -291,6 +301,19 @@ export function createD1CommentStore(db: D1Database): CommentStore {
           `SELECT ${commentColumns} FROM comments WHERE project_id = ? AND id = ? LIMIT 1`,
         )
         .bind(input.projectId, input.id)
+        .first<CommentRow>();
+      return row ? toRecord(row) : null;
+    },
+    async getById(projectId, id, options) {
+      const hidden =
+        options?.includeHidden === true
+          ? ''
+          : " AND moderation = 'visible' AND deleted_at IS NULL";
+      const row = await db
+        .prepare(
+          `SELECT ${commentColumns} FROM comments WHERE project_id = ? AND id = ?${hidden} LIMIT 1`,
+        )
+        .bind(projectId, id)
         .first<CommentRow>();
       return row ? toRecord(row) : null;
     },
@@ -501,7 +524,7 @@ export function createD1TimelineStore(db: D1Database): TimelineStore {
                 | 'hidden'
                 | 'redacted',
               deleted: row.deleted !== null && row.deleted !== undefined,
-              body: row.body_placeholder ?? row.body,
+              body: row.body_placeholder ?? row.body ?? null,
               createdAtMs: row.created_at,
             },
       );

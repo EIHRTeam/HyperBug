@@ -12,6 +12,8 @@ const issue: Issue = {
   projectId,
   number: 1,
   title: 'A',
+  bodyText: null,
+  bodyTextVersion: null,
   body: '',
   state: 'open',
   closeReason: null,

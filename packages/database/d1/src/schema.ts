@@ -105,6 +105,8 @@ export const issues = table(
     number: integer('number').notNull(),
     title: text('title').notNull(),
     body: text('body').notNull(),
+    bodyText: text('body_text'),
+    bodyTextVersion: text('body_text_version'),
     state: text('state').notNull().default('open'),
     closeReason: text('close_reason'),
     typeId: id('type_id'),
@@ -527,6 +529,8 @@ export const comments = table(
       .notNull()
       .references(() => principals.id),
     body: text('body').notNull(),
+    bodyText: text('body_text'),
+    bodyTextVersion: text('body_text_version'),
     revision: integer('revision').notNull().default(1),
     moderation: text('moderation').notNull().default('visible'),
     deletedAt: instant('deleted_at'),
@@ -832,6 +836,10 @@ export const uploadIntents = table(
   ],
 );
 
+// Additive lifecycle metadata: legacy foundational intents are not implicitly adopted.
+
+// Explicit operator recovery ledger; no current lifecycle/association is fabricated.
+);
 export const attachments = table(
   'attachments',
   {

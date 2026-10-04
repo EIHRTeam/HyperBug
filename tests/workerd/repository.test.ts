@@ -1,3 +1,37 @@
+import { uploadScanContract } from '../fixtures/upload-scan-contract.ts';
+import { uploadOrphanContract } from '../fixtures/upload-orphan-contract.ts';
+import { uploadLegacyInventoryContract } from '../fixtures/upload-legacy-inventory-contract.ts';
+import {
+  uploadLegacyRecoveryContract,
+  seedLegacyRecoveryFixture,
+  actualR2LegacyRecoveryLedgerContract,
+} from '../fixtures/upload-legacy-recovery-contract.ts';
+import { createD1UploadLegacyRecoveryStore } from '@hyperbug/database-d1';
+import { createD1UploadLegacyInventoryStore } from '@hyperbug/database-d1';
+import { uploadLegacyInventorySql as d1LegacyInventorySql } from '../../packages/database/d1/src/upload-legacy-inventory.ts';
+import { validateIssueFormAnswers } from '@hyperbug/application';
+import {
+  uploadMultipartContract,
+  multipartTestQuota,
+} from '../fixtures/upload-multipart-contract.ts';
+import {
+  formSubmissionContract,
+  seedFormSubmissionFixture,
+  seedFormUpload,
+  formUploadQuota,
+} from '../fixtures/form-submission-contract.ts';
+import { contentProjectionContract } from '../fixtures/content-projection-contract.ts';
+import { contentDefinitionContract } from '../fixtures/content-definition-contract.ts';
+import {
+  uploadIntentContract,
+  uploadTestQuota,
+} from '../fixtures/upload-intent-contract.ts';
+import { createD1UploadIntentStore } from '@hyperbug/database-d1';
+import {
+  createD1ContentProjectionStore,
+  createD1CommentStore,
+  createD1ContentDefinitionStore,
+} from '@hyperbug/database-d1';
 import {
   keyRegistryContract,
   keyRegistryBoundsContract,
@@ -42,6 +76,10 @@ import {
 } from '../fixtures/key-purpose-migration.ts';
 import {
   seedPreviousSchema,
+  seedTemplateUpgrade,
+  seedUploadUpgrade,
+  seedScanUpgrade,
+  snapshotLegacyRecoveryUpgrade,
   verifyRejectedUpgrade,
 } from '../fixtures/migration-contract.ts';
 import {
@@ -55,10 +93,400 @@ let rateCounters: RateCounterStore;
 let accountLockouts: AccountLockoutStore;
 let runtimeDigest: () => Promise<unknown>;
 let verifyUpgrade: () => Promise<void>;
+let verifyTemplateUpgrade: () => Promise<void>;
+let verifyUploadUpgrade: () => Promise<void>;
+let verifyScanUpgrade: () => Promise<void>;
+let verifyLegacyRecoveryUpgrade: () => Promise<void>;
 let mf: Miniflare;
 let harness: RepositoryHarness;
 let measuredQueries: () => string[];
 let registrationDb: D1Database;
+actualR2LegacyRecoveryLedgerContract(
+  () => ({
+    harness,
+    inventory: createD1UploadLegacyInventoryStore(registrationDb),
+    store: createD1UploadLegacyRecoveryStore(registrationDb),
+  }),
+  'd1',
+);
+uploadLegacyRecoveryContract(() => ({
+  harness,
+  inventory: createD1UploadLegacyInventoryStore(registrationDb),
+  store: createD1UploadLegacyRecoveryStore(registrationDb),
+}));
+it('legacy recovery D1 claim rechecks a link arriving after its pre-read before the atomic batch', async () => {
+  const f = await seedLegacyRecoveryFixture(
+    harness,
+    createD1UploadLegacyInventoryStore(registrationDb),
+    'finalized',
+  );
+  let raced = false;
+  const database = new Proxy(registrationDb, {
+    get(target, property) {
+      if (property === 'batch')
+        return async (statements: Parameters<D1Database['batch']>[0]) => {
+          if (!raced) {
+            raced = true;
+            await f.link();
+          }
+          return target.batch(statements);
+        };
+      const value = Reflect.get(target, property);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  await expect(
+    createD1UploadLegacyRecoveryStore(database).claim(f.claim),
+  ).rejects.toThrow();
+  expect(
+    await createD1UploadLegacyRecoveryStore(registrationDb).get(f.claim),
+  ).toBeNull();
+  expect(await f.counters()).toEqual([
+    [5, 10, 2],
+    [5, 10, 2],
+  ]);
+});
+uploadLegacyInventoryContract(() => ({
+  harness,
+  uploads: createD1UploadIntentStore(registrationDb, formUploadQuota),
+  definitions: createD1ContentDefinitionStore(registrationDb),
+  inventory: createD1UploadLegacyInventoryStore(registrationDb),
+  profile: 'd1',
+  explain: (projectId) =>
+    harness.query(`EXPLAIN QUERY PLAN ${d1LegacyInventorySql}`, [
+      projectId,
+      '00000000-0000-0000-0000-000000000000',
+      21,
+    ]),
+}));
+uploadOrphanContract(() => ({
+  harness,
+  uploads: createD1UploadIntentStore(registrationDb, formUploadQuota),
+  definitions: createD1ContentDefinitionStore(registrationDb),
+}));
+it.each(['link', 'scan'] as const)(
+  'orphan D1 claim rechecks %s changes after its pre-read before the CAS batch',
+  async (action) => {
+    const definitions = createD1ContentDefinitionStore(registrationDb),
+      store = createD1UploadIntentStore(registrationDb, formUploadQuota);
+    const f = await seedFormSubmissionFixture(harness, definitions),
+      upload = await seedFormUpload(
+        store,
+        f,
+        action === 'scan' ? { mode: 'unscanned' } : {},
+      );
+    const now = upload.expiresAt + 600000,
+      lease = {
+        ...upload,
+        now,
+        retainAfterExpiryMs: 600000,
+        leaseId: crypto.randomUUID(),
+        leaseExpiresAt: now + 1000,
+      };
+    let changed = false;
+    const raced = new Proxy(registrationDb, {
+      get(target, property) {
+        if (property === 'batch')
+          return async (statements: Parameters<D1Database['batch']>[0]) => {
+            if (!changed) {
+              changed = true;
+              if (action === 'scan')
+                await store.mutateScan({
+                  ...lease,
+                  leaseId: crypto.randomUUID(),
+                  kind: 'claim',
+                  policyVersion: 'orphan-race-policy',
+                });
+              else {
+                const values = {
+                  details: 'Retained race content',
+                  files: [upload.id],
+                };
+                await f.harness.repository.createIssue({
+                  ...f.intent(),
+                  body: validateIssueFormAnswers(f.definition, values).markdown,
+                  formSubmission: {
+                    formId: f.formId,
+                    formVersion: 1,
+                    draftId: upload.association.draftId,
+                    values,
+                  },
+                });
+              }
+            }
+            return target.batch(statements);
+          };
+        const value = Reflect.get(target, property);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    await expect(
+      createD1UploadIntentStore(raced, formUploadQuota).claimOrphanCleanup(
+        lease,
+      ),
+    ).rejects.toMatchObject({ code: 'UPLOAD_LEASE_LOST' });
+    const after = (await store.get(upload))!;
+    expect(after.policyState).toBe(action === 'scan' ? 'quarantined' : 'ready');
+    expect(after.reservationState).toBe('used');
+    expect(after.leaseId).not.toBe(lease.leaseId);
+    expect(
+      Number(
+        (
+          await harness.query(
+            'SELECT used_bytes FROM project_upload_usage WHERE project_id = ?',
+            [f.projectId],
+          )
+        )[0]!.used_bytes,
+      ),
+    ).toBe(3);
+  },
+);
+uploadScanContract(() => ({
+  harness,
+  store: createD1UploadIntentStore(registrationDb, uploadTestQuota),
+}));
+it('rolls back scan result and intent revision after authorization changes before the D1 batch', async () => {
+  const now = Date.now(),
+    projectId = crypto.randomUUID(),
+    principalId = crypto.randomUUID(),
+    id = crypto.randomUUID();
+  await harness.query(
+    'INSERT INTO projects (id, slug, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    [projectId, `scan-guard-${projectId}`, 'Scan guard', now, now],
+  );
+  await harness.query(
+    "INSERT INTO principals (id, kind, display_name, created_at) VALUES (?, 'user', 'Scan guard', ?)",
+    [principalId, now],
+  );
+  const input = {
+    id,
+    projectId,
+    principalId,
+    now,
+    expiresAt: now + 60000,
+    stagingKey: `staging/${id.replaceAll('-', '').repeat(2)}`,
+    finalKey: `objects/${id.replaceAll('-', '').repeat(2)}`,
+    filename: 'fixture.bin',
+    contentType: 'application/octet-stream',
+    maxBytes: 4,
+    association: { kind: 'issue-draft' as const, draftId: crypto.randomUUID() },
+  };
+  const store = createD1UploadIntentStore(registrationDb, uploadTestQuota),
+    token = {
+      ...input,
+      leaseId: crypto.randomUUID(),
+      leaseExpiresAt: now + 1000,
+    };
+  await store.reserve(input);
+  await store.requestFinalize(input, now);
+  await store.claim(token);
+  await store.commitVerified({
+    ...token,
+    verified: {
+      key: input.finalKey,
+      size: 3,
+      sha256: 'a'.repeat(64),
+      contentType: input.contentType,
+      providerVersion: null,
+      scanStatus: 'unscanned',
+    },
+  });
+  token.leaseId = crypto.randomUUID();
+  const before = await store.mutateScan({
+    ...token,
+    kind: 'claim',
+    policyVersion: 'attachment-scan-1',
+  });
+  const raced = new Proxy(registrationDb, {
+    get(target, property) {
+      if (property === 'batch')
+        return async (statements: Parameters<D1Database['batch']>[0]) => {
+          await harness.query(
+            "UPDATE projects SET visibility = 'private' WHERE id = ?",
+            [projectId],
+          );
+          return target.batch(statements);
+        };
+      const value = Reflect.get(target, property);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  await expect(
+    createD1UploadIntentStore(raced, uploadTestQuota).mutateScan({
+      ...token,
+      kind: 'commit',
+      outcome: {
+        status: 'clean',
+        evidence: {
+          engine: 'synthetic-test-scanner',
+          engineVersion: 'fixture-1',
+          signatureVersion: 'fixture-1',
+        },
+      },
+    }),
+  ).rejects.toMatchObject({ code: 'UPLOAD_FORBIDDEN' });
+  expect(await store.get(input)).toEqual(before);
+});
+uploadIntentContract(() => ({
+  harness,
+  store: createD1UploadIntentStore(registrationDb, uploadTestQuota),
+}));
+uploadMultipartContract(() => ({
+  harness,
+  store: createD1UploadIntentStore(registrationDb, multipartTestQuota),
+}));
+it('rolls back multipart catalog, intent and lease when authorization changes before the D1 batch', async () => {
+  const now = Date.now(),
+    projectId = crypto.randomUUID(),
+    principalId = crypto.randomUUID();
+  await harness.query(
+    'INSERT INTO projects (id, slug, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    [projectId, `mp-guard-${projectId}`, 'Guard', now, now],
+  );
+  await harness.query(
+    "INSERT INTO principals (id, kind, display_name, created_at) VALUES (?, 'user', 'Guard', ?)",
+    [principalId, now],
+  );
+  const id = crypto.randomUUID();
+  const input = {
+    id,
+    projectId,
+    principalId,
+    now,
+    expiresAt: now + 60000,
+    stagingKey: `staging/${id.replaceAll('-', '').repeat(2)}`,
+    finalKey: `objects/${id.replaceAll('-', '').repeat(2)}`,
+    filename: 'fixture.bin',
+    contentType: 'application/octet-stream',
+    maxBytes: 8 * 1024 ** 2,
+    association: { kind: 'issue-draft' as const, draftId: crypto.randomUUID() },
+    multipartPlan: { partBytes: 5 * 1024 ** 2, maxParts: 2 },
+  };
+  const store = createD1UploadIntentStore(registrationDb, multipartTestQuota);
+  await store.reserve(input);
+  const token = {
+    ...input,
+    leaseId: crypto.randomUUID(),
+    leaseExpiresAt: now + 1000,
+  };
+  await store.mutateMultipart({ ...token, kind: 'claim-create' });
+  const before = await store.mutateMultipart({
+    ...token,
+    kind: 'created',
+    uploadId: 'private-guard-session',
+  });
+  const racedDb = new Proxy(registrationDb, {
+    get(target, property) {
+      if (property === 'batch')
+        return async (statements: Parameters<D1Database['batch']>[0]) => {
+          await harness.query(
+            "UPDATE principals SET status = 'suspended' WHERE id = ?",
+            [principalId],
+          );
+          return target.batch(statements);
+        };
+      const value = Reflect.get(target, property);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  await expect(
+    createD1UploadIntentStore(racedDb, multipartTestQuota).mutateMultipart({
+      ...input,
+      now,
+      kind: 'part',
+      expectedRevision: before.multipart!.revision,
+      part: { partNumber: 1, etag: 'guard-part', sizeBytes: 1 },
+    }),
+  ).rejects.toMatchObject({ code: 'UPLOAD_FORBIDDEN' });
+  expect(await store.get(input)).toEqual(before);
+});
+it.each(['reservation', 'verification'])(
+  'rolls back upload %s accounting after permission changes between precheck and D1 batch',
+  async (phase) => {
+    const now = Date.now(),
+      projectId = crypto.randomUUID(),
+      principalId = crypto.randomUUID(),
+      id = crypto.randomUUID();
+    await harness.query(
+      'INSERT INTO projects (id, slug, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+      [projectId, `guard-${projectId}`, 'Guard', now, now],
+    );
+    await harness.query(
+      "INSERT INTO principals (id, kind, display_name, created_at) VALUES (?, 'user', 'Guard', ?)",
+      [principalId, now],
+    );
+    const reserved = {
+      id,
+      projectId,
+      principalId,
+      stagingKey: `staging/${id.replaceAll('-', '').repeat(2)}`,
+      finalKey: `objects/${id.replaceAll('-', '').repeat(2)}`,
+      filename: 'fixture.bin',
+      contentType: 'application/octet-stream',
+      maxBytes: 4,
+      association: {
+        kind: 'issue-draft' as const,
+        draftId: crypto.randomUUID(),
+      },
+      now,
+      expiresAt: now + 60000,
+    };
+    const store = createD1UploadIntentStore(registrationDb, uploadTestQuota);
+    const lease = {
+      ...reserved,
+      leaseId: crypto.randomUUID(),
+      leaseExpiresAt: now + 1000,
+    };
+    if (phase === 'verification') {
+      await store.reserve(reserved);
+      await store.requestFinalize(reserved, now);
+      await store.claim(lease);
+    }
+    const racedDb = new Proxy(registrationDb, {
+      get(target, property) {
+        if (property === 'batch')
+          return async (statements: Parameters<D1Database['batch']>[0]) => {
+            await harness.query(
+              "UPDATE projects SET visibility = 'private' WHERE id = ?",
+              [projectId],
+            );
+            return target.batch(statements);
+          };
+        const value = Reflect.get(target, property);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    const raced = createD1UploadIntentStore(racedDb, uploadTestQuota);
+    const mutation =
+      phase === 'reservation'
+        ? raced.reserve(reserved)
+        : raced.commitVerified({
+            ...lease,
+            verified: {
+              key: reserved.finalKey,
+              size: 3,
+              sha256: 'a'.repeat(64),
+              contentType: reserved.contentType,
+              providerVersion: null,
+              scanStatus: 'unscanned',
+            },
+          });
+    await expect(mutation).rejects.toMatchObject({ code: 'UPLOAD_FORBIDDEN' });
+    const counts = await harness.query(
+      'SELECT reserved_bytes, used_bytes, reserved_count FROM project_upload_usage WHERE project_id = ?',
+      [projectId],
+    );
+    expect(counts).toEqual(
+      phase === 'reservation'
+        ? []
+        : [{ reserved_bytes: 4, used_bytes: 0, reserved_count: 1 }],
+    );
+    expect((await store.get(reserved))?.state ?? null).toBe(
+      phase === 'reservation' ? null : 'uploaded',
+    );
+  },
+);
+
 beforeAll(async () => {
   execFileSync(process.execPath, ['tooling/build.ts', '--target=fixtures']);
   mf = new Miniflare(
@@ -183,13 +611,244 @@ beforeAll(async () => {
       ).results,
   };
   verifyUpgrade = await seedPreviousSchema(harness);
-  for (const migration of migrations.slice(1))
+  for (const migration of migrations.slice(1)) {
+    if (migration.name === '0019_template_versions')
+      verifyTemplateUpgrade = await seedTemplateUpgrade(harness);
+    if (migration.name === '0020_upload_reservations')
+      verifyUploadUpgrade = await seedUploadUpgrade(harness);
+    if (migration.name === '0022_upload_scans')
+      verifyScanUpgrade = await seedScanUpgrade(harness);
+    if (migration.name === '0023_upload_legacy_recovery')
+      verifyLegacyRecoveryUpgrade =
+        await snapshotLegacyRecoveryUpgrade(harness);
     await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+  }
 });
 afterAll(async () => {
   await mf?.dispose();
 });
 repositoryContract(() => harness);
+contentDefinitionContract(
+  () => ({ harness, store: createD1ContentDefinitionStore(registrationDb) }),
+  'd1',
+);
+it.each(['form', 'principal', 'default'] as const)(
+  'rolls back a D1 form submission when %s changes after its pre-read',
+  async (mode) => {
+    const store = createD1ContentDefinitionStore(registrationDb);
+    const fixture = await seedFormSubmissionFixture(harness, store);
+    const request = fixture.intent();
+    let definition = fixture.definition;
+    if (mode === 'default') {
+      await harness.query(
+        "INSERT INTO labels (id, project_id, name, name_key) VALUES (?, ?, 'Bug', 'bug')",
+        [crypto.randomUUID(), fixture.projectId],
+      );
+      definition = { ...definition, labels: ['bug'] };
+      await store.saveForm({
+        id: fixture.formId,
+        projectId: fixture.projectId,
+        expectedRevision: 1,
+        enabled: true,
+        now: request.now,
+        definition,
+      });
+      request.formSubmission = { ...request.formSubmission!, formVersion: 2 };
+    }
+    let changed = false;
+    const raced = new Proxy(registrationDb, {
+      get(target, property) {
+        if (property === 'batch')
+          return async (statements: Parameters<D1Database['batch']>[0]) => {
+            if (!changed) {
+              changed = true;
+              if (mode === 'form')
+                await store.saveForm({
+                  id: fixture.formId,
+                  projectId: fixture.projectId,
+                  expectedRevision: 1,
+                  enabled: false,
+                  now: request.now + 1,
+                  definition,
+                });
+              else if (mode === 'principal')
+                await harness.query(
+                  "UPDATE principals SET status = 'suspended' WHERE id = ?",
+                  [fixture.principalId],
+                );
+              else
+                await harness.query(
+                  "UPDATE labels SET name_key = 'renamed' WHERE project_id = ?",
+                  [fixture.projectId],
+                );
+            }
+            return target.batch(statements);
+          };
+        const value = Reflect.get(target, property);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    await expect(
+      createD1Repository(raced).createIssue(request),
+    ).rejects.toMatchObject({
+      code:
+        mode === 'form'
+          ? 'FORM_VERSION_STALE'
+          : mode === 'principal'
+            ? 'FORM_SUBMISSION_FORBIDDEN'
+            : 'FORM_DEFAULTS_INVALID',
+    });
+    expect(changed).toBe(true);
+    for (const table of [
+      'issues',
+      'form_submissions',
+      'timeline_events',
+      'outbox',
+      'mutation_receipts',
+    ])
+      expect(
+        Number(
+          (
+            await harness.query(
+              `SELECT COUNT(*) AS count FROM ${table} WHERE project_id = ?`,
+              [fixture.projectId],
+            )
+          )[0]!.count,
+        ),
+      ).toBe(0);
+    expect(
+      Number(
+        (
+          await harness.query(
+            'SELECT next_issue_number FROM projects WHERE id = ?',
+            [fixture.projectId],
+          )
+        )[0]!.next_issue_number,
+      ),
+    ).toBe(1);
+  },
+);
+formSubmissionContract(() => ({
+  harness,
+  store: createD1ContentDefinitionStore(registrationDb),
+  uploads: createD1UploadIntentStore(registrationDb, {
+    maxFileBytes: 4,
+    projectBytes: 100,
+    principalBytes: 100,
+    projectPending: 40,
+    principalPending: 40,
+  }),
+}));
+it.each(['principal', 'draft', 'rescan', 'result'] as const)(
+  'rolls back D1 form attachment consumption after a %s change before the batch',
+  async (mode) => {
+    const fixture = await seedFormSubmissionFixture(
+      harness,
+      createD1ContentDefinitionStore(registrationDb),
+    );
+    const uploads = createD1UploadIntentStore(registrationDb, formUploadQuota);
+    const input = await seedFormUpload(uploads, fixture);
+    const values = { details: 'Canonical **answers**', files: [input.id] };
+    const request = {
+      ...fixture.intent(),
+      body: validateIssueFormAnswers(fixture.definition, values).markdown,
+      formSubmission: {
+        formId: fixture.formId,
+        formVersion: 1,
+        values,
+        draftId: input.association.draftId,
+      },
+    };
+    let changed = false;
+    const raced = new Proxy(registrationDb, {
+      get(target, property) {
+        if (property === 'batch')
+          return async (statements: Parameters<D1Database['batch']>[0]) => {
+            if (!changed) {
+              changed = true;
+              if (mode === 'principal')
+                await harness.query(
+                  "UPDATE principals SET status = 'suspended' WHERE id = ?",
+                  [fixture.principalId],
+                );
+              else if (mode === 'draft')
+                await harness.query(
+                  'UPDATE upload_intent_details SET draft_id = ? WHERE intent_id = ?',
+                  [crypto.randomUUID(), input.id],
+                );
+              else if (mode === 'rescan')
+                await uploads.mutateScan({
+                  ...input,
+                  leaseId: crypto.randomUUID(),
+                  leaseExpiresAt: input.now + 1000,
+                  kind: 'claim',
+                  policyVersion: 'next-scan-policy',
+                });
+              else {
+                await harness.query(
+                  "UPDATE upload_intent_details SET policy_state = 'quarantined' WHERE intent_id = ?",
+                  [input.id],
+                );
+                await harness.query(
+                  "UPDATE upload_scan_results SET policy_version = 'obsolete' WHERE intent_id = ?",
+                  [input.id],
+                );
+                await harness.query(
+                  "UPDATE upload_intent_details SET policy_state = 'ready' WHERE intent_id = ?",
+                  [input.id],
+                );
+              }
+            }
+            return target.batch(statements);
+          };
+        const value = Reflect.get(target, property);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    await expect(
+      createD1Repository(raced).createIssue(request),
+    ).rejects.toMatchObject({
+      code:
+        mode === 'principal'
+          ? 'FORM_SUBMISSION_FORBIDDEN'
+          : 'FORM_ATTACHMENTS_INVALID',
+    });
+    expect(changed).toBe(true);
+    for (const table of [
+      'issues',
+      'form_submissions',
+      'attachments',
+      'timeline_events',
+      'outbox',
+      'mutation_receipts',
+    ])
+      expect(
+        Number(
+          (
+            await harness.query(
+              `SELECT COUNT(*) AS count FROM ${table} WHERE project_id = ?`,
+              [fixture.projectId],
+            )
+          )[0]!.count,
+        ),
+      ).toBe(0);
+    expect(
+      Number(
+        (
+          await harness.query(
+            'SELECT next_issue_number FROM projects WHERE id = ?',
+            [fixture.projectId],
+          )
+        )[0]!.next_issue_number,
+      ),
+    ).toBe(1);
+  },
+);
+contentProjectionContract(() => ({
+  harness,
+  projections: createD1ContentProjectionStore(registrationDb),
+  comments: createD1CommentStore(registrationDb),
+}));
 rateCounterContract(() => rateCounters);
 auditRepositoryContract(() => ({ repository: audit, query: harness.query }));
 
@@ -489,6 +1148,9 @@ it('derives the same domain-separated abuse digest in Node and workerd', async (
   );
 });
 
+it('snapshots legacy templates at their known revision with no invented history', async () => {
+  await verifyTemplateUpgrade();
+});
 it('upgrades 0000 with linked aggregates and receipts intact', async () => {
   await verifyUpgrade();
 });
@@ -506,7 +1168,7 @@ it('migrates a fresh database and keeps foreign keys enabled', async () => {
         "SELECT count(*) AS count FROM sqlite_master WHERE type = 'trigger'",
       )
       .first('count'),
-  ).toBe(15);
+  ).toBe(35);
 });
 it('widens key purpose on a populated D1 registry without losing guards', async () => {
   const db = await mf.getD1Database('KEY_UPGRADE');
@@ -609,3 +1271,15 @@ it('measures fresh registry reads against 4000 protected records and 500 retaine
     measuredQueries,
   );
 }, 30000);
+
+it('preserves historical upload quota accounting through the additive migration', async () => {
+  await verifyUploadUpgrade();
+});
+
+it('scan migration quarantines unsupported legacy clean claims without changing immutable identity or used quota', async () => {
+  await verifyScanUpgrade();
+});
+
+it('legacy recovery migration preserves populated identities, links, lifecycle and accounting without implicit decisions', async () => {
+  await verifyLegacyRecoveryUpgrade();
+});

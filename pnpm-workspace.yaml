@@ -12,7 +12,7 @@ allowBuilds:
   sharp: false
 
 minimumReleaseAgeExclude:
-  - '@cloudflare/workers-types@5.20260917.1'
+  - '@cloudflare/workers-types@5.20260917.1 || 5.20261003.1'
   - miniflare@5.20260916.0-alpha
   - wrangler@4.133.0
   # Pre-1.0 tooling adopted deliberately: tsdown 0.23.0 bundles the runtime
@@ -20,6 +20,8 @@ minimumReleaseAgeExclude:
   # docs/development/TOOLCHAIN.md and recorded in ADR 0004.
   - tsdown@0.23.0
   - oxfmt@0.68.0
+  - '@aws-sdk/client-s3@3.1146.0'
+  - '@aws-sdk/s3-request-presigner@3.1146.0'
 
 strictPeerDependencies: true
 

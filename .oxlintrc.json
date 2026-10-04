@@ -59,8 +59,21 @@
           {
             "patterns": [
               {
-                "group": ["*", "!./**", "../**"],
-                "message": "packages/security is a leaf package: no imports outside itself and no external dependencies."
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!unified",
+                  "!remark-parse",
+                  "!remark-gfm",
+                  "!remark-rehype",
+                  "!rehype-raw",
+                  "!rehype-sanitize",
+                  "!hast-util-to-html",
+                  "!hast",
+                  "!yaml"
+                ],
+                "message": "packages/security may import only reviewed platform-neutral content libraries; no infrastructure dependencies."
               }
             ]
           }
@@ -222,7 +235,8 @@
                   "!drizzle-orm/**",
                   "!drizzle-kit",
                   "!pg",
-                  "!@cloudflare/workers-types"
+                  "!@cloudflare/workers-types",
+                  "!@hyperbug/security/**"
                 ],
                 "message": "database adapters may import only @hyperbug/domain, @hyperbug/application, @hyperbug/security, @hyperbug/plugin-api and their own persistence libraries; persistence types stay out of the domain."
               }
@@ -253,7 +267,8 @@
                   "!elysia/**",
                   "!@simplewebauthn/server",
                   "!@simplewebauthn/server/**",
-                  "!@hyperbug/plugin-api"
+                  "!@hyperbug/plugin-api",
+                  "!@hyperbug/security/**"
                 ],
                 "message": "packages/server may import only the shared server-side packages, Elysia and the pinned WebAuthn verifier and @hyperbug/plugin-api."
               }

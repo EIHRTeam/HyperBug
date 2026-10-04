@@ -1,3 +1,5 @@
+import { contentRepresentation, storedPreview } from './content.ts';
+import { deriveMarkdownTree, type SafeTree } from '@hyperbug/security/markdown';
 import {
   DomainError,
   validateContent,
@@ -17,6 +19,10 @@ import {
   type SetIssueLabelsIntent,
   type SetIssueMilestoneIntent,
   type SetIssueTypeIntent,
+  type ContentDefinitionStore,
+  type IssueFormSubmissionIntent,
+  IssueFormError,
+  validateIssueFormAnswers,
 } from '@hyperbug/application';
 import type { Permission } from '@hyperbug/security';
 import type { BearerPrincipal } from './bearer-auth.ts';
@@ -38,6 +44,7 @@ const receiptValidityMs = 86_400_000;
 export interface IssueContext extends ProjectContext {
   readonly issues: IssueRepository | null;
   readonly admission: Pick<BoundSensitiveActionAdmission, 'requireRate'> | null;
+  readonly contentDefinitions: ContentDefinitionStore | null;
 }
 
 function repository(context: IssueContext): IssueRepository {
@@ -58,6 +65,7 @@ const issueProjectRule = Object.freeze({
 });
 
 function mapDomainError(error: unknown): never {
+  if (error instanceof IssueFormError) throw new RequestFailure(error.code);
   if (error instanceof DomainError) {
     if (error.code === 'NOT_FOUND') throw new RequestFailure('NOT_FOUND');
     if (error.code === 'REVISION_CONFLICT')
@@ -132,6 +140,11 @@ export interface IssueView {
   readonly number: number;
   readonly title: string;
   readonly body: string | null;
+  readonly preview: string | null;
+  readonly textProjectionVersion: string | null;
+  readonly bodyTree?: SafeTree;
+  readonly contentPolicyVersion?: string;
+  readonly representationEtag?: string;
   readonly state: string;
   readonly closeReason: string | null;
   readonly typeId: string | null;
@@ -157,6 +170,19 @@ function viewOf(
     number: issue.number,
     title: issue.title,
     body: 'body' in issue ? issue.body : null,
+    preview:
+      issue.moderation === 'visible' && issue.deletedAt === null
+        ? storedPreview(issue.bodyText)
+        : null,
+    textProjectionVersion:
+      issue.moderation === 'visible' && issue.deletedAt === null
+        ? issue.bodyTextVersion
+        : null,
+    ...('body' in issue &&
+    issue.moderation === 'visible' &&
+    issue.deletedAt === null
+      ? contentRepresentation(issue.id, issue.revision, issue.body)
+      : {}),
     state: issue.state,
     closeReason: issue.closeReason,
     typeId: issue.typeId,
@@ -238,6 +264,7 @@ export async function createIssue(
     milestoneId: unknown;
     labelIds: unknown;
     assigneeIds: unknown;
+    form?: { id: string; version: number; draftId?: string; values: unknown };
   },
 ): Promise<IssueView> {
   await requireVisibleProject(request, context, projectId);
@@ -272,10 +299,46 @@ export async function createIssue(
       signal: request.signal,
       timeoutMs: 1000,
     });
-  if (typeof input.title !== 'string' || typeof input.body !== 'string')
+  let title = input.title;
+  let body = input.body;
+  let formSubmission: IssueFormSubmissionIntent | undefined;
+  if (input.form) {
+    if (!context.contentDefinitions)
+      throw new RequestFailure('CONTENT_UNAVAILABLE');
+    const form = await withDeadline(request.signal, storeTimeoutMs, () =>
+      context.contentDefinitions!.getForm(
+        projectId,
+        input.form!.id,
+        input.form!.version,
+      ),
+    );
+    if (!form) throw new RequestFailure('FORM_VERSION_STALE');
+    try {
+      // Read the pinned immutable schema; active-version and defaults checks
+      // belong after the repository's successful-receipt replay check.
+      const answers = validateIssueFormAnswers(
+        form.definition,
+        input.form.values,
+      );
+      if (answers.attachmentIds.length && !input.form.draftId)
+        throw new RequestFailure('FORM_ATTACHMENTS_INVALID');
+      body = answers.markdown;
+      title = title === undefined ? form.definition.title : title;
+      formSubmission = {
+        formId: form.id,
+        formVersion: form.version,
+        ...(input.form.draftId ? { draftId: input.form.draftId } : {}),
+        values: answers.values,
+      };
+    } catch (error) {
+      mapDomainError(error);
+    }
+  }
+  if (typeof title !== 'string' || typeof body !== 'string')
     throw new RequestFailure('ISSUE_INVALID');
   try {
-    validateContent(input.title, input.body);
+    validateContent(title, body);
+    deriveMarkdownTree(body);
   } catch {
     throw new RequestFailure('ISSUE_INVALID');
   }
@@ -290,12 +353,13 @@ export async function createIssue(
       receiptValidityMs,
     )),
     id: crypto.randomUUID(),
-    title: input.title,
-    body: input.body,
+    title,
+    body,
     typeId: checkedOptionalUuid(input.typeId),
     milestoneId: checkedOptionalUuid(input.milestoneId),
     labelIds: checkedUuidList(input.labelIds, maxIssueLabels),
     assigneeIds: checkedUuidList(input.assigneeIds, maxIssueAssignees),
+    ...(formSubmission ? { formSubmission } : {}),
   };
   let created: { id: string };
   try {
@@ -445,6 +509,7 @@ export async function editIssue(
     throw new RequestFailure('ISSUE_INVALID');
   try {
     validateContent(input.title, input.body);
+    deriveMarkdownTree(input.body);
   } catch {
     throw new RequestFailure('ISSUE_INVALID');
   }

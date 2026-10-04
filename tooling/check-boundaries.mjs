@@ -14,6 +14,8 @@ const allowed = {
   'plugin-runtime': ['plugin-api'],
   testing: ['contracts', 'domain', 'application'],
   application: ['domain', 'contracts', 'plugin-api'],
+  'blob-r2': ['application'],
+  'blob-s3': ['application'],
   server: [
     'application',
     'domain',
@@ -42,7 +44,19 @@ const externalAllowed = {
   'plugin-api': ['@sinclair/typebox'],
   domain: [],
   application: [],
-  security: [],
+  // Platform-neutral AST parsers/sanitizer; no Node or provider APIs.
+  security: [
+    'unified',
+    'remark-parse',
+    'remark-gfm',
+    'remark-rehype',
+    'rehype-raw',
+    'rehype-sanitize',
+    'hast-util-to-html',
+    'hast',
+    'mdast',
+    'yaml',
+  ],
   config: [],
   observability: [],
 };

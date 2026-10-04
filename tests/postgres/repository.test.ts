@@ -1,3 +1,32 @@
+import { uploadScanContract } from '../fixtures/upload-scan-contract.ts';
+import { uploadOrphanContract } from '../fixtures/upload-orphan-contract.ts';
+import { uploadLegacyInventoryContract } from '../fixtures/upload-legacy-inventory-contract.ts';
+import {
+  uploadLegacyRecoveryContract,
+  seedLegacyRecoveryFixture,
+  actualR2LegacyRecoveryLedgerContract,
+} from '../fixtures/upload-legacy-recovery-contract.ts';
+import { createPostgresUploadLegacyRecoveryStore } from '@hyperbug/database-postgres';
+import { createPostgresUploadLegacyInventoryStore } from '@hyperbug/database-postgres';
+import { uploadLegacyInventorySql as pgLegacyInventorySql } from '../../packages/database/postgres/src/upload-legacy-inventory.ts';
+import { formUploadQuota } from '../fixtures/form-submission-contract.ts';
+import {
+  uploadMultipartContract,
+  multipartTestQuota,
+} from '../fixtures/upload-multipart-contract.ts';
+import { formSubmissionContract } from '../fixtures/form-submission-contract.ts';
+import { contentProjectionContract } from '../fixtures/content-projection-contract.ts';
+import { contentDefinitionContract } from '../fixtures/content-definition-contract.ts';
+import {
+  uploadIntentContract,
+  uploadTestQuota,
+} from '../fixtures/upload-intent-contract.ts';
+import { createPostgresUploadIntentStore } from '@hyperbug/database-postgres';
+import {
+  createPostgresContentProjectionStore,
+  createPostgresCommentStore,
+  createPostgresContentDefinitionStore,
+} from '@hyperbug/database-postgres';
 import {
   keyRegistryRuntimeProof,
   minimumPasswordRegistryProof,
@@ -48,6 +77,10 @@ import {
 } from '../fixtures/key-purpose-migration.ts';
 import {
   seedPreviousSchema,
+  seedTemplateUpgrade,
+  seedUploadUpgrade,
+  seedScanUpgrade,
+  snapshotLegacyRecoveryUpgrade,
   verifyRejectedUpgrade,
 } from '../fixtures/migration-contract.ts';
 import {
@@ -55,8 +88,122 @@ import {
   measureAuditQueries,
 } from '../fixtures/audit-contract.ts';
 let verifyUpgrade: () => Promise<void>;
+let verifyTemplateUpgrade: () => Promise<void>;
+let verifyUploadUpgrade: () => Promise<void>;
+let verifyScanUpgrade: () => Promise<void>;
+let verifyLegacyRecoveryUpgrade: () => Promise<void>;
 let pool: Pool;
+uploadLegacyInventoryContract(() => ({
+  harness,
+  uploads: createPostgresUploadIntentStore(pool, formUploadQuota),
+  definitions: createPostgresContentDefinitionStore(pool),
+  inventory: createPostgresUploadLegacyInventoryStore(pool),
+  profile: 'postgres',
+  explain: (projectId) =>
+    harness.query(
+      `EXPLAIN (ANALYZE, FORMAT JSON, TIMING OFF) ${pgLegacyInventorySql}`,
+      [projectId, '00000000-0000-0000-0000-000000000000', 21],
+    ),
+}));
+uploadOrphanContract(() => ({
+  harness,
+  uploads: createPostgresUploadIntentStore(pool, formUploadQuota),
+  definitions: createPostgresContentDefinitionStore(pool),
+}));
+uploadScanContract(() => ({
+  harness,
+  store: createPostgresUploadIntentStore(pool, uploadTestQuota),
+}));
+uploadIntentContract(() => ({
+  harness,
+  store: createPostgresUploadIntentStore(pool, uploadTestQuota),
+}));
+uploadMultipartContract(() => ({
+  harness,
+  store: createPostgresUploadIntentStore(pool, multipartTestQuota),
+}));
 let harness: RepositoryHarness;
+actualR2LegacyRecoveryLedgerContract(
+  () => ({
+    harness,
+    inventory: createPostgresUploadLegacyInventoryStore(pool),
+    store: createPostgresUploadLegacyRecoveryStore(pool),
+  }),
+  'postgres',
+);
+uploadLegacyRecoveryContract(() => ({
+  harness,
+  inventory: createPostgresUploadLegacyInventoryStore(pool),
+  store: createPostgresUploadLegacyRecoveryStore(pool),
+}));
+it('legacy recovery PostgreSQL reference guard observes a decision committed after its insert began waiting on the project lock', async () => {
+  const f = await seedLegacyRecoveryFixture(
+    harness,
+    createPostgresUploadLegacyInventoryStore(pool),
+    'finalized',
+  );
+  const gate = await pool.connect(),
+    writer = await pool.connect();
+  let pending: Promise<unknown> | undefined;
+  try {
+    await gate.query('BEGIN');
+    await gate.query('SELECT id FROM projects WHERE id = $1 FOR UPDATE', [
+      f.claim.projectId,
+    ]);
+    const pid = Number(
+      (await writer.query('SELECT pg_backend_pid() AS pid')).rows[0].pid,
+    );
+    pending = writer.query(
+      "INSERT INTO attachments (id,project_id,upload_intent_id,issue_id,object_key,object_version,checksum,media_type,size_bytes,created_at) VALUES ($1,$2,$3,$4,$5,'historical-version','historical-checksum','text/plain',3,$6)",
+      [
+        crypto.randomUUID(),
+        f.claim.projectId,
+        f.claim.id,
+        f.issueId,
+        f.absence.key,
+        f.claim.now,
+      ],
+    );
+    const denied = expect(pending).rejects.toMatchObject({ code: '23514' });
+    await vi.waitFor(async () => {
+      expect(
+        (
+          await pool.query(
+            'SELECT wait_event_type FROM pg_stat_activity WHERE pid = $1',
+            [pid],
+          )
+        ).rows[0]?.wait_event_type,
+      ).toBe('Lock');
+    });
+    await gate.query(
+      "INSERT INTO upload_legacy_recoveries (intent_id,project_id,principal_id,decision_id,decision,state,lease_id,lease_expires_at,created_at) VALUES ($1,$2,$3,$4,$5::jsonb,'deleting',$6,$7,$8)",
+      [
+        f.claim.id,
+        f.claim.projectId,
+        f.claim.principalId,
+        f.claim.decision.decisionId,
+        JSON.stringify(f.claim.decision),
+        f.claim.leaseId,
+        f.claim.leaseExpiresAt,
+        f.claim.now,
+      ],
+    );
+    await gate.query('COMMIT');
+    await denied;
+    expect(
+      (await createPostgresUploadLegacyRecoveryStore(pool).get(f.claim))?.state,
+    ).toBe('deleting');
+    expect(await f.counters()).toEqual([
+      [5, 10, 2],
+      [5, 10, 2],
+    ]);
+  } finally {
+    await gate.query('ROLLBACK');
+    await pending?.catch(() => {});
+    writer.release();
+    gate.release();
+  }
+});
 let measuredQueries: () => string[];
 beforeAll(async () => {
   if (process.env.HYPERBUG_TEST_POSTGRES !== '1')
@@ -96,13 +243,43 @@ beforeAll(async () => {
     },
   };
   verifyUpgrade = await seedPreviousSchema(harness);
-  for (const migration of migrations.slice(1))
+  for (const migration of migrations.slice(1)) {
+    if (migration.name === '0018_template_versions')
+      verifyTemplateUpgrade = await seedTemplateUpgrade(harness);
+    if (migration.name === '0019_upload_reservations')
+      verifyUploadUpgrade = await seedUploadUpgrade(harness);
+    if (migration.name === '0021_upload_scans')
+      verifyScanUpgrade = await seedScanUpgrade(harness);
+    if (migration.name === '0022_upload_legacy_recovery')
+      verifyLegacyRecoveryUpgrade =
+        await snapshotLegacyRecoveryUpgrade(harness);
     await apply(migration.statements);
+  }
 });
 afterAll(async () => {
   await pool?.end();
 });
 repositoryContract(() => harness);
+contentDefinitionContract(
+  () => ({ harness, store: createPostgresContentDefinitionStore(pool) }),
+  'postgres',
+);
+formSubmissionContract(() => ({
+  harness,
+  store: createPostgresContentDefinitionStore(pool),
+  uploads: createPostgresUploadIntentStore(pool, {
+    maxFileBytes: 4,
+    projectBytes: 100,
+    principalBytes: 100,
+    projectPending: 40,
+    principalPending: 40,
+  }),
+}));
+contentProjectionContract(() => ({
+  harness,
+  projections: createPostgresContentProjectionStore(pool),
+  comments: createPostgresCommentStore(pool),
+}));
 rateCounterContract(() => createPostgresRateCounterStore(pool));
 
 it('registers a User and credential atomically and leaves duplicate handles untouched on PostgreSQL', async () => {
@@ -407,6 +584,9 @@ it('shares sensitive admission across two PostgreSQL pools and denies a lost poo
   }
 });
 
+it('snapshots legacy templates at their known revision with no invented history', async () => {
+  await verifyTemplateUpgrade();
+});
 it('upgrades 0000 with linked aggregates and receipts intact', async () => {
   await verifyUpgrade();
 });
@@ -414,8 +594,8 @@ it('migrates a fresh database and protects history from truncation', async () =>
   await pool.query('CREATE DATABASE hyperbug_fresh');
   const fresh = new Pool({ database: 'hyperbug_fresh' });
   try {
-    expect((await migratePostgres(fresh)).pending).toHaveLength(17);
-    expect((await migratePostgres(fresh, true)).applied).toHaveLength(17);
+    expect((await migratePostgres(fresh)).pending).toHaveLength(23);
+    expect((await migratePostgres(fresh, true)).applied).toHaveLength(23);
     expect(await migratePostgres(fresh, true)).toEqual({
       applied: [],
       pending: [],
@@ -426,8 +606,17 @@ it('migrates a fresh database and protects history from truncation', async () =>
           "SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema = 'public' AND table_name != 'hyperbug_schema_migrations'",
         )
       ).rows[0].count,
-    ).toBe(41);
+    ).toBe(48);
+    await expect(
+      fresh.query('TRUNCATE upload_legacy_recoveries'),
+    ).rejects.toThrow('Retain legacy cleanup target');
     await expect(fresh.query('TRUNCATE audit_events')).rejects.toThrow(
+      'append-only',
+    );
+    await expect(
+      fresh.query('TRUNCATE issue_template_versions'),
+    ).rejects.toThrow('append-only');
+    await expect(fresh.query('TRUNCATE form_submissions')).rejects.toThrow(
       'append-only',
     );
     await expect(
@@ -583,3 +772,15 @@ it('measures fresh registry reads against 4000 protected records and 500 retaine
     measuredQueries,
   );
 }, 30000);
+
+it('preserves historical upload quota accounting through the additive migration', async () => {
+  await verifyUploadUpgrade();
+});
+
+it('scan migration quarantines unsupported legacy clean claims without changing immutable identity or used quota', async () => {
+  await verifyScanUpgrade();
+});
+
+it('legacy recovery migration preserves populated identities, links, lifecycle and accounting without implicit decisions', async () => {
+  await verifyLegacyRecoveryUpgrade();
+});

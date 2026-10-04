@@ -14,6 +14,8 @@ export interface CommentRecord {
   readonly issueId: string;
   readonly authorId: string;
   readonly body: string;
+  readonly bodyText: string | null;
+  readonly bodyTextVersion: string | null;
   readonly revision: number;
   readonly moderation: 'visible' | 'hidden' | 'redacted';
   readonly deletedAt: number | null;
@@ -121,6 +123,11 @@ export interface CommentStore {
   get(
     projectId: string,
     issueId: string,
+    id: string,
+    options?: { includeHidden?: boolean },
+  ): Promise<CommentRecord | null>;
+  getById(
+    projectId: string,
     id: string,
     options?: { includeHidden?: boolean },
   ): Promise<CommentRecord | null>;

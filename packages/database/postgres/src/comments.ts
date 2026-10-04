@@ -1,3 +1,4 @@
+import { projectMarkdownText } from '@hyperbug/security/markdown';
 import type { Pool } from 'pg';
 import {
   commentPage,
@@ -27,6 +28,8 @@ interface CommentRow {
   issue_id: string;
   author_id: string;
   body: string;
+  body_text: string | null;
+  body_text_version: string | null;
   revision: string | number;
   moderation: 'visible' | 'hidden' | 'redacted';
   deleted_at: string | null;
@@ -41,6 +44,8 @@ function toRecord(row: CommentRow): CommentRecord {
     issueId: row.issue_id,
     authorId: row.author_id,
     body: row.body,
+    bodyText: row.body_text,
+    bodyTextVersion: row.body_text_version,
     revision: Number(row.revision),
     moderation: row.moderation,
     deletedAt: row.deleted_at === null ? null : Number(row.deleted_at),
@@ -53,7 +58,7 @@ function toRecord(row: CommentRow): CommentRecord {
 }
 
 const commentColumns =
-  'id, project_id, issue_id, author_id, body, revision, moderation, deleted_at, created_at, updated_at';
+  'id, project_id, issue_id, author_id, body, body_text, body_text_version, revision, moderation, deleted_at, created_at, updated_at';
 
 /**
  * PostgreSQL adapter for comments, reactions and the merged timeline,
@@ -91,6 +96,7 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
     operation: 'comment.create' | 'comment.edit',
   ): Promise<CommentMutationOutcome> {
     validateCommentIntent(intent, operation);
+    const projection = projectMarkdownText(intent.body);
     const replay = await receipt(pool, intent, operation);
     if (replay) return replay;
     const db = await pool.connect();
@@ -112,7 +118,7 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
       let row: CommentRow | undefined;
       if (operation === 'comment.create') {
         const inserted = await db.query<CommentRow>(
-          "INSERT INTO comments (id, project_id, issue_id, author_id, body, revision, moderation, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, 1, 'visible', $6, $6) RETURNING " +
+          "INSERT INTO comments (id, project_id, issue_id, author_id, body, revision, moderation, created_at, updated_at, body_text, body_text_version) VALUES ($1, $2, $3, $4, $5, 1, 'visible', $6, $6, $7, $8) RETURNING " +
             commentColumns,
           [
             intent.id,
@@ -121,6 +127,8 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
             intent.principalId,
             intent.body,
             intent.now,
+            projection.text,
+            projection.version,
           ],
         );
         row = inserted.rows[0];
@@ -137,7 +145,7 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
         );
       } else {
         const updated = await db.query<CommentRow>(
-          'UPDATE comments SET body = $1, revision = revision + 1, updated_at = GREATEST(updated_at, $2) WHERE project_id = $3 AND issue_id = $4 AND id = $5 AND revision = $6 RETURNING ' +
+          'UPDATE comments SET body = $1, body_text = $7, body_text_version = $8, revision = revision + 1, updated_at = GREATEST(updated_at, $2) WHERE project_id = $3 AND issue_id = $4 AND id = $5 AND revision = $6 RETURNING ' +
             commentColumns,
           [
             intent.body,
@@ -147,6 +155,8 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
             intent.id,
             (intent as import('@hyperbug/application').CommentEditIntent)
               .expectedRevision,
+            projection.text,
+            projection.version,
           ],
         );
         row = updated.rows[0];
@@ -289,6 +299,17 @@ export function createPostgresCommentStore(pool: Pool): CommentStore {
       const { rows } = await pool.query<CommentRow>(
         `SELECT ${commentColumns} FROM comments WHERE project_id = $1 AND id = $2 LIMIT 1`,
         [input.projectId, input.id],
+      );
+      return rows[0] ? toRecord(rows[0]) : null;
+    },
+    async getById(projectId, id, options) {
+      const hidden =
+        options?.includeHidden === true
+          ? ''
+          : " AND moderation = 'visible' AND deleted_at IS NULL";
+      const { rows } = await pool.query<CommentRow>(
+        `SELECT ${commentColumns} FROM comments WHERE project_id = $1 AND id = $2${hidden} LIMIT 1`,
+        [projectId, id],
       );
       return rows[0] ? toRecord(rows[0]) : null;
     },

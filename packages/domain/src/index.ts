@@ -12,6 +12,8 @@ export interface Issue {
   number: number;
   title: string;
   body: string;
+  bodyText: string | null;
+  bodyTextVersion: string | null;
   state: IssueState;
   closeReason: CloseReason | null;
   typeId: string | null;

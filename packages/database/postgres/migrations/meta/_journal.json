@@ -120,6 +120,13 @@
       "when": 1790850396843,
       "tag": "0016_plugin_event_outbox",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791010945077,
+      "tag": "0017_content_projection",
+      "breakpoints": true
     }
   ]
 }

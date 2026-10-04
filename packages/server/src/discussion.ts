@@ -1,5 +1,6 @@
+import { commentContentView, contentRepresentation } from './content.ts';
+import { deriveMarkdownTree } from '@hyperbug/security/markdown';
 import {
-  commentView,
   isReactionValue,
   validateCommentIntent,
   type CommentCreateIntent,
@@ -112,6 +113,11 @@ function checkedBody(value: unknown): string {
   const length = [...value].length;
   if (length < 1 || length > 32768 || value.includes('\0'))
     throw new RequestFailure('ISSUE_INVALID');
+  try {
+    deriveMarkdownTree(value);
+  } catch {
+    throw new RequestFailure('ISSUE_INVALID');
+  }
   return value;
 }
 
@@ -193,7 +199,7 @@ export async function createComment(
       outcome.result.id,
       false,
     );
-    return commentView(record, true);
+    return commentContentView(record, true);
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
     if (error instanceof Error) {
@@ -250,9 +256,7 @@ export async function listComments(
       }),
     );
     return {
-      comments: page.items.map((item) =>
-        commentView(item, !item.deletedAt && item.moderation === 'visible'),
-      ),
+      comments: page.items.map((item) => commentContentView(item, false)),
       nextCursor: page.nextCursor,
     };
   } catch (error) {
@@ -340,7 +344,7 @@ export async function readComment(
     commentId,
     includeHidden,
   );
-  return commentView(
+  return commentContentView(
     record,
     includeHidden || (!record.deletedAt && record.moderation === 'visible'),
   );
@@ -407,7 +411,7 @@ export async function editComment(
       outcome.result.id,
       true,
     );
-    return commentView(record, true);
+    return commentContentView(record, true);
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
     if (error instanceof Error) {
@@ -504,7 +508,7 @@ export async function moderateComment(
     }),
   );
   if (!moderated) throw new RequestFailure('NOT_FOUND');
-  return commentView(moderated, true);
+  return commentContentView(moderated, true);
 }
 
 /** GET /api/v1/projects/:projectId/issues/:issueId/comments/:commentId/history */
@@ -737,7 +741,12 @@ export async function issueTimeline(
               revision: item.revision,
               moderation: item.moderation,
               deleted: item.deleted,
-              ...(item.body === null ? {} : { body: item.body }),
+              ...(item.body === null
+                ? {}
+                : {
+                    body: item.body,
+                    ...contentRepresentation(item.id, item.revision, item.body),
+                  }),
               createdAt: new Date(item.createdAtMs).toISOString(),
             },
       ),

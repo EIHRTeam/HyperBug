@@ -4,7 +4,22 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./markdown": "./src/markdown/index.ts",
+    "./issue-form-yaml": "./src/issue-form-yaml.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "hast-util-to-html": "9.0.5",
+    "rehype-raw": "7.0.0",
+    "rehype-sanitize": "6.0.0",
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "unified": "11.0.5",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/hast": "3.0.4",
+    "@types/mdast": "4.0.4"
+  }
 }
