@@ -928,6 +928,46 @@ export const uploadIntentDetails = table(
   ],
 );
 
+export const uploadMultipartSessions = table(
+  'upload_multipart_sessions',
+  {
+    intentId: id('intent_id').primaryKey(),
+    projectId: id('project_id').notNull(),
+    partBytes: instant('part_bytes').notNull(),
+    maxParts: integer('max_parts').notNull(),
+    state: text('state').notNull().default('planned'),
+    providerUploadId: text('provider_upload_id'),
+    parts: json('parts').notNull().default('[]'),
+    revision: integer('revision').notNull().default(1),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.projectId, t.intentId],
+      foreignColumns: [uploadIntents.projectId, uploadIntents.id],
+      name: 'multipart_intent_project_fk',
+    }),
+    check(
+      'multipart_plan',
+      sql`${t.partBytes} BETWEEN 5242880 AND 5368709120 AND cast(${t.partBytes} as bigint) = ${t.partBytes} AND ${t.maxParts} BETWEEN 1 AND 10000`,
+    ),
+    check(
+      'multipart_state',
+      sql`${t.state} IN ('planned','creating','active','completing','completed','aborting','aborted')`,
+    ),
+    check(
+      'multipart_provider',
+      sql`(${t.providerUploadId} IS NULL AND ${t.state} IN ('planned','creating','aborting','aborted')) OR (${t.providerUploadId} IS NOT NULL AND length(${t.providerUploadId}) BETWEEN 1 AND 2048 AND ${t.state} NOT IN ('planned','creating'))`,
+    ),
+    validJson('multipart_catalog', t.parts),
+    check(
+      'multipart_catalog_array',
+      sql`json_type(${t.parts}) = 'array' AND json_array_length(${t.parts}) <= ${t.maxParts}`,
+    ),
+    revisionCheck('multipart_revision', t.revision),
+    index('multipart_state_lookup').on(t.state, t.intentId),
+  ],
+);
+
 // Explicit operator recovery ledger; no current lifecycle/association is fabricated.
 );
 export const attachments = table(
