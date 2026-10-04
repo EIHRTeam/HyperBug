@@ -203,7 +203,7 @@ Within one extension point, sync hooks run one at a time in a stable, determinis
 - Every payload carries a `payloadVersion` owned by Core, incremented when a point's payload shape changes; plugins accept the versions they declare. Per-extension-point contracts (05.2c) pin the current version of each payload.
 - A serialized sync payload is at most `SYNC_HOOK_PAYLOAD_LIMIT_BYTES` (65,536); the runtime rejects an oversized payload before dispatch. Async envelopes ride the outbox's own bounded records.
 - Every sync invocation carries a deadline enforced by the runtime, at most `SYNC_HOOK_DEADLINE_CEILING_MS` (3,000 ms); points may declare tighter budgets. External-plugin calls always have a timeout (PERFORMANCE §49).
-- A single plugin holds at most `MAX_CONCURRENT_HOOK_INVOCATIONS` (8) concurrent invocations at one point in one isolate/process; excess invocations are shed before dispatch.
+- A single plugin holds at most `MAX_CONCURRENT_HOOK_INVOCATIONS` (8) concurrent invocations at one point in one isolate/process; excess invocations are shed before dispatch. Capacity is keyed by canonical plugin ID and point across module objects; timed-out native work retains its slot until actual settlement. Invalid/non-JSON or oversized UTF-8 JSON payloads are rejected before dispatch, and the handler receives the checked JSON snapshot.
 - Wall-clock deadlines bound waiting, not native CPU: in-process native code cannot be securely preempted by a promise timeout. This limitation is documented and verified by 05.3c; the practical control for native plugins is review plus bounded request budgets, not preemption.
 
 ### 11.4 Failure semantics (PERFORMANCE §49; the 03.3f re-scope)

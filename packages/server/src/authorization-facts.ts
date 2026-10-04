@@ -224,6 +224,13 @@ export function requestAuthorizationResolver(
 ): AuthorizationResolver {
   return requestFacts(request, resolver)?.resolver ?? resolver;
 }
+/** Start a fresh authorization phase after awaited external acquisition. */
+export function refreshAuthorizationFacts(
+  request: Request,
+  resolver: AuthorizationResolver | null,
+): void {
+  if (resolver) scopes.get(resolver)?.requests.delete(request);
+}
 export function seedAuthorizationProject(
   request: Request,
   resolver: AuthorizationResolver | null,

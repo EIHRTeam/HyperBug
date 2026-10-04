@@ -1764,3 +1764,12 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Unit security/config 9 and Node HTTP deadline 3 pass; types/lint/boundaries/docs pass. Call-site corrections recorded.
 - Decisions/blockers: Store defaults provisional 1000 ms pending B15 actual cold/p99 sizing; no gate closure or retention expansion.
 - Next actions/cautions: Commit B13 then B14; preserve per-request signal scoping, fail-closed decisions, safe diagnostics, history/protected drafts.
+
+### 2026-10-05 — Review remediation B14 composition/plugin bounds
+
+- Scope/checklist IDs: Approved B14, 01 route composition/05.1d/05.3c; 03/04/07/10 contract dependencies.
+- Progress/change summary: Six explicit-dependency route modules preserve schemas/hooks; payload JSON bytes and eight plugin/point slots enforced, including timed-out native work. Sampling explicit per environment. B6 media fact scope refreshed after object acquisition.
+- Files/artifacts: [B14 record](../evidence/2026-10-05-review-remediation.md#b14-route-composition-plugin-bounds-and-explicit-sampling-2026-10-05), server route/helper extraction, plugin runtime/spec, Wrangler/types and fixtures.
+- Verification: Focus10 plugin, Node33, Workers9 and media22 pass; composed final local matrix937 passed/18 optional-provider skips, with fresh-migration count corrected and focused2 pass. Types/lint/boundaries/build/db/docs/secret scan pass; query timing drift restored.
+- Decisions/blockers: Primary focused review only; actual Free metrics and final production sampling B15. G1/G2/13.G6 unchanged. Native CPU cannot be preempted and timeout never releases still-running capacity.
+- Next actions/cautions: Commit B14 then authorized B15 inventory/backup/migrations/metrics/cleanup; preserve exact dependency/schema/hooks, permission refresh before bytes, protected drafts and histories.

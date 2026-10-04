@@ -9,11 +9,13 @@
   "services": [{ "binding": "API", "service": "hyperbug-api-local" }],
   "env": {
     "staging": {
+      "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-ingress-staging",
       "secrets": { "required": ["HYPERBUG_INGRESS_KEY"] },
       "services": [{ "binding": "API", "service": "hyperbug-api-staging" }],
     },
     "production": {
+      "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-ingress",
       "secrets": { "required": ["HYPERBUG_INGRESS_KEY"] },
       "services": [{ "binding": "API", "service": "hyperbug-api" }],

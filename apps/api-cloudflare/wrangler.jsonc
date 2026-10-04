@@ -61,6 +61,7 @@
       ],
     },
     "local-turnstile": {
+      "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-api-local-turnstile",
       "triggers": { "crons": ["*/5 * * * *"] },
       "secrets": {
@@ -93,6 +94,7 @@
       ],
     },
     "staging": {
+      "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-api-staging",
       "triggers": { "crons": ["*/5 * * * *"] },
       "workers_dev": false,
@@ -114,6 +116,7 @@
       ],
     },
     "production": {
+      "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-api",
       "triggers": { "crons": ["*/5 * * * *"] },
       "workers_dev": false,

@@ -606,8 +606,12 @@ it('migrates a fresh database and protects history from truncation', async () =>
   await pool.query('CREATE DATABASE hyperbug_fresh');
   const fresh = new Pool({ database: 'hyperbug_fresh' });
   try {
-    expect((await migratePostgres(fresh)).pending).toHaveLength(25);
-    expect((await migratePostgres(fresh, true)).applied).toHaveLength(25);
+    expect((await migratePostgres(fresh)).pending).toHaveLength(
+      (await migrationStatements('postgres')).length,
+    );
+    expect((await migratePostgres(fresh, true)).applied).toHaveLength(
+      (await migrationStatements('postgres')).length,
+    );
     expect(await migratePostgres(fresh, true)).toEqual({
       applied: [],
       pending: [],

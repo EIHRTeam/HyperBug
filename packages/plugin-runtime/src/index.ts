@@ -5,6 +5,8 @@
 // contract-only and infrastructure-free.
 import {
   pluginHookPoint,
+  isWithinSyncPayloadLimit,
+  MAX_CONCURRENT_HOOK_INVOCATIONS,
   pluginMayOccupyPoint,
   pointFailurePolicy,
   validatePluginManifest,
@@ -71,6 +73,26 @@ export function validatePluginModule(
   return { ok: true, manifest: manifest.manifest };
 }
 
+// Keyed by canonical plugin identity and point, shared by all module objects.
+const activeHooks = new Map<string, Map<PluginHookPointName, number>>();
+function acquireHook(
+  pluginId: string,
+  point: PluginHookPointName,
+): (() => void) | null {
+  const points =
+    activeHooks.get(pluginId) ?? new Map<PluginHookPointName, number>();
+  const count = points.get(point) ?? 0;
+  if (count >= MAX_CONCURRENT_HOOK_INVOCATIONS) return null;
+  points.set(point, count + 1);
+  activeHooks.set(pluginId, points);
+  return () => {
+    const active = (points.get(point) ?? 1) - 1;
+    if (active === 0) points.delete(point);
+    else points.set(point, active);
+    if (points.size === 0) activeHooks.delete(pluginId);
+  };
+}
+
 /**
  * Invoke one sync hook under §11's bounds: only an enabled plugin runs
  * (§10.4), the handler races the deadline (§11.3), and any error or timeout
@@ -103,48 +125,73 @@ export async function invokePluginHook(input: {
     input.deadlineMs > 3000
   )
     return { action: 'fail-request', error: 'invalid' };
+  const failureAction = () => {
+    const policy = pointFailurePolicy(definition, 'fail-request');
+    return policy === 'fail-closed'
+      ? ('deny' as const)
+      : policy === 'enqueue-retry'
+        ? ('enqueue-retry' as const)
+        : ('fail-request' as const);
+  };
+  let payload: unknown;
+  try {
+    const serialized = JSON.stringify(input.payload);
+    if (
+      serialized === undefined ||
+      !isWithinSyncPayloadLimit(new TextEncoder().encode(serialized).byteLength)
+    )
+      return { action: failureAction(), error: 'invalid' };
+    payload = JSON.parse(serialized);
+    if (
+      !Number.isSafeInteger(input.nowMs) ||
+      input.nowMs < 0 ||
+      input.nowMs > 8640000000000000
+    )
+      return { action: failureAction(), error: 'invalid' };
+  } catch {
+    return { action: failureAction(), error: 'invalid' };
+  }
+  const release = acquireHook(validated.manifest.id, input.point);
+  if (!release) return { action: failureAction(), error: 'invalid' };
   const envelope: PluginHookEnvelope = {
     hook: input.point,
     eventId: crypto.randomUUID(),
     payloadVersion: definition.payloadVersion,
     occurredAt: new Date(input.nowMs).toISOString(),
     pluginId: input.module.manifest.id,
-    payload: input.payload,
+    payload,
   };
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
   const timeout =
     input.timer ??
     ((ms: number) =>
       new Promise<never>((_, reject) => {
-        const handle = setTimeout(() => reject(new Error('deadline')), ms);
-        if (typeof handle === 'object' && 'unref' in handle) handle.unref();
+        timeoutHandle = setTimeout(() => reject(new Error('deadline')), ms);
+        if (typeof timeoutHandle === 'object' && 'unref' in timeoutHandle)
+          timeoutHandle.unref();
       }));
   const startedMs = performance.now();
-  const timeoutPromise = timeout(input.deadlineMs);
+  // A timed-out native hook still occupies capacity until its actual work settles.
+  const work = Promise.resolve().then(() => handler(envelope));
+  void work.finally(release).catch(() => {});
   try {
+    const timeoutPromise = timeout(input.deadlineMs);
     // Awaiting races the handler against the deadline. Native CPU-bound code
     // between awaits cannot be preempted (§11.3's documented limitation), so
     // the wall clock is checked afterwards: a result produced past the
     // deadline is not adopted even when the race itself resolved first.
-    const result = await Promise.race([
-      Promise.resolve(handler(envelope)),
-      timeoutPromise,
-    ]);
+    const result = await Promise.race([work, timeoutPromise]);
     if (performance.now() - startedMs > input.deadlineMs)
       throw new Error('deadline');
     return { action: 'continue', result };
   } catch {
     // The declared policy is fail-request for undetermined modules; the
     // catalog's security-critical override inside forces fail-closed.
-    const policy = pointFailurePolicy(definition, 'fail-request');
-    const action =
-      policy === 'fail-closed'
-        ? ('deny' as const)
-        : policy === 'enqueue-retry'
-          ? ('enqueue-retry' as const)
-          : ('fail-request' as const);
     const error =
       performance.now() - startedMs > input.deadlineMs ? 'timeout' : 'error';
-    return { action, error };
+    return { action: failureAction(), error };
+  } finally {
+    if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
   }
 }
 

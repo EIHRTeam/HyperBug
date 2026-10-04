@@ -201,3 +201,70 @@ describe('documented non-preemption (§11.3, 05.3c)', () => {
     expect(invocation).toEqual({ action: 'deny', error: 'timeout' });
   });
 });
+
+it('rejects oversized, circular and non-JSON hook payloads before native dispatch', async () => {
+  let calls = 0;
+  const module = {
+    manifest: metadataPlugin,
+    hooks: { 'issue-metadata:validate': () => ++calls },
+  };
+  const base = {
+    module,
+    point: 'issue-metadata:validate' as const,
+    state: 'enabled' as const,
+    nowMs: Date.now(),
+    deadlineMs: 500,
+  };
+  const circular: Record<string, unknown> = {};
+  circular.self = circular;
+  for (const payload of ['界'.repeat(22000), circular, 1n, undefined])
+    expect(await invokePluginHook({ ...base, payload })).toMatchObject({
+      action: 'fail-request',
+      error: 'invalid',
+    });
+  expect(calls).toBe(0);
+  expect(
+    await invokePluginHook({ ...base, payload: 'x'.repeat(65534) }),
+  ).toMatchObject({ action: 'continue' });
+});
+it('keeps timed-out native hooks in the eight-slot plugin/point capacity until settlement', async () => {
+  let calls = 0;
+  const releases: (() => void)[] = [];
+  const module = {
+    manifest: { ...metadataPlugin, id: '@test/capacity' },
+    hooks: {
+      'issue-metadata:validate': () => {
+        calls++;
+        return new Promise<void>((resolve) => releases.push(resolve));
+      },
+    },
+  };
+  const base = {
+    module,
+    point: 'issue-metadata:validate' as const,
+    state: 'enabled' as const,
+    payload: {},
+    nowMs: Date.now(),
+    deadlineMs: 500,
+    timer: () => Promise.reject(new Error('fixture deadline')),
+  };
+  await Promise.all(Array.from({ length: 8 }, () => invokePluginHook(base)));
+  expect(calls).toBe(8);
+  expect(
+    await invokePluginHook({ ...base, module: { ...module } }),
+  ).toMatchObject({ action: 'fail-request', error: 'invalid' });
+  expect(calls).toBe(8);
+  releases.forEach((release) => release());
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(
+    await invokePluginHook({
+      ...base,
+      module: {
+        manifest: { ...metadataPlugin, id: '@test/capacity' },
+        hooks: { 'issue-metadata:validate': () => true },
+      },
+      timer: () => new Promise<never>(() => {}),
+    }),
+  ).toMatchObject({ action: 'continue', result: true });
+});

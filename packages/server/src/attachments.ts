@@ -1,3 +1,4 @@
+import { refreshAuthorizationFacts } from './authorization-facts.ts';
 import { storeReadTimeoutMs } from './bounds.ts';
 import {
   attachmentIsDeliverable,
@@ -201,6 +202,7 @@ export function createAttachmentMediaHandler(
         JSON.stringify(current) !== JSON.stringify(file)
       )
         throw new RequestFailure('NOT_FOUND');
+      refreshAuthorizationFacts(request, context.authorizationResolver);
       await permit(request, context, current);
       if (request.signal.aborted) throw new RequestFailure('REQUEST_TIMEOUT');
       headers.set('content-type', 'application/octet-stream');

@@ -1,10 +1,16 @@
+import { accountsRoutes } from './route-accounts.ts';
+import { pluginsRoutes } from './route-plugins.ts';
+import { registrationRoutes } from './route-registration.ts';
+import { membershipRoutes } from './route-membership.ts';
+import { accountAdministrationRoutes } from './route-account-administration.ts';
+import { healthRoutes } from './route-health.ts';
 import { bindDeadlinePolicy } from './bounds.ts';
 import { storeReadTimeoutMs, storeWriteTimeoutMs } from './bounds.ts';
 import {
   isInstanceMetadataRequest,
   responseCacheControl,
 } from './response-cache.ts';
-import { idempotencyDigest } from '@hyperbug/security';
+
 import { scopeKeyProvider } from '@hyperbug/security';
 import {
   UploadDocumentSchema,
@@ -41,7 +47,6 @@ import {
 import type { Telemetry, RouteLabel } from '@hyperbug/observability';
 import { auditEvent } from '@hyperbug/security';
 import {
-  HealthSchema,
   ContentDefinitionListSchema,
   SaveIssueFormRequestSchema,
   ReplaceIssueFormRequestSchema,
@@ -58,27 +63,9 @@ import {
   type IssueTemplateDocument,
   SubmitIssueFormRequestSchema,
   type SubmitIssueFormRequest,
-  ReadinessSchema,
-  InstanceDocumentSchema,
-  RegistrationAcceptedSchema,
-  RegistrationChallengeSchema,
-  RegistrationRequestSchema,
-  LoginRequestSchema,
-  LoginChallengeSchema,
-  AccountSessionSchema,
-  AccountDocumentSchema,
-  BootstrapEnrollRequestSchema,
-  BootstrapEnrolledSchema,
-  RecoveryCodesSchema,
-  RecoveryRequestSchema,
-  RecoveredSchema,
   AuthorizeRequestSchema,
   AuthorizeResponseSchema,
   TokenResponseSchema,
-  AccountSessionsSchema,
-  PrincipalStatusSchema,
-  ProjectMemberRoleRequestSchema,
-  ProjectMemberRoleSchema,
   ProjectDocumentSchema,
   CreateProjectRequestSchema,
   ConfigureProjectRequestSchema,
@@ -114,30 +101,12 @@ import {
   ReactionListSchema,
   ReactionOutcomeSchema,
   TimelinePageSchema,
-  PluginListSchema,
-  PluginRecordSchema,
-  PluginSummarySchema,
-  type RegistrationRequest,
-  type RegistrationAccepted,
-  type RegistrationChallenge,
   type ReadinessResponse,
-  type LoginRequest,
-  type LoginChallenge,
-  type AccountSession,
-  type AccountDocument,
   type InstanceDocument,
-  type BootstrapEnrollRequest,
-  type BootstrapEnrolled,
-  type RecoveryCodes,
-  type RecoveryRequest,
-  type Recovered,
   type AuthorizeRequest,
   type AuthorizeResponse,
   type TokenResponse,
-  type AccountSessions,
   type PrincipalStatus,
-  type ProjectMemberRole,
-  type ProjectMemberRoleRequest,
   type ProjectDocument,
   type CreateProjectRequest,
   type ConfigureProjectRequest,
@@ -173,9 +142,6 @@ import {
   type ReactionList,
   type ReactionOutcome,
   type TimelinePage,
-  type PluginList,
-  type PluginRecord,
-  type PluginSummary,
 } from '@hyperbug/contracts';
 import type {
   AccountAdministrationStore,
@@ -217,22 +183,13 @@ import {
   type AuditAppend,
   type SensitiveAdmissionDependencies,
 } from './sensitive-admission.ts';
-import { appendRequiredAuditEvent, withAtomicAudit } from './audit-emit.ts';
+import { withAtomicAudit } from './audit-emit.ts';
 import type { BoundMinimumLoginAdmission } from './minimum-login-admission.ts';
-import { registerAccount } from './account-registration.ts';
+
 import { loginAccount } from './account-login.ts';
-import { enrollInitialStaff } from './bootstrap-enrollment.ts';
-import {
-  passkeyLoginOptions,
-  passkeyLoginVerify,
-  passkeyRegistrationOptions,
-  passkeyRegistrationVerify,
-  type PasskeyRelyingParty,
-} from './passkey.ts';
-import {
-  generateAccountRecoveryCodes,
-  recoverAccount,
-} from './account-recovery.ts';
+
+import { type PasskeyRelyingParty } from './passkey.ts';
+
 import {
   authorizeConsentPage,
   authorizeErrorPage,
@@ -252,18 +209,7 @@ import {
 } from './oauth.ts';
 import { authenticateBearer } from './bearer-auth.ts';
 import { requireAuthorizedAction } from './authorization.ts';
-import {
-  configurePlugin,
-  disablePlugin,
-  enablePlugin,
-  listPlugins,
-  loadPlugin,
-  readConfiguration,
-  registerPlugin,
-  uninstallPlugin,
-  upgradePlugin,
-  type PluginManagementContext,
-} from './plugin-management.ts';
+import { type PluginManagementContext } from './plugin-management.ts';
 import { publishPluginEvent } from './plugin-events.ts';
 import {
   archiveProject,
@@ -322,12 +268,9 @@ import { createDbAuthorizationResolver } from './authorization-facts.ts';
 import { instanceId } from '@hyperbug/security';
 import { credentialFactsOf } from './authorization.ts';
 import {
-  clearedSessionCookie,
   currentAccountSession,
-  issueSessionCookieFor,
   requireAuthOrigin,
   requireAuthReadOrigin,
-  revokeAccountSession,
 } from './account-session.ts';
 import {
   CryptoFailure,
@@ -416,7 +359,7 @@ const unavailableMinimumLoginAdmission: BoundMinimumLoginAdmission =
     },
   });
 
-interface BoundaryHeaders {
+export interface BoundaryHeaders {
   readonly cacheControl?: string;
   readonly instanceMetadata?: boolean;
   readonly requestId: string;
@@ -560,7 +503,6 @@ export function createApp({
       documented: 'docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas',
     },
   });
-  let instanceEtag: Promise<string> | null = null;
   const readiness = (
     status: ReadinessResponse['status'],
     pending?: boolean,
@@ -1238,358 +1180,39 @@ export function createApp({
       if (response instanceof Response)
         return enforceResponseHeaders(response, boundary);
     })
-    .get('/health/live', () => ({ status: 'ok' as const }), {
-      response: t.Unsafe<{ status: 'ok' | 'unavailable' }>(HealthSchema),
-    })
-    .get(
-      '/health/ready',
-      async ({ request, set }) => {
-        try {
-          const available = await withDeadline(
-            request.signal,
-            config.requestTimeoutMs,
-            ready,
-          );
-          if (available) {
-            let pending: boolean | undefined;
-            if (bootstrapState && !request.signal.aborted) {
-              try {
-                pending = await withDeadline(
-                  request.signal,
-                  storeReadTimeoutMs(request.signal),
-                  bootstrapState,
-                );
-              } catch {
-                /* A failed state probe omits the field, never fails readiness. */
-              }
-            }
-            return readiness('ok', pending);
-          }
-        } catch {
-          /* Health responses intentionally hide dependency details. */
-        }
-        set.status = 503;
-        return readiness('unavailable');
-      },
-      {
-        response: {
-          200: t.Unsafe<ReadinessResponse>(ReadinessSchema),
-          503: t.Unsafe<ReadinessResponse>(ReadinessSchema),
-        },
-      },
+    .use((app) =>
+      healthRoutes(app, {
+        config,
+        ready,
+        bootstrapState,
+        readiness,
+        instanceDocument,
+      }),
     )
-    .get(
-      '/api/v1/instance',
-      async ({ request, set }) => {
-        const etag = await (instanceEtag ??= idempotencyDigest(
-          JSON.stringify(instanceDocument),
-        ).then((digest) => 'W/"instance-v1.' + digest + '"'));
-        set.headers.etag = etag;
-        const validators = request.headers
-          .get('if-none-match')
-          ?.split(',')
-          .map((v) => v.trim());
-        if (
-          validators?.some(
-            (v) =>
-              v === '*' || v.replace(/^W\//, '') === etag.replace(/^W\//, ''),
-          )
-        ) {
-          set.status = 304;
-          return new Response(null, { status: 304, headers: { etag } });
-        }
-        return new Response(JSON.stringify(instanceDocument), {
-          headers: { 'content-type': 'application/json', etag },
-        });
-      },
-      {
-        response: {
-          200: t.Unsafe<InstanceDocument>(InstanceDocumentSchema),
-          304: t.Null(),
-        },
-      },
+    .use((app) =>
+      accountAdministrationRoutes(app, {
+        auditAppend,
+        keyProvider,
+        oauthCodeStore,
+        requireActivePrincipalKind,
+        sessionStore,
+        canonicalInstant,
+        uuidPattern,
+        boundaryFor,
+        suspendPrincipal,
+      }),
     )
-    .get(
-      '/api/v1/account',
-      async ({ request }): Promise<AccountDocument> => {
-        // Bearer-only business read: cookies are never credentials here and
-        // no Origin is required (no-Origin API clients stay valid). Like
-        // /auth/session this authenticated read takes no rate admission.
-        // Recent authentication stays with the shared authorization guard
-        // for the route owners that need it; this route does not.
-        const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider
-            ? scopeKeyProvider(keyProvider, request)
-            : null,
-          tokenStore: oauthCodeStore ?? null,
-        });
-        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-        // A suspended or deleted principal denies like any other invalid
-        // credential; no account state is disclosed.
-        const kind = await requireActivePrincipalKind(
-          request,
-          principal.principalId,
-        );
-        return {
-          principalId: principal.principalId,
-          identityId: principal.identityId,
-          kind,
-        };
-      },
-      { response: t.Unsafe<AccountDocument>(AccountDocumentSchema) },
-    )
-    .get(
-      '/api/v1/account/sessions',
-      async ({ request }): Promise<AccountSessions> => {
-        // Bearer-only listing of the token principal's own sessions. Like
-        // /api/v1/account this authenticated read takes no rate admission.
-        const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider
-            ? scopeKeyProvider(keyProvider, request)
-            : null,
-          tokenStore: oauthCodeStore ?? null,
-        });
-        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-        if (!sessionStore)
-          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
-        await requireActivePrincipalKind(request, principal.principalId);
-        let sessions;
-        try {
-          sessions = await withDeadline(
-            request.signal,
-            storeReadTimeoutMs(request.signal),
-            () =>
-              sessionStore.listActiveByPrincipal(
-                principal.principalId,
-                Date.now(),
-              ),
-          );
-        } catch (error) {
-          if (error instanceof RequestFailure) throw error;
-          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
-        }
-        return {
-          sessions: sessions.map((session) => ({
-            id: session.id,
-            createdAt: canonicalInstant(session.createdAtMs),
-            idleExpiresAt: canonicalInstant(session.idleExpiresAtMs),
-            absoluteExpiresAt: canonicalInstant(session.absoluteExpiresAtMs),
-          })),
-        };
-      },
-      { response: t.Unsafe<AccountSessions>(AccountSessionsSchema) },
-    )
-    .delete(
-      '/api/v1/account/sessions/:id',
-      async ({ request, params, set }) => {
-        const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider
-            ? scopeKeyProvider(keyProvider, request)
-            : null,
-          tokenStore: oauthCodeStore ?? null,
-        });
-        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-        if (!sessionStore)
-          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
-        await requireActivePrincipalKind(request, principal.principalId);
-        // A foreign or unknown session id answers the same closed 404.
-        const id = params.id;
-        if (id === undefined || !uuidPattern.test(id))
-          throw new RequestFailure('NOT_FOUND');
-        let revoked: boolean;
-        try {
-          revoked = await withDeadline(
-            request.signal,
-            storeWriteTimeoutMs(request.signal),
-            () =>
-              sessionStore.revokeOwned(id, principal.principalId, Date.now()),
-          );
-        } catch (error) {
-          if (error instanceof RequestFailure) throw error;
-          throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
-        }
-        if (!revoked) throw new RequestFailure('NOT_FOUND');
-        await appendRequiredAuditEvent({
-          append: auditAppend,
-          event: auditEvent({
-            id: crypto.randomUUID(),
-            projectId: null,
-            actorId: principal.principalId,
-            systemActor: null,
-            action: 'session.revoked',
-            targetId: id,
-            result: 'success',
-            requestId: boundaryFor(request).requestId,
-            createdAt: Date.now(),
-            metadata: { v: 1 },
-          }),
-          signal: request.signal,
-        });
-        set.status = 204;
-        return null;
-      },
-      { body: t.Object({}, { additionalProperties: false }) },
-    )
-    .post(
-      '/api/v1/admin/principals/:id/suspend',
-      async ({ request, params }): Promise<PrincipalStatus> =>
-        suspendPrincipal(request, params.id, true),
-      {
-        body: t.Object({}, { additionalProperties: false }),
-        response: t.Unsafe<PrincipalStatus>(PrincipalStatusSchema),
-      },
-    )
-    .post(
-      '/api/v1/admin/principals/:id/activate',
-      async ({ request, params }): Promise<PrincipalStatus> =>
-        suspendPrincipal(request, params.id, false),
-      {
-        body: t.Object({}, { additionalProperties: false }),
-        response: t.Unsafe<PrincipalStatus>(PrincipalStatusSchema),
-      },
-    )
-    .put(
-      '/api/v1/projects/:projectId/members/:principalId',
-      async ({ request, params, body }): Promise<ProjectMemberRole> => {
-        const { projectId, principalId } = params;
-        if (
-          projectId === undefined ||
-          !uuidPattern.test(projectId) ||
-          principalId === undefined ||
-          !uuidPattern.test(principalId)
-        )
-          throw new RequestFailure('NOT_FOUND');
-        const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider
-            ? scopeKeyProvider(keyProvider, request)
-            : null,
-          tokenStore: oauthCodeStore ?? null,
-        });
-        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-        if (!authorizationResolver || !administration || !roleStore)
-          throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
-        await requireAuthorizedAction({
-          httpRequest: request,
-          request: {
-            actorId: principal.principalId,
-            permission: 'role:manage',
-            target: { projectId, type: 'project', id: projectId },
-          },
-          resolver: authorizationResolver,
-          policy: authorizationPolicy,
-          signal: request.signal,
-          credential: credentialFactsOf(principal),
-        });
-        try {
-          const target = await withDeadline(
-            request.signal,
-            storeReadTimeoutMs(request.signal),
-            () => administration.loadPrincipal(principalId),
-          );
-          if (!target) throw new RequestFailure('NOT_FOUND');
-          // Membership never converts a User into Staff; only an active
-          // staff principal can hold a project role.
-          if (target.kind !== 'staff' || target.status !== 'active')
-            throw new RequestFailure('FORBIDDEN');
-          const audit = auditEvent({
-            id: crypto.randomUUID(),
-            projectId,
-            actorId: principal.principalId,
-            systemActor: null,
-            action: 'role.granted',
-            targetId: principalId,
-            result: 'success',
-            requestId: boundaryFor(request).requestId,
-            createdAt: Date.now(),
-            metadata: { v: 1, role: body.role },
-          });
-          await withAtomicAudit(
-            request.signal,
-            storeWriteTimeoutMs(request.signal),
-            () =>
-              roleStore.grant(
-                {
-                  projectId,
-                  principalId,
-                  role: body.role,
-                  nowMs: Date.now(),
-                },
-                audit,
-              ),
-          );
-        } catch (error) {
-          if (error instanceof RequestFailure) throw error;
-          throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
-        }
-        return { projectId, principalId, role: body.role };
-      },
-      {
-        body: t.Unsafe<ProjectMemberRoleRequest>(
-          ProjectMemberRoleRequestSchema,
-        ),
-        response: t.Unsafe<ProjectMemberRole>(ProjectMemberRoleSchema),
-      },
-    )
-    .delete(
-      '/api/v1/projects/:projectId/members/:principalId',
-      async ({ request, params, set }) => {
-        const { projectId, principalId } = params;
-        if (
-          projectId === undefined ||
-          !uuidPattern.test(projectId) ||
-          principalId === undefined ||
-          !uuidPattern.test(principalId)
-        )
-          throw new RequestFailure('NOT_FOUND');
-        const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider
-            ? scopeKeyProvider(keyProvider, request)
-            : null,
-          tokenStore: oauthCodeStore ?? null,
-        });
-        if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-        if (!authorizationResolver || !roleStore)
-          throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
-        await requireAuthorizedAction({
-          httpRequest: request,
-          request: {
-            actorId: principal.principalId,
-            permission: 'role:manage',
-            target: { projectId, type: 'project', id: projectId },
-          },
-          resolver: authorizationResolver,
-          policy: authorizationPolicy,
-          signal: request.signal,
-          credential: credentialFactsOf(principal),
-        });
-        const audit = auditEvent({
-          id: crypto.randomUUID(),
-          projectId,
-          actorId: principal.principalId,
-          systemActor: null,
-          action: 'role.revoked',
-          targetId: principalId,
-          result: 'success',
-          requestId: boundaryFor(request).requestId,
-          createdAt: Date.now(),
-          metadata: { v: 1 },
-        });
-        let removed: boolean;
-        try {
-          removed = await withAtomicAudit(
-            request.signal,
-            storeWriteTimeoutMs(request.signal),
-            () => roleStore.revoke(projectId, principalId, audit),
-          );
-        } catch (error) {
-          if (error instanceof RequestFailure) throw error;
-          throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
-        }
-        if (!removed) throw new RequestFailure('NOT_FOUND');
-        set.status = 204;
-        return null;
-      },
-      { body: t.Object({}, { additionalProperties: false }) },
+    .use((app) =>
+      membershipRoutes(app, {
+        uuidPattern,
+        keyProvider,
+        oauthCodeStore,
+        authorizationResolver,
+        administration,
+        roleStore,
+        authorizationPolicy,
+        boundaryFor,
+      }),
     )
     .post(
       '/api/v1/projects',
@@ -2989,432 +2612,41 @@ export function createApp({
         response: t.Unsafe<TimelinePage>(TimelinePageSchema),
       },
     )
-    .get(
-      '/api/v1/accounts/register',
-      (): RegistrationChallenge => ({
-        captchaRequired: captchaGate.enabled,
-        captchaSiteKey: publicCaptchaSiteKey,
-        captchaAction: 'register',
+    .use((app) =>
+      registrationRoutes(app, {
+        captchaGate,
+        publicCaptchaSiteKey,
+        boundaryFor,
+        registrationStore,
       }),
-      {
-        response: t.Unsafe<RegistrationChallenge>(RegistrationChallengeSchema),
-      },
     )
-    .post(
-      '/api/v1/accounts/register',
-      async ({
-        request,
-        body,
-        set,
-        sensitiveAdmission,
-        accountPassword: passwordService,
-      }) => {
-        const result = await registerAccount({
-          request,
-          body,
-          admission: sensitiveAdmission,
-          password: passwordService?.forRequest?.(request) ?? passwordService,
-          requestId: boundaryFor(request).requestId,
-          store: registrationStore ?? null,
-        });
-        set.status = 202;
-        return result;
-      },
-      {
-        body: t.Unsafe<RegistrationRequest>(RegistrationRequestSchema),
-        response: {
-          202: t.Unsafe<RegistrationAccepted>(RegistrationAcceptedSchema),
-        },
-      },
-    )
-    .get(
-      '/api/v1/admin/plugins',
-      async ({ request }): Promise<PluginList> => ({
-        plugins: await listPlugins(request, pluginManagement),
+    .use((app) =>
+      pluginsRoutes(app, {
+        pluginManagement,
+        boundaryFor,
+        pluginIdBody,
+        pluginIdBodySchema,
       }),
-      { response: t.Unsafe<PluginList>(PluginListSchema) },
     )
-    .post(
-      '/api/v1/admin/plugins',
-      async ({ request, body, set }): Promise<PluginSummary> => {
-        const summary = await registerPlugin(
-          request,
-          pluginManagement,
-          body.manifest,
-          boundaryFor(request).requestId,
-        );
-        set.status = 201;
-        return summary;
-      },
-      {
-        body: t.Object(
-          { manifest: t.Object({}, { additionalProperties: true }) },
-          { additionalProperties: false },
-        ),
-        response: { 201: t.Unsafe<PluginSummary>(PluginSummarySchema) },
-      },
-    )
-    .post(
-      '/api/v1/admin/plugins/load',
-      async ({ request, body }): Promise<PluginRecord> =>
-        loadPlugin(request, pluginManagement, pluginIdBody(body)),
-      {
-        body: pluginIdBodySchema,
-        response: t.Unsafe<PluginRecord>(PluginRecordSchema),
-      },
-    )
-    .post(
-      '/api/v1/admin/plugins/configure',
-      async ({ request, body }): Promise<PluginSummary> =>
-        configurePlugin(
-          request,
-          pluginManagement,
-          pluginIdBody(body),
-          {
-            values: body.values,
-            secrets: body.secrets,
-          },
-          boundaryFor(request).requestId,
-        ),
-      {
-        body: t.Object(
-          {
-            id: t.String({ minLength: 3, maxLength: 128 }),
-            values: t.Optional(
-              t.Record(
-                t.String(),
-                t.Union([t.String(), t.Number(), t.Boolean()]),
-              ),
-            ),
-            secrets: t.Optional(t.Record(t.String(), t.String())),
-          },
-          { additionalProperties: false },
-        ),
-        response: t.Unsafe<PluginSummary>(PluginSummarySchema),
-      },
-    )
-    .post(
-      '/api/v1/admin/plugins/configuration',
-      async ({ request, body }) => ({
-        settings: await readConfiguration(
-          request,
-          pluginManagement,
-          pluginIdBody(body),
-        ),
+    .use((app) =>
+      accountsRoutes(app, {
+        accountPasswordService,
+        tierSelected,
+        unavailableMinimumLoginAdmission,
+        captchaGate,
+        publicCaptchaSiteKey,
+        boundaryFor,
+        minimumLoginAdmission,
+        passwordStore,
+        keyProvider,
+        sessionStore,
+        bootstrapCode,
+        staffEnrollmentStore,
+        auditAppend,
+        recoveryStore,
+        authorizationPolicy,
+        passkey,
       }),
-      {
-        body: pluginIdBodySchema,
-        response: t.Object(
-          {
-            settings: t.Array(
-              t.Object(
-                {
-                  key: t.String(),
-                  kind: t.Union([t.Literal('public'), t.Literal('secret')]),
-                  value: t.Optional(
-                    t.Union([t.String(), t.Number(), t.Boolean()]),
-                  ),
-                  secretPresent: t.Optional(t.Boolean()),
-                },
-                { additionalProperties: false },
-              ),
-            ),
-          },
-          { additionalProperties: false },
-        ),
-      },
-    )
-    .post(
-      '/api/v1/admin/plugins/enable',
-      async ({ request, body }): Promise<PluginSummary> =>
-        enablePlugin(
-          request,
-          pluginManagement,
-          pluginIdBody(body),
-          boundaryFor(request).requestId,
-        ),
-      {
-        body: pluginIdBodySchema,
-        response: t.Unsafe<PluginSummary>(PluginSummarySchema),
-      },
-    )
-    .post(
-      '/api/v1/admin/plugins/disable',
-      async ({ request, body }): Promise<PluginSummary> =>
-        disablePlugin(
-          request,
-          pluginManagement,
-          pluginIdBody(body),
-          boundaryFor(request).requestId,
-        ),
-      {
-        body: pluginIdBodySchema,
-        response: t.Unsafe<PluginSummary>(PluginSummarySchema),
-      },
-    )
-    .post(
-      '/api/v1/admin/plugins/upgrade',
-      async ({ request, body }): Promise<PluginSummary> =>
-        upgradePlugin(
-          request,
-          pluginManagement,
-          body.id,
-          body.manifest,
-          boundaryFor(request).requestId,
-        ),
-      {
-        body: t.Object(
-          {
-            id: t.String({ minLength: 3, maxLength: 128 }),
-            manifest: t.Object({}, { additionalProperties: true }),
-          },
-          { additionalProperties: false },
-        ),
-        response: t.Unsafe<PluginSummary>(PluginSummarySchema),
-      },
-    )
-    .post(
-      '/api/v1/admin/plugins/uninstall',
-      async ({ request, body, set }) => {
-        await uninstallPlugin(
-          request,
-          pluginManagement,
-          body.id,
-          body.policy,
-          boundaryFor(request).requestId,
-        );
-        set.status = 204;
-        return null;
-      },
-      {
-        body: t.Object(
-          {
-            id: t.String({ minLength: 3, maxLength: 128 }),
-            policy: t.Union([t.Literal('retain'), t.Literal('delete')]),
-          },
-          { additionalProperties: false },
-        ),
-        response: { 204: t.Null() },
-      },
-    )
-    .get(
-      '/auth/login',
-      (): LoginChallenge => ({
-        captchaRequired: captchaGate.enabled,
-        captchaSiteKey: publicCaptchaSiteKey,
-        captchaAction: 'login',
-      }),
-      { response: t.Unsafe<LoginChallenge>(LoginChallengeSchema) },
-    )
-    .post(
-      '/auth/login',
-      async ({ request, body, set, sensitiveAdmission }) => {
-        const { cookie } = await loginAccount({
-          request,
-          body,
-          admission: sensitiveAdmission,
-          requestId: boundaryFor(request).requestId,
-          passwordService:
-            accountPasswordService?.forRequest?.(request) ??
-            accountPasswordService,
-          minimumAdmission: tierSelected
-            ? (minimumLoginAdmission ?? unavailableMinimumLoginAdmission)
-            : null,
-          passwordStore: passwordStore ?? null,
-          keyProvider: keyProvider
-            ? scopeKeyProvider(keyProvider, request)
-            : null,
-          sessionStore: sessionStore ?? null,
-        });
-        set.headers['set-cookie'] = cookie;
-        return { authenticated: true as const };
-      },
-      {
-        body: t.Unsafe<LoginRequest>(LoginRequestSchema),
-        response: t.Unsafe<AccountSession>(AccountSessionSchema),
-      },
-    )
-    .get(
-      '/auth/session',
-      async ({ request }) => {
-        const session = await currentAccountSession({
-          request,
-          provider: keyProvider ? scopeKeyProvider(keyProvider, request) : null,
-          store: sessionStore ?? null,
-          nowMs: Date.now(),
-        });
-        if (!session) throw new RequestFailure('LOGIN_DENIED');
-        return { authenticated: true as const };
-      },
-      { response: t.Unsafe<AccountSession>(AccountSessionSchema) },
-    )
-    .post(
-      '/auth/logout',
-      async ({ request, set }) => {
-        await revokeAccountSession({
-          request,
-          provider: keyProvider ? scopeKeyProvider(keyProvider, request) : null,
-          store: sessionStore ?? null,
-          nowMs: Date.now(),
-        });
-        set.headers['set-cookie'] = clearedSessionCookie;
-        set.status = 204;
-        return null;
-      },
-      { body: t.Object({}, { additionalProperties: false }) },
-    )
-    .post(
-      '/auth/bootstrap/enroll',
-      async ({ request, body, set, sensitiveAdmission }) => {
-        const result = await enrollInitialStaff({
-          request,
-          body,
-          admission: sensitiveAdmission,
-          password:
-            accountPasswordService?.forRequest?.(request) ??
-            accountPasswordService,
-          code: bootstrapCode,
-          store: staffEnrollmentStore,
-          auditAppend,
-          requestId: boundaryFor(request).requestId,
-        });
-        set.status = 201;
-        if (tierSelected) {
-          // Enrollment issues a session for immediate passkey/recovery setup.
-          if (!passwordStore || !keyProvider || !sessionStore)
-            throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
-          const credential = await withDeadline(
-            request.signal,
-            storeReadTimeoutMs(request.signal),
-            () => passwordStore!.loadCredentialByIdentity(result.identityId),
-          );
-          if (!credential || credential.principalId !== result.principalId)
-            throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');
-          set.headers['set-cookie'] = await issueSessionCookieFor({
-            account: {
-              principalId: result.principalId,
-              identityId: result.identityId,
-              credentialRevision: credential.revision,
-            },
-            ceremony: { method: 'bootstrap', assurance: 1 },
-            provider: scopeKeyProvider(keyProvider, request),
-            store: sessionStore,
-            signal: request.signal,
-            nowMs: Date.now(),
-          });
-        }
-        return { enrolled: true as const };
-      },
-      {
-        body: t.Unsafe<BootstrapEnrollRequest>(BootstrapEnrollRequestSchema),
-        response: { 201: t.Unsafe<BootstrapEnrolled>(BootstrapEnrolledSchema) },
-      },
-    )
-    .post(
-      '/auth/recovery-codes',
-      async ({ request }) =>
-        generateAccountRecoveryCodes({
-          request,
-          keyProvider: keyProvider
-            ? scopeKeyProvider(keyProvider, request)
-            : null,
-          recoveryStore: recoveryStore ?? null,
-          sessionStore: sessionStore ?? null,
-          auditAppend,
-          requestId: boundaryFor(request).requestId,
-          recentAuthMaxAgeMs: authorizationPolicy.recentAuthMaxAgeMs,
-          nowMs: Date.now(),
-        }),
-      {
-        body: t.Object({}, { additionalProperties: false }),
-        response: t.Unsafe<RecoveryCodes>(RecoveryCodesSchema),
-      },
-    )
-    .post(
-      '/auth/recover',
-      async ({ request, body, sensitiveAdmission }) =>
-        recoverAccount({
-          request,
-          body,
-          admission: sensitiveAdmission,
-          password:
-            accountPasswordService?.forRequest?.(request) ??
-            accountPasswordService,
-          passwordStore: passwordStore ?? null,
-          recoveryStore: recoveryStore ?? null,
-          sessionStore: sessionStore ?? null,
-          keyProvider: keyProvider
-            ? scopeKeyProvider(keyProvider, request)
-            : null,
-          auditAppend,
-          requestId: boundaryFor(request).requestId,
-        }),
-      {
-        body: t.Unsafe<RecoveryRequest>(RecoveryRequestSchema),
-        response: t.Unsafe<Recovered>(RecoveredSchema),
-      },
-    )
-    .post(
-      '/auth/passkey/register/options',
-      async ({ request }) =>
-        passkeyRegistrationOptions({
-          request,
-          relyingParty: passkey,
-          nowMs: Date.now(),
-        }),
-      { body: t.Object({}, { additionalProperties: false }) },
-    )
-    .post(
-      '/auth/passkey/register',
-      async ({ request, body }) =>
-        passkeyRegistrationVerify({
-          request,
-          body: body as { response: never },
-          relyingParty: passkey,
-          auditAppend,
-          requestId: boundaryFor(request).requestId,
-          nowMs: Date.now(),
-        }),
-      {
-        body: t.Object({ response: t.Any() }, { additionalProperties: false }),
-      },
-    )
-    .post(
-      '/auth/passkey/login/options',
-      async ({ request }) =>
-        passkeyLoginOptions({
-          request,
-          relyingParty: passkey,
-          nowMs: Date.now(),
-        }),
-      { body: t.Object({}, { additionalProperties: false }) },
-    )
-    .post(
-      '/auth/passkey/login',
-      async ({ request, body, sensitiveAdmission, set }) => {
-        const cookie = await passkeyLoginVerify({
-          request,
-          body: body as { response: never; captchaToken?: string },
-          admission: sensitiveAdmission,
-          relyingParty: passkey,
-          nowMs: Date.now(),
-          requestId: boundaryFor(request).requestId,
-        });
-        set.headers['set-cookie'] = cookie;
-        return { authenticated: true as const };
-      },
-      {
-        body: t.Object(
-          {
-            response: t.Any(),
-            captchaToken: t.Optional(
-              t.String({ minLength: 1, maxLength: 4096 }),
-            ),
-          },
-          { additionalProperties: false },
-        ),
-        response: t.Unsafe<AccountSession>(AccountSessionSchema),
-      },
     )
     .post(
       '/auth/authorize',
