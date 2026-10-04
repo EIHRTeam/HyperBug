@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   AccountPasswordStore,
   AccountSessionStore,
@@ -41,11 +42,16 @@ export async function loginAccount(input: {
     request,
     body,
     admission,
-    passwordService,
+    passwordService: rootPasswordService,
     passwordStore,
-    keyProvider,
+    keyProvider: rootProvider,
     sessionStore,
   } = input;
+  const passwordService =
+    rootPasswordService?.forRequest?.(request) ?? rootPasswordService;
+  const keyProvider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
   if (!passwordService || !passwordStore || !keyProvider || !sessionStore)
     throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
   const handle = canonicalRegistrationHandle(body.handle);

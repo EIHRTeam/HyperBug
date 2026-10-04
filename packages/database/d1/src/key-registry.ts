@@ -243,7 +243,23 @@ export function createD1KeyRegistry(db: D1Database): KeyRegistry {
   return {
     inspect,
     async load(purpose, signal) {
-      return registryLifecycle(await inspect(signal), purpose);
+      try {
+        signal.throwIfAborted();
+        const rows = await db
+          .withSession('first-primary')
+          .prepare(
+            snapshotSql.replace(
+              "k.state != 'removed'",
+              "k.state != 'removed' AND k.purpose = ?",
+            ),
+          )
+          .bind(purpose)
+          .all<RegistryRow>();
+        signal.throwIfAborted();
+        return registryLifecycle(snapshot(rows.results), purpose);
+      } catch {
+        throw new KeyRegistryFailure();
+      }
     },
     async mutate(input) {
       const intent = registryMutation(input);

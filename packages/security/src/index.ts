@@ -27,3 +27,5 @@ export * from './minimum-password.ts';
 export * from './standard-password.ts';
 export * from './account-delay.ts';
 export * from './account-lockout.ts';
+
+export { scopeKeyProvider } from './key-provider.ts';

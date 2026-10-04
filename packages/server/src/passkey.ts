@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from '@hyperbug/security';
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
@@ -119,7 +120,9 @@ export async function passkeyRegistrationOptions(input: {
   if (!relyingParty) throw new RequestFailure('PASSKEY_UNAVAILABLE');
   const session = await currentAccountSession({
     request,
-    provider: relyingParty.keyProvider,
+    provider: relyingParty.keyProvider
+      ? scopeKeyProvider(relyingParty.keyProvider, request)
+      : null,
     store: relyingParty.sessionStore,
     nowMs: input.nowMs,
   });
@@ -166,7 +169,9 @@ export async function passkeyRegistrationVerify(input: {
   if (!relyingParty) throw new RequestFailure('PASSKEY_UNAVAILABLE');
   const session = await currentAccountSession({
     request,
-    provider: relyingParty.keyProvider,
+    provider: relyingParty.keyProvider
+      ? scopeKeyProvider(relyingParty.keyProvider, request)
+      : null,
     store: relyingParty.sessionStore,
     nowMs: input.nowMs,
   });
@@ -354,7 +359,9 @@ export async function passkeyLoginVerify(input: {
     },
     // A verified passkey ceremony carries assurance 2 for this session only.
     ceremony: { method: 'passkey', assurance: 2 },
-    provider: relyingParty.keyProvider,
+    provider: relyingParty.keyProvider
+      ? scopeKeyProvider(relyingParty.keyProvider, request)
+      : null,
     store: relyingParty.sessionStore,
     signal: request.signal,
     nowMs: input.nowMs,

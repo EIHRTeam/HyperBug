@@ -1710,3 +1710,12 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Focused affected D1/workerd **10 passed** and real isolated PostgreSQL **18.6 13 passed**, no skips. Typecheck/lint/boundaries/scoped format/diff, documentation/all runtime builds and credential-signature scan pass; local Minimum journey adds 7 passes; broad unchanged lanes intentionally not repeated under the user's “Test less, write more” preference. Actual duplicate-audit failures roll back every listed mutation; stale generation preserves codes. Initial fixture errors corrected. Primary focused review recorded; no Sonnet or independent-review claim.
 - Decisions/blockers: No schema/deployment/provider change or B4 blocker. Standalone session/link/redeem events retain their prior path; later audit remains suspended. G1/G2 closed, 13.G6 open.
 - Next actions/cautions: Commit B4, then B5 conditional session renewal and B6–B15. Keep primary validation/revocation, atomic audit, last-admin locks and required UV/CAPTCHA. Preserve protected files, old SQL/audit history and test measurement artifacts.
+
+### 2026-10-05 — Review remediation B7 key-material reuse
+
+- Scope/checklist IDs: Approved B7 post-completion correction to 03 key lifecycle/admission, with 04/05 route and 10 acceptance dependencies.
+- Progress/change summary: Bounded imported key reuse by exact secret digest; fresh purpose-filtered primary registry loads and request-only snapshots, including abuse preparse handoff and standalone account/OAuth helpers. Password admission bounds retained.
+- Files/artifacts: ADR 0006, providers/registries/server wiring and shared key-material contract; [B7 evidence](../evidence/2026-10-05-review-remediation.md#b7-imported-key-reuse-and-request-lifecycle-snapshots-2026-10-05).
+- Verification: Focused new provider/abuse/D1 checks 13, real PostgreSQL 18.6 contract 1 and admission handoff 10 passed; typecheck/lint/boundaries pass. Preliminary affected route checks recorded separately in evidence. No real-Free CPU or independent-review claim.
+- Decisions/blockers: Request-local lifecycle only; sources and authoritative state reread on new requests. No schema/deployment or blocker. G1/G2 closed, 13.G6 open.
+- Next actions/cautions: Commit B7 then B8 formal Minimum ADR/profile/password accounts. Preserve complete administrative/backup registry inspection, shared password concurrency, audit history and protected files.

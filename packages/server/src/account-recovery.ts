@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   AccountPasswordStore,
   AccountRecoveryStore,
@@ -64,7 +65,16 @@ export async function generateAccountRecoveryCodes(input: {
   readonly nowMs: number;
   readonly recentAuthMaxAgeMs?: number;
 }): Promise<{ codes: string[] }> {
-  const { request, keyProvider, recoveryStore, sessionStore, nowMs } = input;
+  const {
+    request,
+    keyProvider: rootProvider,
+    recoveryStore,
+    sessionStore,
+    nowMs,
+  } = input;
+  const keyProvider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
   requireAuthOrigin(request);
   if (!keyProvider || !recoveryStore || !sessionStore)
     throw new RequestFailure('RECOVERY_UNAVAILABLE');
@@ -142,12 +152,16 @@ export async function recoverAccount(input: {
     request,
     body,
     admission,
-    password,
+    password: rootPassword,
     passwordStore,
     recoveryStore,
     sessionStore,
-    keyProvider,
+    keyProvider: rootProvider,
   } = input;
+  const keyProvider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
+  const password = rootPassword?.forRequest?.(request) ?? rootPassword;
   requireAuthOrigin(request);
   if (!password || !passwordStore || !recoveryStore || !sessionStore)
     throw new RequestFailure('RECOVERY_UNAVAILABLE');

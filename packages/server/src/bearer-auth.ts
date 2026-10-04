@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   Assurance,
   AuthMethod,
@@ -47,7 +48,10 @@ export async function authenticateBearer(
   if (header === null) return null;
   const presented = header.match(bearerPattern);
   if (!presented) return null;
-  const { keyProvider, tokenStore } = options;
+  const { keyProvider: rootProvider, tokenStore } = options;
+  const keyProvider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
   if (!keyProvider || !tokenStore)
     throw new RequestFailure('AUTHENTICATION_UNAVAILABLE');
   const nowMs = Date.now();

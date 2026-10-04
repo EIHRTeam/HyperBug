@@ -1,5 +1,6 @@
 import type {
   AbuseKeyProvider,
+  ActiveAbuseKey,
   AuditEvent,
   CanonicalRateCheck,
   RateCategory,
@@ -197,6 +198,24 @@ export function createBoundSensitiveActionAdmission(
     (clientAddress !== undefined && typeof clientAddress !== 'function')
   )
     throw new Error('Invalid sensitive admission dependencies');
+  const requestRings = new WeakMap<
+    Request,
+    Promise<readonly ActiveAbuseKey[]>
+  >();
+  const requestProvider = (request: Request): AbuseKeyProvider => ({
+    active: async (signal) => {
+      if (signal.aborted) throw new Error('Aborted admission');
+      let keys = requestRings.get(request);
+      if (!keys) {
+        keys = provider.active(signal);
+        requestRings.set(request, keys);
+      }
+      const ring = await keys;
+      if (signal.aborted || request.signal.aborted)
+        throw new Error('Aborted admission');
+      return ring;
+    },
+  });
   const preparse = async (
     request: Request,
     category: RateCategory,
@@ -212,7 +231,7 @@ export function createBoundSensitiveActionAdmission(
         // consuming the ordinary IP approximate bucket twice. Their primary
         // account/IP counters still run after parsing on every valid request.
         const subjects = await activeAbuseSubjects(
-          provider,
+          requestProvider(request),
           category,
           'route',
           `${route}|${address}`,
@@ -262,7 +281,7 @@ export function createBoundSensitiveActionAdmission(
             : check,
         );
         await requireSensitiveRateAdmission({
-          provider,
+          provider: requestProvider(intent.request),
           store,
           ...(limiter !== undefined ? { limiter } : {}),
           category: intent.category,
@@ -305,7 +324,7 @@ export function createBoundSensitiveActionAdmission(
         return admission.require({
           ...intent,
           checks,
-          provider,
+          provider: requestProvider(intent.request),
           store,
           ...(limiter !== undefined ? { limiter } : {}),
         });

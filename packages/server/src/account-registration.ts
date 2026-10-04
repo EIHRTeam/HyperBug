@@ -33,7 +33,8 @@ export async function registerAccount(input: {
   readonly requestId?: string | null;
   readonly store: AccountRegistrationStore | null;
 }): Promise<{ accepted: true }> {
-  const { request, body, admission, password, store } = input;
+  const { request, body, admission, password: rootPassword, store } = input;
+  const password = rootPassword?.forRequest?.(request) ?? rootPassword;
   if (!password || !store) throw new RequestFailure('REGISTRATION_UNAVAILABLE');
   const handle = canonicalRegistrationHandle(body.handle);
   const nowMs = Date.now();

@@ -51,7 +51,15 @@ export async function enrollInitialStaff(input: {
   readonly auditAppend: AuditAppend | null;
   readonly requestId?: string | null;
 }): Promise<{ enrolled: true; principalId: string; identityId: string }> {
-  const { request, body, admission, password, code, store } = input;
+  const {
+    request,
+    body,
+    admission,
+    password: rootPassword,
+    code,
+    store,
+  } = input;
+  const password = rootPassword?.forRequest?.(request) ?? rootPassword;
   requireAuthOrigin(request);
   if (!password || !code || !store)
     throw new RequestFailure('BOOTSTRAP_UNAVAILABLE');

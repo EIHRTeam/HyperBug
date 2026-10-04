@@ -1,5 +1,5 @@
 import { cryptoRecord, decodeBase64Url } from './crypto.ts';
-import type { SecretKeySource } from './key-provider.ts';
+import { secretDocumentDigest, type SecretKeySource } from './key-provider.ts';
 import {
   abuseSubjectDigest,
   checkSensitiveRateLimits,
@@ -107,6 +107,10 @@ async function importRing(
 export class SecretAbuseKeyProvider implements AbuseKeyProvider {
   readonly #source: SecretKeySource;
   readonly #timeoutMs: number;
+  #material: {
+    digest: string;
+    keys: Promise<readonly ActiveAbuseKey[]>;
+  } | null = null;
 
   constructor(source: SecretKeySource, timeoutMs = 1000) {
     if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10 || timeoutMs > 5000)
@@ -135,7 +139,16 @@ export class SecretAbuseKeyProvider implements AbuseKeyProvider {
         }),
       ]);
       if (controller.signal.aborted) throw new RateLimitFailure();
-      const keys = await importRing(serialized);
+      const digest = await secretDocumentDigest(serialized);
+      if (controller.signal.aborted) throw new RateLimitFailure();
+      if (this.#material?.digest !== digest) {
+        const keys = importRing(serialized);
+        this.#material = { digest, keys };
+        void keys.catch(() => {
+          if (this.#material?.keys === keys) this.#material = null;
+        });
+      }
+      const keys = await this.#material.keys;
       if (controller.signal.aborted) throw new RateLimitFailure();
       return keys;
     } catch {

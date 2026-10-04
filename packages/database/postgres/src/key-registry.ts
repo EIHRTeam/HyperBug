@@ -240,7 +240,20 @@ export function createPostgresKeyRegistry(pool: Pool): KeyRegistry {
   return {
     inspect,
     async load(purpose, signal) {
-      return registryLifecycle(await inspect(signal), purpose);
+      try {
+        signal.throwIfAborted();
+        const { rows } = await pool.query<RegistryRow>(
+          snapshotSql.replace(
+            "k.state != 'removed'",
+            "k.state != 'removed' AND k.purpose = $1",
+          ),
+          [purpose],
+        );
+        signal.throwIfAborted();
+        return registryLifecycle(snapshot(rows), purpose);
+      } catch {
+        throw new KeyRegistryFailure();
+      }
     },
     async mutate(input) {
       const intent = registryMutation(input);

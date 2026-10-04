@@ -67,3 +67,44 @@ it('reads fresh private secret files and rejects unsafe mounts without exposing 
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+it('reuses imported material but scopes lifecycle snapshots to one request', async () => {
+  const { SecretKeyProvider, scopeKeyProvider } =
+    await import('../../packages/security/src/index.ts');
+  const fixture = cryptoFixture();
+  let reads = 0,
+    loads = 0;
+  const provider = new SecretKeyProvider(
+    {
+      read: async () => {
+        reads++;
+        return fixture.source.read();
+      },
+    },
+    {
+      load: async (purpose) => {
+        loads++;
+        return fixture.lifecycle.load(purpose);
+      },
+    },
+  );
+  const first = scopeKeyProvider(provider, {});
+  const key = await first.current('token-hmac');
+  expect((await first.get(key.ref)).key).toBe(key.key);
+  expect(reads).toBe(1);
+  expect(loads).toBe(1);
+  const next = scopeKeyProvider(provider, {});
+  expect((await next.current('token-hmac')).key).toBe(key.key);
+  expect(reads).toBe(2);
+  expect(loads).toBe(2);
+  fixture.state.keys[0]!.material = Buffer.from(
+    crypto.getRandomValues(new Uint8Array(32)),
+  ).toString('base64url');
+  expect(
+    (await scopeKeyProvider(provider, {}).current('token-hmac')).key,
+  ).not.toBe(key.key);
+  fixture.state.unavailable = true;
+  await expect(
+    scopeKeyProvider(provider, {}).current('token-hmac'),
+  ).rejects.toMatchObject({ code: 'CRYPTO_FAILURE' });
+});

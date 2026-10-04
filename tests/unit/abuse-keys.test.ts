@@ -386,3 +386,27 @@ it('denies the whole admission when a key source or one authoritative dimension 
     retryAfterSeconds: null,
   });
 });
+
+it('reuses imported abuse keys while rereading and replacing a changed source', async () => {
+  let serialized = abuseKeyFixture(),
+    reads = 0;
+  const source = new SecretAbuseKeyProvider({
+    read: async () => {
+      reads++;
+      return serialized;
+    },
+  });
+  const signal = new AbortController().signal;
+  const first = await source.active(signal),
+    second = await source.active(signal);
+  expect(second[0]!.key).toBe(first[0]!.key);
+  expect(reads).toBe(2);
+  const ring = JSON.parse(serialized);
+  ring.keys[0].material = Buffer.from(
+    crypto.getRandomValues(new Uint8Array(32)),
+  ).toString('base64url');
+  serialized = JSON.stringify(ring);
+  expect((await source.active(signal))[0]!.key).not.toBe(first[0]!.key);
+  serialized = '';
+  await expect(source.active(signal)).rejects.toBeInstanceOf(RateLimitFailure);
+});

@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from '@hyperbug/security';
 import { instanceId } from '@hyperbug/security';
 import {
   decideEnable,
@@ -464,7 +465,7 @@ export async function configurePlugin(
       // concurrent current-key bursts on the registry.
       // eslint-disable-next-line no-await-in-loop
       envelope = await encryptSecret(
-        context.keyProvider,
+        scopeKeyProvider(context.keyProvider, request),
         new TextEncoder().encode(value),
         contextBinding,
       );

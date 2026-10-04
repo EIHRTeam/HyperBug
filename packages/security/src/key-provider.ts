@@ -3,6 +3,7 @@ import {
   cryptoRecord,
   decodeBase64Url,
   importProvidedKey,
+  encodeBase64Url,
   parseKeyReference,
   sameKeyReference,
   type KeyProvider,
@@ -25,6 +26,25 @@ export interface KeyLifecycle {
 }
 export interface SecretKeySource {
   read(signal: AbortSignal): Promise<string>;
+}
+
+export async function secretDocumentDigest(
+  serialized: string,
+): Promise<string> {
+  if (
+    typeof serialized !== 'string' ||
+    serialized.length < 1 ||
+    serialized.length > 16384
+  )
+    throw new CryptoFailure();
+  const bytes = new TextEncoder().encode(serialized);
+  try {
+    return encodeBase64Url(
+      new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
+    );
+  } finally {
+    bytes.fill(0);
+  }
 }
 
 function referenceId(ref: KeyReference): string {
@@ -134,6 +154,12 @@ export class SecretKeyProvider implements KeyProvider {
   readonly #source: SecretKeySource;
   readonly #lifecycle: KeyLifecycle;
   readonly #timeoutMs: number;
+  #material: { digest: string; keys: Promise<readonly ProvidedKey[]> } | null =
+    null;
+  readonly #selections = new Map<
+    KeyPurpose,
+    { digest: string; keys: readonly ProvidedKey[] }
+  >();
   constructor(
     source: SecretKeySource,
     lifecycle: KeyLifecycle,
@@ -167,7 +193,17 @@ export class SecretKeyProvider implements KeyProvider {
           ]);
           if (controller.signal.aborted) throw new CryptoFailure();
           const policy = snapshot(state, purpose);
-          const keys = await importRing(serialized);
+          const materialDigest = await secretDocumentDigest(serialized);
+          if (controller.signal.aborted) throw new CryptoFailure();
+          if (this.#material?.digest !== materialDigest) {
+            const keys = importRing(serialized);
+            this.#material = { digest: materialDigest, keys };
+            this.#selections.clear();
+            void keys.catch(() => {
+              if (this.#material?.keys === keys) this.#material = null;
+            });
+          }
+          const keys = await this.#material.keys;
           if (
             controller.signal.aborted ||
             [...policy.required, ...policy.readable].some(
@@ -175,7 +211,22 @@ export class SecretKeyProvider implements KeyProvider {
             )
           )
             throw new CryptoFailure();
-          return { policy, keys };
+          const selectionDigest =
+            materialDigest +
+            ':' +
+            (await secretDocumentDigest(JSON.stringify(policy)));
+          if (controller.signal.aborted) throw new CryptoFailure();
+          const cached = this.#selections.get(purpose);
+          if (cached?.digest === selectionDigest)
+            return { policy, keys: cached.keys };
+          const selectedKeys = Object.freeze(
+            keys.filter((key) => key.ref.purpose === purpose),
+          );
+          this.#selections.set(purpose, {
+            digest: selectionDigest,
+            keys: selectedKeys,
+          });
+          return { policy, keys: selectedKeys };
         })(),
       ]);
     } catch {
@@ -186,31 +237,93 @@ export class SecretKeyProvider implements KeyProvider {
     }
   }
 
-  async current(purpose: KeyPurpose): Promise<ProvidedKey> {
-    const { policy, keys } = await this.#load(purpose);
-    const key = keys.find((entry) =>
-      sameKeyReference(entry.ref, policy.current),
+  #view(
+    load: (purpose: KeyPurpose) => Promise<{
+      policy: KeyLifecycleSnapshot;
+      keys: readonly ProvidedKey[];
+    }>,
+  ): KeyProvider {
+    return {
+      current: async (purpose) => {
+        const { policy, keys } = await load(purpose);
+        const key = keys.find((entry) =>
+          sameKeyReference(entry.ref, policy.current),
+        );
+        if (!key) throw new CryptoFailure();
+        return key;
+      },
+      get: async (ref) => {
+        const reference = parseKeyReference(ref);
+        const { policy, keys } = await load(reference.purpose);
+        if (
+          !policy.readable.some((entry) => sameKeyReference(entry, reference))
+        )
+          throw new CryptoFailure();
+        const key = keys.find((entry) =>
+          sameKeyReference(entry.ref, reference),
+        );
+        if (!key) throw new CryptoFailure();
+        return key;
+      },
+      readable: async (purpose) => {
+        const { policy, keys } = await load(purpose);
+        return Object.freeze(
+          policy.readable.map((ref) => {
+            const key = keys.find((entry) => sameKeyReference(entry.ref, ref));
+            if (!key) throw new CryptoFailure();
+            return key;
+          }),
+        );
+      },
+    };
+  }
+  /** This view belongs to one caller-provided request scope. */
+  requestScope(): KeyProvider {
+    const loads = new Map<
+      KeyPurpose,
+      Promise<{ policy: KeyLifecycleSnapshot; keys: readonly ProvidedKey[] }>
+    >();
+    return Object.freeze(
+      this.#view((purpose) => {
+        let value = loads.get(purpose);
+        if (!value) {
+          value = this.#load(purpose);
+          loads.set(purpose, value);
+        }
+        return value;
+      }),
     );
-    if (!key) throw new CryptoFailure();
-    return key;
   }
+  current(purpose: KeyPurpose): Promise<ProvidedKey> {
+    return this.#view((p) => this.#load(p)).current(purpose);
+  }
+  get(ref: KeyReference): Promise<ProvidedKey> {
+    return this.#view((p) => this.#load(p)).get(ref);
+  }
+  readable(purpose: KeyPurpose): Promise<readonly ProvidedKey[]> {
+    return this.#view((p) => this.#load(p)).readable(purpose);
+  }
+}
 
-  async get(ref: KeyReference): Promise<ProvidedKey> {
-    const reference = parseKeyReference(ref);
-    const { policy, keys } = await this.#load(reference.purpose);
-    if (!policy.readable.some((entry) => sameKeyReference(entry, reference)))
-      throw new CryptoFailure();
-    const key = keys.find((entry) => sameKeyReference(entry.ref, reference));
-    if (!key) throw new CryptoFailure();
-    return key;
+const requestProviders = new WeakMap<
+  KeyProvider,
+  WeakMap<object, KeyProvider>
+>();
+/** Only built-in providers share lifecycle state; arbitrary plugin providers keep their semantics. */
+export function scopeKeyProvider(
+  provider: KeyProvider,
+  scope: object,
+): KeyProvider {
+  if (!(provider instanceof SecretKeyProvider)) return provider;
+  let requests = requestProviders.get(provider);
+  if (!requests) {
+    requests = new WeakMap();
+    requestProviders.set(provider, requests);
   }
-
-  async readable(purpose: KeyPurpose): Promise<readonly ProvidedKey[]> {
-    const { policy, keys } = await this.#load(purpose);
-    return policy.readable.map((ref) => {
-      const key = keys.find((entry) => sameKeyReference(entry.ref, ref));
-      if (!key) throw new CryptoFailure();
-      return key;
-    });
+  let scoped = requests.get(scope);
+  if (!scoped) {
+    scoped = provider.requestScope();
+    requests.set(scope, scoped);
   }
+  return scoped;
 }

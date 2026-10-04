@@ -40,3 +40,11 @@ All mutations append a sanitized system audit event in the same transaction. The
 ## Acceptance
 
 Current Node/Workers docs list the selected Web Crypto operations. That is a prerequisite, not runtime proof. Require both-runtime known-answer/tamper/wrong-context tests, current/previous rotation and rewrap evidence, emergency revocation and retained-backup/data removal protection. Bound and test parser sizes and provider failures. Record focused security review and measured costs in module 03 evidence before checking items complete.
+
+## Key-material reuse amendment (2026-10-05, approved B7)
+
+Reuse bounded nonextractable imported key objects within a provider instance when the SHA-256 digest of the exact secret document is unchanged. Source reads remain mandatory; changed, malformed, missing or unreadable sources fail closed. Validate the requested purpose against its fresh primary registry snapshot on every independent load; selection reuse is keyed by secret digest and that purpose's validated lifecycle snapshot digest. Retained-key accounting, global registry administration and backup capture continue to inspect the complete registry. Purpose-specific cryptographic loads consult only that purpose's versions and required references.
+
+A request-local provider may share a purpose snapshot inside one original HTTP Request. The next request rereads authoritative lifecycle state, so a revoked or retired key is excluded even when its imported CryptoKey still exists. No lifecycle decision, request I/O, browser credential or revocation flag is cached across requests. Abuse admission similarly shares the pre-parse ring snapshot with authoritative admission only in that request; its source is reread for each independent request.
+
+Cache bounds are one imported secret ring (at most 32 keys; abuse ring at most 8) and at most one validated selection per purpose. Changed documents replace the cache; rejected imports are not retained as a permissive fallback. No raw-key serialization is logged or stored in diagnostics. This is material reuse, not a change to cipher, key separation, retention, authentication or revocation policy. Focused both-runtime provider/revocation evidence belongs to the B7 remediation record; local results do not establish real-Free CPU budgets.

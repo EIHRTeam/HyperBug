@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   AccountSessionStore,
   Assurance,
@@ -132,7 +133,10 @@ export async function currentAccountSession(input: {
   authenticatedAtMs: number;
   assurance: Assurance;
 } | null> {
-  const { request, provider, store, nowMs } = input;
+  const { request, provider: rootProvider, store, nowMs } = input;
+  const provider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
   const cookie = parseCookie(request);
   if (!cookie) return null;
   if (!provider || !store || request.signal.aborted)
@@ -190,7 +194,10 @@ export async function revokeAccountSession(input: {
   readonly store: AccountSessionStore | null;
   readonly nowMs: number;
 }): Promise<void> {
-  const { request, provider, store, nowMs } = input;
+  const { request, provider: rootProvider, store, nowMs } = input;
+  const provider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
   const cookie = parseCookie(request);
   if (!cookie) return;
   if (!provider || !store || request.signal.aborted)

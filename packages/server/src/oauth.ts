@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from '@hyperbug/security';
 import type {
   AccountSessionStore,
   Assurance,
@@ -260,12 +261,15 @@ export async function issueAuthorizationCode(input: {
   const {
     request,
     query,
-    keyProvider,
+    keyProvider: rootProvider,
     sessionStore,
     codeStore,
     clients,
     nowMs,
   } = input;
+  const keyProvider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
   requireAuthOrigin(request);
   if (!keyProvider || !sessionStore || !codeStore)
     throw new RequestFailure('OAUTH_UNAVAILABLE');
@@ -367,8 +371,17 @@ export async function exchangeAuthorizationCode(input: {
   readonly tokenStore: OAuthAccessTokenStore | null;
   readonly requestId?: string | null;
 }): Promise<TokenResponse> {
-  const { request, body, admission, keyProvider, codeStore, tokenStore } =
-    input;
+  const {
+    request,
+    body,
+    admission,
+    keyProvider: rootProvider,
+    codeStore,
+    tokenStore,
+  } = input;
+  const keyProvider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
   if (!body || typeof body !== 'object')
     throw new RequestFailure('OAUTH_DENIED');
   const grantType = formString(body, 'grant_type', 32);
@@ -465,7 +478,10 @@ export async function revokeAccessToken(input: {
   readonly store: OAuthAccessTokenStore | null;
   readonly requestId?: string | null;
 }): Promise<void> {
-  const { request, body, admission, keyProvider, store } = input;
+  const { request, body, admission, keyProvider: rootProvider, store } = input;
+  const keyProvider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
   if (!body || typeof body !== 'object') return;
   const presented = formString(body, 'token', 256);
   if (!presented) return;

@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from './key-provider.ts';
 import {
   checkedKey,
   contextBytes,
@@ -196,6 +197,7 @@ export interface MinimumPasswordVerification {
 
 /** Account services receive this bound capability only after pepper preflight. */
 export interface MinimumPasswordService {
+  forRequest?(scope: object): MinimumPasswordService;
   hash(
     password: string,
     context: SecretContext,
@@ -303,16 +305,25 @@ export async function createMinimumPasswordService(
       }),
     ]);
     checkedKey(current, 'password-pepper');
-    return Object.freeze({
-      hash: (password: string, context: SecretContext) =>
-        admitted(() =>
-          hashMinimumPassword(provider, password, context, selected),
-        ),
-      verify: (password: string, stored: unknown, context: SecretContext) =>
-        admitted(() =>
-          verifyMinimumPassword(provider, password, stored, context, selected),
-        ),
-    });
+    const view = (selectedProvider: KeyProvider): MinimumPasswordService =>
+      Object.freeze({
+        forRequest: (scope: object) => view(scopeKeyProvider(provider, scope)),
+        hash: (password: string, context: SecretContext) =>
+          admitted(() =>
+            hashMinimumPassword(selectedProvider, password, context, selected),
+          ),
+        verify: (password: string, stored: unknown, context: SecretContext) =>
+          admitted(() =>
+            verifyMinimumPassword(
+              selectedProvider,
+              password,
+              stored,
+              context,
+              selected,
+            ),
+          ),
+      });
+    return view(provider);
   } catch {
     throw new CryptoFailure();
   } finally {
@@ -367,6 +378,7 @@ export interface AccountPasswordVerification {
  * root supplies the adapted peppered PBKDF2 service below.
  */
 export interface AccountPasswordService {
+  forRequest?(scope: object): AccountPasswordService;
   hash(password: string, signal?: AbortSignal): Promise<AccountPasswordRecord>;
   verify(
     password: string,
@@ -406,6 +418,11 @@ export function adaptMinimumPasswordService(
       throw error;
     }));
   return Object.freeze({
+    forRequest: (scope: object) =>
+      adaptMinimumPasswordService(async () => {
+        const root = await resolve();
+        return root.forRequest?.(scope) ?? root;
+      }),
     hash: async (password: string) =>
       (await resolve()).hash(password, accountPasswordContext),
     verify: async (password: string, stored: unknown) =>

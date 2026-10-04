@@ -1,3 +1,4 @@
+import { scopeKeyProvider } from '@hyperbug/security';
 import {
   UploadDocumentSchema,
   UploadCapabilitySchema,
@@ -1253,7 +1254,9 @@ export function createApp({
         // Recent authentication stays with the shared authorization guard
         // for the route owners that need it; this route does not.
         const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           tokenStore: oauthCodeStore ?? null,
         });
         if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
@@ -1277,7 +1280,9 @@ export function createApp({
         // Bearer-only listing of the token principal's own sessions. Like
         // /api/v1/account this authenticated read takes no rate admission.
         const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           tokenStore: oauthCodeStore ?? null,
         });
         if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
@@ -1311,7 +1316,9 @@ export function createApp({
       '/api/v1/account/sessions/:id',
       async ({ request, params, set }) => {
         const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           tokenStore: oauthCodeStore ?? null,
         });
         if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
@@ -1383,7 +1390,9 @@ export function createApp({
         )
           throw new RequestFailure('NOT_FOUND');
         const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           tokenStore: oauthCodeStore ?? null,
         });
         if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
@@ -1458,7 +1467,9 @@ export function createApp({
         )
           throw new RequestFailure('NOT_FOUND');
         const principal = await authenticateBearer(request, {
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           tokenStore: oauthCodeStore ?? null,
         });
         if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
@@ -2931,7 +2942,7 @@ export function createApp({
           request,
           body,
           admission: sensitiveAdmission,
-          password: passwordService,
+          password: passwordService?.forRequest?.(request) ?? passwordService,
           requestId: boundaryFor(request).requestId,
           store: registrationStore ?? null,
         });
@@ -3134,9 +3145,13 @@ export function createApp({
           body,
           admission: sensitiveAdmission,
           requestId: boundaryFor(request).requestId,
-          passwordService: accountPasswordService,
+          passwordService:
+            accountPasswordService?.forRequest?.(request) ??
+            accountPasswordService,
           passwordStore: passwordStore ?? null,
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           sessionStore: sessionStore ?? null,
         });
         set.headers['set-cookie'] = cookie;
@@ -3152,7 +3167,7 @@ export function createApp({
       async ({ request }) => {
         const session = await currentAccountSession({
           request,
-          provider: keyProvider ?? null,
+          provider: keyProvider ? scopeKeyProvider(keyProvider, request) : null,
           store: sessionStore ?? null,
           nowMs: Date.now(),
         });
@@ -3166,7 +3181,7 @@ export function createApp({
       async ({ request, set }) => {
         await revokeAccountSession({
           request,
-          provider: keyProvider ?? null,
+          provider: keyProvider ? scopeKeyProvider(keyProvider, request) : null,
           store: sessionStore ?? null,
           nowMs: Date.now(),
         });
@@ -3183,7 +3198,9 @@ export function createApp({
           request,
           body,
           admission: sensitiveAdmission,
-          password: accountPasswordService,
+          password:
+            accountPasswordService?.forRequest?.(request) ??
+            accountPasswordService,
           code: bootstrapCode,
           store: staffEnrollmentStore,
           auditAppend,
@@ -3209,7 +3226,7 @@ export function createApp({
               credentialRevision: credential.revision,
             },
             ceremony: { method: 'bootstrap', assurance: 1 },
-            provider: keyProvider,
+            provider: scopeKeyProvider(keyProvider, request),
             store: sessionStore,
             signal: request.signal,
             nowMs: Date.now(),
@@ -3227,7 +3244,9 @@ export function createApp({
       async ({ request }) =>
         generateAccountRecoveryCodes({
           request,
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           recoveryStore: recoveryStore ?? null,
           sessionStore: sessionStore ?? null,
           auditAppend,
@@ -3247,11 +3266,15 @@ export function createApp({
           request,
           body,
           admission: sensitiveAdmission,
-          password: accountPasswordService,
+          password:
+            accountPasswordService?.forRequest?.(request) ??
+            accountPasswordService,
           passwordStore: passwordStore ?? null,
           recoveryStore: recoveryStore ?? null,
           sessionStore: sessionStore ?? null,
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           auditAppend,
           requestId: boundaryFor(request).requestId,
         }),
@@ -3328,7 +3351,9 @@ export function createApp({
         issueAuthorizationCode({
           request,
           query: body,
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           sessionStore: sessionStore ?? null,
           codeStore: oauthCodeStore ?? null,
           clients: registeredClients,
@@ -3357,7 +3382,7 @@ export function createApp({
         keyProvider && sessionStore
           ? await currentAccountSession({
               request,
-              provider: keyProvider,
+              provider: scopeKeyProvider(keyProvider, request),
               store: sessionStore,
               nowMs: Date.now(),
             })
@@ -3424,9 +3449,13 @@ export function createApp({
               },
               admission: sensitiveAdmission,
               requestId: boundaryFor(request).requestId,
-              passwordService: accountPasswordService,
+              passwordService:
+                accountPasswordService?.forRequest?.(request) ??
+                accountPasswordService,
               passwordStore: passwordStore ?? null,
-              keyProvider: keyProvider ?? null,
+              keyProvider: keyProvider
+                ? scopeKeyProvider(keyProvider, request)
+                : null,
               sessionStore: sessionStore ?? null,
             });
           set.headers['set-cookie'] = cookie;
@@ -3451,7 +3480,7 @@ export function createApp({
         }
         const issued = await issueCodeForSession({
           query: authorizeRequestBody(query),
-          keyProvider: keyProvider!,
+          keyProvider: scopeKeyProvider(keyProvider!, request),
           codeStore: oauthCodeStore ?? null,
           clients: registeredClients,
           nowMs: Date.now(),
@@ -3490,7 +3519,7 @@ export function createApp({
           keyProvider && sessionStore
             ? await currentAccountSession({
                 request,
-                provider: keyProvider,
+                provider: scopeKeyProvider(keyProvider, request),
                 store: sessionStore,
                 nowMs: Date.now(),
               })
@@ -3509,7 +3538,9 @@ export function createApp({
         const issued = await issueAuthorizationCode({
           request,
           query: authorizeRequestBody(query),
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           sessionStore: sessionStore ?? null,
           codeStore: oauthCodeStore ?? null,
           clients: registeredClients,
@@ -3529,7 +3560,9 @@ export function createApp({
           request,
           body: body as Record<string, unknown>,
           admission: sensitiveAdmission,
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           codeStore: oauthCodeStore ?? null,
           tokenStore: oauthCodeStore ?? null,
           requestId: boundaryFor(request).requestId,
@@ -3546,7 +3579,9 @@ export function createApp({
           request,
           body: body as Record<string, unknown>,
           admission: sensitiveAdmission,
-          keyProvider: keyProvider ?? null,
+          keyProvider: keyProvider
+            ? scopeKeyProvider(keyProvider, request)
+            : null,
           store: oauthCodeStore ?? null,
           requestId: boundaryFor(request).requestId,
         });

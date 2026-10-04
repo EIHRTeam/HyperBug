@@ -189,8 +189,14 @@ it('sheds registration before parsing with a separate trusted-IP bucket and no p
     method: 'POST',
   });
   const digests: string[] = [];
+  let sourceReads = 0;
   const bound = createBoundSensitiveActionAdmission(createCaptchaGate(), {
-    provider: intent.provider,
+    provider: {
+      active: async (signal) => {
+        sourceReads++;
+        return intent.provider.active(signal);
+      },
+    },
     store: intent.store,
     limiter: {
       async consume(digest) {
@@ -205,6 +211,11 @@ it('sheds registration before parsing with a separate trusted-IP bucket and no p
   expect(digests).toHaveLength(3);
   expect(new Set(digests).size).toBe(3);
   expect(writes()).toBe(4);
+  expect(sourceReads).toBe(1);
+  await bound.preparseRegistration(
+    new Request(request.url, { method: 'POST' }),
+  );
+  expect(sourceReads).toBe(2);
 });
 
 it('closes pre-parse registration on limited, unavailable and untrusted dependencies', async () => {
