@@ -266,3 +266,20 @@ Every session affecting this module MUST append an entry following the [required
 - Decisions/blockers: Current attachment/scan/association and bearer/principal/membership/parent state are rechecked after acquiring storage; held streams are canceled on denial. Actual scanner, installed production CORS/browser evidence and full cleanup/native discovery remain incomplete. No new audit, dispatcher or SPA.
 - Next actions: 07.3h/V4 native discovery and explicit used-file/legacy/retention cleanup; 07.3c production selection and 07.3f trusted actual scanner when available.
 - Cautions: All work uncommitted; no deployment. Preserve earlier work, historical migrations and protected SECURITY.md. Synthetic clean results never prove malware detection. Generated Module 03 measurements restored after runtime processes ended.
+
+### 2026-10-05 — Review remediation B1: D1 bind bounds and set-based relation writes
+
+- Scope and checklist IDs: Post-completion remediation of accepted 06.2a/06.2d/06.V4 behavior (PERF review 3.1/3.2). No checkbox changes; accepted items stay checked.
+- Progress: A full 100-issue page previously bound 101 parameters in `relations()`, above D1's 100-parameter limit; the 06.V4 fixture only seeded 60 issues. All bounded D1 ID sets now bind one JSON array through `json_each`. Relation writes on create and replacement are set-based on both adapters.
+- Change summary: D1 relation/reference/form-guard/reaction-count statements use `json_each`. Worst-case create drops from 37 to 9 batch statements. PostgreSQL relation inserts use `unnest($3::uuid[])`. A test-only D1 bind guard enforces the production limit in all D1 fixtures.
+- Files/artifacts: `packages/database/d1/src/{index,comments,content-definitions}.ts`, `packages/database/postgres/src/index.ts`, `tests/fixtures/{d1-bind-guard,database-worker,account-worker,repository-contract}.ts`, `tests/{workerd,postgres}/acceptance-queries.test.ts`, [remediation record](../evidence/2026-10-05-review-remediation.md#b1--d1-bindstatement-bounds-and-batched-relation-writes-2026-10-05).
+- Verification:
+  - Workerd acceptance-queries and repository: 172 passed, 2 skipped (D1 emulation).
+  - PostgreSQL 18.6 acceptance-queries and repository: 158 passed, 2 skipped.
+  - The previous adapter fails the new full-page case at the guard.
+  - Full lanes: workerd 257 passed, 2 skipped; PostgreSQL 178 passed, 2 skipped.
+  - Typecheck, lint and boundaries pass.
+- Decisions and deviations: None against the baseline. Maximum relations are proven at the shared repository contract instead of the HTTP journey; D1 route fixtures run behind the guard.
+- Blockers/open questions: Real-Free accounting of batch members against the 50-query limit is measured in B15.
+- Next actions: B2 hidden-parent visibility for every discussion sub-resource.
+- Next-session cautions: Keep `json_each` bound sets for any new D1 `IN` list. Do not reintroduce `placeholders()`. Generated Module 03 audit-query measurements were restored after the test runs.

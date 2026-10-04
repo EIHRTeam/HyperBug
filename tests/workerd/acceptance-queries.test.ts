@@ -32,6 +32,9 @@ let commentIds: string[];
 const queries: string[] = [];
 
 type QueryMessage =
+  | { method: 'createIssue'; input: unknown }
+  | { method: 'mutateIssue'; input: unknown }
+  | { method: 'relationsEntries'; input: unknown }
   | { method: 'listIssues'; input: IssueListQuery }
   | { method: 'getIssue'; input: { projectId: string; id: string } }
   | { method: 'relations'; input: { projectId: string; issueIds: string[] } }
@@ -545,4 +548,185 @@ it('never leaks the limit+1 overfetch row or an out-of-bound page size', async (
       issueIds: Array.from({ length: 102 }, () => crypto.randomUUID()),
     }),
   ).rejects.toMatchObject({ code: 'INVALID_INPUT' });
+});
+
+it('hydrates a full 100-issue page and the 101-id relation bound within the D1 bind limit', async () => {
+  const fullProjectId = crypto.randomUUID();
+  await query(
+    'INSERT INTO projects (id, slug, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    [
+      fullProjectId,
+      `full-page-${crypto.randomUUID().slice(0, 8)}`,
+      'Full page',
+      base,
+      base,
+    ],
+  );
+  await query(
+    "INSERT INTO project_roles (project_id, principal_id, role, granted_at) VALUES (?, ?, 'maintainer', ?)",
+    [fullProjectId, staffIds[0], base],
+  );
+  const labelId = crypto.randomUUID();
+  await query(
+    'INSERT INTO labels (id, project_id, name, name_key) VALUES (?, ?, ?, ?)',
+    [labelId, fullProjectId, 'Full', 'full'],
+  );
+  const ids = Array.from({ length: 101 }, () => crypto.randomUUID());
+  await Promise.all(
+    chunkedInsert(
+      'issues',
+      [
+        'id',
+        'project_id',
+        'number',
+        'author_id',
+        'created_at',
+        'updated_at',
+        'last_mutation_id',
+      ],
+      ids.map((id, index) => [
+        id,
+        fullProjectId,
+        index + 1,
+        authorId,
+        base + index * 60000,
+        base + index * 60000,
+        crypto.randomUUID(),
+      ]),
+      { title: "'Full page fixture'", body: "'Full page body'" },
+    ),
+  );
+  await Promise.all([
+    ...chunkedInsert(
+      'issue_labels',
+      ['project_id', 'issue_id', 'label_id'],
+      ids.map((id) => [fullProjectId, id, labelId]),
+    ),
+    ...chunkedInsert(
+      'issue_assignees',
+      ['project_id', 'issue_id', 'principal_id'],
+      ids.map((id) => [fullProjectId, id, staffIds[0]]),
+    ),
+  ]);
+  const page = await call<IssuePage>('listIssues', {
+    projectId: fullProjectId,
+    state: 'open',
+    limit: 100,
+  });
+  expect(page.items).toHaveLength(100);
+  expect(page.nextCursor).not.toBeNull();
+  type Entries = {
+    labels: [string, string[]][];
+    assignees: [string, string[]][];
+  };
+  const full = await statementCount(() =>
+    call<Entries>('relationsEntries', {
+      projectId: fullProjectId,
+      issueIds: page.items.map((item) => item.id),
+    }),
+  );
+  expect(full.count).toBe(2);
+  const value = await call<Entries>('relationsEntries', {
+    projectId: fullProjectId,
+    issueIds: ids,
+  });
+  expect(value.labels).toHaveLength(101);
+  for (const [, labels] of value.labels) expect(labels).toEqual([labelId]);
+  for (const [, assignees] of value.assignees)
+    expect(assignees).toEqual([staffIds[0]]);
+  const counts = await statementCount(() =>
+    call('reactionIssueCounts', { projectId: fullProjectId, issueIds: ids }),
+  );
+  expect(counts.count).toBe(1);
+});
+
+it('creates and replaces the maximum relation sets in a bounded statement count', async () => {
+  const createProjectId = crypto.randomUUID();
+  await query(
+    'INSERT INTO projects (id, slug, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    [
+      createProjectId,
+      `max-create-${crypto.randomUUID().slice(0, 8)}`,
+      'Max create',
+      base,
+      base,
+    ],
+  );
+  const labelIds = Array.from({ length: 20 }, () => crypto.randomUUID());
+  const assigneeIds = Array.from({ length: 10 }, () => crypto.randomUUID());
+  await Promise.all(
+    chunkedInsert(
+      'labels',
+      ['id', 'project_id', 'name', 'name_key'],
+      labelIds.map((id, index) => [
+        id,
+        createProjectId,
+        `Max ${index}`,
+        `max-${index}`,
+      ]),
+    ),
+  );
+  await Promise.all(
+    chunkedInsert(
+      'principals',
+      ['id', 'display_name', 'created_at'],
+      assigneeIds.map((id) => [id, 'Max staff', base]),
+      { kind: "'staff'" },
+    ),
+  );
+  await Promise.all(
+    chunkedInsert(
+      'project_roles',
+      ['project_id', 'principal_id', 'granted_at'],
+      assigneeIds.map((id) => [createProjectId, id, base]),
+      { role: "'maintainer'" },
+    ),
+  );
+  const identity = () => ({
+    mutationId: crypto.randomUUID(),
+    requestId: crypto.randomUUID(),
+    principalId: authorId,
+    projectId: createProjectId,
+    keyHash: crypto.randomUUID().replaceAll('-', '').padEnd(64, '0'),
+    payloadHash: crypto.randomUUID().replaceAll('-', '').padEnd(64, '0'),
+    now: base,
+    expiresAt: base + 86400000,
+  });
+  const issueId = crypto.randomUUID();
+  const created = await statementCount(() =>
+    call('createIssue', {
+      ...identity(),
+      id: issueId,
+      title: 'Maximum relations',
+      body: 'Maximum relation body',
+      typeId: null,
+      milestoneId: null,
+      labelIds,
+      assigneeIds,
+      auditAction: 'issue.created',
+    }),
+  );
+  // Reads before the batch, one statement per batch member, one receipt read.
+  expect(created.count).toBeLessThanOrEqual(14);
+  expect(
+    created.statements.filter((sql) => sql.startsWith('INSERT INTO issue_')),
+  ).toHaveLength(2);
+  const replaced = await statementCount(() =>
+    call('mutateIssue', {
+      operation: 'labels',
+      intent: {
+        ...identity(),
+        id: issueId,
+        expectedRevision: 1,
+        labelIds: [...labelIds].reverse().slice(0, 19),
+      },
+    }),
+  );
+  expect(replaced.count).toBeLessThanOrEqual(14);
+  const value = await call<{
+    labels: [string, string[]][];
+    assignees: [string, string[]][];
+  }>('relationsEntries', { projectId: createProjectId, issueIds: [issueId] });
+  expect(value.labels[0]?.[1]).toHaveLength(19);
+  expect(value.assignees[0]?.[1]).toHaveLength(10);
 });

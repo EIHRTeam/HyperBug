@@ -39,16 +39,19 @@ import {
   createD1StaffEnrollmentStore,
 } from '@hyperbug/database-d1';
 import { createWorkerKeyProvider } from '../../apps/api-cloudflare/src/key-provider.ts';
+import { boundedD1 } from './d1-bind-guard.ts';
+
+const db = boundedD1(env.DB);
 
 const uploads = configureWorkerUploads(
-  env.DB,
+  db,
   env as unknown as Parameters<typeof configureWorkerUploads>[1],
 );
 const config = loadConfig(env, 'cloudflare');
 const observations: string[] = [];
 const abuse = {
   provider: createWorkerAbuseKeyProvider(env.HYPERBUG_ABUSE_KEY_RING),
-  store: createD1RateCounterStore(env.DB),
+  store: createD1RateCounterStore(db),
   limiter: createCloudflareVolumetricLimiter(env.ABUSE_VOLUMETRIC),
   // Test-only ingress assertion. The production root has no accepted resolver.
   clientAddress: () => '192.0.2.42',
@@ -60,7 +63,7 @@ export default createApp({
   telemetry: jsonTelemetry((line) => observations.push(line)),
   ready: async () => true,
   abuse,
-  registrationStore: createD1AccountRegistrationStore(env.DB),
+  registrationStore: createD1AccountRegistrationStore(db),
   standardPassword: createCloudflareStandardPasswordService(
     config.deployment,
     initialStandardPasswordPolicy,
@@ -72,54 +75,52 @@ export default createApp({
         rpID: env.HYPERBUG_TEST_PASSKEY_RP_ID,
         rpName: env.HYPERBUG_TEST_PASSKEY_RP_NAME,
         origin: env.HYPERBUG_TEST_PASSKEY_ORIGIN,
-        store: createD1PasskeyStores(env.DB),
-        passwordStore: createD1AccountRegistrationStore(env.DB),
-        sessionStore: createD1AccountSessionStore(env.DB),
+        store: createD1PasskeyStores(db),
+        passwordStore: createD1AccountRegistrationStore(db),
+        sessionStore: createD1AccountSessionStore(db),
         keyProvider: env.HYPERBUG_KEY_RING
           ? createWorkerKeyProvider(
               env.HYPERBUG_KEY_RING,
-              createD1KeyRegistry(env.DB),
+              createD1KeyRegistry(db),
             )
           : null,
       }
     : null,
-  staffEnrollmentStore: createD1StaffEnrollmentStore(env.DB),
+  staffEnrollmentStore: createD1StaffEnrollmentStore(db),
   bootstrapState: async () =>
-    (await createD1StaffEnrollmentStore(env.DB).countActiveStaff()) === 0,
-  sessionStore: createD1AccountSessionStore(env.DB),
-  passwordStore: createD1AccountRegistrationStore(env.DB),
-  recoveryStore: createD1AccountRecoveryStore(env.DB),
+    (await createD1StaffEnrollmentStore(db).countActiveStaff()) === 0,
+  sessionStore: createD1AccountSessionStore(db),
+  passwordStore: createD1AccountRegistrationStore(db),
+  recoveryStore: createD1AccountRecoveryStore(db),
   oauthClients: parseOAuthClients(env.HYPERBUG_TEST_OAUTH_CLIENTS),
-  pluginRegistry: createD1PluginRegistryStore(env.DB),
-  pluginSettings: createD1PluginSettingsStore(env.DB),
-  pluginEventOutbox: createD1PluginEventOutbox(env.DB),
-  projectRoleStore: createD1ProjectRoleStore(env.DB),
-  projectStore: createD1ProjectStore(env.DB),
-  issueRepository: createD1Repository(env.DB),
-  commentStore: createD1CommentStore(env.DB),
-  reactionStore: createD1ReactionStore(env.DB),
-  timelineStore: createD1TimelineStore(env.DB),
-  taxonomyStore: createD1TaxonomyStore(env.DB),
-  contentDefinitionStore: createD1ContentDefinitionStore(env.DB),
-  attachmentStore: createD1AttachmentStore(env.DB),
+  pluginRegistry: createD1PluginRegistryStore(db),
+  pluginSettings: createD1PluginSettingsStore(db),
+  pluginEventOutbox: createD1PluginEventOutbox(db),
+  projectRoleStore: createD1ProjectRoleStore(db),
+  projectStore: createD1ProjectStore(db),
+  issueRepository: createD1Repository(db),
+  commentStore: createD1CommentStore(db),
+  reactionStore: createD1ReactionStore(db),
+  timelineStore: createD1TimelineStore(db),
+  taxonomyStore: createD1TaxonomyStore(db),
+  contentDefinitionStore: createD1ContentDefinitionStore(db),
+  attachmentStore: createD1AttachmentStore(db),
   mediaOrigin: uploads ? 'https://media.poc.invalid' : null,
   uploads,
-  accountAdministration: createD1AccountAdministration(env.DB),
-  auditAppend: createD1AuditRepository(env.DB).append,
-  oauthCodeStore: createD1OAuthStores(env.DB),
+  accountAdministration: createD1AccountAdministration(db),
+  auditAppend: createD1AuditRepository(db).append,
+  oauthCodeStore: createD1OAuthStores(db),
   keyProvider: env.HYPERBUG_KEY_RING
-    ? createWorkerKeyProvider(
-        env.HYPERBUG_KEY_RING,
-        createD1KeyRegistry(env.DB),
-      )
+    ? createWorkerKeyProvider(env.HYPERBUG_KEY_RING, createD1KeyRegistry(db))
     : null,
 })
   .post('/_proof/upload', async ({ body, set }) => {
     try {
       if (!uploads) throw new Error();
-      const scope = await env.DB.prepare(
-        'SELECT id, project_id AS projectId, principal_id AS principalId FROM upload_intents WHERE id = ?',
-      )
+      const scope = await db
+        .prepare(
+          'SELECT id, project_id AS projectId, principal_id AS principalId FROM upload_intents WHERE id = ?',
+        )
         .bind(String(body.id))
         .first<{ id: string; projectId: string; principalId: string }>();
       if (!scope) throw new Error();
@@ -144,8 +145,8 @@ export default createApp({
     try {
       const result = await publishPluginEvent(
         {
-          registry: createD1PluginRegistryStore(env.DB),
-          events: createD1PluginEventOutbox(env.DB),
+          registry: createD1PluginRegistryStore(db),
+          events: createD1PluginEventOutbox(db),
         },
         {
           pluginId: String(body.pluginId),

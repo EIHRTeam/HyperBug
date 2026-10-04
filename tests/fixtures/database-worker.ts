@@ -35,6 +35,7 @@ import type {
   IssueListQuery,
   TimelineQuery,
 } from '@hyperbug/application';
+import { boundedD1 } from './d1-bind-guard.ts';
 
 type Message =
   | { method: 'auditAppend'; input: AuditEvent }
@@ -75,6 +76,10 @@ type Message =
       method: 'relations';
       input: { projectId: string; issueIds: string[] };
     }
+  | {
+      method: 'relationsEntries';
+      input: { projectId: string; issueIds: string[] };
+    }
   | { method: 'commentList'; input: CommentQuery }
   | { method: 'timelineList'; input: TimelineQuery }
   | {
@@ -103,14 +108,15 @@ type Message =
 export default {
   async fetch(request: Request, env: { DB: D1Database }): Promise<Response> {
     const queries: string[] = [];
+    const db = boundedD1(env.DB);
     const measured = {
       prepare(sql: string) {
         queries.push(sql);
-        return env.DB.prepare(sql);
+        return db.prepare(sql);
       },
-      batch: env.DB.batch.bind(env.DB),
+      batch: db.batch.bind(db),
       withSession(mode: 'first-primary') {
-        const session = env.DB.withSession(mode);
+        const session = db.withSession(mode);
         return {
           prepare(sql: string) {
             queries.push(sql);
@@ -218,6 +224,18 @@ export default {
             message.input.issueIds,
           );
           break;
+        case 'relationsEntries': {
+          // Maps do not survive the JSON transport; return their entries.
+          const relations = await repository.relations(
+            message.input.projectId,
+            message.input.issueIds,
+          );
+          value = {
+            labels: [...relations.labels.entries()],
+            assignees: [...relations.assignees.entries()],
+          };
+          break;
+        }
         case 'getIssue':
           value = await repository.getIssue(
             message.input.projectId,

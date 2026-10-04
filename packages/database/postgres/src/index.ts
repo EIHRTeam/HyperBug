@@ -314,23 +314,18 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
             formValues.attachmentIds,
           );
         }
-        // Sequential by design: one transaction client cannot run parallel
-        // statements, and the bounded cardinality (20 labels, 10 assignees)
-        // keeps the loop short.
-        for (const labelId of create.labelIds) {
-          // eslint-disable-next-line no-await-in-loop
+        // One set-based insert per relation: the validated, bounded ID arrays
+        // (20 labels, 10 assignees) unnest server-side in a single round trip.
+        if (create.labelIds.length > 0)
           await db.query(
-            'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES ($1, $2, $3)',
-            [create.projectId, create.id, labelId],
+            'INSERT INTO issue_labels (project_id, issue_id, label_id) SELECT $1, $2, unnest($3::uuid[])',
+            [create.projectId, create.id, create.labelIds],
           );
-        }
-        for (const assigneeId of create.assigneeIds) {
-          // eslint-disable-next-line no-await-in-loop
+        if (create.assigneeIds.length > 0)
           await db.query(
-            'INSERT INTO issue_assignees (project_id, issue_id, principal_id) VALUES ($1, $2, $3)',
-            [create.projectId, create.id, assigneeId],
+            'INSERT INTO issue_assignees (project_id, issue_id, principal_id) SELECT $1, $2, unnest($3::uuid[])',
+            [create.projectId, create.id, create.assigneeIds],
           );
-        }
         metadata = { v: 1 };
       } else {
         const current = await db.query<IssueRow>(
@@ -483,27 +478,23 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
             'DELETE FROM issue_labels WHERE project_id = $1 AND issue_id = $2',
             [intent.projectId, intent.id],
           );
-          // eslint-disable-next-line no-await-in-loop
-          for (const labelId of (intent as SetIssueLabelsIntent).labelIds) {
-            // eslint-disable-next-line no-await-in-loop
+          const labelIds = (intent as SetIssueLabelsIntent).labelIds;
+          if (labelIds.length > 0)
             await db.query(
-              'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES ($1, $2, $3)',
-              [intent.projectId, intent.id, labelId],
+              'INSERT INTO issue_labels (project_id, issue_id, label_id) SELECT $1, $2, unnest($3::uuid[])',
+              [intent.projectId, intent.id, labelIds],
             );
-          }
         } else if (operation === 'issue.assignees') {
           await db.query(
             'DELETE FROM issue_assignees WHERE project_id = $1 AND issue_id = $2',
             [intent.projectId, intent.id],
           );
-          for (const principalId of (intent as SetIssueAssigneesIntent)
-            .assigneeIds) {
-            // eslint-disable-next-line no-await-in-loop
+          const assigneeIds = (intent as SetIssueAssigneesIntent).assigneeIds;
+          if (assigneeIds.length > 0)
             await db.query(
-              'INSERT INTO issue_assignees (project_id, issue_id, principal_id) VALUES ($1, $2, $3)',
-              [intent.projectId, intent.id, principalId],
+              'INSERT INTO issue_assignees (project_id, issue_id, principal_id) SELECT $1, $2, unnest($3::uuid[])',
+              [intent.projectId, intent.id, assigneeIds],
             );
-          }
         }
       }
       if (!row) throw new Error('Mutation returned no aggregate');

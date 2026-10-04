@@ -116,8 +116,14 @@ export function createD1Repository(db: D1Database): IssueRepository {
     );
   }
 
-  const placeholders = (count: number) =>
-    Array.from({ length: count }, () => '?').join(', ');
+  /**
+   * Bounded ID sets bind as one JSON array expanded by `json_each`, so every
+   * statement keeps a fixed bind count far below D1's 100-parameter limit
+   * regardless of page size or relation cardinality. Callers pass IDs that
+   * the application validators already checked as unique UUIDs.
+   */
+  const idSet = 'SELECT value FROM json_each(?)';
+  const idJson = (ids: readonly string[]) => JSON.stringify(ids);
 
   /**
    * One atomic mutation per operation through a single D1 batch: the receipt
@@ -222,9 +228,9 @@ export function createD1Repository(db: D1Database): IssueRepository {
       if (create.labelIds.length > 0) {
         const labels = await db
           .prepare(
-            `SELECT COUNT(*) AS count FROM labels WHERE project_id = ? AND id IN (${placeholders(create.labelIds.length)})`,
+            `SELECT COUNT(*) AS count FROM labels WHERE project_id = ? AND id IN (${idSet})`,
           )
-          .bind(create.projectId, ...create.labelIds)
+          .bind(create.projectId, idJson(create.labelIds))
           .first<{ count: number }>();
         if ((labels?.count ?? 0) !== create.labelIds.length)
           throw new DomainError('INVALID_INPUT');
@@ -232,9 +238,9 @@ export function createD1Repository(db: D1Database): IssueRepository {
       if (create.assigneeIds.length > 0) {
         const members = await db
           .prepare(
-            `SELECT COUNT(*) AS count FROM project_roles WHERE project_id = ? AND principal_id IN (${placeholders(create.assigneeIds.length)})`,
+            `SELECT COUNT(*) AS count FROM project_roles WHERE project_id = ? AND principal_id IN (${idSet})`,
           )
-          .bind(create.projectId, ...create.assigneeIds)
+          .bind(create.projectId, idJson(create.assigneeIds))
           .first<{ count: number }>();
         if ((members?.count ?? 0) !== create.assigneeIds.length)
           throw new DomainError('INVALID_INPUT');
@@ -267,13 +273,13 @@ export function createD1Repository(db: D1Database): IssueRepository {
             projection.version,
           ),
       );
-      for (const labelId of create.labelIds)
+      if (create.labelIds.length > 0)
         statements.push(
           db
             .prepare(
-              'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES (?, ?, ?)',
+              'INSERT INTO issue_labels (project_id, issue_id, label_id) SELECT ?, ?, value FROM json_each(?)',
             )
-            .bind(create.projectId, create.id, labelId),
+            .bind(create.projectId, create.id, idJson(create.labelIds)),
         );
       if (create.formSubmission && formValues && definition) {
         const guards = [
@@ -287,23 +293,23 @@ export function createD1Repository(db: D1Database): IssueRepository {
         // batch. A renamed/revoked default cannot become a different choice.
         if (create.labelIds.length) {
           guards.push(
-            `(SELECT COUNT(*) FROM labels WHERE project_id = ? AND id IN (${placeholders(create.labelIds.length)}) AND name_key IN (${placeholders(definition.labels.length)})) = ?`,
+            `(SELECT COUNT(*) FROM labels WHERE project_id = ? AND id IN (${idSet}) AND name_key IN (${idSet})) = ?`,
           );
           values.push(
             create.projectId,
-            ...create.labelIds,
-            ...definition.labels.map(nameKeyOf),
+            idJson(create.labelIds),
+            idJson(definition.labels.map(nameKeyOf)),
             create.labelIds.length,
           );
         }
         if (create.assigneeIds.length) {
           guards.push(
-            `(SELECT COUNT(DISTINCT p.id) FROM project_roles r JOIN principals p ON p.id = r.principal_id JOIN identities i ON i.principal_id = p.id WHERE r.project_id = ? AND p.status = 'active' AND p.kind = 'staff' AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.id IN (${placeholders(create.assigneeIds.length)}) AND i.subject IN (${placeholders(definition.assignees.length)})) = ?`,
+            `(SELECT COUNT(DISTINCT p.id) FROM project_roles r JOIN principals p ON p.id = r.principal_id JOIN identities i ON i.principal_id = p.id WHERE r.project_id = ? AND p.status = 'active' AND p.kind = 'staff' AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND p.id IN (${idSet}) AND i.subject IN (${idSet})) = ?`,
           );
           values.push(
             create.projectId,
-            ...create.assigneeIds,
-            ...definition.assignees,
+            idJson(create.assigneeIds),
+            idJson(definition.assignees),
             create.assigneeIds.length,
           );
         }
@@ -351,13 +357,13 @@ export function createD1Repository(db: D1Database): IssueRepository {
           throw error;
         }
       }
-      for (const assigneeId of create.assigneeIds)
+      if (create.assigneeIds.length > 0)
         statements.push(
           db
             .prepare(
-              'INSERT INTO issue_assignees (project_id, issue_id, principal_id) VALUES (?, ?, ?)',
+              'INSERT INTO issue_assignees (project_id, issue_id, principal_id) SELECT ?, ?, value FROM json_each(?)',
             )
-            .bind(create.projectId, create.id, assigneeId),
+            .bind(create.projectId, create.id, idJson(create.assigneeIds)),
         );
       metadata = '{}';
     } else {
@@ -399,15 +405,15 @@ export function createD1Repository(db: D1Database): IssueRepository {
           const reference = isLabels
             ? await db
                 .prepare(
-                  `SELECT COUNT(*) AS count FROM labels WHERE project_id = ? AND id IN (${placeholders(newIds.length)})`,
+                  `SELECT COUNT(*) AS count FROM labels WHERE project_id = ? AND id IN (${idSet})`,
                 )
-                .bind(intent.projectId, ...newIds)
+                .bind(intent.projectId, idJson(newIds))
                 .first<{ count: number }>()
             : await db
                 .prepare(
-                  `SELECT COUNT(*) AS count FROM project_roles WHERE project_id = ? AND principal_id IN (${placeholders(newIds.length)})`,
+                  `SELECT COUNT(*) AS count FROM project_roles WHERE project_id = ? AND principal_id IN (${idSet})`,
                 )
-                .bind(intent.projectId, ...newIds)
+                .bind(intent.projectId, idJson(newIds))
                 .first<{ count: number }>();
           if ((reference?.count ?? 0) !== newIds.length)
             throw new DomainError('INVALID_INPUT');
@@ -426,15 +432,15 @@ export function createD1Repository(db: D1Database): IssueRepository {
             )
             .bind(intent.projectId, intent.id),
         );
-        for (const value of newIds)
+        if (newIds.length > 0)
           statements.push(
             db
               .prepare(
                 isLabels
-                  ? 'INSERT INTO issue_labels (project_id, issue_id, label_id) VALUES (?, ?, ?)'
-                  : 'INSERT INTO issue_assignees (project_id, issue_id, principal_id) VALUES (?, ?, ?)',
+                  ? 'INSERT INTO issue_labels (project_id, issue_id, label_id) SELECT ?, ?, value FROM json_each(?)'
+                  : 'INSERT INTO issue_assignees (project_id, issue_id, principal_id) SELECT ?, ?, value FROM json_each(?)',
               )
-              .bind(intent.projectId, intent.id, value),
+              .bind(intent.projectId, intent.id, idJson(newIds)),
           );
       } else if (operation === 'issue.type') {
         const typeIntent = intent as SetIssueTypeIntent;
@@ -696,18 +702,18 @@ export function createD1Repository(db: D1Database): IssueRepository {
       const labelRows = (
         await db
           .prepare(
-            `SELECT issue_id, label_id FROM issue_labels WHERE project_id = ? AND issue_id IN (${placeholders(issueIds.length)})`,
+            `SELECT issue_id, label_id FROM issue_labels WHERE project_id = ? AND issue_id IN (${idSet})`,
           )
-          .bind(projectId, ...issueIds)
+          .bind(projectId, idJson(issueIds))
           .all<{ issue_id: string; label_id: string }>()
       ).results;
       for (const row of labelRows) labels.get(row.issue_id)?.push(row.label_id);
       const assigneeRows = (
         await db
           .prepare(
-            `SELECT issue_id, principal_id FROM issue_assignees WHERE project_id = ? AND issue_id IN (${placeholders(issueIds.length)})`,
+            `SELECT issue_id, principal_id FROM issue_assignees WHERE project_id = ? AND issue_id IN (${idSet})`,
           )
-          .bind(projectId, ...issueIds)
+          .bind(projectId, idJson(issueIds))
           .all<{ issue_id: string; principal_id: string }>()
       ).results;
       for (const row of assigneeRows)

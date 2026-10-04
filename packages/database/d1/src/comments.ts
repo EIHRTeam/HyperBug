@@ -60,8 +60,8 @@ function toRecord(row: CommentRow): CommentRecord {
 const commentColumns =
   'id, project_id, issue_id, author_id, body, body_text, body_text_version, revision, moderation, deleted_at, created_at, updated_at';
 
-const placeholders = (count: number) =>
-  Array.from({ length: count }, () => '?').join(', ');
+/** One JSON-array bind expanded by `json_each` keeps D1 bind counts fixed. */
+const idSet = 'SELECT value FROM json_each(?)';
 
 /**
  * D1 adapter for comments, reactions and the merged timeline. Comment
@@ -428,9 +428,9 @@ export function createD1ReactionStore(db: D1Database): ReactionStore {
       if (issueIds.length === 0) return new Map();
       const rows = await db
         .prepare(
-          `SELECT issue_id, reaction, COUNT(*) AS count FROM reactions WHERE project_id = ? AND issue_id IN (${placeholders(issueIds.length)}) GROUP BY issue_id, reaction`,
+          `SELECT issue_id, reaction, COUNT(*) AS count FROM reactions WHERE project_id = ? AND issue_id IN (${idSet}) GROUP BY issue_id, reaction`,
         )
-        .bind(projectId, ...issueIds)
+        .bind(projectId, JSON.stringify(issueIds))
         .all<{ issue_id: string; reaction: ReactionValue; count: number }>();
       return groupCounts(rows.results, (row) => row.issue_id);
     },
@@ -438,9 +438,9 @@ export function createD1ReactionStore(db: D1Database): ReactionStore {
       if (commentIds.length === 0) return new Map();
       const rows = await db
         .prepare(
-          `SELECT comment_id, reaction, COUNT(*) AS count FROM reactions WHERE project_id = ? AND comment_id IN (${placeholders(commentIds.length)}) GROUP BY comment_id, reaction`,
+          `SELECT comment_id, reaction, COUNT(*) AS count FROM reactions WHERE project_id = ? AND comment_id IN (${idSet}) GROUP BY comment_id, reaction`,
         )
-        .bind(projectId, ...commentIds)
+        .bind(projectId, JSON.stringify(commentIds))
         .all<{ comment_id: string; reaction: ReactionValue; count: number }>();
       return groupCounts(rows.results, (row) => row.comment_id);
     },

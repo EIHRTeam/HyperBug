@@ -761,3 +761,27 @@ it('never leaks the limit+1 overfetch row or an out-of-bound page size', async (
     }),
   ).rejects.toThrow();
 });
+
+it('hydrates a full 100-issue page and the 101-id relation bound in two statements', async () => {
+  const page = await repository().listIssues({
+    projectId: fillerProjectId,
+    state: 'open',
+    limit: 100,
+  });
+  expect(page.items).toHaveLength(100);
+  expect(page.nextCursor).not.toBeNull();
+  const ids = page.items.map((item) => item.id);
+  const full = await measured(() =>
+    repository().relations(fillerProjectId, ids),
+  );
+  expect(full.count).toBe(2);
+  for (const id of ids) {
+    expect(full.value.labels.get(id)).toHaveLength(2);
+    expect(full.value.assignees.get(id)).toHaveLength(1);
+  }
+  const bound = await measured(() =>
+    repository().relations(fillerProjectId, [...ids, crypto.randomUUID()]),
+  );
+  expect(bound.count).toBe(2);
+  expect(bound.value.labels.size).toBe(101);
+});

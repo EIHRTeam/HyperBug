@@ -225,15 +225,15 @@ export function createD1ContentDefinitionStore(
   const store: ContentDefinitionStore = {
     async resolveFormDefaults(projectId, definition) {
       assertId(projectId);
-      const placeholders = (size: number) =>
-        Array.from({ length: size }, () => '?').join(',');
+      // Name/handle sets bind as one JSON array so the bind count stays fixed.
+      const nameSet = 'SELECT value FROM json_each(?)';
       const labels = definition.labels.length
         ? (
             await db
               .prepare(
-                `SELECT id, name_key FROM labels WHERE project_id = ? AND name_key IN (${placeholders(definition.labels.length)})`,
+                `SELECT id, name_key FROM labels WHERE project_id = ? AND name_key IN (${nameSet})`,
               )
-              .bind(projectId, ...definition.labels.map(nameKeyOf))
+              .bind(projectId, JSON.stringify(definition.labels.map(nameKeyOf)))
               .all<{ id: string; name_key: string }>()
           ).results
         : [];
@@ -241,9 +241,9 @@ export function createD1ContentDefinitionStore(
         ? (
             await db
               .prepare(
-                `SELECT p.id, i.subject AS handle FROM project_roles r JOIN principals p ON p.id = r.principal_id JOIN identities i ON i.principal_id = p.id WHERE r.project_id = ? AND p.kind = 'staff' AND p.status = 'active' AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND i.subject IN (${placeholders(definition.assignees.length)})`,
+                `SELECT p.id, i.subject AS handle FROM project_roles r JOIN principals p ON p.id = r.principal_id JOIN identities i ON i.principal_id = p.id WHERE r.project_id = ? AND p.kind = 'staff' AND p.status = 'active' AND i.provider = 'local-password' AND i.issuer = 'hyperbug' AND i.subject IN (${nameSet})`,
               )
-              .bind(projectId, ...definition.assignees)
+              .bind(projectId, JSON.stringify(definition.assignees))
               .all<{ id: string; handle: string }>()
           ).results
         : [];

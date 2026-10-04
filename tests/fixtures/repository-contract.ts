@@ -111,6 +111,82 @@ export function repositoryContract(get: () => RepositoryHarness) {
         ).not.toContain(input.body);
     });
 
+    it('creates and replaces the maximum label and assignee sets atomically', async () => {
+      const labelIds = Array.from({ length: 40 }, nextId);
+      const staffIds = Array.from({ length: 20 }, nextId);
+      for (const [index, id] of labelIds.entries())
+        await get().query(
+          'INSERT INTO labels (id, project_id, name, name_key) VALUES (?, ?, ?, ?)',
+          [id, projectId, `Label ${index}`, `label-${index}`],
+        );
+      for (const id of staffIds) {
+        await get().query(
+          "INSERT INTO principals (id, kind, display_name, created_at) VALUES (?, 'staff', 'Contract staff', ?)",
+          [id, now],
+        );
+        await get().query(
+          "INSERT INTO project_roles (project_id, principal_id, role, granted_at) VALUES (?, ?, 'maintainer', ?)",
+          [projectId, id, now],
+        );
+      }
+      const stored = async (table: string, column: string, id: string) =>
+        (
+          await get().query(
+            `SELECT ${column} AS value FROM ${table} WHERE project_id = ? AND issue_id = ?`,
+            [projectId, id],
+          )
+        )
+          .map((row) => String(row.value))
+          .sort();
+      const input = intent({
+        labelIds: labelIds.slice(0, 20),
+        assigneeIds: staffIds.slice(0, 10),
+      });
+      await get().repository.createIssue(input);
+      expect(await stored('issue_labels', 'label_id', input.id)).toEqual(
+        labelIds.slice(0, 20).sort(),
+      );
+      expect(await stored('issue_assignees', 'principal_id', input.id)).toEqual(
+        staffIds.slice(0, 10).sort(),
+      );
+      const edit = (revision: number) => ({
+        mutationId: nextId(),
+        requestId: nextId(),
+        principalId,
+        projectId,
+        keyHash: digest(),
+        payloadHash: digest(),
+        now,
+        expiresAt: now + 86400000,
+        id: input.id,
+        expectedRevision: revision,
+      });
+      await get().repository.setIssueLabels({
+        ...edit(1),
+        labelIds: labelIds.slice(20),
+      });
+      await get().repository.setIssueAssignees({
+        ...edit(2),
+        assigneeIds: staffIds.slice(10),
+      });
+      expect(await stored('issue_labels', 'label_id', input.id)).toEqual(
+        labelIds.slice(20).sort(),
+      );
+      expect(await stored('issue_assignees', 'principal_id', input.id)).toEqual(
+        staffIds.slice(10).sort(),
+      );
+      // A foreign reference rejects the whole set without a partial write.
+      await expect(
+        get().repository.setIssueLabels({
+          ...edit(3),
+          labelIds: [...labelIds.slice(0, 19), nextId()],
+        }),
+      ).rejects.toThrow();
+      expect(await stored('issue_labels', 'label_id', input.id)).toEqual(
+        labelIds.slice(20).sort(),
+      );
+    });
+
     it('cannot turn a create into an edit or record a mismatched audit action', async () => {
       const input = intent();
       await get().repository.createIssue(input);
