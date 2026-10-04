@@ -578,6 +578,17 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
       );
       return rows[0] ? toIssue(rows[0]) : null;
     },
+    async issueVisible(projectId, id, options) {
+      assertId(projectId);
+      assertId(id);
+      const hidden =
+        options?.includeHidden === true ? '' : " AND moderation = 'visible'";
+      const { rowCount } = await pool.query(
+        `SELECT 1 FROM issues WHERE project_id = $1 AND id = $2 AND deleted_at IS NULL${hidden}`,
+        [projectId, id],
+      );
+      return (rowCount ?? 0) > 0;
+    },
     async listIssues(query: IssueListQuery) {
       const { limit, cursor } = issuePageOptions(query);
       const values: (string | number)[] = [query.projectId];

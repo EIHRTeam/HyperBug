@@ -518,6 +518,7 @@ beforeAll(async () => {
       | 'lockoutClear'
       | 'lockoutPurge'
       | 'mutateIssue'
+      | 'issueVisible'
       | 'relations',
     input: unknown,
   ): Promise<T> {
@@ -592,6 +593,8 @@ beforeAll(async () => {
       call('mutateIssue', { operation: 'milestone', intent: input }),
     getIssue: (projectId, id, options) =>
       call('getIssue', { projectId, id, options }),
+    issueVisible: (projectId, id, options) =>
+      call('issueVisible', { projectId, id, options }),
     listIssues: (input) => call('listIssues', input),
     relations: (projectId, issueIds) =>
       call('relations', { projectId, issueIds: [...issueIds] }),

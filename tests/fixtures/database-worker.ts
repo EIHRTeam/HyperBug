@@ -77,6 +77,14 @@ type Message =
       input: { projectId: string; issueIds: string[] };
     }
   | {
+      method: 'issueVisible';
+      input: {
+        projectId: string;
+        id: string;
+        options?: { includeHidden?: boolean };
+      };
+    }
+  | {
       method: 'relationsEntries';
       input: { projectId: string; issueIds: string[] };
     }
@@ -222,6 +230,13 @@ export default {
           value = await repository.relations(
             message.input.projectId,
             message.input.issueIds,
+          );
+          break;
+        case 'issueVisible':
+          value = await repository.issueVisible(
+            message.input.projectId,
+            message.input.id,
+            message.input.options ?? {},
           );
           break;
         case 'relationsEntries': {

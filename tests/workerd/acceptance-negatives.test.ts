@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { discussionVisibilityContract } from '../fixtures/discussion-visibility-contract.ts';
 import { execFileSync } from 'node:child_process';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { workerModules } from '../fixtures/worker-modules.ts';
@@ -1093,4 +1094,23 @@ it('enforces the 06.V2 negatives matrix on workerd/D1', async () => {
   for (const attempt of directMutations) {
     expect((await attempt).status).toBe(401);
   }
+
+  await discussionVisibilityContract({
+    call,
+    projectId: projectA.id,
+    authorToken,
+    staffToken,
+    hideIssue: async (id) => {
+      await db
+        .prepare("UPDATE issues SET moderation = 'hidden' WHERE id = ?")
+        .bind(id)
+        .run();
+    },
+    deleteIssue: async (id) => {
+      await db
+        .prepare('UPDATE issues SET deleted_at = ? WHERE id = ?')
+        .bind(Date.now(), id)
+        .run();
+    },
+  });
 });

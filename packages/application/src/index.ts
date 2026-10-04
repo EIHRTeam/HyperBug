@@ -177,6 +177,16 @@ export interface IssueRepository {
     id: string,
     options?: { includeHidden?: boolean },
   ): Promise<Issue | null>;
+  /**
+   * Parent-visibility probe for issue sub-resources: true when the issue
+   * exists, is not deleted and is visible (or hidden rows are included).
+   * Reads no body or relations.
+   */
+  issueVisible(
+    projectId: string,
+    id: string,
+    options?: { includeHidden?: boolean },
+  ): Promise<boolean>;
   listIssues(query: IssueListQuery): Promise<IssuePage>;
   /** Labels and assignees for at most one page of issues, in two queries. */
   relations(

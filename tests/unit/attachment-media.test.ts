@@ -178,6 +178,7 @@ function fixture() {
       setIssueMilestone: unexpected,
       listIssues: unexpected,
       relations: unexpected,
+      issueVisible: async () => true,
       getIssue: async () => ({
         id: issueId,
         projectId,

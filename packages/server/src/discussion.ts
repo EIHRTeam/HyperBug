@@ -154,6 +154,7 @@ export async function createComment(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+  await requireIssueAccess(request, context, principal, projectId, issueId);
   await requirePermission(
     request,
     context,
@@ -222,9 +223,13 @@ export async function listComments(
 ) {
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
-  const includeHidden = principal
-    ? await mayModerate(request, context, principal, projectId, issueId)
-    : false;
+  const includeHidden = await requireIssueAccess(
+    request,
+    context,
+    principal,
+    projectId,
+    issueId,
+  );
   await requirePermission(
     request,
     context,
@@ -295,23 +300,28 @@ async function mayModerate(
  * Every issue sub-resource inherits the issue's own visibility: a hidden
  * issue answers 404 for every audience that cannot see the issue itself,
  * and a deleted issue answers 404 for everyone. Moderators reach the
- * sub-resources of hidden issues exactly like the issue detail.
+ * sub-resources of hidden issues exactly like the issue detail. The
+ * caller's moderator status is resolved once and returned so the route
+ * does not repeat the authorization lookup.
  */
-async function requireVisibleIssue(
+async function requireIssueAccess(
   request: Request,
   context: DiscussionContext,
   principal: BearerPrincipal | null,
   projectId: string,
   issueId: string,
-): Promise<void> {
+): Promise<boolean> {
   if (!context.issues) throw new RequestFailure('ISSUE_UNAVAILABLE');
   const moderator = principal
     ? await mayModerate(request, context, principal, projectId, issueId)
     : false;
-  const issue = await withDeadline(request.signal, storeTimeoutMs, () =>
-    context.issues!.getIssue(projectId, issueId, { includeHidden: moderator }),
+  const visible = await withDeadline(request.signal, storeTimeoutMs, () =>
+    context.issues!.issueVisible(projectId, issueId, {
+      includeHidden: moderator,
+    }),
   );
-  if (!issue) throw new RequestFailure('NOT_FOUND');
+  if (!visible) throw new RequestFailure('NOT_FOUND');
+  return moderator;
 }
 
 /** GET /api/v1/projects/:projectId/issues/:issueId/comments/:commentId */
@@ -324,9 +334,13 @@ export async function readComment(
 ) {
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
-  const includeHidden = principal
-    ? await mayModerate(request, context, principal, projectId, issueId)
-    : false;
+  const includeHidden = await requireIssueAccess(
+    request,
+    context,
+    principal,
+    projectId,
+    issueId,
+  );
   await requirePermission(
     request,
     context,
@@ -363,6 +377,7 @@ export async function editComment(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+  await requireIssueAccess(request, context, principal, projectId, issueId);
   const current = await loadComment(
     request,
     context,
@@ -438,6 +453,7 @@ export async function deleteComment(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+  await requireIssueAccess(request, context, principal, projectId, issueId);
   const current = await loadComment(
     request,
     context,
@@ -482,6 +498,7 @@ export async function moderateComment(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+  await requireIssueAccess(request, context, principal, projectId, issueId);
   await requirePermission(
     request,
     context,
@@ -491,6 +508,8 @@ export async function moderateComment(
     issueId,
     'issue',
   );
+  // The comment must belong to the addressed issue, not merely the project.
+  await loadComment(request, context, projectId, issueId, commentId, true);
   const moderation =
     input.moderation === 'visible' ||
     input.moderation === 'hidden' ||
@@ -522,6 +541,7 @@ export async function commentHistory(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
+  await requireIssueAccess(request, context, principal, projectId, issueId);
   await requirePermission(
     request,
     context,
@@ -531,6 +551,7 @@ export async function commentHistory(
     issueId,
     'issue',
   );
+  await loadComment(request, context, projectId, issueId, commentId, true);
   const page = await withDeadline(request.signal, storeTimeoutMs, () =>
     comments(context).history(projectId, commentId),
   );
@@ -567,6 +588,7 @@ async function reactionWrite(
     const issueTarget = commentTarget === null ? target : null;
     const targetType = commentTarget !== null ? 'comment' : 'issue';
     const targetId = commentTarget?.commentId ?? issueTarget!.issueId;
+    await requireVisibleTarget(request, context, principal, projectId, target);
     await requirePermission(
       request,
       context,
@@ -642,6 +664,7 @@ export async function reactionCounts(
 ) {
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
+  await requireVisibleTarget(request, context, principal, projectId, target);
   await requirePermission(
     request,
     context,
@@ -663,6 +686,36 @@ export async function reactionCounts(
     ? (counts.get(commentTarget.commentId) ?? [])
     : (counts.get(issueTarget!.issueId) ?? []);
   return { reactions: [...list] };
+}
+
+/**
+ * A reaction target inherits its parent issue's visibility; a comment
+ * target must also belong to the addressed issue and be visible to the
+ * caller (moderators reach hidden comments).
+ */
+async function requireVisibleTarget(
+  request: Request,
+  context: DiscussionContext,
+  principal: BearerPrincipal | null,
+  projectId: string,
+  target: { issueId: string } | { commentId: string; issueId: string },
+): Promise<void> {
+  const moderator = await requireIssueAccess(
+    request,
+    context,
+    principal,
+    projectId,
+    target.issueId,
+  );
+  if ('commentId' in target)
+    await loadComment(
+      request,
+      context,
+      projectId,
+      target.issueId,
+      target.commentId,
+      moderator,
+    );
 }
 
 function targetTypeOf(
@@ -687,10 +740,13 @@ export async function issueTimeline(
 ) {
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
-  const includeHidden = principal
-    ? await mayModerate(request, context, principal, projectId, issueId)
-    : false;
-  await requireVisibleIssue(request, context, principal, projectId, issueId);
+  const includeHidden = await requireIssueAccess(
+    request,
+    context,
+    principal,
+    projectId,
+    issueId,
+  );
   await requirePermission(
     request,
     context,

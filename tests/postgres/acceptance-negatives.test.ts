@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { discussionVisibilityContract } from '../fixtures/discussion-visibility-contract.ts';
 import { Pool } from 'pg';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -569,4 +570,23 @@ it('enforces the cross-project and removed-reference negatives on Node/PostgreSQ
     },
   );
   expect(memberStillAssignable.status).toBe(200);
+
+  await discussionVisibilityContract({
+    call,
+    projectId: projectA.id,
+    authorToken,
+    staffToken,
+    hideIssue: async (id) => {
+      await pool.query(
+        "UPDATE issues SET moderation = 'hidden' WHERE id = $1",
+        [id],
+      );
+    },
+    deleteIssue: async (id) => {
+      await pool.query('UPDATE issues SET deleted_at = $1 WHERE id = $2', [
+        Date.now(),
+        id,
+      ]);
+    },
+  });
 });

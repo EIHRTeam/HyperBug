@@ -16,7 +16,7 @@ Cross-module record for the remediation of two review reports supplied by the us
 | --- | --- | --- |
 | D1 relation query over the 100 bind-parameter limit (PERF 3.1) | B1 | Fixed |
 | Issue create approaching the 50-query invocation limit (PERF 3.2) | B1 | Fixed |
-| Hidden-issue sub-resource visibility (PERF 3.3) | B2 | Pending |
+| Hidden-issue sub-resource visibility (PERF 3.3) | B2 | Fixed |
 | Instance vs project permission mixing (DESIGN 3.1) | B3 | Pending |
 | Assurance not bound to the presented token; `ADMIN_RECENT_AUTH_SECONDS` unused (DESIGN 3.2) | B3 | Pending |
 | Recovery-code regeneration without step-up (DESIGN 3.3) | B4 | Pending |
@@ -65,6 +65,25 @@ Cross-module record for the remediation of two review reports supplied by the us
   - Local Miniflare does not enforce D1's 100-parameter limit, so the guard is the regression net.
   - HTTP issue journeys cannot cheaply seed ten Staff assignees, so maximum relations are proven at the shared repository contract on both adapters. All D1 route fixtures now run behind the guard.
   - Whether statements inside one `db.batch()` count individually toward the Free 50-query limit is not stated in the current documentation (Context7 `/llmstxt/developers_cloudflare_d1_llms-full_txt`, 2026-10-05). B15 measures it on the real Free account.
+
+### B2 — Parent-issue visibility for every issue sub-resource (2026-10-05)
+
+- Change:
+  - **Shared parent check.** One `requireIssueAccess` step resolves the caller's moderator status once, then probes the parent through the new `IssueRepository.issueVisible` (`SELECT 1`, no body or relations). It answers 404 when the parent is hidden (non-moderators) or deleted (everyone).
+  - **Routes covered:** comment list, read, create, edit, delete, moderate and history; issue and comment reactions and their counts; the timeline. The timeline no longer resolves moderation twice.
+  - **Comment targets.** Moderation, history, comment reactions and comment reaction counts now also require the comment to belong to the addressed issue. Comment reactions additionally require the comment to be visible to the caller.
+- Files:
+  - `packages/server/src/discussion.ts`, `packages/application/src/index.ts`, `packages/database/{d1,postgres}/src/index.ts`
+  - New shared matrix `tests/fixtures/discussion-visibility-contract.ts`, run from `tests/{workerd,postgres}/acceptance-negatives.test.ts`
+  - Harness updates in `tests/fixtures/database-worker.ts`, `tests/workerd/repository.test.ts`, `tests/unit/attachment-media.test.ts`
+- Verification (local):
+  - **Shared matrix** on workerd/D1 and real PostgreSQL 18.6, through the acceptance-negatives suites. It covers every sub-resource route for anonymous, author (User) and moderator, against hidden and deleted parents, plus cross-issue comment addressing.
+  - **Old handlers fail it.** With the previous `discussion.ts`, the matrix fails because history through another issue answers 200.
+  - **Related suites pass:** workerd discussion/journey/queries/concurrency, PostgreSQL negatives/discussion/journey/queries, unit 345.
+  - **Static checks:** typecheck, lint and format pass.
+- Notes:
+  - Authenticated callers that previously skipped the moderator lookup (comment create, reactions) now perform it. B6 removes the repeated authorization reads per request.
+  - No shared cache is enabled for these resources.
 
 ## Documentation lookups
 

@@ -283,3 +283,21 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Real-Free accounting of batch members against the 50-query limit is measured in B15.
 - Next actions: B2 hidden-parent visibility for every discussion sub-resource.
 - Next-session cautions: Keep `json_each` bound sets for any new D1 `IN` list. Do not reintroduce `placeholders()`. Generated Module 03 audit-query measurements were restored after the test runs.
+
+### 2026-10-05 — Review remediation B2: parent visibility for every sub-resource
+
+- Scope and checklist IDs: Post-completion remediation of accepted 06.3a/06.3b/06.3c/06.V2 behavior (PERF review 3.3). No checkbox changes.
+- Progress: Only the timeline enforced the parent issue's visibility. Comment list/read/create/edit/delete/moderate/history and issue/comment reactions and counts checked only the project. Comments on a hidden issue were publicly listable, and comment-addressed routes did not require the comment to belong to the URL's issue.
+- Change summary:
+  - **Shared parent check.** `requireIssueAccess` resolves the moderator status once and probes the parent through the new `IssueRepository.issueVisible`. Every discussion sub-resource route uses it.
+  - **Comment ownership.** Comment moderation, history and reactions verify the comment belongs to the addressed issue. Comment reactions also require the comment to be visible to the caller.
+- Files/artifacts: `packages/server/src/discussion.ts`, `packages/application/src/index.ts`, `packages/database/{d1,postgres}/src/index.ts`, `tests/fixtures/discussion-visibility-contract.ts`, `tests/{workerd,postgres}/acceptance-negatives.test.ts`, harness updates. [Remediation record](../evidence/2026-10-05-review-remediation.md#b2--parent-issue-visibility-for-every-issue-sub-resource-2026-10-05).
+- Verification:
+  - The shared visibility matrix passes on workerd/D1 and real PostgreSQL 18.6.
+  - The previous handlers fail it: cross-issue history answered 200.
+  - Related discussion, journey, query and concurrency suites pass on both profiles, and unit tests pass (345).
+  - Typecheck, lint and format pass.
+- Decisions and deviations: None. 404 semantics follow the existing timeline rule.
+- Blockers/open questions: None.
+- Next actions: B3 instance roles and token-bound assurance (Module 04 owner); B6 removes the duplicate authorization reads this check adds for authenticated writers.
+- Next-session cautions: New issue sub-resources must call `requireIssueAccess`. The resolver's resource facts remain a stub, so routes own object visibility.

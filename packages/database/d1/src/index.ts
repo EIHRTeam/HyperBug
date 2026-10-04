@@ -667,6 +667,19 @@ export function createD1Repository(db: D1Database): IssueRepository {
         .first<IssueRow>();
       return row ? toIssue(row) : null;
     },
+    async issueVisible(projectId, id, options) {
+      assertId(projectId);
+      assertId(id);
+      const hidden =
+        options?.includeHidden === true ? '' : " AND moderation = 'visible'";
+      const row = await db
+        .prepare(
+          `SELECT 1 AS present FROM issues WHERE project_id = ? AND id = ? AND deleted_at IS NULL${hidden}`,
+        )
+        .bind(projectId, id)
+        .first();
+      return row !== null;
+    },
     async listIssues(query: IssueListQuery) {
       const { limit, cursor } = issuePageOptions(query);
       const values: (string | number)[] = [query.projectId];
