@@ -22,9 +22,11 @@ import {
   type ProjectContext,
 } from './projects.ts';
 import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
-import { withDeadline } from './bounds.ts';
-
-const storeTimeoutMs = 1_000;
+import {
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+  withDeadline,
+} from './bounds.ts';
 
 function store(context: ProjectContext): TaxonomyStore {
   if (!context.taxonomy) throw new RequestFailure('TAXONOMY_UNAVAILABLE');
@@ -124,19 +126,24 @@ export async function createLabel(
   const description = checkedText(input.description, 'description') ?? '';
   const color = checkedColor(input.color) ?? '';
   const id = crypto.randomUUID();
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).createLabel({
-      id,
-      projectId,
-      name,
-      description,
-      color,
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).createLabel({
+        id,
+        projectId,
+        name,
+        description,
+        color,
+      }),
   );
   if (outcome === 'name-conflict')
     throw new RequestFailure('TAXONOMY_CONFLICT');
-  const records = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).listLabels(projectId),
+  const records = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).listLabels(projectId),
   );
   const created = records.find((label: LabelRecord) => label.id === id);
   if (!created) throw new RequestFailure('TAXONOMY_UNAVAILABLE');
@@ -150,8 +157,10 @@ export async function listLabels(
   projectId: string,
 ): Promise<readonly ReturnType<typeof labelView>[]> {
   await requireProjectReader(request, context, projectId);
-  const records = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).listLabels(projectId),
+  const records = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).listLabels(projectId),
   );
   return records.map(labelView);
 }
@@ -170,15 +179,18 @@ export async function updateLabel(
   },
 ): Promise<ReturnType<typeof labelView>> {
   await requireTaxonomyManager(request, context, projectId);
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).updateLabel({
-      id: labelId,
-      projectId,
-      expectedRevision: requiredRevision(input.expectedRevision),
-      name: input.name === undefined ? null : checkedName(input.name),
-      description: checkedText(input.description, 'description'),
-      color: checkedColor(input.color),
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).updateLabel({
+        id: labelId,
+        projectId,
+        expectedRevision: requiredRevision(input.expectedRevision),
+        name: input.name === undefined ? null : checkedName(input.name),
+        description: checkedText(input.description, 'description'),
+        color: checkedColor(input.color),
+      }),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'name-conflict')
@@ -196,8 +208,10 @@ export async function deleteLabel(
   labelId: string,
 ): Promise<void> {
   await requireTaxonomyManager(request, context, projectId);
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).deleteLabel(projectId, labelId),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () => store(context).deleteLabel(projectId, labelId),
   );
   if (outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome === 'referenced') throw new RequestFailure('TAXONOMY_CONFLICT');
@@ -227,22 +241,28 @@ export async function createIssueType(
   if (input.enabled !== undefined && typeof input.enabled !== 'boolean')
     throw new RequestFailure('TAXONOMY_INVALID');
   const id = crypto.randomUUID();
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).createIssueType({
-      id,
-      projectId,
-      name,
-      description: checkedText(input.description, 'description') ?? '',
-      icon: checkedText(input.icon, 'icon') ?? '',
-      color: checkedColor(input.color) ?? '',
-      position: input.position === undefined ? 0 : (input.position as number),
-      enabled: input.enabled === undefined ? true : (input.enabled as boolean),
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).createIssueType({
+        id,
+        projectId,
+        name,
+        description: checkedText(input.description, 'description') ?? '',
+        icon: checkedText(input.icon, 'icon') ?? '',
+        color: checkedColor(input.color) ?? '',
+        position: input.position === undefined ? 0 : (input.position as number),
+        enabled:
+          input.enabled === undefined ? true : (input.enabled as boolean),
+      }),
   );
   if (outcome === 'name-conflict')
     throw new RequestFailure('TAXONOMY_CONFLICT');
-  const records = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).listIssueTypes(projectId),
+  const records = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).listIssueTypes(projectId),
   );
   const created = records.find((type: IssueTypeRecord) => type.id === id);
   if (!created) throw new RequestFailure('TAXONOMY_UNAVAILABLE');
@@ -256,8 +276,10 @@ export async function listIssueTypes(
   projectId: string,
 ): Promise<readonly ReturnType<typeof issueTypeView>[]> {
   await requireProjectReader(request, context, projectId);
-  const records = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).listIssueTypes(projectId),
+  const records = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).listIssueTypes(projectId),
   );
   return records.map(issueTypeView);
 }
@@ -286,19 +308,23 @@ export async function updateIssueType(
     throw new RequestFailure('TAXONOMY_INVALID');
   if (input.enabled !== undefined && typeof input.enabled !== 'boolean')
     throw new RequestFailure('TAXONOMY_INVALID');
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).updateIssueType({
-      id: typeId,
-      projectId,
-      expectedRevision: requiredRevision(input.expectedRevision),
-      name: input.name === undefined ? null : checkedName(input.name),
-      description: checkedText(input.description, 'description'),
-      icon: checkedText(input.icon, 'icon'),
-      color: checkedColor(input.color),
-      position:
-        input.position === undefined ? null : (input.position as number),
-      enabled: input.enabled === undefined ? null : (input.enabled as boolean),
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).updateIssueType({
+        id: typeId,
+        projectId,
+        expectedRevision: requiredRevision(input.expectedRevision),
+        name: input.name === undefined ? null : checkedName(input.name),
+        description: checkedText(input.description, 'description'),
+        icon: checkedText(input.icon, 'icon'),
+        color: checkedColor(input.color),
+        position:
+          input.position === undefined ? null : (input.position as number),
+        enabled:
+          input.enabled === undefined ? null : (input.enabled as boolean),
+      }),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'name-conflict')
@@ -316,8 +342,10 @@ export async function deleteIssueType(
   typeId: string,
 ): Promise<void> {
   await requireTaxonomyManager(request, context, projectId);
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).deleteIssueType(projectId, typeId),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () => store(context).deleteIssueType(projectId, typeId),
   );
   if (outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome === 'referenced') throw new RequestFailure('TAXONOMY_CONFLICT');
@@ -343,19 +371,24 @@ export async function createMilestone(
     throw new RequestFailure('TAXONOMY_INVALID');
   if (!isValidDueDate(dueDate)) throw new RequestFailure('TAXONOMY_INVALID');
   const id = crypto.randomUUID();
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).createMilestone({
-      id,
-      projectId,
-      title: input.title as string,
-      description,
-      dueDate,
-      nowMs: Date.now(),
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).createMilestone({
+        id,
+        projectId,
+        title: input.title as string,
+        description,
+        dueDate,
+        nowMs: Date.now(),
+      }),
   );
   if (outcome !== 'created') throw new RequestFailure('TAXONOMY_UNAVAILABLE');
-  const milestones = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).listMilestones(projectId),
+  const milestones = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).listMilestones(projectId),
   );
   const created = milestones.find(
     (milestone: MilestoneView) => milestone.id === id,
@@ -371,8 +404,10 @@ export async function listMilestones(
   projectId: string,
 ): Promise<readonly ReturnType<typeof milestoneView>[]> {
   await requireProjectReader(request, context, projectId);
-  const records = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).listMilestones(projectId),
+  const records = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).listMilestones(projectId),
   );
   return records.map(milestoneView);
 }
@@ -414,18 +449,21 @@ export async function updateMilestone(
     (typeof dueDate !== 'string' || !isValidDueDate(dueDate))
   )
     throw new RequestFailure('TAXONOMY_INVALID');
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).updateMilestone({
-      id: milestoneId,
-      projectId,
-      expectedRevision: requiredRevision(input.expectedRevision),
-      title: input.title === undefined ? null : (input.title as string),
-      description: checkedText(input.description, 'description'),
-      dueDate,
-      state:
-        input.state === undefined ? null : (input.state as 'open' | 'closed'),
-      nowMs: Date.now(),
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).updateMilestone({
+        id: milestoneId,
+        projectId,
+        expectedRevision: requiredRevision(input.expectedRevision),
+        title: input.title === undefined ? null : (input.title as string),
+        description: checkedText(input.description, 'description'),
+        dueDate,
+        state:
+          input.state === undefined ? null : (input.state as 'open' | 'closed'),
+        nowMs: Date.now(),
+      }),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'conflict')
@@ -441,8 +479,10 @@ export async function deleteMilestone(
   milestoneId: string,
 ): Promise<void> {
   await requireTaxonomyManager(request, context, projectId);
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).deleteMilestone(projectId, milestoneId),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () => store(context).deleteMilestone(projectId, milestoneId),
   );
   if (outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome === 'referenced') throw new RequestFailure('TAXONOMY_CONFLICT');

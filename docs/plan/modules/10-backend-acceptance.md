@@ -28,7 +28,7 @@ G1 covers all three profiles under [ADR 0012](../../decisions/0012-cloudflare-mi
 - [ ] **10.2c** Run security regression coverage for BOLA, identity confusion, token expiry/revocation, OAuth/PKCE, CORS/CSRF, XSS, unsafe URLs, upload handling, rate limits, and plugin boundaries.
 - [ ] **10.2d** Verify separate registrable domains, exact allowlists, third-party-cookie blocking, and no frontend-host proxy dependency with a minimal auth fixture.
 - [ ] **10.2e** Record which checks ran in local emulation, real self-host services, and actual Cloudflare staging. Provision only within the authorized environment; missing access remains an explicit gate blocker.
-- [ ] **10.2f** Record the deployment tier and the remaining quota headroom for every acceptance environment, and keep any minimum-tier run out of the G1 evidence set.
+- [ ] **10.2f** Record the deployment tier and remaining quota headroom for every acceptance environment. Include Minimum functional evidence in the three-profile G1 matrix under ADR 0012; keep its Free-plan quota evidence separately attributed for 13.G6 and never merge it into standard-profile performance baselines.
 
 ### Step 10.3 — Establish measurable performance and operational readiness
 

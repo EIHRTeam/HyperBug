@@ -107,12 +107,11 @@ export function authorizeLoginPage(input: {
     notice,
   } = input;
   const captcha = captchaRequired
-    ? `<div class="field">
-<label for="captchaToken">Verification</label>
-<div class="cf-turnstile" data-sitekey="${escapeHtml(captchaSiteKey ?? '')}" data-action="login"></div>
-<input type="hidden" name="captchaToken" id="captchaToken" aria-describedby="captcha-help">
+    ? `<fieldset aria-describedby="captcha-help">
+<legend>Verification</legend>
+<div class="cf-turnstile" data-sitekey="${escapeHtml(captchaSiteKey ?? '')}" data-action="login" data-response-field-name="captchaToken"></div>
 <p id="captcha-help" class="hint">Complete the challenge to continue.</p>
-</div>
+</fieldset>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>`
     : // Turnstile's bootstrap loader is not SRI-pinnable (its bytes change on
       // Cloudflare's side); the exact-origin script-src pin above is the control.

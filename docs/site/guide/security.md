@@ -22,9 +22,13 @@ Use `MAX_BODY_BYTES`, `REQUEST_TIMEOUT_MS`, `MAX_JSON_DEPTH`, `MAX_JSON_NODES`, 
 
 `RETENTION_EXPIRED_SESSION_SECONDS` defaults to 86400 seconds (one day) and accepts 1–2592000. Existing five-minute schedulers remove bounded batches of expired/revoked sessions, OAuth credentials and passkey challenges after this retention. Receipts, counters and D1 lockouts use stored expiry. Audit, content history, recovery codes and attachments remain untouched.
 
-Security decisions use `AUTHORIZATION_TIMEOUT_MS` (1000 ms default, 10–5000). Store reads/writes use `STORE_READ_TIMEOUT_MS` / `STORE_WRITE_TIMEOUT_MS` (provisional 1000 ms each, 10–10000); actual Free measurements still govern final defaults. Password hashing and streaming keep their separate bounds. Local debug emits safe route/status/request-ID diagnostics only.
+Security decisions use `AUTHORIZATION_TIMEOUT_MS` (1000 ms default, 10–5000). Store reads/writes use `STORE_READ_TIMEOUT_MS` / `STORE_WRITE_TIMEOUT_MS` (1000 ms each, 10–10000). These bounds cover the recorded live D1 sample; they are configurable and do not promise sustained p99 latency. Password hashing and streaming keep their separate bounds. Local debug emits safe route/status/request-ID diagnostics only.
 
 The former security-log, audit, abuse, deleted-account, temporary-upload and export `RETENTION_*` settings are reserved and explicit values now prevent startup: their cleanup owners are unfinished. Configure provider log retention independently and review holds, references and retained backup/key versions before future deletion.
+
+The Workers Minimum password service caps work at ten simultaneous operations per isolate; durable rate admission and lockout still apply. The 2026-10-05 test run completed ten concurrent logins, but instrumented CPU reached 20–47 ms and billing-plan attribution was unavailable. Free-plan CPU headroom and release acceptance remain unverified.
+
+Production API/ingress Worker logs use explicit 10% head sampling; local and staging use 100%. Required durable audit records remain complete. Log-byte quotas have not been measured.
 
 ## Understand sensitive administration
 
@@ -45,7 +49,6 @@ For all setting ranges and implementation boundaries, see the [engineering speci
 Core now supplies CSPRNG opaque credentials, purpose-bound HMAC digests, AES-256-GCM envelope encryption and AES-256-KW key wrapping. The available key sources are the `HYPERBUG_KEY_RING` Worker Secret binding and a private self-hosted POSIX file owned by the running user with permissions 0400 or 0600. Keys do not belong in ordinary runtime configuration.
 
 These mechanisms now have D1 and PostgreSQL key-lifecycle registries. They track current, previous and revoked versions and prevent removing a key referenced by stored data or retained backups. Both backend roots now connect their key source to the registry and the shared server. Self-hosted Node selects its key source with optional `HYPERBUG_KEY_FILE` and a complete PostgreSQL connection; the separate abuse key file is not needed to load the registry, but account admission and readiness still require it. Supplying the key file without a database connection refuses startup. Without a key source, health-only startup is allowed and operations needing keys fail closed. Registration and login now use the standard password service and primary-backed sessions locally; recovery and deployed-provider verification remain pending. A key being present is not enough to permit use, and missing/revoked keys or provider errors deny the operation. Do not substitute an always-allow policy or delete key versions needed by retained data/backups. See the [cryptography implementation boundaries](https://github.com/EIHRTeam/HyperBug/blob/main/docs/CRYPTOGRAPHY.md).
-
 
 Backup capture pins required keys before the snapshot begins and blocks rotation/removal until capture finishes. Backup expiry does not release those keys automatically: a trusted operator must confirm that all copies have been destroyed after the retention period. Provider backup/restore procedures remain pending; a restored database must be reconciled with current revocations and retained backups before use. These internal controls do not expose a public key-administration endpoint.
 

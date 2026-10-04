@@ -3,7 +3,7 @@ import type { AccountRegistrationStore } from '@hyperbug/application';
 import type { RegistrationRequest } from '@hyperbug/contracts';
 import type { AccountPasswordService } from '@hyperbug/security';
 import type { BoundSensitiveActionAdmission } from './sensitive-admission.ts';
-import { withDeadline } from './bounds.ts';
+import { storeWriteTimeoutMs, withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
 const accountRule = Object.freeze({
@@ -68,14 +68,17 @@ export async function registerAccount(input: {
     const principalId = crypto.randomUUID();
     // A stalled persistence adapter cannot leave the HTTP action open forever.
     // An already-dispatched D1 batch may still commit after this deadline.
-    const outcome = await withDeadline(request.signal, 5000, () =>
-      store.register({
-        principalId,
-        identityId: crypto.randomUUID(),
-        handle,
-        passwordRecord,
-        nowMs,
-      }),
+    const outcome = await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () =>
+        store.register({
+          principalId,
+          identityId: crypto.randomUUID(),
+          handle,
+          passwordRecord,
+          nowMs,
+        }),
     );
     if (
       outcome?.status !== 'existing' &&

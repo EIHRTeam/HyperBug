@@ -118,15 +118,18 @@ export async function generateAccountRecoveryCodes(input: {
       createdAt: nowMs,
       metadata: { v: 1 },
     });
-    await withAtomicAudit(request.signal, 5000, () =>
-      recoveryStore.replaceCodes(
-        {
-          identityId: session.identityId,
-          digests: digests.map((digest) => JSON.stringify(digest)),
-          nowMs,
-        },
-        audit,
-      ),
+    await withAtomicAudit(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () =>
+        recoveryStore.replaceCodes(
+          {
+            identityId: session.identityId,
+            digests: digests.map((digest) => JSON.stringify(digest)),
+            nowMs,
+          },
+          audit,
+        ),
     );
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
@@ -259,13 +262,16 @@ export async function recoverAccount(input: {
       password.hash(body.password, signal),
     );
     if (request.signal.aborted) throw new RequestFailure('RECOVERY_DENIED');
-    const replaced = await withDeadline(request.signal, 5000, () =>
-      passwordStore.replaceCredential({
-        identityId: credential.identityId,
-        expectedRevision: credential.revision,
-        record: passwordRecord,
-        nowMs,
-      }),
+    const replaced = await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () =>
+        passwordStore.replaceCredential({
+          identityId: credential.identityId,
+          expectedRevision: credential.revision,
+          record: passwordRecord,
+          nowMs,
+        }),
     );
     if (!replaced) throw new RequestFailure('RECOVERY_DENIED');
     await withDeadline(

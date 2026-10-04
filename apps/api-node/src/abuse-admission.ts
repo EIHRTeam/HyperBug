@@ -113,6 +113,7 @@ export function configureNodeAbuseAdmission(
   bindings: NodeAbuseBindings,
   environment: RuntimeConfig['environment'],
   expiredSessionRetentionSeconds = 86400,
+  authorizationTimeoutMs = 1000,
 ): NodeAbuseAdmission {
   const databaseUrl = bindings.databaseUrl;
   const socketDirectory = bindings.socketDirectory;
@@ -249,7 +250,11 @@ export function configureNodeAbuseAdmission(
   const keyProvider =
     keyProviderFile === undefined
       ? null
-      : createNodeKeyProvider(keyProviderFile, keyRegistry);
+      : createNodeKeyProvider(
+          keyProviderFile,
+          keyRegistry,
+          authorizationTimeoutMs,
+        );
   const auditAppend = createPostgresAuditRepository(pool).append;
   return Object.freeze({
     abuse: provider

@@ -10,7 +10,7 @@ import type {
   AuditAppend,
   BoundSensitiveActionAdmission,
 } from './sensitive-admission.ts';
-import { withDeadline } from './bounds.ts';
+import { storeWriteTimeoutMs, withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
 const accountRule = Object.freeze({
@@ -108,17 +108,20 @@ export async function enrollInitialStaff(input: {
       createdAt: nowMs,
       metadata: { v: 1 },
     });
-    const outcome = await withAtomicAudit(request.signal, 5000, () =>
-      store.enrollStaff(
-        {
-          principalId,
-          identityId,
-          handle,
-          passwordRecord,
-          nowMs,
-        },
-        audit,
-      ),
+    const outcome = await withAtomicAudit(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () =>
+        store.enrollStaff(
+          {
+            principalId,
+            identityId,
+            handle,
+            passwordRecord,
+            nowMs,
+          },
+          audit,
+        ),
     );
     if (outcome?.status !== 'enrolled')
       throw new RequestFailure('BOOTSTRAP_FORBIDDEN');

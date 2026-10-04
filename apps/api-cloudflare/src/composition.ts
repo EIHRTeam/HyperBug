@@ -81,6 +81,7 @@ export function createCloudflareApi(
     ? createWorkerKeyProvider(
         env.HYPERBUG_KEY_RING,
         createD1KeyRegistry(env.DB),
+        config.security.authorization.timeoutMs,
       )
     : null;
   const ingress = env.HYPERBUG_INGRESS_KEY
@@ -219,6 +220,9 @@ export function createCloudflareApi(
       return createMinimumPasswordService(
         keyProvider!,
         minimumTierPasswordPolicy,
+        // B15's ten-login burst exposed single-slot saturation; bound native
+        // PBKDF2 work separately from durable account/IP admission.
+        10,
       );
     })().catch((error: unknown) => {
       minimumService = null;
@@ -255,7 +259,7 @@ export function createCloudflareApi(
         {
           lockout: minimumTierAccountLockoutPolicy,
           rateTimeoutMs: config.security.authorization.timeoutMs,
-          lockoutTimeoutMs: 1000,
+          lockoutTimeoutMs: config.security.authorization.timeoutMs,
         },
         abuse && env.DB
           ? {

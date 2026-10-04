@@ -50,6 +50,7 @@ const abuse = configureNodeAbuseAdmission(
   },
   config.environment,
   config.security.retentionSeconds.expiredSessions,
+  config.security.authorization.timeoutMs,
 );
 const uploadStorage = await configureNodeUploads(
   abuse.uploadIntentStore,

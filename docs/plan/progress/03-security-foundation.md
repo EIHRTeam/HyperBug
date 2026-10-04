@@ -1773,3 +1773,15 @@ Every session affecting this module MUST append an entry following the [required
 - Verification: Focus10 plugin, Node33, Workers9 and media22 pass; composed final local matrix937 passed/18 optional-provider skips, with fresh-migration count corrected and focused2 pass. Types/lint/boundaries/build/db/docs/secret scan pass; query timing drift restored.
 - Decisions/blockers: Primary focused review only; actual Free metrics and final production sampling B15. G1/G2/13.G6 unchanged. Native CPU cannot be preempted and timeout never releases still-running capacity.
 - Next actions/cautions: Commit B14 then authorized B15 inventory/backup/migrations/metrics/cleanup; preserve exact dependency/schema/hooks, permission refresh before bytes, protected drafts and histories.
+
+### 2026-10-05 — Review remediation B15 measurements and cleanup
+
+- Scope and checklist IDs: Approved B13 deadlines, B14 sampling and B15 crypto/admission evidence; no new module/gate completion.
+- Progress: B1–B15 implementation/evidence/owned cleanup recorded; Free acceptance remains incomplete.
+- Change summary: Retained 50,000 iterations, configured registry/lockout timeouts and ten-operation Minimum root bound; measured failure/lockout and final 10/10 concurrency without resetting counters.
+- Files/artifacts: security/runtime composition, SECURITY-FOUNDATION/FREE-TIER-PROFILE, bilingual security guides; [B15 measurements and cleanup](../evidence/2026-10-05-b15-live-measurements.md), [receipt](../evidence/2026-10-05-b15-live-metrics.json), [remediation record](../evidence/2026-10-05-review-remediation.md).
+- Verification: Reused B14 matrix 937 passed / 18 optional-provider skips. B15 Minimum 7 passed; Node timeout/stall 2 passed / 31 intentionally unselected (earlier incorrect filter selected zero); actual R2 2 passed / 6 intentionally unselected. Live 10/10 logins, scoped path/cleanup checks pass; final compile/lint/build/docs/format/secret results in linked record. No broad rerun or new automated tests.
+- Decisions and deviations: 1,000 ms defaults cover observed D1 trips (537 samples, max 284 ms); production sampling 0.1, test/staging 1; ten native PBKDF2 slots at the Minimum root. Cleanup retains FK-required tombstones and permanent keys rather than disabling history protections. Primary focused review only; Sonnet unavailable.
+- Blockers/open questions: Billing attribution unavailable; instrumented login CPU 20–47 ms exceeds nominal Free 10 ms. Successful live CAPTCHA passkey login, Standard measurements and complete quota/recovery evidence unverified. G1/G2 remain closed, 13.G6 open.
+- Next actions: Obtain billing attribution and an uninstrumented Free CPU/quota sample; 13.G6 remains open.
+- Next-session cautions: Test Workers/domain removed and tails stopped; mutable owned rows absent. One deleted User, archived private project, deleted issue/three comments plus immutable history remain; two owned keys are removed identities. Never stage protected drafts/reviews/HANDOFF; preserve baseline rows, migrations, audit/history, no SPA or Argon2id performance work.

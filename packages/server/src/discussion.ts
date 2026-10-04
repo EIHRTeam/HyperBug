@@ -22,11 +22,14 @@ import {
   requireVisibleProject,
   type ProjectContext,
 } from './projects.ts';
-import { withDeadline } from './bounds.ts';
+import {
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+  withDeadline,
+} from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 import { mutationIdentityOf } from './mutation-identity.ts';
 
-const storeTimeoutMs = 1_000;
 const receiptValidityMs = 86_400_000;
 
 /** Everything the discussion handlers need, supplied by the app. */
@@ -154,8 +157,11 @@ async function loadComment(
   commentId: string,
   includeHidden: boolean,
 ): Promise<CommentRecord> {
-  const record = await withDeadline(request.signal, storeTimeoutMs, () =>
-    comments(context).get(projectId, issueId, commentId, { includeHidden }),
+  const record = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () =>
+      comments(context).get(projectId, issueId, commentId, { includeHidden }),
   );
   if (!record) throw new RequestFailure('NOT_FOUND');
   return record;
@@ -208,8 +214,10 @@ export async function createComment(
   };
   try {
     validateCommentIntent(intent, 'comment.create');
-    const outcome = await withDeadline(request.signal, 5_000, () =>
-      comments(context).create(intent),
+    const outcome = await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => comments(context).create(intent),
     );
     const record = await loadComment(
       request,
@@ -268,16 +276,21 @@ export async function listComments(
   )
     throw new RequestFailure('ISSUE_INVALID');
   try {
-    const page = await withDeadline(request.signal, storeTimeoutMs, () =>
-      comments(context).listByIssue({
-        projectId,
-        issueId,
-        ...(query.limit === undefined ? {} : { limit: query.limit as number }),
-        ...(query.cursor === undefined
-          ? {}
-          : { after: query.cursor as string }),
-        includeHidden,
-      }),
+    const page = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () =>
+        comments(context).listByIssue({
+          projectId,
+          issueId,
+          ...(query.limit === undefined
+            ? {}
+            : { limit: query.limit as number }),
+          ...(query.cursor === undefined
+            ? {}
+            : { after: query.cursor as string }),
+          includeHidden,
+        }),
     );
     return {
       comments: page.items.map((item) => commentContentView(item, false)),
@@ -334,10 +347,13 @@ async function requireIssueAccess(
   const moderator = principal
     ? await mayModerate(request, context, principal, projectId, issueId)
     : false;
-  const visible = await withDeadline(request.signal, storeTimeoutMs, () =>
-    context.issues!.issueVisible(projectId, issueId, {
-      includeHidden: moderator,
-    }),
+  const visible = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () =>
+      context.issues!.issueVisible(projectId, issueId, {
+        includeHidden: moderator,
+      }),
   );
   if (!visible) throw new RequestFailure('NOT_FOUND');
   return moderator;
@@ -441,8 +457,10 @@ export async function editComment(
     body: checkedBody(input.body),
   };
   try {
-    const outcome = await withDeadline(request.signal, 5_000, () =>
-      comments(context).edit(intent),
+    const outcome = await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => comments(context).edit(intent),
     );
     const record = await loadComment(
       request,
@@ -508,13 +526,16 @@ export async function deleteComment(
     commentId,
     'comment',
   );
-  const removed = await withDeadline(request.signal, storeTimeoutMs, () =>
-    comments(context).remove({
-      projectId,
-      id: commentId,
-      actorId: principal.principalId,
-      nowMs: Date.now(),
-    }),
+  const removed = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      comments(context).remove({
+        projectId,
+        id: commentId,
+        actorId: principal.principalId,
+        nowMs: Date.now(),
+      }),
   );
   if (!removed) throw new RequestFailure('NOT_FOUND');
 }
@@ -564,14 +585,17 @@ export async function moderateComment(
       ? input.moderation
       : null;
   if (moderation === null) throw new RequestFailure('ISSUE_INVALID');
-  const moderated = await withDeadline(request.signal, storeTimeoutMs, () =>
-    comments(context).moderate({
-      projectId,
-      id: commentId,
-      moderation,
-      actorId: principal.principalId,
-      nowMs: Date.now(),
-    }),
+  const moderated = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      comments(context).moderate({
+        projectId,
+        id: commentId,
+        moderation,
+        actorId: principal.principalId,
+        nowMs: Date.now(),
+      }),
   );
   if (!moderated) throw new RequestFailure('NOT_FOUND');
   return commentContentView(moderated, true);
@@ -613,8 +637,10 @@ export async function commentHistory(
     issueId,
     'issue',
   );
-  const page = await withDeadline(request.signal, storeTimeoutMs, () =>
-    comments(context).history(projectId, commentId),
+  const page = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => comments(context).history(projectId, commentId),
   );
   return {
     entries: page.entries.map((entry) => ({
@@ -672,21 +698,24 @@ async function reactionWrite(
     const targetFields = commentTarget
       ? { commentId: commentTarget.commentId }
       : { issueId: issueTarget!.issueId };
-    return await withDeadline(request.signal, storeTimeoutMs, () =>
-      add
-        ? context.reactions!.add({
-            projectId,
-            principalId: principal.principalId,
-            reaction: value,
-            nowMs: Date.now(),
-            ...targetFields,
-          })
-        : context.reactions!.remove({
-            projectId,
-            principalId: principal.principalId,
-            reaction: value,
-            ...targetFields,
-          }),
+    return await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () =>
+        add
+          ? context.reactions!.add({
+              projectId,
+              principalId: principal.principalId,
+              reaction: value,
+              nowMs: Date.now(),
+              ...targetFields,
+            })
+          : context.reactions!.remove({
+              projectId,
+              principalId: principal.principalId,
+              reaction: value,
+              ...targetFields,
+            }),
     );
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
@@ -738,10 +767,13 @@ export async function reactionCounts(
   if (!context.reactions) throw new RequestFailure('ISSUE_UNAVAILABLE');
   const commentTarget = 'commentId' in target ? target : null;
   const issueTarget = commentTarget === null ? target : null;
-  const counts = await withDeadline(request.signal, storeTimeoutMs, () =>
-    commentTarget
-      ? context.reactions!.commentCounts(projectId, [commentTarget.commentId])
-      : context.reactions!.issueCounts(projectId, [issueTarget!.issueId]),
+  const counts = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () =>
+      commentTarget
+        ? context.reactions!.commentCounts(projectId, [commentTarget.commentId])
+        : context.reactions!.issueCounts(projectId, [issueTarget!.issueId]),
   );
   const list = commentTarget
     ? (counts.get(commentTarget.commentId) ?? [])
@@ -828,16 +860,21 @@ export async function issueTimeline(
   )
     throw new RequestFailure('ISSUE_INVALID');
   try {
-    const page = await withDeadline(request.signal, storeTimeoutMs, () =>
-      context.timeline!.timeline({
-        projectId,
-        issueId,
-        ...(query.limit === undefined ? {} : { limit: query.limit as number }),
-        ...(query.cursor === undefined
-          ? {}
-          : { after: query.cursor as string }),
-        includeHidden,
-      }),
+    const page = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () =>
+        context.timeline!.timeline({
+          projectId,
+          issueId,
+          ...(query.limit === undefined
+            ? {}
+            : { limit: query.limit as number }),
+          ...(query.cursor === undefined
+            ? {}
+            : { after: query.cursor as string }),
+          includeHidden,
+        }),
     );
     return {
       items: page.items.map((item: TimelineItem) =>

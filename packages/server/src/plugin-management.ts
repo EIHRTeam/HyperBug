@@ -36,7 +36,11 @@ import { authenticateBearer, type BearerPrincipal } from './bearer-auth.ts';
 import { withAtomicAudit, auditRequestId } from './audit-emit.ts';
 import type { AuditAppend } from './sensitive-admission.ts';
 import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
-import { withDeadline } from './bounds.ts';
+import {
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+  withDeadline,
+} from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
 /** Everything the plugin-management handlers need, supplied by the app. */
@@ -49,8 +53,6 @@ export interface PluginManagementContext {
   readonly settings: PluginSettingsStore | null;
   readonly auditAppend: AuditAppend | null;
 }
-
-const storeTimeoutMs = 1_000;
 
 /**
  * Plugin administration is deployment-level sensitive administration
@@ -95,7 +97,7 @@ function loadRecord(
   request: Request,
   id: string,
 ): Promise<PluginRegistryRecord> {
-  return withDeadline(request.signal, storeTimeoutMs, () =>
+  return withDeadline(request.signal, storeReadTimeoutMs(request.signal), () =>
     registry(context).load(id),
   ).then((record) => {
     if (!record) throw new RequestFailure('NOT_FOUND');
@@ -116,8 +118,10 @@ async function storedConfiguration(
   publicValues: Record<string, string | number | boolean>;
   secretPresent: string[];
 }> {
-  const rows = await withDeadline(request.signal, storeTimeoutMs, () =>
-    settings(context).list(manifest.id),
+  const rows = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => settings(context).list(manifest.id),
   );
   const publicValues: Record<string, string | number | boolean> = {};
   const secretPresent: string[] = [];
@@ -150,8 +154,10 @@ export async function registerPlugin(
     hostApiVersion: PLUGIN_API_VERSION,
   });
   if (!decision.ok) throw new RequestFailure('PLUGIN_INVALID');
-  const existing = await withDeadline(request.signal, storeTimeoutMs, () =>
-    registry(context).load(decision.manifest.id),
+  const existing = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => registry(context).load(decision.manifest.id),
   );
   if (existing) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
   const nowMs = Date.now();
@@ -167,18 +173,21 @@ export async function registerPlugin(
     createdAt: nowMs,
     metadata: { v: 1, version: decision.manifest.version },
   });
-  const outcome = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
-    registry(context).insert(
-      {
-        id: decision.manifest.id,
-        version: decision.manifest.version,
-        state: 'registered',
-        manifest: decision.manifest,
-        registeredAtMs: nowMs,
-        updatedAtMs: nowMs,
-      },
-      audit,
-    ),
+  const outcome = await withAtomicAudit(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      registry(context).insert(
+        {
+          id: decision.manifest.id,
+          version: decision.manifest.version,
+          state: 'registered',
+          manifest: decision.manifest,
+          registeredAtMs: nowMs,
+          updatedAtMs: nowMs,
+        },
+        audit,
+      ),
   );
   if (outcome === 'conflict') throw new RequestFailure('PLUGIN_STATE_CONFLICT');
   return pluginRegistryView({
@@ -197,8 +206,10 @@ export async function listPlugins(
   context: PluginManagementContext,
 ): Promise<PluginRegistryView[]> {
   await requirePluginAdministrator(request, context);
-  const records = await withDeadline(request.signal, storeTimeoutMs, () =>
-    registry(context).list(),
+  const records = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => registry(context).list(),
   );
   return records.map(pluginRegistryView);
 }
@@ -253,18 +264,21 @@ export async function enablePlugin(
     createdAt: Date.now(),
     metadata: { v: 1 },
   });
-  const updated = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
-    registry(context).transition(
-      {
-        id,
-        state: 'enabled',
-        version: record.version,
-        manifest: record.manifest,
-        nowMs: Date.now(),
-        expectedState: record.state,
-      },
-      audit,
-    ),
+  const updated = await withAtomicAudit(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      registry(context).transition(
+        {
+          id,
+          state: 'enabled',
+          version: record.version,
+          manifest: record.manifest,
+          nowMs: Date.now(),
+          expectedState: record.state,
+        },
+        audit,
+      ),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
   return pluginRegistryView(updated);
@@ -293,18 +307,21 @@ export async function disablePlugin(
     createdAt: Date.now(),
     metadata: { v: 1 },
   });
-  const updated = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
-    registry(context).transition(
-      {
-        id,
-        state: 'disabled',
-        version: record.version,
-        manifest: record.manifest,
-        nowMs: Date.now(),
-        expectedState: 'enabled',
-      },
-      audit,
-    ),
+  const updated = await withAtomicAudit(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      registry(context).transition(
+        {
+          id,
+          state: 'disabled',
+          version: record.version,
+          manifest: record.manifest,
+          nowMs: Date.now(),
+          expectedState: 'enabled',
+        },
+        audit,
+      ),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
   return pluginRegistryView(updated);
@@ -341,19 +358,22 @@ export async function upgradePlugin(
     createdAt: Date.now(),
     metadata: { v: 1, version: decision.manifest.version },
   });
-  const updated = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
-    registry(context).transition(
-      {
-        id,
-        state: record.state,
-        version: decision.manifest.version,
-        manifest: decision.manifest,
-        nowMs: Date.now(),
-        expectedState: record.state,
-        expectedVersion: record.version,
-      },
-      audit,
-    ),
+  const updated = await withAtomicAudit(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      registry(context).transition(
+        {
+          id,
+          state: record.state,
+          version: decision.manifest.version,
+          manifest: decision.manifest,
+          nowMs: Date.now(),
+          expectedState: record.state,
+          expectedVersion: record.version,
+        },
+        audit,
+      ),
   );
   if (!updated) throw new RequestFailure('PLUGIN_STATE_CONFLICT');
   return pluginRegistryView(updated);
@@ -390,8 +410,10 @@ export async function uninstallPlugin(
       policy: policyInput,
     },
   });
-  const removed = await withAtomicAudit(request.signal, storeTimeoutMs, () =>
-    registry(context).remove(id, audit, policyInput === 'delete'),
+  const removed = await withAtomicAudit(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () => registry(context).remove(id, audit, policyInput === 'delete'),
   );
   if (!removed) throw new RequestFailure('NOT_FOUND');
 }
@@ -419,8 +441,10 @@ export async function configurePlugin(
   if (typeof secrets !== 'object' || secrets === null || Array.isArray(secrets))
     throw new RequestFailure('PLUGIN_INVALID');
   const nowMs = Date.now();
-  const existing = await withDeadline(request.signal, storeTimeoutMs, () =>
-    settings(context).list(record.id),
+  const existing = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => settings(context).list(record.id),
   );
   const rowIds = new Map(existing.map((row) => [row.key, row.id]));
   const writes: {
@@ -497,26 +521,29 @@ export async function configurePlugin(
       secretCount: writes.filter((write) => write.kind === 'secret').length,
     },
   });
-  await withAtomicAudit(request.signal, storeTimeoutMs, () =>
-    settings(context).configure(
-      writes.map((write) => ({
-        id: write.rowId,
-        pluginId: record.id,
-        key: write.key,
-        kind: write.kind,
-        ...(write.kind === 'public'
-          ? {
-              publicValue: (write.record as { publicValue: string })
-                .publicValue,
-            }
-          : {
-              secretRecord: (write.record as { secretRecord: unknown })
-                .secretRecord,
-            }),
-        updatedAtMs: nowMs,
-      })),
-      audit,
-    ),
+  await withAtomicAudit(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      settings(context).configure(
+        writes.map((write) => ({
+          id: write.rowId,
+          pluginId: record.id,
+          key: write.key,
+          kind: write.kind,
+          ...(write.kind === 'public'
+            ? {
+                publicValue: (write.record as { publicValue: string })
+                  .publicValue,
+              }
+            : {
+                secretRecord: (write.record as { secretRecord: unknown })
+                  .secretRecord,
+              }),
+          updatedAtMs: nowMs,
+        })),
+        audit,
+      ),
   );
   // Configuration audit carries counts only — no setting key or value ever
   // enters the audit trail (SECURITY §110–116 redaction baseline).
@@ -535,8 +562,10 @@ export async function readConfiguration(
   await requirePluginAdministrator(request, context);
   const record = await loadRecord(context, request, id);
   const declared = new Map(record.manifest.settings.map((s) => [s.key, s]));
-  const rows = await withDeadline(request.signal, storeTimeoutMs, () =>
-    settings(context).list(record.id),
+  const rows = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => settings(context).list(record.id),
   );
   return rows.map((row) => {
     const setting = declared.get(row.key);

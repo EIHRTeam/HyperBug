@@ -23,7 +23,11 @@ import type {
 } from '@hyperbug/security';
 import { authenticateBearer, type BearerPrincipal } from './bearer-auth.ts';
 import { credentialFactsOf, requireAuthorizedAction } from './authorization.ts';
-import { withDeadline } from './bounds.ts';
+import {
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+  withDeadline,
+} from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 
 /** Everything the project handlers need, supplied by the app. */
@@ -37,8 +41,6 @@ export interface ProjectContext {
   readonly projects: ProjectStore | null;
   readonly taxonomy: TaxonomyStore | null;
 }
-
-const storeTimeoutMs = 1_000;
 
 function store(context: ProjectContext): ProjectStore {
   if (!context.projects) throw new RequestFailure('PROJECT_UNAVAILABLE');
@@ -70,8 +72,10 @@ export async function createProject(
   const principal = await bearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
   if (!context.administration) throw new RequestFailure('PROJECT_UNAVAILABLE');
-  const actor = await withDeadline(request.signal, storeTimeoutMs, () =>
-    context.administration!.loadPrincipal(principal.principalId),
+  const actor = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => context.administration!.loadPrincipal(principal.principalId),
   );
   if (!actor || actor.kind !== 'staff' || actor.status !== 'active')
     throw new RequestFailure('FORBIDDEN');
@@ -87,19 +91,24 @@ export async function createProject(
   if (visibility !== 'public' && visibility !== 'private')
     throw new RequestFailure('PROJECT_INVALID');
   const id = crypto.randomUUID();
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).create({
-      id,
-      slug: input.slug as string,
-      name: input.name as string,
-      visibility,
-      administratorPrincipalId: principal.principalId,
-      nowMs: Date.now(),
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).create({
+        id,
+        slug: input.slug as string,
+        name: input.name as string,
+        visibility,
+        administratorPrincipalId: principal.principalId,
+        nowMs: Date.now(),
+      }),
   );
   if (outcome === 'slug-conflict') throw new RequestFailure('PROJECT_CONFLICT');
-  const record = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).load(id),
+  const record = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).load(id),
   );
   if (!record) throw new RequestFailure('PROJECT_UNAVAILABLE');
   return projectView(record);
@@ -116,8 +125,10 @@ export async function requireVisibleProject(
   context: ProjectContext,
   projectId: string,
 ): Promise<void> {
-  const record = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).load(projectId),
+  const record = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).load(projectId),
   );
   if (!record) throw new RequestFailure('NOT_FOUND');
   seedAuthorizationProject(request, context.authorizationResolver, projectId, {
@@ -131,7 +142,7 @@ export async function requireVisibleProject(
       throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
     const membership = await withDeadline(
       request.signal,
-      storeTimeoutMs,
+      storeReadTimeoutMs(request.signal),
       () =>
         requestAuthorizationDependencies(
           request,
@@ -172,8 +183,10 @@ export async function readProject(
     signal: request.signal,
     credential: credentialFactsOf(principal),
   });
-  const record = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).load(projectId),
+  const record = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => store(context).load(projectId),
   );
   if (!record) throw new RequestFailure('NOT_FOUND');
   return projectView(record);
@@ -223,17 +236,20 @@ export async function configureProject(
     input.visibility !== 'private'
   )
     throw new RequestFailure('PROJECT_INVALID');
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).configure({
-      id: projectId,
-      expectedRevision: input.expectedRevision as number,
-      name: input.name === undefined ? null : (input.name as string),
-      visibility:
-        input.visibility === undefined
-          ? null
-          : (input.visibility as 'public' | 'private'),
-      nowMs: Date.now(),
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).configure({
+        id: projectId,
+        expectedRevision: input.expectedRevision as number,
+        name: input.name === undefined ? null : (input.name as string),
+        visibility:
+          input.visibility === undefined
+            ? null
+            : (input.visibility as 'public' | 'private'),
+        nowMs: Date.now(),
+      }),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'conflict')
@@ -270,12 +286,15 @@ export async function archiveProject(
     (expectedRevision as number) < 1
   )
     throw new RequestFailure('PROJECT_INVALID');
-  const outcome = await withDeadline(request.signal, storeTimeoutMs, () =>
-    store(context).archive({
-      id: projectId,
-      expectedRevision: expectedRevision as number,
-      nowMs: Date.now(),
-    }),
+  const outcome = await withDeadline(
+    request.signal,
+    storeWriteTimeoutMs(request.signal),
+    () =>
+      store(context).archive({
+        id: projectId,
+        expectedRevision: expectedRevision as number,
+        nowMs: Date.now(),
+      }),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'conflict')

@@ -34,11 +34,14 @@ import {
   requireVisibleProject,
   type ProjectContext,
 } from './projects.ts';
-import { withDeadline } from './bounds.ts';
+import {
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+  withDeadline,
+} from './bounds.ts';
 import { RequestFailure } from './errors.ts';
 import { mutationIdentityOf } from './mutation-identity.ts';
 
-const storeTimeoutMs = 1_000;
 const receiptValidityMs = 86_400_000;
 
 /** Everything the issue handlers need, supplied by the app. */
@@ -209,12 +212,16 @@ async function detailView(
   issueId: string,
   includeHidden: boolean,
 ): Promise<IssueView> {
-  const issue = await withDeadline(request.signal, storeTimeoutMs, () =>
-    repository(context).getIssue(projectId, issueId, { includeHidden }),
+  const issue = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => repository(context).getIssue(projectId, issueId, { includeHidden }),
   );
   if (!issue) throw new RequestFailure('NOT_FOUND');
-  const relations = await withDeadline(request.signal, storeTimeoutMs, () =>
-    repository(context).relations(projectId, [issueId]),
+  const relations = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () => repository(context).relations(projectId, [issueId]),
   );
   return viewOf(
     issue,
@@ -308,12 +315,15 @@ export async function createIssue(
   if (input.form) {
     if (!context.contentDefinitions)
       throw new RequestFailure('CONTENT_UNAVAILABLE');
-    const form = await withDeadline(request.signal, storeTimeoutMs, () =>
-      context.contentDefinitions!.getForm(
-        projectId,
-        input.form!.id,
-        input.form!.version,
-      ),
+    const form = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () =>
+        context.contentDefinitions!.getForm(
+          projectId,
+          input.form!.id,
+          input.form!.version,
+        ),
     );
     if (!form) throw new RequestFailure('FORM_VERSION_STALE');
     try {
@@ -366,8 +376,10 @@ export async function createIssue(
   };
   let created: { id: string };
   try {
-    const outcome = await withDeadline(request.signal, 5_000, () =>
-      repository(context).createIssue(intent),
+    const outcome = await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => repository(context).createIssue(intent),
     );
     // A replayed receipt returns the original aggregate's snapshot, so the
     // response must address the original id, never the fresh one.
@@ -425,24 +437,32 @@ export async function listIssues(
   )
     throw new RequestFailure('ISSUE_INVALID');
   try {
-    const page = await withDeadline(request.signal, storeTimeoutMs, () =>
-      repository(context).listIssues({
-        projectId,
-        ...(query.state === undefined
-          ? {}
-          : { state: query.state as 'open' | 'closed' }),
-        ...(query.limit === undefined ? {} : { limit: query.limit as number }),
-        ...(query.cursor === undefined
-          ? {}
-          : { after: query.cursor as string }),
-        includeHidden,
-      }),
+    const page = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () =>
+        repository(context).listIssues({
+          projectId,
+          ...(query.state === undefined
+            ? {}
+            : { state: query.state as 'open' | 'closed' }),
+          ...(query.limit === undefined
+            ? {}
+            : { limit: query.limit as number }),
+          ...(query.cursor === undefined
+            ? {}
+            : { after: query.cursor as string }),
+          includeHidden,
+        }),
     );
-    const relations = await withDeadline(request.signal, storeTimeoutMs, () =>
-      repository(context).relations(
-        projectId,
-        page.items.map((item) => item.id),
-      ),
+    const relations = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () =>
+        repository(context).relations(
+          projectId,
+          page.items.map((item) => item.id),
+        ),
     );
     return {
       items: page.items.map((item) =>
@@ -494,8 +514,11 @@ export async function editIssue(
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
-  const issue = await withDeadline(request.signal, storeTimeoutMs, () =>
-    repository(context).getIssue(projectId, issueId, { includeHidden: true }),
+  const issue = await withDeadline(
+    request.signal,
+    storeReadTimeoutMs(request.signal),
+    () =>
+      repository(context).getIssue(projectId, issueId, { includeHidden: true }),
   );
   if (!issue) throw new RequestFailure('NOT_FOUND');
   const ownVisible =
@@ -532,8 +555,10 @@ export async function editIssue(
     body: input.body,
   };
   try {
-    await withDeadline(request.signal, 5_000, () =>
-      repository(context).editIssue(intent),
+    await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => repository(context).editIssue(intent),
     );
   } catch (error) {
     mapDomainError(error);
@@ -627,8 +652,10 @@ async function stateChange(
         expectedRevision,
         reason: input.reason as CloseIssueIntent['reason'],
       };
-      await withDeadline(request.signal, 5_000, () =>
-        repository(context).closeIssue(intent),
+      await withDeadline(
+        request.signal,
+        storeWriteTimeoutMs(request.signal),
+        () => repository(context).closeIssue(intent),
       );
     } else {
       const intent: ReopenIssueIntent = {
@@ -636,8 +663,10 @@ async function stateChange(
         id: issueId,
         expectedRevision,
       };
-      await withDeadline(request.signal, 5_000, () =>
-        repository(context).reopenIssue(intent),
+      await withDeadline(
+        request.signal,
+        storeWriteTimeoutMs(request.signal),
+        () => repository(context).reopenIssue(intent),
       );
     }
   } catch (error) {
@@ -681,8 +710,10 @@ export async function setIssueLabels(
     labelIds: checkedUuidList(input.labelIds, maxIssueLabels),
   };
   try {
-    await withDeadline(request.signal, 5_000, () =>
-      repository(context).setIssueLabels(intent),
+    await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => repository(context).setIssueLabels(intent),
     );
   } catch (error) {
     mapDomainError(error);
@@ -725,8 +756,10 @@ export async function setIssueAssignees(
     assigneeIds: checkedUuidList(input.assigneeIds, maxIssueAssignees),
   };
   try {
-    await withDeadline(request.signal, 5_000, () =>
-      repository(context).setIssueAssignees(intent),
+    await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => repository(context).setIssueAssignees(intent),
     );
   } catch (error) {
     mapDomainError(error);
@@ -769,8 +802,10 @@ export async function setIssueType(
     typeId: checkedOptionalUuid(input.typeId),
   };
   try {
-    await withDeadline(request.signal, 5_000, () =>
-      repository(context).setIssueType(intent),
+    await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => repository(context).setIssueType(intent),
     );
   } catch (error) {
     mapDomainError(error);
@@ -813,8 +848,10 @@ export async function setIssueMilestone(
     milestoneId: checkedOptionalUuid(input.milestoneId),
   };
   try {
-    await withDeadline(request.signal, 5_000, () =>
-      repository(context).setIssueMilestone(intent),
+    await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => repository(context).setIssueMilestone(intent),
     );
   } catch (error) {
     mapDomainError(error);
