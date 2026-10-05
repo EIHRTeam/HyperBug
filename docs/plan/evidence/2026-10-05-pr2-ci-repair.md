@@ -39,7 +39,7 @@ Focused local verification passes on Node **24.21.0**, Vitest **5.0.1**, Minifla
 - `node tooling/postgres-test-cluster.mjs node node_modules/vitest/vitest.mjs run --project postgres tests/postgres/issue-route.test.ts tests/postgres/repository.test.ts -t 'delivers the issue lifecycle|atomically projects issue/comment'`: **2 passed / 156 intentionally unselected**.
 - `corepack pnpm typecheck`, `corepack pnpm lint`, scoped `oxfmt --check`, local links and `git diff --check`: passed.
 
-Logs remain ignored under `.local/ci-fixes/`. No new automated case or broad local rerun. New-head hosted results are pending. No acceptance gate or checklist is closed by this repair; 01.V4 still requires its complete main-push/open/update evidence, and release acceptance remainders retain their existing scope.
+Logs remain ignored under `.local/ci-fixes/`. No new automated case or broad local rerun. Hosted outcomes are recorded below. No acceptance gate or checklist is closed by this repair; 01.V4 still requires its complete main-push/open/update evidence, and release acceptance remainders retain their existing scope.
 
 ## First hosted repair and singleton-plan correction
 
@@ -53,4 +53,14 @@ The follow-up reads structured PostgreSQL plan nodes, permits a sequential scan 
 
 Context7 `/websites/postgresql_18` was resolved and queried on **2026-10-05**. [Official EXPLAIN documentation](https://www.postgresql.org/docs/18/using-explain.html) explains why small tables can favor sequential scans, randomized statistics, plan nesting and actual/filtered row counts.
 
-Focused follow-up: `node tooling/postgres-test-cluster.mjs node node_modules/vitest/vitest.mjs run --project postgres tests/postgres/repository.test.ts -t 'measures fresh registry reads'` — **one passed / 156 intentionally unselected** on real PostgreSQL 18.6. Its actual plan uses the three required indexes and the one-row control scan; one statement per snapshot, local median **0.114 ms** / p95 **0.206 ms**. Typecheck/lint/scoped formatting/diff checks pass. No automated case was added. The next hosted head must be verified before completion.
+Focused follow-up: `node tooling/postgres-test-cluster.mjs node node_modules/vitest/vitest.mjs run --project postgres tests/postgres/repository.test.ts -t 'measures fresh registry reads'` — **one passed / 156 intentionally unselected** on real PostgreSQL 18.6. Its actual plan uses the three required indexes and the one-row control scan; one statement per snapshot, local median **0.114 ms** / p95 **0.206 ms**. Typecheck/lint/scoped formatting/diff checks pass. No automated case was added.
+
+## Verified repaired code
+
+Follow-up code head: `f13d7f17971bfe7d4bf3b604c38c5287092b4b8d`. `gh pr view 2 --json headRefOid,statusCheckRollup`, both run metadata and individual job logs verify:
+
+- [PR backend run](https://github.com/EIHRTeam/HyperBug/actions/runs/37266055778) and [push backend run](https://github.com/EIHRTeam/HyperBug/actions/runs/37266050644): **success**, with all four jobs successful in each run. Workerd **269 passed / two optional-provider skips** and PostgreSQL **189 passed / two optional-provider skips** in each run. Both quality and Node runtime jobs pass.
+- [CodeQL analysis](https://github.com/EIHRTeam/HyperBug/actions/runs/37266055745) and [CodeQL result check](https://github.com/EIHRTeam/HyperBug/runs/111623286721): **success**, zero annotations/new alerts. Security API alerts 1–5 remain **fixed**; no open PR alert.
+- [Documentation](https://github.com/EIHRTeam/HyperBug/actions/runs/37266055851): build **success**; deployment is deliberately **skipped** by the PR condition.
+
+This finishes the user-directed check repair and inspection of the CodeQL bot's comments. The final documentation-only commit records these results; inspect current PR head/check state before reusing the evidence. No migration, rollout, baseline-policy change, later audit or gate completion is implied. Protected user drafts/reports/HANDOFF remain untouched and untracked.

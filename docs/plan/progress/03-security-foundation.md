@@ -1789,11 +1789,11 @@ Every session affecting this module MUST append an entry following the [required
 ### 2026-10-05 — PR 2 singleton registry-plan correction
 
 - Scope and checklist IDs: User-directed failed-CI repair; 03.2d key-registry query evidence and 02.3d performance-fixture ownership. No application/schema or acceptance change.
-- Progress: Diagnosed the first repaired-head PR PostgreSQL failure. All original linked CodeQL/workerd failures are already cleared on bbc61f2.
+- Progress: Diagnosed the first repaired-head PR PostgreSQL failure. Committed as f13d7f1; both complete backend runs pass, including 189 PostgreSQL passes/two optional-provider skips in each. CodeQL and docs pass; all five bot findings remain fixed.
 - Change summary: Inspect structured EXPLAIN nodes instead of rejecting every Seq Scan. Only CHECK/PK-constrained key_registry_control may scan, with at most one returned row and zero filtered rows; all three large-table indexes, large-table scan prohibitions and one-statement bounds remain. Analyze the singleton fixture to exercise that plan locally.
 - Files/artifacts: tests/fixtures/key-registry-contract.ts; [PR 2 repair evidence](../evidence/2026-10-05-pr2-ci-repair.md#first-hosted-repair-and-singleton-plan-correction); ignored local/hosted receipts.
 - Verification: Real isolated PostgreSQL 18.6 focused registry measurement one passed/156 intentionally unselected, exercising the one-row Seq Scan and three required indexed relations. Local median 0.114 ms/p95 0.206 ms, one statement/snapshot. Typecheck/lint/scoped formatting/diff passed; PostgreSQL 18 Context7 resolve/query and source/migration review recorded. No new automated case or broad local rerun.
 - Decisions and deviations: PostgreSQL's efficient bounded singleton scan is allowed; no enable_seqscan override, index forcing, weakened large-table bound, schema/data change or new security policy. D1 branch unchanged.
-- Blockers/open questions: None for the code correction; next-head hosted checks remain to be verified.
-- Next actions: Commit/push the correction to PR 2 and verify all hosted checks on the current head.
+- Blockers/open questions: None for this repair. Broader module/release evidence requirements remain unchanged.
+- Next actions: CI repair is complete; preserve the relation/row bounds and verify current head before reusing the linked hosted evidence.
 - Next-session cautions: Preserve singleton CHECK/primary-key invariants and all large-table index assertions. Do not stage protected drafts/reviews/HANDOFF or alter release gates.
