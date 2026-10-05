@@ -954,3 +954,15 @@ Final bounded read-only actual named test-D1 inventory: **0 upload intents, 0 at
 - Blockers/open questions: Billing attribution unavailable; instrumented login CPU 20–47 ms exceeds nominal Free 10 ms. Successful live CAPTCHA passkey login, Standard measurements and complete quota/recovery evidence unverified. G1/G2 remain closed, 13.G6 open.
 - Next actions: Keep production scanner/CORS/historical cleanup remainders open; no broader storage support claim.
 - Next-session cautions: Test Workers/domain removed and tails stopped; mutable owned rows absent. One deleted User, archived private project, deleted issue/three comments plus immutable history remain; two owned keys are removed identities. Never stage protected drafts/reviews/HANDOFF; preserve baseline rows, migrations, audit/history, no SPA or Argon2id performance work.
+
+### 2026-10-05 — PR 2 check repair
+
+- Scope and checklist IDs: User-directed correction to 01.3b CI and 07.1i/V1 content verification; inspect existing 01.3f/V4 SAST results without closing their broader requirements.
+- Progress: Diagnosed both linked workerd failures and all five CodeQL alerts. All five bot inline comments match those alerts; its setup notice adds no finding. Focused local validation passes; new-head hosted runs are pending.
+- Change summary: Native Node Markdown measurement avoids Vite module-runner overhead while retaining every fixture and budget; content leakage assertions handle tag casing; scanner descendant source is a fixed literal. No application/policy/dependency change or new automated case.
+- Files/artifacts: Five test/fixture paths and [PR 2 failure/repair evidence](../evidence/2026-10-05-pr2-ci-repair.md).
+- Verification: Original GitHub logs, check annotations and Security API test classifications inspected. Baseline local Markdown suite: two passes. Standalone Node profiling and current Context7 references recorded in the evidence; changed workerd focus 4 passed/170 intentionally unselected, real PostgreSQL 18.6 focus 2/156 intentionally unselected, scanner 13 passed, typecheck/lint/scoped format/links/diff passed. Native Node/workerd maximum-GFM pages 2,611/1,919 ms retain the 8,000 ms ceiling.
+- Decisions and deviations: Preserve 1,000 ms single/8,000 ms page ceilings, raw-HTML parsing, final sanitization, real process-group termination, and all existing gate states. No CodeQL exclusions or alert dismissals.
+- Blockers/open questions: None for the repair; hosted results remain to be verified.
+- Next actions: Commit/push the repair to PR 2 and verify current-head hosted results.
+- Next-session cautions: Never stage protected SECURITY/review/HANDOFF drafts. This CI repair does not resume later audits, SPA or release acceptance work.

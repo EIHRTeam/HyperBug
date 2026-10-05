@@ -139,10 +139,12 @@ it('cancels stalled input and returns before a TERM-resistant child is physicall
   expect(() => process.kill(run.pid!, 0)).toThrow();
 });
 it('kills the actual detached process group, including a TERM-resistant descendant', async () => {
-  const childCode =
-    "process.on('SIGTERM',()=>{}); process.stdout.write('descendant-ready'); setInterval(()=>{},1000)";
   const run = launch(
-    `const {spawn}=require('node:child_process'); process.on('SIGTERM',()=>{}); const child=spawn(process.execPath,['-e',${JSON.stringify(childCode)}],{stdio:['ignore','pipe','inherit']}); child.stdout.on('data',()=>process.stdout.write(String(child.pid))); setInterval(()=>{},1000)`,
+    `const { spawn } = require('node:child_process');
+process.on('SIGTERM', () => {});
+const child = spawn(process.execPath, ['-e', "process.on('SIGTERM',()=>{}); process.stdout.write('descendant-ready'); setInterval(()=>{},1000)"], { stdio: ['ignore', 'pipe', 'inherit'] });
+child.stdout.on('data', () => process.stdout.write(String(child.pid)));
+setInterval(() => {}, 1000);`,
     { timeoutMs: 600 },
   );
   const result = await run.result;

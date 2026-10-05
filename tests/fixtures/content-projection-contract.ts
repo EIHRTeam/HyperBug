@@ -219,7 +219,7 @@ export function contentProjectionContract(
         ]),
       );
       expect(data).not.toMatch(
-        /bodyTree|<script>|<strong>|hyperbug-content|hidden-script/,
+        /bodyTree|<script\b|<strong\b|hyperbug-content|hidden-script/i,
       );
     }
     expect(

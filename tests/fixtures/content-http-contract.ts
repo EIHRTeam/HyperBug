@@ -51,7 +51,7 @@ export async function contentHttpContract(options: {
   );
   expect(created.headers.get('etag')).toBe(issue.representationEtag);
   expect(JSON.stringify(issue.bodyTree)).not.toMatch(
-    /secret-script|<script>|"tagName":"svg"|"src":/,
+    /secret-script|<script\b|"tagName":"svg"|"src":/i,
   );
   const path = `/api/v1/projects/${projectId}/issues/${issue.id}`;
   const concurrent = await Promise.all(
@@ -71,7 +71,7 @@ export async function contentHttpContract(options: {
   )[0]!;
   expect(stored.body).toBe(body);
   expect(stored.body_text).not.toMatch(
-    /secret-script|<script>|bodyTree|tagName/,
+    /secret-script|<script\b|bodyTree|tagName/i,
   );
   expect(stored.body_text_version).toBe('hyperbug-text-1');
   for (const table of ['outbox', 'mutation_receipts', 'timeline_events'])
@@ -79,7 +79,7 @@ export async function contentHttpContract(options: {
       JSON.stringify(
         await query(`SELECT * FROM ${table} WHERE project_id = ?`, [projectId]),
       ),
-    ).not.toMatch(/bodyTree|secret-script|<script>|hyperbug-content-/);
+    ).not.toMatch(/bodyTree|secret-script|<script\b|hyperbug-content-/i);
 
   // A deliberate persisted projection sentinel proves list reads use the
   // stored text rather than parsing the canonical body again.
