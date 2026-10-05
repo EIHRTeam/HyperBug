@@ -598,6 +598,7 @@ export async function measureKeyRegistry(
   await query('ANALYZE key_versions');
   await query('ANALYZE protected_records');
   await query('ANALYZE key_backup_references');
+  if (profile === 'postgres') await query('ANALYZE key_registry_control');
   const offset = measuredQueries().length;
   const snapshot = await registry.inspect(signal());
   expect(snapshot.keys).toHaveLength(3);
@@ -617,8 +618,28 @@ export async function measureKeyRegistry(
     'key_backup_reference_key',
   ])
     expect(encodedPlan).toContain(index);
-  if (profile === 'postgres') expect(encodedPlan).not.toContain('Seq Scan');
-  else {
+  if (profile === 'postgres') {
+    type PlanNode = {
+      'Node Type': string;
+      'Relation Name'?: string;
+      'Actual Rows': number;
+      'Rows Removed by Filter'?: number;
+      Plans?: PlanNode[];
+    };
+    const explained = plan[0]!['QUERY PLAN'] as { Plan: PlanNode }[];
+    const pending = [explained[0]!.Plan];
+    while (pending.length) {
+      const node = pending.pop()!;
+      if (node['Node Type'] === 'Seq Scan') {
+        // The CHECK/PK-constrained control table has at most one row.
+        // PostgreSQL can prefer its one-page scan to a primary-key lookup.
+        expect(node['Relation Name']).toBe('key_registry_control');
+        expect(node['Actual Rows']).toBeLessThanOrEqual(1);
+        expect(node['Rows Removed by Filter'] ?? 0).toBe(0);
+      }
+      pending.push(...(node.Plans ?? []));
+    }
+  } else {
     expect(encodedPlan).not.toContain('SCAN r');
     expect(encodedPlan).not.toContain('SCAN b');
   }
