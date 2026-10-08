@@ -460,3 +460,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for this repair. Broader module/release evidence requirements remain unchanged.
 - Next actions: CI repair is complete; preserve the relation/row bounds and verify current head before reusing the linked hosted evidence.
 - Next-session cautions: Preserve singleton CHECK/primary-key invariants and all large-table index assertions. Do not stage protected drafts/reviews/HANDOFF or alter release gates.
+
+### 2026-10-09 — Module 08 B1 dependency handoff
+
+- Scope and checklist IDs: Module 08 08.1a–e public-semantics batch; no owning-module checklist closure.
+- Progress: Runtime-independent AST v1 and bounds export supplement the existing public contract. No schema or normative specification is modified.
+- Change summary: Documented dependency boundary and prepared shared search contract/fixtures; details in [Module 08 progress](08-search-and-query.md).
+- Files/artifacts: This record; `docs/SEARCH-SPEC.md`, contracts search types and shared search corpus; [B1 evidence](../evidence/08-search-validation.md).
+- Verification: One B1 pass: types/lint/boundaries/scoped TypeScript formatting/diff and nine new-document local links pass; unit 354/contract 1 pass. Exact commands in linked evidence; new parser fixtures, runtime search and hosted behavior remain unverified.
+- Decisions and deviations: Follow the approved Module 08 handoff scope and README's handler-before-dispatch interpretation. No normative baseline deviation.
+- Blockers/open questions: User approval of specification/bounds/AST/endpoint shape precedes B2; runtime and dispatch evidence remain open.
+- Next actions: Approve the concrete B1 contract, then execute Module 08 B2–B4 within the named checklist boundaries.
+- Next-session cautions: Preserve existing owning-module status/remainders, protected drafts and all gate states; do not infer deployment/Free-plan acceptance from local checks.

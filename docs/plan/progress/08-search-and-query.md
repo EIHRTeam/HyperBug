@@ -6,30 +6,30 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Not started
+- Status: In progress
 - Delivery scope: MVP backend
 - Prerequisites: 07 complete; event contracts from 02, async dispatch completed in 09.
-- Implementation started: No.
-- Completed implementation checklist IDs: None.
-- Active/next checklist group: 08.1, after prerequisites are satisfied.
-- Last updated: 2026-09-17.
-- Blocking issues discovered: None during planning; prerequisite completion is still required.
-- Evidence: Planning documents only; no implementation or runtime validation yet.
+- Implementation started: B1 specification, runtime-independent AST/bounds and shared fixture preparation; no parser/store/route implementation yet.
+- Completed checklist IDs: 08.1a, 08.1c, 08.1d, 08.1e (specification outcomes only). 08.1b semantics are specified; runtime support remains unchecked until B2.
+- Active/next checklist group: Verify B1 (08.1a–e); obtain the handoff-required specification/endpoint approval before B2.
+- Last updated: 2026-10-09.
+- Blocking issues discovered: B2 requires explicit approval of SEARCH-SPEC, numeric bounds, AST version and endpoint shape. Module 09 dispatch/queue acceptance remains a separate integration handoff.
+- Evidence: [B1 specification validation](../evidence/08-search-validation.md); runtime search acceptance remains unperformed.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 08.1 | Define public query semantics | Not started | None yet |
+| 08.1 | Define public query semantics | B1 verified; 08.1b runtime support pending | [SEARCH-SPEC](../../SEARCH-SPEC.md) |
 | 08.2 | Implement database compilers and index lifecycle | Not started | None yet |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. Read the latest master and dependency progress records and verify prerequisites.
-2. Start the first unfinished item in 08.1.
-3. Record the actual files changed, checks run, decisions, and next-session cautions here.
+1. B1 static/unit/contract verification passed; commit it on `feat/v1` and leave parser/store acceptance unchecked.
+2. Obtain user approval of [SEARCH-SPEC](../../SEARCH-SPEC.md), bounds, AST v1 and proposed dedicated project search/suggestion routes before B2 code or migrations.
+3. B2 implements parser/validation and dual-store compilers/cursors; B3 lifecycle/current authorization/measurements; B4 handlers/tier budgets. Module 09 dispatch and queue/retry verification remain open.
 
 ## Next-session cautions
 
@@ -77,3 +77,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Module prerequisites and acceptance remain open.
 - Next actions: Keep Module 08 untouched during the feature hold.
 - Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-10-09 — Module 08 B1 public query contract
+
+- Scope and checklist IDs: B1 08.1a–08.1e, with 08.V1/V2 corpus preparation only; dependency impact on contracts, Issue reads, projection, dispatch and backend acceptance.
+- Progress: B1 verified; 08.1a/c/d/e specification outcomes complete. 08.1b semantics, AST v1, explicit complexity/result-window bounds and shared accepted/rejected/fuzz fixtures prepared; 08.1b runtime support remains open. Parser, routes, stores, migrations and runtime acceptance are not implemented in this batch.
+- Change summary: Proposed dedicated project search/suggestion routes, seven UUID-based filters with principal-bound `me`, bounded OR-of-AND syntax, stable immutable ordering and safe errors. Native tokenizer differences are explicit.
+- Files/artifacts: `docs/SEARCH-SPEC.md`; `packages/contracts/src/search.ts` and export; `tests/fixtures/search-query-contract.ts`; proposed ADR 0013; [B1 evidence](../evidence/08-search-validation.md); module/master records.
+- Verification: One B1 pass succeeded: `corepack pnpm typecheck`, `corepack pnpm lint`/boundaries, `corepack pnpm test:unit` (354), `corepack pnpm test:contract` (1), scoped `oxfmt --check` (three TypeScript files), `git diff --check`, and nine new-document local links. Exact scope/results in linked evidence; the new parser corpus remains unexecuted.
+- Decisions and deviations: Per README, 07/08 handlers precede 09 dispatch; prerequisites are integration handoffs rather than circular gates. Consume existing 07 projection; do not close its remainders. No normative baseline deviation, normative-document edit, hosted claim or gate change.
+- Blockers/open questions: HANDOFF-08 requires user approval of the specification/bounds/AST/endpoint shape before B2. 08.1b runtime support and 08.V1/V2 await parser/both-store execution. 08.2e dispatch and 08.V5 queue/retry remain module 09 work.
+- Next actions: Finish B1 verification/commit, present the concrete spec for approval, then B2 only after approval.
+- Next-session cautions: Module 08 remains In progress. Preserve feat/v1, protected untracked root documents, existing cursor/projection semantics, G1/G2 closed and 13.G6 open. Local/emulated checks cannot establish actual Free-plan quotas.

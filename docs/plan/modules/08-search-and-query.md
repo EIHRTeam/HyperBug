@@ -13,11 +13,11 @@ Provide one bounded search language and AST with separate optimized D1 and Postg
 
 ### Step 08.1 — Define public query semantics
 
-- [ ] **08.1a** Write `docs/SEARCH-SPEC.md` for text terms, quoting/escaping, negation, filters, sorting, errors, and an independently versioned structured AST.
+- [x] **08.1a** Write `docs/SEARCH-SPEC.md` for text terms, quoting/escaping, negation, filters, sorting, errors, and an independently versioned structured AST.
 - [ ] **08.1b** Support MVP filters for state, label (including exclusion), assignee, milestone, type, author, and project; resolve `me` from the authenticated principal.
-- [ ] **08.1c** Define explicit bounds for text length, depth, predicates, OR branches, negations, label count, sort fields, FTS expression size, and result window.
-- [ ] **08.1d** Decide and document tokenization, language support, case/diacritic behavior, ranking, and pagination semantics. Require shared product behavior while identifying ranking differences that cannot be identical.
-- [ ] **08.1e** Define invalid syntax/unsupported filters as safe structured errors rather than silently changing query meaning.
+- [x] **08.1c** Define explicit bounds for text length, depth, predicates, OR branches, negations, label count, sort fields, FTS expression size, and result window.
+- [x] **08.1d** Decide and document tokenization, language support, case/diacritic behavior, ranking, and pagination semantics. Require shared product behavior while identifying ranking differences that cannot be identical.
+- [x] **08.1e** Define invalid syntax/unsupported filters as safe structured errors rather than silently changing query meaning.
 
 ### Step 08.2 — Implement database compilers and index lifecycle
 

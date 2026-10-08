@@ -2,6 +2,7 @@ import { SafeMarkdownTreeSchema } from './markdown.ts';
 export * from './markdown.ts';
 export * from './uploads.ts';
 export * from './content-definitions.ts';
+export * from './search.ts';
 import { Type, type Static } from '@sinclair/typebox';
 
 export const ErrorSchema = Type.Object(
