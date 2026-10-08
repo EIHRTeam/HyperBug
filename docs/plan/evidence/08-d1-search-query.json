@@ -1,0 +1,354 @@
+{
+  "profile": "d1",
+  "fixture": {
+    "issues": 8000,
+    "publicVisible": 2000,
+    "publicHidden": 2000,
+    "private": 4000,
+    "tieGroup": 20
+  },
+  "observations": [
+    {
+      "source": "\"needle phrase\"",
+      "elapsedMs": 11.75079199999982,
+      "statements": 4,
+      "returned": 20,
+      "plan": [
+        {
+          "id": 2,
+          "parent": 0,
+          "notused": 0,
+          "detail": "CO-ROUTINE (subquery-5)"
+        },
+        {
+          "id": 16,
+          "parent": 2,
+          "notused": 46,
+          "detail": "SEARCH p EXISTS USING INDEX sqlite_autoindex_projects_1 (id=?)"
+        },
+        {
+          "id": 25,
+          "parent": 2,
+          "notused": 0,
+          "detail": "CORRELATED SCALAR SUBQUERY 2"
+        },
+        {
+          "id": 31,
+          "parent": 25,
+          "notused": 45,
+          "detail": "SEARCH r USING COVERING INDEX sqlite_autoindex_project_roles_1 (project_id=? AND principal_id=?)"
+        },
+        {
+          "id": 38,
+          "parent": 25,
+          "notused": 47,
+          "detail": "SEARCH a USING INDEX principal_identity_kind (id=? AND kind=?)"
+        },
+        {
+          "id": 51,
+          "parent": 2,
+          "notused": 88,
+          "detail": "SEARCH i USING INDEX issue_project_id (project_id=? AND id=?)"
+        },
+        {
+          "id": 57,
+          "parent": 2,
+          "notused": 0,
+          "detail": "LIST SUBQUERY 1"
+        },
+        {
+          "id": 60,
+          "parent": 57,
+          "notused": 156,
+          "detail": "SCAN issue_search_fts VIRTUAL TABLE INDEX 0:M3"
+        },
+        {
+          "id": 65,
+          "parent": 57,
+          "notused": 40,
+          "detail": "SEARCH d USING INTEGER PRIMARY KEY (rowid=?)"
+        },
+        {
+          "id": 91,
+          "parent": 2,
+          "notused": 42,
+          "detail": "SEARCH d EXISTS USING INDEX search_project_issue (project_id=? AND issue_id=?)"
+        },
+        {
+          "id": 135,
+          "parent": 2,
+          "notused": 0,
+          "detail": "USE TEMP B-TREE FOR ORDER BY"
+        },
+        {
+          "id": 161,
+          "parent": 0,
+          "notused": 59,
+          "detail": "SCAN (subquery-5)"
+        }
+      ],
+      "metadata": {
+        "served_by": "miniflare.db",
+        "duration": 0,
+        "changes": 0,
+        "last_row_id": 8000,
+        "changed_db": false,
+        "size_after": 12185600,
+        "rows_read": 201,
+        "rows_written": 0
+      },
+      "readinessMetadata": {
+        "served_by": "miniflare.db",
+        "duration": 3,
+        "changes": 0,
+        "last_row_id": 8000,
+        "changed_db": false,
+        "size_after": 12185600,
+        "rows_read": 6002,
+        "rows_written": 0
+      },
+      "relationMetadata": [
+        {
+          "served_by": "miniflare.db",
+          "duration": 1,
+          "changes": 0,
+          "last_row_id": 8000,
+          "changed_db": false,
+          "size_after": 12185600,
+          "rows_read": 21,
+          "rows_written": 0
+        },
+        {
+          "served_by": "miniflare.db",
+          "duration": 0,
+          "changes": 0,
+          "last_row_id": 8000,
+          "changed_db": false,
+          "size_after": 12185600,
+          "rows_read": 21,
+          "rows_written": 0
+        }
+      ]
+    },
+    {
+      "source": "-needle state:open",
+      "elapsedMs": 5.183250000000044,
+      "statements": 4,
+      "returned": 25,
+      "plan": [
+        {
+          "id": 2,
+          "parent": 0,
+          "notused": 0,
+          "detail": "CO-ROUTINE (subquery-5)"
+        },
+        {
+          "id": 16,
+          "parent": 2,
+          "notused": 46,
+          "detail": "SEARCH p EXISTS USING INDEX sqlite_autoindex_projects_1 (id=?)"
+        },
+        {
+          "id": 25,
+          "parent": 2,
+          "notused": 0,
+          "detail": "CORRELATED SCALAR SUBQUERY 2"
+        },
+        {
+          "id": 31,
+          "parent": 25,
+          "notused": 45,
+          "detail": "SEARCH r USING COVERING INDEX sqlite_autoindex_project_roles_1 (project_id=? AND principal_id=?)"
+        },
+        {
+          "id": 38,
+          "parent": 25,
+          "notused": 47,
+          "detail": "SEARCH a USING INDEX principal_identity_kind (id=? AND kind=?)"
+        },
+        {
+          "id": 51,
+          "parent": 2,
+          "notused": 137,
+          "detail": "SEARCH i USING INDEX issue_project_created (project_id=?)"
+        },
+        {
+          "id": 61,
+          "parent": 2,
+          "notused": 0,
+          "detail": "LIST SUBQUERY 1"
+        },
+        {
+          "id": 65,
+          "parent": 61,
+          "notused": 156,
+          "detail": "SCAN issue_search_fts VIRTUAL TABLE INDEX 0:M3"
+        },
+        {
+          "id": 70,
+          "parent": 61,
+          "notused": 40,
+          "detail": "SEARCH d USING INTEGER PRIMARY KEY (rowid=?)"
+        },
+        {
+          "id": 81,
+          "parent": 61,
+          "notused": 0,
+          "detail": "CREATE BLOOM FILTER"
+        },
+        {
+          "id": 104,
+          "parent": 2,
+          "notused": 42,
+          "detail": "SEARCH d EXISTS USING INDEX search_project_issue (project_id=? AND issue_id=?)"
+        },
+        {
+          "id": 147,
+          "parent": 0,
+          "notused": 124,
+          "detail": "SCAN (subquery-5)"
+        }
+      ],
+      "metadata": {
+        "served_by": "miniflare.db",
+        "duration": 1,
+        "changes": 0,
+        "last_row_id": 8000,
+        "changed_db": false,
+        "size_after": 12185600,
+        "rows_read": 4140,
+        "rows_written": 0
+      },
+      "readinessMetadata": {
+        "served_by": "miniflare.db",
+        "duration": 2,
+        "changes": 0,
+        "last_row_id": 8000,
+        "changed_db": false,
+        "size_after": 12185600,
+        "rows_read": 6002,
+        "rows_written": 0
+      },
+      "relationMetadata": [
+        {
+          "served_by": "miniflare.db",
+          "duration": 0,
+          "changes": 0,
+          "last_row_id": 8000,
+          "changed_db": false,
+          "size_after": 12185600,
+          "rows_read": 26,
+          "rows_written": 0
+        },
+        {
+          "served_by": "miniflare.db",
+          "duration": 0,
+          "changes": 0,
+          "last_row_id": 8000,
+          "changed_db": false,
+          "size_after": 12185600,
+          "rows_read": 26,
+          "rows_written": 0
+        }
+      ]
+    },
+    {
+      "source": "",
+      "elapsedMs": 4.890207999999802,
+      "statements": 4,
+      "returned": 25,
+      "plan": [
+        {
+          "id": 2,
+          "parent": 0,
+          "notused": 0,
+          "detail": "CO-ROUTINE (subquery-4)"
+        },
+        {
+          "id": 16,
+          "parent": 2,
+          "notused": 46,
+          "detail": "SEARCH p EXISTS USING INDEX sqlite_autoindex_projects_1 (id=?)"
+        },
+        {
+          "id": 25,
+          "parent": 2,
+          "notused": 0,
+          "detail": "CORRELATED SCALAR SUBQUERY 1"
+        },
+        {
+          "id": 31,
+          "parent": 25,
+          "notused": 45,
+          "detail": "SEARCH r USING COVERING INDEX sqlite_autoindex_project_roles_1 (project_id=? AND principal_id=?)"
+        },
+        {
+          "id": 38,
+          "parent": 25,
+          "notused": 47,
+          "detail": "SEARCH a USING INDEX principal_identity_kind (id=? AND kind=?)"
+        },
+        {
+          "id": 51,
+          "parent": 2,
+          "notused": 137,
+          "detail": "SEARCH i USING INDEX issue_project_created (project_id=?)"
+        },
+        {
+          "id": 62,
+          "parent": 2,
+          "notused": 42,
+          "detail": "SEARCH d EXISTS USING INDEX search_project_issue (project_id=? AND issue_id=?)"
+        },
+        {
+          "id": 105,
+          "parent": 0,
+          "notused": 124,
+          "detail": "SCAN (subquery-4)"
+        }
+      ],
+      "metadata": {
+        "served_by": "miniflare.db",
+        "duration": 0,
+        "changes": 0,
+        "last_row_id": 8000,
+        "changed_db": false,
+        "size_after": 12185600,
+        "rows_read": 2053,
+        "rows_written": 0
+      },
+      "readinessMetadata": {
+        "served_by": "miniflare.db",
+        "duration": 2,
+        "changes": 0,
+        "last_row_id": 8000,
+        "changed_db": false,
+        "size_after": 12185600,
+        "rows_read": 6002,
+        "rows_written": 0
+      },
+      "relationMetadata": [
+        {
+          "served_by": "miniflare.db",
+          "duration": 0,
+          "changes": 0,
+          "last_row_id": 8000,
+          "changed_db": false,
+          "size_after": 12185600,
+          "rows_read": 26,
+          "rows_written": 0
+        },
+        {
+          "served_by": "miniflare.db",
+          "duration": 0,
+          "changes": 0,
+          "last_row_id": 8000,
+          "changed_db": false,
+          "size_after": 12185600,
+          "rows_read": 26,
+          "rows_written": 0
+        }
+      ]
+    }
+  ]
+}

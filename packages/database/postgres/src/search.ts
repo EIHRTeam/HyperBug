@@ -1,5 +1,5 @@
 import {
-  normalizeSearchText,
+  searchTokenText,
   SearchError,
   SEARCH_BOUNDS,
   validateSearchAst,
@@ -38,12 +38,15 @@ export function compilePostgresSearch(
               ).length;
               if (bytes > SEARCH_BOUNDS.ftsExpressionBytes)
                 throw new SearchError('SEARCH_COMPLEXITY');
-              const literal = bind(normalizeSearchText(leaf.value));
-              const textQuery = `${leaf.phrase ? 'phraseto_tsquery' : 'plainto_tsquery'}('simple', ${literal})`;
+              const literal = bind(searchTokenText(leaf.value).trim());
+              const textQuery = `plainto_tsquery('simple', ${literal})`;
+              const fields = leaf.phrase
+                ? `(d.title LIKE ${bind('%' + searchTokenText(leaf.value) + '%')} OR d.body LIKE ${bind('%' + searchTokenText(leaf.value) + '%')})`
+                : `(d.title_vector @@ ${textQuery} OR d.body_vector @@ ${textQuery})`;
               const scope = bind(`p${query.projectId.replaceAll('-', '')}`);
               expression = `i.id IN (SELECT d.issue_id FROM search_documents d WHERE d.project_id = ${bind(query.projectId)}::uuid AND d.active = 1
         AND d.search_vector @@ (plainto_tsquery('simple', ${scope}) && plainto_tsquery('simple', ${literal}))
-        AND (d.title_vector @@ ${textQuery} OR d.body_vector @@ ${textQuery}))`;
+        AND ${fields})`;
             } else if (leaf.field === 'label' || leaf.field === 'assignee') {
               const table =
                 leaf.field === 'label' ? 'issue_labels' : 'issue_assignees';

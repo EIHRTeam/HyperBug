@@ -3,7 +3,8 @@ import {
   SearchError,
   validateSearchAst,
   parseSearchQuery,
-  normalizeSearchText,
+  searchTokenText,
+  type SearchIndexStore,
   type SearchAst,
   type SearchStore,
 } from '@hyperbug/application';
@@ -57,6 +58,7 @@ export function searchStoreContract(
   get: () => {
     harness: RepositoryHarness;
     store: SearchStore;
+    index: SearchIndexStore;
     measuredQueries: () => string[];
   },
 ) {
@@ -113,8 +115,8 @@ export function searchStoreContract(
             'search-test-v1',
             1,
             `p${projectId.replaceAll('-', '')}`,
-            normalizeSearchText(title),
-            normalizeSearchText(body),
+            searchTokenText(title),
+            searchTokenText(body),
           ],
         );
       }
@@ -186,7 +188,7 @@ export function searchStoreContract(
       expect(page.items.map((row) => row.id)).toEqual([ids[0]!]);
       expect(page.relations.labels.get(ids[0]!)).toEqual([labelId]);
       expect(page.relations.assignees.get(ids[0]!)).toEqual([principalId]);
-      expect(measuredQueries().length - before).toBe(3);
+      expect(measuredQueries().length - before).toBe(4);
       const absent = await store.search({
         projectId,
         ast: parseSearchQuery(
@@ -253,5 +255,394 @@ export function searchStoreContract(
       ).rejects.toMatchObject({ code: 'SEARCH_COMPLEXITY' });
       expect(measuredQueries().length).toBe(before);
     });
+    it('fails incomplete indexing, reconciles bounded canonical pages and excludes stale visibility and permissions', async () => {
+      const { projectId, principalId, ids } = await seed(),
+        { harness, store, index } = get();
+      await harness.query('DELETE FROM search_documents WHERE issue_id = ?', [
+        ids[0]!,
+      ]);
+      await expect(
+        store.search({ projectId, ast: parseSearchQuery('') }),
+      ).rejects.toMatchObject({ code: 'SEARCH_INDEX_INCOMPLETE' });
+      let after: string | undefined,
+        processed = 0;
+      do {
+        const batch = await index.backfill({
+          projectId,
+          ...(after === undefined ? {} : { after }),
+          limit: 2,
+        });
+        processed += batch.processed;
+        after = batch.nextCursor ?? undefined;
+      } while (after);
+      expect(processed).toBe(4);
+      await harness.query(
+        "UPDATE issues SET moderation = 'hidden' WHERE id = ?",
+        [ids[0]!],
+      );
+      await harness.query('UPDATE issues SET deleted_at = ? WHERE id = ?', [
+        2000,
+        ids[1]!,
+      ]);
+      expect(
+        (await store.search({ projectId, ast: parseSearchQuery('') })).items
+          .map((row) => row.id)
+          .sort(),
+      ).toEqual(ids.slice(2).sort());
+      await index.backfill({ projectId });
+      expect(
+        await harness.query(
+          'SELECT title, body, active FROM search_documents WHERE issue_id = ?',
+          [ids[0]!],
+        ),
+      ).toEqual([{ title: '', body: '', active: 0 }]);
+      await harness.query(
+        "UPDATE projects SET visibility = 'private' WHERE id = ?",
+        [projectId],
+      );
+      expect(
+        (await store.search({ projectId, ast: parseSearchQuery('') })).items,
+      ).toEqual([]);
+      expect(
+        (
+          await store.search({
+            projectId,
+            principalId,
+            ast: parseSearchQuery(''),
+          })
+        ).items,
+      ).toHaveLength(2);
+      await harness.query(
+        'DELETE FROM project_roles WHERE project_id = ? AND principal_id = ?',
+        [projectId, principalId],
+      );
+      expect(
+        (
+          await store.search({
+            projectId,
+            principalId,
+            ast: parseSearchQuery(''),
+          })
+        ).items,
+      ).toEqual([]);
+      // Old text cannot select an edited Issue; an unavailable index is explicit.
+      await harness.query(
+        "UPDATE projects SET visibility = 'public' WHERE id = ?",
+        [projectId],
+      );
+      await harness.query(
+        "UPDATE issues SET revision = 2, title = 'replacement', body_text = 'replacement', body_text_version = 'search-test-v2' WHERE id = ?",
+        [ids[2]!],
+      );
+      await expect(
+        store.search({ projectId, ast: parseSearchQuery('startup') }),
+      ).rejects.toMatchObject({ code: 'SEARCH_INDEX_INCOMPLETE' });
+      await index.backfill({ projectId });
+      expect(
+        (await store.search({ projectId, ast: parseSearchQuery('startup') }))
+          .items,
+      ).toEqual([]);
+    });
+    it('preserves late and repeated phrases beyond native PostgreSQL position limits', async () => {
+      const { projectId, ids } = await seed(),
+        { harness, store, index } = get();
+      const body = 'r '.repeat(16381) + 'a b c';
+      await harness.query(
+        'UPDATE issues SET body_text = ?, body = ?, revision = 2 WHERE id = ?',
+        [body, body, ids[0]!],
+      );
+      await index.backfill({ projectId });
+      expect(
+        (
+          await store.search({
+            projectId,
+            ast: parseSearchQuery('"a b c"'),
+          })
+        ).items.map((row) => row.id),
+      ).toEqual([ids[0]!]);
+      expect(
+        (
+          await store.search({ projectId, ast: parseSearchQuery('"r a b c"') })
+        ).items.map((row) => row.id),
+      ).toEqual([ids[0]!]);
+      expect(
+        (
+          await store.search({
+            projectId,
+            ast: parseSearchQuery('"boundary phrase"'),
+          })
+        ).items,
+      ).toEqual([]);
+    });
   });
+}
+
+export function searchHttpContract(
+  get: () => {
+    query: RepositoryHarness['query'];
+    index: SearchIndexStore;
+    fetch: (path: string) => Promise<{
+      status: number;
+      headers: { get(name: string): string | null };
+      json(): Promise<unknown>;
+    }>;
+  },
+) {
+  it('search HTTP enforces visibility before readiness and serves bounded suggestions with safe failures', async () => {
+    const { query, index, fetch } = get(),
+      projectId = crypto.randomUUID(),
+      privateId = crypto.randomUUID(),
+      principalId = crypto.randomUUID(),
+      issueId = crypto.randomUUID();
+    for (const id of [projectId, privateId])
+      await query(
+        'INSERT INTO projects (id, slug, name, visibility, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+        [
+          id,
+          'http-search-' + id,
+          'Search HTTP fixture',
+          id === projectId ? 'public' : 'private',
+          1000,
+          1000,
+        ],
+      );
+    await query(
+      "INSERT INTO principals (id, kind, display_name, created_at) VALUES (?, 'user', 'Search HTTP author', ?)",
+      [principalId, 1000],
+    );
+    await query(
+      'INSERT INTO issues (id, project_id, number, title, body, body_text, body_text_version, author_id, created_at, updated_at, last_mutation_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        issueId,
+        projectId,
+        1,
+        'Search HTTP',
+        'safe text',
+        'safe text',
+        'search-v1',
+        principalId,
+        1000,
+        1000,
+        crypto.randomUUID(),
+      ],
+    );
+    const path = '/api/v1/projects/' + projectId + '/search';
+    expect(
+      (await fetch('/api/v1/projects/' + privateId + '/search')).status,
+    ).toBe(404);
+    let response = await fetch(path);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'SEARCH_INDEX_INCOMPLETE' },
+    });
+    expect(
+      (await fetch('/api/v1/projects/' + projectId + '/issues/' + issueId))
+        .status,
+    ).toBe(200);
+    await index.backfill({ projectId });
+    response = await fetch(path + '?q=search');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(await response.json()).toMatchObject({
+      items: [{ id: issueId }],
+      nextCursor: null,
+    });
+    response = await fetch(path + '/suggestions?field=author');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      items: [{ field: 'author', value: principalId }],
+    });
+    response = await fetch(path + '?q=author%3Ame');
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'SEARCH_PRINCIPAL_REQUIRED' },
+    });
+    expect((await fetch(path + '?unsupported=true')).status).toBe(400);
+    await query("UPDATE issues SET moderation = 'redacted' WHERE id = ?", [
+      issueId,
+    ]);
+    expect(
+      await (await fetch(path + '/suggestions?field=author')).json(),
+    ).toEqual({ items: [] });
+    expect(await (await fetch(path)).json()).toEqual({
+      items: [],
+      nextCursor: null,
+    });
+  });
+}
+
+export async function measureSearchQueries(get: {
+  harness: RepositoryHarness;
+  store: SearchStore;
+  measuredQueries: () => string[];
+  profile: 'd1' | 'postgres';
+  compile: (
+    query: import('@hyperbug/application').SearchQuery,
+    options: import('@hyperbug/application').SearchPageOptions,
+    columns: string,
+  ) => { sql: string; values: (string | number | null)[] };
+  explain?: (
+    sql: string,
+    values: (string | number | null)[],
+  ) => Promise<unknown>;
+  metadata?: (
+    sql: string,
+    values: (string | number | null)[],
+  ) => Promise<unknown>;
+}) {
+  const { mkdir, writeFile } = await import('node:fs/promises');
+  const { searchPageOptions } = await import('@hyperbug/application');
+  const { harness, store, profile, measuredQueries } = get;
+  const projectId = crypto.randomUUID(),
+    otherId = crypto.randomUUID(),
+    principalId = crypto.randomUUID();
+  await harness.query(
+    "INSERT INTO principals (id, kind, display_name, created_at) VALUES (?, 'staff', 'Search measurement', ?)",
+    [principalId, 1000],
+  );
+  for (const project of [projectId, otherId]) {
+    await harness.query(
+      'INSERT INTO projects (id, slug, name, visibility, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        project,
+        'search-measure-' + project,
+        'Measurement fixture',
+        project === projectId ? 'public' : 'private',
+        1000,
+        1000,
+      ],
+    );
+    for (let start = 0; start < 4000; start += 10) {
+      const values = Array.from({ length: 10 }, (_, offset) => {
+        const number = start + offset + 1;
+        return [
+          crypto.randomUUID(),
+          project,
+          number,
+          number % 100 === 0 ? 'needle phrase' : 'ordinary report',
+          principalId,
+          1000 + Math.floor(number / 20),
+          crypto.randomUUID(),
+        ];
+      }).flat();
+      await harness.query(
+        `INSERT INTO issues (id, project_id, number, title, author_id, created_at, last_mutation_id, updated_at, body, body_text, body_text_version) VALUES ${Array.from({ length: 10 }, () => "(?, ?, ?, ?, ?, ?, ?, 2000, 'fixture body', 'fixture body', 'measure-v1')").join(',')}`,
+        values,
+      );
+    }
+  }
+  await harness.query(
+    "UPDATE issues SET moderation = 'hidden' WHERE project_id = ? AND number > 2000",
+    [projectId],
+  );
+  // Deliberately stale active index hits include hidden/private distractors.
+  await harness.query(
+    `INSERT INTO search_documents (issue_id, project_id, revision, projection_version, active, scope, title, body) SELECT id, project_id, revision, body_text_version, 1, ?, ' ' || title || ' ', ' ' || body_text || ' ' FROM issues WHERE project_id = ?`,
+    ['p' + projectId.replaceAll('-', ''), projectId],
+  );
+  await harness.query(
+    `INSERT INTO search_documents (issue_id, project_id, revision, projection_version, active, scope, title, body) SELECT id, project_id, revision, body_text_version, 1, ?, ' ' || title || ' ', ' ' || body_text || ' ' FROM issues WHERE project_id = ?`,
+    ['p' + otherId.replaceAll('-', ''), otherId],
+  );
+  await harness.query('ANALYZE issues');
+  await harness.query(
+    profile === 'postgres'
+      ? 'VACUUM ANALYZE search_documents'
+      : 'ANALYZE search_documents',
+  );
+  const observations = [];
+  for (const source of ['"needle phrase"', '-needle state:open', '']) {
+    const query = {
+      projectId,
+      principalId,
+      ast: parseSearchQuery(source),
+      limit: 25,
+    };
+    const start = performance.now(),
+      before = measuredQueries().length;
+    const page = await store.search(query);
+    const elapsedMs = performance.now() - start;
+    const statements = measuredQueries().slice(before);
+    expect(statements).toHaveLength(4);
+    expect(page.items.length).toBe(source.startsWith('"') ? 20 : 25);
+    expect(
+      page.items.every(
+        (row) => row.projectId === projectId && row.moderation === 'visible',
+      ),
+    ).toBe(true);
+    const compiled = get.compile(
+      query,
+      await searchPageOptions(query),
+      'id, project_id, number, title, body_text, body_text_version, state, close_reason, moderation, author_id, revision, type_id, milestone_id, created_at, updated_at, closed_at, deleted_at',
+    );
+    const plan = get.explain
+      ? await get.explain(compiled.sql, compiled.values)
+      : await harness.query(
+          'EXPLAIN QUERY PLAN ' + compiled.sql,
+          compiled.values as (string | number)[],
+        );
+    expect(JSON.stringify(plan)).toMatch(
+      /issue_project_|issues_pkey|sqlite_autoindex_issues/,
+    );
+    if (source.startsWith('"'))
+      expect(JSON.stringify(plan)).toMatch(
+        /VIRTUAL TABLE INDEX|search_vector_gin/,
+      );
+    const metadata = get.metadata
+      ? await get.metadata(compiled.sql, compiled.values)
+      : null;
+    const readinessMetadata = get.metadata
+      ? await get.metadata(statements[0]!, [projectId, principalId, 4097])
+      : null;
+    const relationMetadata = get.metadata
+      ? await Promise.all(
+          statements
+            .slice(2)
+            .map((sql) =>
+              get.metadata!(sql, [
+                projectId,
+                JSON.stringify(page.items.map((row) => row.id)),
+              ]),
+            ),
+        )
+      : null;
+    observations.push({
+      source,
+      elapsedMs,
+      statements: statements.length,
+      returned: page.items.length,
+      plan,
+      metadata,
+      readinessMetadata,
+      relationMetadata,
+    });
+  }
+  const before = measuredQueries().length;
+  await expect(
+    store.search({
+      projectId,
+      ast: parseSearchQuery(''),
+      tier: 'cloudflare-minimum',
+    }),
+  ).rejects.toMatchObject({ code: 'SEARCH_BUDGET_EXHAUSTED' });
+  expect(measuredQueries().length - before).toBe(1);
+  await mkdir('.local/evidence', { recursive: true });
+  await writeFile(
+    `.local/evidence/08-${profile}-search-query.json`,
+    JSON.stringify(
+      {
+        profile,
+        fixture: {
+          issues: 8000,
+          publicVisible: 2000,
+          publicHidden: 2000,
+          private: 4000,
+          tieGroup: 20,
+        },
+        observations,
+      },
+      null,
+      2,
+    ) + '\n',
+  );
 }

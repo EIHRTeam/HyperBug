@@ -1,3 +1,5 @@
+import { SearchError } from '@hyperbug/application';
+import { createPostgresSearchIndexStore } from './search-index.ts';
 import {
   searchPageOptions,
   searchPage,
@@ -678,6 +680,8 @@ export function createPostgresSearchStore(db: Pool): SearchStore {
     async search(query) {
       const options = await searchPageOptions(query);
       const compiled = compilePostgresSearch(query, options, listColumns);
+      if (!(await createPostgresSearchIndexStore(db).ready(query)))
+        throw new SearchError('SEARCH_INDEX_INCOMPLETE');
       const rows = (await db.query<IssueRow>(compiled.sql, compiled.values))
         .rows;
       const page = searchPage(query, options, rows.map(toListItem));
@@ -694,3 +698,5 @@ export function createPostgresSearchStore(db: Pool): SearchStore {
     },
   };
 }
+
+export { createPostgresSearchIndexStore } from './search-index.ts';

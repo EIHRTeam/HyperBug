@@ -1,3 +1,5 @@
+import { searchIssues, type SearchContext } from './search.ts';
+import type { SearchStore } from '@hyperbug/application';
 import { accountsRoutes } from './route-accounts.ts';
 import { pluginsRoutes } from './route-plugins.ts';
 import { registrationRoutes } from './route-registration.ts';
@@ -319,6 +321,7 @@ export interface AppOptions {
   mediaOrigin?: string | null;
   /** Project-scoped issue persistence (the module-02 repository). */
   issueRepository?: IssueRepository | null;
+  searchStore?: SearchStore | null;
   /** Issue comment persistence with history and moderation. */
   commentStore?: CommentStore | null;
   /** Issue/comment reaction persistence. */
@@ -453,6 +456,7 @@ export function createApp({
   attachmentStore = null,
   mediaOrigin = null,
   issueRepository = null,
+  searchStore = null,
   commentStore = null,
   reactionStore = null,
   timelineStore = null,
@@ -932,6 +936,11 @@ export function createApp({
     issues: issueRepository,
     comments: commentStore,
     admission: boundSensitiveAdmission,
+  };
+  const searchContext: SearchContext = {
+    ...projectContext,
+    search: searchStore,
+    tier: deployment.tier,
   };
   const issueContext: IssueContext = {
     ...projectContext,
@@ -2015,6 +2024,54 @@ export function createApp({
       {
         body: t.Unsafe<CreateIssueRequest>(CreateIssueRequestSchema),
         response: { 201: t.Unsafe<IssueDocument>(IssueDocumentSchema) },
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/search',
+      async ({ request, params, query }) => {
+        if (!uuidPattern.test(params.projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return await searchIssues(request, searchContext, params.projectId, {
+          q: query.q,
+          limit: query.limit === undefined ? undefined : Number(query.limit),
+          after: query.after,
+        });
+      },
+      {
+        query: t.Object(
+          {
+            q: t.Optional(t.String({ maxLength: 1024 })),
+            limit: t.Optional(t.Integer({ minimum: 1, maximum: 25 })),
+            after: t.Optional(t.String({ maxLength: 1024 })),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Unsafe<IssuePage>(IssuePageSchema),
+      },
+    )
+    .get(
+      '/api/v1/projects/:projectId/search/suggestions',
+      async ({ request, params, query }) => {
+        if (!uuidPattern.test(params.projectId))
+          throw new RequestFailure('NOT_FOUND');
+        return await searchIssues(request, searchContext, params.projectId, {
+          q: query.q,
+          field: query.field,
+        });
+      },
+      {
+        query: t.Object(
+          {
+            q: t.Optional(t.String({ maxLength: 1024 })),
+            field: t.String({ maxLength: 16 }),
+          },
+          { additionalProperties: false },
+        ),
+        response: t.Object({
+          items: t.Array(t.Object({ field: t.String(), value: t.String() }), {
+            maxItems: 10,
+          }),
+        }),
       },
     )
     .get(

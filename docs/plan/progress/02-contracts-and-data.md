@@ -484,3 +484,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: No B2 blocker; B3/B4 and Module 09 dispatch/queue acceptance remain open.
 - Next actions: B3 authorization/readiness/lifecycle/representative measurements, then B4 handlers/tier budgets.
 - Next-session cautions: Preserve prior histories, protected drafts, owning-module remainders and gate states; emulated/local evidence is not hosted/actual Free-plan evidence.
+
+### 2026-10-09 — B3 lifecycle implementation checkpoint
+
+- Scope and checklist IDs: 08.2c/f/g and 08.V3/V4; Module 08 owns this batch.
+- Progress: B1/B2 committed; B3 in progress, unverified. Inspecting inherited index-store changes before integration.
+- Change summary: Bounded resumable initial indexing consumes canonical Module 07 projections; conditional revision/visibility fences prevent stale writes. PostgreSQL native position limits require token-sequence phrase rechecks.
+- Files/artifacts: Application search-index port and both adapter search-index implementations; shared SEARCH-SPEC/evidence will record final behavior.
+- Verification: Not run for B3; prior B2 results remain recorded in ../evidence/08-search-validation.md.
+- Decisions and deviations: User approval of B2 persists. No normative edits or scope expansion; dispatch and queue/retry remain Module 09 handoffs.
+- Blockers/open questions: B3 routes/readiness and larger-data evidence remain unfinished.
+- Next actions: Complete B3 implementation, run one relevant verification pass, record results and commit.
+- Next-session cautions: Preserve protected root drafts, canonical projection policy and closed G1/G2/open 13.G6; no hosted claims.
+
+### 2026-10-09 — B3 local acceptance
+
+- Scope and checklist IDs: 08.2c/f/g, 08.V3/V4; Module 08 owns implementation.
+- Progress: Both stores and composed HTTP routes verified; lifecycle/readiness and representative measurements complete locally.
+- Change summary: Approved search/suggestions use shared project authorization; stale visibility/membership/text cannot grant results. Bounded explicit backfill, incomplete-index errors, one-second store deadline and token-sequence phrase rechecks preserve canonical access.
+- Files/artifacts: Application/index ports, dual-store adapters, server/runtime bindings, existing shared suites; SEARCH-SPEC/ADR0013; ../evidence/08-search-validation.md B3 and dual-store query JSON.
+- Verification: Combined selected scope 10 checks per profile pass; types/lint/boundaries pass. Exact first failures/narrow repairs/metadata are in linked evidence; no hosted acceptance.
+- Decisions and deviations: Candidate ceilings 4096/256 total project Issues, 60-second operational delay target awaiting scheduling, no partial successful index. PostgreSQL bulk-load GIN pending scan investigated and VACUUM result recorded; no query-side vacuum.
+- Blockers/open questions: B4 events/quota/reindex remain; Module 09 dispatch and queue/retry open. No Module 07 remainder or integration/release gate closed.
+- Next actions: Commit B3, implement/verify B4 within Module08 scope.
+- Next-session cautions: Preserve protected untracked drafts, prior migrations, canonical content bounds, G1/G2 closed and 13.G6 open; local evidence cannot claim real Free CPU or quotas.

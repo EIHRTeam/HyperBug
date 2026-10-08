@@ -18,3 +18,7 @@ Index the existing title/plain-text projection as derived data. SQLite unicode61
 Search can lag canonical writes but cannot grant authorization or leak edited/moderated content through old text. UUID filter values are stable across renames but require a suggestion/selection flow. Creation ordering supports stable bounded traversal; native relevance ordering is deferred. Complexity/window values are design ceilings and do not prove execution/CPU/row budgets.
 
 B2 must verify parameterized compilers, parser fixtures and keyset hydration on both stores. B3 must verify stale-index authorization, bounded lifecycle and representative query plans/counts/rows/latency. B4 must verify out-of-order revisions and local tier/reindex bounds. Module 09 owns dispatch/queue/retry acceptance; 13.G6 owns actual Free-plan evidence. No existing normative baseline or gate is relaxed.
+
+## B3 lifecycle refinement
+
+Space-delimited shared tokens and separate-field PostgreSQL phrase rechecks avoid native tsvector positional truncation for valid long/repeated bodies. GIN remains candidate acceleration; canonical text remains Module 07's representation. Initial/reconciliation tasks are bounded resumable pages and never run on reads. Current missing/stale documents fail explicitly; candidate/project ceilings and a one-second store deadline preserve direct Issue availability. The operational 60-second delay target requires Module 09 scheduling; local handler readiness does not claim dispatch latency.

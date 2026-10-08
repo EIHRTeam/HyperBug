@@ -165,7 +165,7 @@ export interface IssueView {
   readonly assigneeIds: readonly string[];
 }
 
-function viewOf(
+export function viewOf(
   issue: Issue | IssueListItem,
   labelIds: readonly string[],
   assigneeIds: readonly string[],

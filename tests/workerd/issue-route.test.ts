@@ -1,3 +1,5 @@
+import { searchHttpContract } from '../fixtures/search-contract.ts';
+import { createD1SearchIndexStore } from '@hyperbug/database-d1';
 import { uploadHttpContract } from '../fixtures/upload-http-contract.ts';
 import { attachmentHttpContract } from '../fixtures/attachment-http-contract.ts';
 import { seedFormUpload } from '../fixtures/form-submission-contract.ts';
@@ -839,3 +841,26 @@ it('delivers the issue lifecycle on workerd/D1', async () => {
     },
   });
 });
+
+searchHttpContract(() => ({
+  query: async (sql, values = []) => {
+    const db = await mf.getD1Database('DB');
+    return (
+      await db
+        .prepare(sql)
+        .bind(...values)
+        .all()
+    ).results;
+  },
+  index: {
+    ready: async (input) =>
+      createD1SearchIndexStore(
+        (await mf.getD1Database('DB')) as unknown as D1Database,
+      ).ready(input),
+    backfill: async (input) =>
+      createD1SearchIndexStore(
+        (await mf.getD1Database('DB')) as unknown as D1Database,
+      ).backfill(input),
+  },
+  fetch: (path) => call(path),
+}));

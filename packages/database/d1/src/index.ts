@@ -1,3 +1,5 @@
+import { SearchError } from '@hyperbug/application';
+import { createD1SearchIndexStore } from './search-index.ts';
 import {
   searchPageOptions,
   searchPage,
@@ -786,6 +788,8 @@ export function createD1SearchStore(db: D1Database): SearchStore {
     async search(query) {
       const options = await searchPageOptions(query);
       const compiled = compileD1Search(query, options, listColumns);
+      if (!(await createD1SearchIndexStore(db).ready(query)))
+        throw new SearchError('SEARCH_INDEX_INCOMPLETE');
       const rows = (
         await db
           .prepare(compiled.sql)
@@ -806,3 +810,5 @@ export function createD1SearchStore(db: D1Database): SearchStore {
     },
   };
 }
+
+export { createD1SearchIndexStore } from './search-index.ts';

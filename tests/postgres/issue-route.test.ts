@@ -1,3 +1,5 @@
+import { searchHttpContract } from '../fixtures/search-contract.ts';
+import { createPostgresSearchIndexStore } from '@hyperbug/database-postgres';
 import { uploadHttpContract } from '../fixtures/upload-http-contract.ts';
 import { attachmentHttpContract } from '../fixtures/attachment-http-contract.ts';
 import { seedFormUpload } from '../fixtures/form-submission-contract.ts';
@@ -301,6 +303,7 @@ beforeAll(async () => {
     uploads: uploadStorage.uploads,
     commentStore: configured.commentStore,
     issueRepository: configured.issueRepository,
+    searchStore: configured.searchStore,
     accountAdministration: configured.accountAdministration,
     auditAppend: configured.auditAppend,
     bootstrapCode: enrollmentCode,
@@ -731,3 +734,17 @@ it('delivers the issue lifecycle on Node/PostgreSQL', async () => {
     },
   });
 }, 30000);
+
+searchHttpContract(() => ({
+  query: async (sql, values = []) => {
+    let parameter = 0;
+    return (
+      await pool.query(
+        sql.replace(/\?/gu, () => '$' + ++parameter),
+        values,
+      )
+    ).rows;
+  },
+  index: createPostgresSearchIndexStore(pool),
+  fetch: (path) => call(path),
+}));

@@ -65,3 +65,10 @@ export type SearchAvailabilityErrorCode =
   | 'SEARCH_INDEX_INCOMPLETE'
   | 'SEARCH_BUDGET_EXHAUSTED'
   | 'SEARCH_WINDOW_EXHAUSTED';
+
+export interface SearchSuggestions {
+  readonly items: readonly {
+    readonly field: SearchFilter;
+    readonly value: string;
+  }[];
+}

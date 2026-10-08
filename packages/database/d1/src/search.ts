@@ -1,5 +1,5 @@
 import {
-  normalizeSearchText,
+  searchTokenText,
   SearchError,
   SEARCH_BOUNDS,
   validateSearchAst,
@@ -28,11 +28,12 @@ export function compileD1Search(
             let expression: string;
             if (leaf.kind === 'text') {
               const terms =
-                normalizeSearchText(leaf.value).match(/[\p{L}\p{N}\p{M}]+/gu) ??
-                [];
+                searchTokenText(leaf.value)
+                  .trim()
+                  .match(/[\p{L}\p{N}\p{M}]+/gu) ?? [];
               if (!terms.length) return leaf.negated ? '1' : '0';
               const quote = (term: string) => `"${term.replaceAll('"', '""')}"`;
-              const match = `scope : "p${query.projectId.replaceAll('-', '')}" AND {title body} : (${leaf.phrase ? quote(normalizeSearchText(leaf.value)) : terms.map(quote).join(' AND ')})`;
+              const match = `scope : "p${query.projectId.replaceAll('-', '')}" AND {title body} : (${leaf.phrase ? quote(searchTokenText(leaf.value).trim()) : terms.map(quote).join(' AND ')})`;
               bytes += new TextEncoder().encode(match).length;
               if (bytes > SEARCH_BOUNDS.ftsExpressionBytes)
                 throw new SearchError('SEARCH_COMPLEXITY');

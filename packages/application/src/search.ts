@@ -53,6 +53,9 @@ const hasControl = (input: string) =>
   );
 export const normalizeSearchText = (input: string) =>
   input.normalize('NFC').toLowerCase().normalize('NFC');
+/** Internal tokenizer input, never a replacement for the canonical text projection. */
+export const searchTokenText = (input: string) =>
+  ` ${(normalizeSearchText(input).match(/[\p{L}\p{N}\p{M}]+/gu) ?? []).join(' ')} `;
 const keys = (object: object, expected: string) =>
   Object.keys(object).sort().join(',') === expected;
 const uuid = (value: string) => {

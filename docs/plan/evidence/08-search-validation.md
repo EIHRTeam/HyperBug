@@ -81,3 +81,33 @@ The first attempted verification was blocked before execution by pnpm's stale in
 Scoped formatting/diff and final progress/checklist consistency are recorded before commit. Broad Node/server lanes, hosted deployment, actual quotas/CPU and Module 09 queue/retry are not run/claimed here. The parser corpus executes on Node and native workerd; the same store suite executes on both databases. No skipped/disabled/only test was added; reported skips above are deliberate `-t` deselection.
 
 Final B2 housekeeping: Python supplied `git diff --name-only` plus the eight new application/compiler/fixture/migration/snapshot paths to `corepack pnpm exec oxfmt --check`; 14 matched files pass (generated migration metadata/SQL follows existing formatter exclusions). `git diff --check` passes; staged diff is checked before commit. Protected root drafts remain untracked. No generated measurement JSON drift was present in this scoped pass.
+
+## B3 — Index lifecycle, HTTP authorization and larger-data acceptance, 2026-10-09
+
+Scope 08.2c/f/g, 08.V3/V4. Both roots now bind the approved search/suggestion routes to the shared project-read authorization path. Canonical predicates fence results; missing/stale visible documents fail explicitly; hidden/deleted documents are never authorized through stale hits. Suggestions use a bounded matching first page and current relations. There is no count endpoint or read-triggered repair. Explicit revision-conditional backfill reads 26/11 rows and writes at most 25/10 documents per invocation. Projection gaps are rejected/reportable without changing Module 07.
+
+Shared Unicode token input plus PostgreSQL GIN/plain-query candidates and exact separate-field phrase rechecks preserve phrases at the 32,767-character canonical body limit (16,384 tokens). Native tsvector positions would otherwise collapse at 16,383; repeated-lexeme position storage is separately limited to 256. No canonical body bound was changed.
+
+### Verification and failures
+
+Environment versions remain B2's: Node 24.21.0, pnpm11.26.0, Vitest5.0.1, emulated D1/workerd and actual isolated PostgreSQL18.6. No hosted/Free-plan evidence.
+
+- `corepack pnpm typecheck`; `corepack pnpm lint`: final pass after exact-optional typings and a bounded single PostgreSQL JSON-recordset upsert replaced sequential await-in-loop; no exclusions.
+- `corepack pnpm test:workerd tests/workerd/repository.test.ts tests/workerd/issue-route.test.ts -t 'search|late and repeated phrases'`: initial 7 pass/3 fail; the 3 failures were fixture body/time constraints and the test composition's missing search binding. Narrow `-t 'measures bounded search|late and repeated phrases|search HTTP'`: 3 pass. Nine repository plus one HTTP checks pass in the combined selected scope; 172 unrelated checks were deselected.
+- `corepack pnpm test:postgres tests/postgres/repository.test.ts tests/postgres/issue-route.test.ts -t 'search|late and repeated phrases'`: initial 8 pass/2 fixture failures. Narrow repository `-t 'measures bounded search|late and repeated phrases|reconciles bounded'`: lifecycle/phrase pass; measurement failed on placeholder ordering in the EXPLAIN harness. Subsequent `-t 'measures bounded search'` found a bulk-load sequential plan, then a wrong expected GIN index name; final pass after VACUUM and exact index-name correction. Combined scope: same 10 checks pass; unrelated cases deselected.
+- Workerd narrowed measurement recheck: 1 pass, required to complete previously missing readiness/relation metadata (not another broad green lane).
+- Scoped oxfmt and git diff checks are recorded at commit. No schema change in B3; B2 migration evidence remains applicable. Reader-site/configuration files unchanged, so docs build/secret scan not applicable.
+
+### Representative measurements and scan investigation
+
+Committed [D1 plans/metadata](08-d1-search-query.json) and [PostgreSQL EXPLAIN ANALYZE](08-postgres-search-query.json) contain 8,000 canonical/indexed Issues: 2,000 authorized visible, 2,000 deliberately stale hidden hits in that project, and 4,000 private-project distractors; timestamp ties in groups of 20. Each phrase, negative/filter and empty search uses four store statements: bounded canonical readiness, main query and two batched relation queries. No per-result SQL.
+
+D1 main-query rows read are 201 / 4,140 / 2,053; readiness is 6,002; relation reads are 42 / 52 / 52 combined. Total store reads 6,245 / 10,194 / 8,107, all writes zero. Plans use scoped FTS5 virtual-index access, project/creation or project/ID indexes and indexed document witnesses. Temporary bounded-result ordering is expected. Minimum rejects this oversized project after one bounded readiness statement, before FTS.
+
+PostgreSQL's first bulk-load plan scanned 8,000 derived documents (~0.8 ms EXPLAIN execution). VACUUM ANALYZE flushes GIN pending entries and refreshes statistics; the final phrase plan uses `search_vector_gin` plus canonical index lookups (~0.2 ms EXPLAIN execution). The full plans record actual rows/loops/buffers for the three shapes. Empty/negative queries inspect authorized project candidates under the explicit candidate ceiling; indexed relation probes are database joins, not application N+1. Autovacuum/pending-list health is an operator prerequisite after large initial loads, never a request-side maintenance step. Native planner costs are not a guarantee that every small-table plan chooses GIN.
+
+Context7 on 2026-10-09 resolved PostgreSQL18 to high-reputation `/websites/postgresql_18`, then queried GIN/VACUUM. Official [GIN implementation](https://www.postgresql.org/docs/18/gin.html), [VACUUM](https://www.postgresql.org/docs/18/sql-vacuum.html) and [pending cleanup](https://www.postgresql.org/docs/18/functions-admin.html) confirm this mechanism. Initial Elysia resolve returned an unavailable-credential message; existing repository route patterns plus native HTTP checks supplied syntax evidence. Prior D1 quota lookup gaps remain open; B4 must implement/verify local admission without claiming actual provider quota/CPU.
+
+### Review and boundaries
+
+Focused source review: fixed safe errors; project visibility precedes readiness; private membership loss and canonical revision/moderation exclusion; conditional index writes; bounded Unicode/SQL input; separate-field phrase behavior; strict window/pagination; no raw bodies in summaries or errors. No new dependency, dispatch/scheduler or normative-document edit. G1/G2 stay closed, 13.G6 open. B4 still owns version-aware events, durable quota admission and authorized operator reindex.

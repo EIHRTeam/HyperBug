@@ -1,3 +1,6 @@
+import { measureSearchQueries } from '../fixtures/search-contract.ts';
+import { compilePostgresSearch } from '../../packages/database/postgres/src/search.ts';
+import { createPostgresSearchIndexStore } from '@hyperbug/database-postgres';
 import {
   searchStoreContract,
   searchParserContract,
@@ -7,6 +10,7 @@ import { createPostgresSearchStore } from '@hyperbug/database-postgres';
 searchStoreContract(() => ({
   harness,
   store: createPostgresSearchStore(pool),
+  index: createPostgresSearchIndexStore(pool),
   measuredQueries,
 }));
 searchParserContract(parseSearchQuery);
@@ -824,3 +828,20 @@ expiredCleanupContract(
   }),
   false,
 );
+
+it('measures bounded search with 8000 canonical and stale-index rows', async () => {
+  await measureSearchQueries({
+    harness,
+    store: createPostgresSearchStore(pool),
+    measuredQueries,
+    profile: 'postgres',
+    compile: compilePostgresSearch,
+    explain: async (sql, values) =>
+      (
+        await pool.query(
+          'EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ' + sql,
+          values,
+        )
+      ).rows,
+  });
+}, 60000);

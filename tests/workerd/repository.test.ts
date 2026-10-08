@@ -1,3 +1,6 @@
+import { measureSearchQueries } from '../fixtures/search-contract.ts';
+import { compileD1Search } from '../../packages/database/d1/src/search.ts';
+import { createD1SearchIndexStore } from '@hyperbug/database-d1';
 import {
   searchStoreContract,
   searchParserContract,
@@ -5,7 +8,12 @@ import {
 import type { SearchStore } from '@hyperbug/application';
 let searchStore: SearchStore;
 let parseSearch: Parameters<typeof searchParserContract>[0];
-searchStoreContract(() => ({ harness, store: searchStore, measuredQueries }));
+searchStoreContract(() => ({
+  harness,
+  store: searchStore,
+  index: createD1SearchIndexStore(registrationDb),
+  measuredQueries,
+}));
 searchParserContract((source, principalId) => parseSearch(source, principalId));
 import { expiredCleanupContract } from '../fixtures/expired-cleanup-contract.ts';
 import { createD1ExpiredCleanupStore } from '@hyperbug/database-d1';
@@ -1339,3 +1347,20 @@ expiredCleanupContract(() => ({
   harness,
   store: createD1ExpiredCleanupStore(registrationDb),
 }));
+
+it('measures bounded search with 8000 canonical and stale-index rows', async () => {
+  await measureSearchQueries({
+    harness,
+    store: searchStore,
+    measuredQueries,
+    profile: 'd1',
+    compile: compileD1Search,
+    metadata: async (sql, values) =>
+      (
+        await registrationDb
+          .prepare(sql)
+          .bind(...values)
+          .all()
+      ).meta,
+  });
+}, 60000);
