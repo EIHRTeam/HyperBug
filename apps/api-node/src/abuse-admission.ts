@@ -19,6 +19,7 @@ import {
   createPostgresExpiredCleanupStore,
   createPostgresRepository,
   createPostgresSearchStore,
+  createPostgresSearchIndexStore,
   createPostgresCommentStore,
   createPostgresReactionStore,
   createPostgresTimelineStore,
@@ -49,6 +50,7 @@ import type {
   ProjectStore,
   IssueRepository,
   SearchStore,
+  SearchIndexStore,
   CommentStore,
   ReactionStore,
   TimelineStore,
@@ -88,6 +90,7 @@ export interface NodeAbuseAdmission {
   readonly projectStore: ProjectStore | null;
   readonly issueRepository: IssueRepository | null;
   readonly searchStore: SearchStore | null;
+  readonly searchIndexStore: SearchIndexStore | null;
   readonly commentStore: CommentStore | null;
   readonly reactionStore: ReactionStore | null;
   readonly timelineStore: TimelineStore | null;
@@ -148,6 +151,7 @@ export function configureNodeAbuseAdmission(
       projectStore: null,
       issueRepository: null,
       searchStore: null,
+      searchIndexStore: null,
       commentStore: null,
       reactionStore: null,
       timelineStore: null,
@@ -286,6 +290,7 @@ export function configureNodeAbuseAdmission(
     projectStore: createPostgresProjectStore(pool),
     issueRepository: createPostgresRepository(pool),
     searchStore: createPostgresSearchStore(pool),
+    searchIndexStore: createPostgresSearchIndexStore(pool),
     commentStore: createPostgresCommentStore(pool),
     reactionStore: createPostgresReactionStore(pool),
     timelineStore: createPostgresTimelineStore(pool),

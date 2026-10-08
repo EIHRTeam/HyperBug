@@ -72,3 +72,9 @@ export interface SearchSuggestions {
     readonly value: string;
   }[];
 }
+
+/** Per-statement canonical candidate ceiling, separately fingerprinted from result windows. */
+export const SEARCH_SCAN_LIMITS = Object.freeze({
+  standard: 4096,
+  'cloudflare-minimum': 256,
+});

@@ -1,6 +1,10 @@
-import { createD1SearchStore } from '@hyperbug/database-d1';
+import {
+  createD1SearchStore,
+  createD1SearchIndexStore,
+} from '@hyperbug/database-d1';
 import {
   parseSearchQuery,
+  type SearchBackfillQuery,
   SearchError,
   type SearchQuery,
 } from '@hyperbug/application';
@@ -45,6 +49,11 @@ import { boundedD1 } from './d1-bind-guard.ts';
 
 type Message =
   | { method: 'searchIssues'; input: SearchQuery }
+  | { method: 'searchBackfill'; input: SearchBackfillQuery }
+  | {
+      method: 'searchRevision';
+      input: { projectId: string; issueId: string; mutationId: string };
+    }
   | { method: 'parseSearch'; input: { source: string; principalId?: string } }
   | { method: 'auditAppend'; input: AuditEvent }
   | { method: 'auditList'; input: AuditListOptions }
@@ -159,6 +168,20 @@ export default {
     try {
       let value: unknown;
       switch (message.method) {
+        case 'searchBackfill':
+          value = await createD1SearchIndexStore(
+            measured as unknown as D1Database,
+          ).backfill(message.input);
+          break;
+        case 'searchRevision':
+          value = await createD1SearchIndexStore(
+            measured as unknown as D1Database,
+          ).revisionOf(
+            message.input.projectId,
+            message.input.issueId,
+            message.input.mutationId,
+          );
+          break;
         case 'parseSearch':
           value = parseSearchQuery(
             message.input.source,

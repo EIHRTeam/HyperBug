@@ -2,6 +2,7 @@ import {
   SEARCH_AST_VERSION,
   SEARCH_BOUNDS,
   SEARCH_WINDOWS,
+  SEARCH_SCAN_LIMITS,
   type SearchAst,
   type SearchPredicate,
   type SearchFilter,
@@ -300,6 +301,7 @@ export interface SearchStore {
 interface SearchCursor {
   v: 1;
   resource: 'issues.search';
+  policy: 1;
   project: string;
   filter: string;
   sort: 'created_desc';
@@ -341,6 +343,9 @@ export async function searchPageOptions(
     },
     tier,
     bounds: SEARCH_BOUNDS,
+    scanLimit: SEARCH_SCAN_LIMITS[tier],
+    tokenizer: 1,
+    policy: 1,
   });
   const fingerprint = Array.from(
     new Uint8Array(
@@ -365,10 +370,12 @@ export async function searchPageOptions(
       ) as SearchCursor;
       if (raw && typeof raw === 'object' && 'v' in raw && raw.v !== 1)
         throw new SearchError('CURSOR_STALE');
+      if (raw?.resource === 'issues.search' && raw.policy !== 1)
+        throw new SearchError('CURSOR_STALE');
       if (
         !raw ||
         typeof raw !== 'object' ||
-        !keys(raw, 'filter,id,project,resource,sort,tier,time,used,v') ||
+        !keys(raw, 'filter,id,policy,project,resource,sort,tier,time,used,v') ||
         raw.resource !== 'issues.search' ||
         raw.project !== query.projectId ||
         raw.filter !== fingerprint ||
@@ -412,6 +419,7 @@ export function searchPage(
   const cursor: SearchCursor = {
     v: 1,
     resource: 'issues.search',
+    policy: 1,
     project: query.projectId,
     filter: options.fingerprint,
     sort: 'created_desc',

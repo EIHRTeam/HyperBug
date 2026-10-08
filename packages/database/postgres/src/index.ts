@@ -1,4 +1,9 @@
-import { SearchError } from '@hyperbug/application';
+import { createPostgresSearchBudgetStore } from './search-budget.ts';
+import {
+  SearchError,
+  SEARCH_MINIMUM_BUDGET,
+  searchAvailability,
+} from '@hyperbug/application';
 import { createPostgresSearchIndexStore } from './search-index.ts';
 import {
   searchPageOptions,
@@ -678,25 +683,46 @@ export function createPostgresSearchStore(db: Pool): SearchStore {
   const repository = createPostgresRepository(db);
   return {
     async search(query) {
-      const options = await searchPageOptions(query);
-      const compiled = compilePostgresSearch(query, options, listColumns);
-      if (!(await createPostgresSearchIndexStore(db).ready(query)))
-        throw new SearchError('SEARCH_INDEX_INCOMPLETE');
-      const rows = (await db.query<IssueRow>(compiled.sql, compiled.values))
-        .rows;
-      const page = searchPage(query, options, rows.map(toListItem));
-      const relations = page.items.length
-        ? await repository.relations(
-            query.projectId,
-            page.items.map((row) => row.id),
+      try {
+        const options = await searchPageOptions(query);
+        const compiled = compilePostgresSearch(query, options, listColumns);
+        if (
+          query.tier === 'cloudflare-minimum' &&
+          !(await createPostgresSearchBudgetStore(db).reserve({
+            reads: SEARCH_MINIMUM_BUDGET.searchReads,
+            writes: SEARCH_MINIMUM_BUDGET.searchWrites,
+            nowMs: Date.now(),
+          }))
+        )
+          throw new SearchError('SEARCH_BUDGET_EXHAUSTED');
+        if (!(await createPostgresSearchIndexStore(db).ready(query)))
+          throw new SearchError('SEARCH_INDEX_INCOMPLETE');
+        const rows = (
+          await db.query<IssueRow & { search_overflow: number }>(
+            compiled.sql,
+            compiled.values,
           )
-        : {
-            labels: new Map<string, string[]>(),
-            assignees: new Map<string, string[]>(),
-          };
-      return { ...page, relations };
+        ).rows;
+        if (rows.some((row) => row.search_overflow === 1))
+          throw new SearchError('SEARCH_BUDGET_EXHAUSTED');
+        const page = searchPage(query, options, rows.map(toListItem));
+        const relations = page.items.length
+          ? await repository.relations(
+              query.projectId,
+              page.items.map((row) => row.id),
+            )
+          : {
+              labels: new Map<string, string[]>(),
+              assignees: new Map<string, string[]>(),
+            };
+        return { ...page, relations };
+      } catch (error) {
+        throw searchAvailability(error);
+      }
     },
   };
 }
 
 export { createPostgresSearchIndexStore } from './search-index.ts';
+
+export { createPostgresSearchBudgetStore } from './search-budget.ts';

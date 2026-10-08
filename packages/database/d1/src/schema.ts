@@ -1843,3 +1843,21 @@ export const searchDocuments = table(
     check('search_active', sql`${t.active} IN (0,1)`),
   ],
 );
+
+/** Singleton daily search reservation ledger; no identity or query text. */
+export const searchBudget = table(
+  'search_budget',
+  {
+    id: integer('id').primaryKey(),
+    day: integer('day').notNull(),
+    reads: integer('reads').notNull(),
+    writes: integer('writes').notNull(),
+  },
+  (t) => [
+    check('search_budget_singleton', sql`${t.id} = 1`),
+    check(
+      'search_budget_bounds',
+      sql`${t.day} >= 0 AND ${t.reads} BETWEEN 0 AND 1000000 AND ${t.writes} BETWEEN 0 AND 20000`,
+    ),
+  ],
+);

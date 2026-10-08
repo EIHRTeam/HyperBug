@@ -1,4 +1,10 @@
-import { SearchError } from '@hyperbug/application';
+import { searchMeter } from './search-meter.ts';
+import { createD1SearchBudgetStore } from './search-budget.ts';
+import {
+  SearchError,
+  SEARCH_MINIMUM_BUDGET,
+  searchAvailability,
+} from '@hyperbug/application';
 import { createD1SearchIndexStore } from './search-index.ts';
 import {
   searchPageOptions,
@@ -783,32 +789,53 @@ export { createD1UploadLegacyRecoveryStore } from './upload-legacy-recovery.ts';
 export { createD1ExpiredCleanupStore } from './expired-cleanup.ts';
 
 export function createD1SearchStore(db: D1Database): SearchStore {
-  const repository = createD1Repository(db);
   return {
     async search(query) {
-      const options = await searchPageOptions(query);
-      const compiled = compileD1Search(query, options, listColumns);
-      if (!(await createD1SearchIndexStore(db).ready(query)))
-        throw new SearchError('SEARCH_INDEX_INCOMPLETE');
-      const rows = (
-        await db
-          .prepare(compiled.sql)
-          .bind(...compiled.values)
-          .all<IssueRow>()
-      ).results;
-      const page = searchPage(query, options, rows.map(toListItem));
-      const relations = page.items.length
-        ? await repository.relations(
-            query.projectId,
-            page.items.map((row) => row.id),
-          )
-        : {
-            labels: new Map<string, string[]>(),
-            assignees: new Map<string, string[]>(),
-          };
-      return { ...page, relations };
+      try {
+        const options = await searchPageOptions(query);
+        const compiled = compileD1Search(query, options, listColumns);
+        if (
+          query.tier === 'cloudflare-minimum' &&
+          !(await createD1SearchBudgetStore(db).reserve({
+            reads: SEARCH_MINIMUM_BUDGET.searchReads,
+            writes: SEARCH_MINIMUM_BUDGET.searchWrites,
+            nowMs: Date.now(),
+          }))
+        )
+          throw new SearchError('SEARCH_BUDGET_EXHAUSTED');
+        const meter =
+          query.tier === 'cloudflare-minimum'
+            ? searchMeter(db, SEARCH_MINIMUM_BUDGET.searchReads, 0, 4)
+            : null;
+        const work = meter?.db ?? db;
+        if (!(await createD1SearchIndexStore(work).ready(query)))
+          throw new SearchError('SEARCH_INDEX_INCOMPLETE');
+        const rows = (
+          await work
+            .prepare(compiled.sql)
+            .bind(...compiled.values)
+            .all<IssueRow & { search_overflow: number }>()
+        ).results;
+        if (rows.some((row) => row.search_overflow === 1))
+          throw new SearchError('SEARCH_BUDGET_EXHAUSTED');
+        const page = searchPage(query, options, rows.map(toListItem));
+        const relations = page.items.length
+          ? await createD1Repository(work).relations(
+              query.projectId,
+              page.items.map((row) => row.id),
+            )
+          : {
+              labels: new Map<string, string[]>(),
+              assignees: new Map<string, string[]>(),
+            };
+        return { ...page, relations };
+      } catch (error) {
+        throw searchAvailability(error);
+      }
     },
   };
 }
 
 export { createD1SearchIndexStore } from './search-index.ts';
+
+export { createD1SearchBudgetStore } from './search-budget.ts';

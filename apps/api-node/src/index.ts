@@ -117,6 +117,7 @@ const app = createApp({
   projectStore: abuse.projectStore,
   issueRepository: abuse.issueRepository,
   searchStore: abuse.searchStore,
+  searchIndexStore: abuse.searchIndexStore,
   commentStore: abuse.commentStore,
   reactionStore: abuse.reactionStore,
   timelineStore: abuse.timelineStore,

@@ -9,27 +9,27 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Status: In progress
 - Delivery scope: MVP backend
 - Prerequisites: 07 complete; event contracts from 02, async dispatch completed in 09.
-- Implementation started: B1 specification, runtime-independent AST/bounds and shared fixture preparation; no parser/store/route implementation yet.
-- Completed checklist IDs: 08.1a–e, 08.2a/b/d, 08.V1/V2. Dispatch/queue and B3/B4 lifecycle/budget acceptance remain open.
-- Active/next checklist group: B3 08.2c/f/g and 08.V3/V4.
+- Implementation: B1–B4 implemented and locally verified: specification/parser, both-store compilers, routes/authorization, lifecycle, version-aware handlers and tier budgets.
+- Completed checklist IDs: 08.1a–e, 08.2a–d/f–h, 08.V1–V4 and local/emulated 08.V6. 08.2e handler and 08.V5 replay/rebuild are verified; their dispatch/queue portions remain open for Module09.
+- Active/next checklist group: Authorized Module08 implementation ends here; later authorized Module09 work connects 08.2e dispatch and verifies 08.V5 queue/retry.
 - Last updated: 2026-10-09.
-- Blocking issues discovered: None for B2; the user approved SEARCH-SPEC/bounds/AST/endpoint shape. Module 09 dispatch/queue acceptance remains a separate integration handoff.
-- Evidence: [B1 specification validation](../evidence/08-search-validation.md); runtime search acceptance remains unperformed.
+- Blocking issues discovered: No local implementation blocker. Module09 dispatch/queue acceptance and account-wide/actual Free CPU evidence remain separate integration/release work.
+- Evidence: [B1–B4 search validation and completion audit](../evidence/08-search-validation.md), with committed dual-store plans and Minimum reindex measurements.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 08.1 | Define public query semantics | Complete, B1/B2 locally verified | [SEARCH-SPEC](../../SEARCH-SPEC.md) |
-| 08.2 | Implement database compilers and index lifecycle | B2 compilers/cursors verified; B3/B4 remain | [Search evidence](../evidence/08-search-validation.md) |
+| 08.2 | Implement database compilers and index lifecycle | Both-store compilers/lifecycle/handler/budgets verified locally; dispatch remains Module09 | [Search evidence](../evidence/08-search-validation.md) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. Commit verified B2, then implement B3 08.2c/f/g with canonical authorization/readiness, bounded initial indexing/reconciliation and representative query measurements (08.V3/V4).
-2. B4 implements version-aware handlers, explicit operator reindex and tier budgets; verify local replay/quota/row bounds.
-3. Keep 08.2e dispatch and 08.V5 queue/retry integration open for Module 09; no remote acceptance/gate closure.
+1. A later authorized Module09 batch connects existing outbox/revision handlers, bounded retry/reconciliation and queue/retry acceptance; the current hold is not lifted by Module08.
+2. Module10 accepts the integrated backend before G1. Module13 owns provider-global quota allocation, actual Free CPU/exhaustion and 13.G6 evidence.
+3. No SPA, Module07 remainder, later audit or unrelated implementation is authorized by this handoff.
 
 ## Next-session cautions
 
@@ -125,3 +125,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: B4 events/quota/reindex remain; Module 09 dispatch and queue/retry open. No Module 07 remainder or integration/release gate closed.
 - Next actions: Commit B3, implement/verify B4 within Module08 scope.
 - Next-session cautions: Preserve protected untracked drafts, prior migrations, canonical content bounds, G1/G2 closed and 13.G6 open; local evidence cannot claim real Free CPU or quotas.
+
+### 2026-10-09 — B4 implementation checkpoint
+
+- Scope and checklist IDs: 08.2e/h, local 08.V5/V6; Module08 owns implementation, dispatch stays Module09.
+- Progress: B3 committed faa04f8; B4 written, verification pending.
+- Change summary: Canonical revision-reference/outbox handler, replay suppression, administrator-guarded one-page reindex, singleton atomic Minimum daily reservation and D1 row/statement metering. No public reindex endpoint or scheduler.
+- Files/artifacts: Search budget/index/application ports, dual adapters and new D1 0029/PG0028 budget migration families; server/composition and shared native fixtures.
+- Verification: Migration generation completed/SQL inspected; B4 static/runtime/migration checks not yet run.
+- Decisions and deviations: Conservative search allocation leaves provider quota for other modules; provider-global accounting/hosted CPU remains independent acceptance. Existing outbox mutation IDs resolve immutable timeline revisions, without changing payloads.
+- Blockers/open questions: Local checks/measurements pending; production dispatch/queue/retry and real Free-plan evidence remain open.
+- Next actions: Run one B4 relevant pass, fix failures narrowly, record evidence and commit; then requirement-by-requirement handoff audit.
+- Next-session cautions: Preserve earlier migrations and protected drafts; no normative edits, remote rollout or gate closure.
+
+### 2026-10-09 — B4 local acceptance and authorized handoff completion
+
+- Scope and checklist IDs: 08.2e/h, local 08.V5/V6 and final HANDOFF-08 audit.
+- Progress: All four authorized batches implemented and locally verified; 08.1a–e, 08.2a–d/f–h, 08.V1–V4 and local 08.V6 complete. 08.2e handler/08.V5 replay-rebuild pass; combined dispatch/queue checkboxes stay open. Module08 remains In progress.
+- Change summary: Exact-revision/outbox handlers, bounded administrator reindex, atomic Minimum quotas, candidate overflow fence and cursor policy; PostgreSQL recursive index probes and one-time canonical/text materialization.
+- Files/artifacts: Application/server/runtime search ports; dual-store compilers/index/budget adapters and 0029/0028 migrations; existing shared native/unit fixtures; SEARCH-SPEC/ADR0013; [B4 evidence and requirement audit](../evidence/08-search-validation.md#b4--version-aware-indexing-and-tier-budgets-2026-10-09), query/reindex JSON and module/master records.
+- Verification: Composed selected scope D1/workerd22 and real isolated PG18.6 20 pass; unit7/contract1 pass; migration fresh/upgrade/application and db:check pass; final typecheck/lint/boundaries pass. Final narrowed PostgreSQL semantics/plan pass, including no canonical Seq Scan, <=4097 probes/node and zero denied-project Issues/document scan loops. Exact commands, failed assertions/imports/plan attempts, local metadata and limitations are in linked evidence.
+- Decisions and deviations: PostgreSQL logical LIMIT alone failed physical scan bounds; recursive keyset probes plus independent canonical/text materialization fix it without widened ceilings or planner-wide settings. Conservative Minimum ledger is not provider-global billing/CPU evidence. No normative edit or baseline deviation; user approval persists.
+- Blockers/open questions: No blocker within authorized handoff scope. Module09 dispatch/queue/retry/reconciliation and provider-global headroom, Module10 composed acceptance and actual Free CPU/quota 13.G6 remain open.
+- Next actions: Commit verified B4 as the fourth batch; stop Module08 implementation. Later authorized Module09 connects 08.2e dispatch and completes 08.V5; Module10/13 supply remaining gate evidence.
+- Next-session cautions: Preserve feat/v1 batch history, protected untracked drafts, earlier migrations, current canonical authorization and numeric ceilings. No remote rollout/push, SPA or Module07/14 expansion. G1/G2 stay closed and 13.G6 open; local evidence must not be promoted to hosted acceptance.

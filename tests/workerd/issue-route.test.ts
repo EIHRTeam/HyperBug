@@ -853,6 +853,10 @@ searchHttpContract(() => ({
     ).results;
   },
   index: {
+    revisionOf: async (projectId, issueId, mutationId) =>
+      createD1SearchIndexStore(
+        (await mf.getD1Database('DB')) as unknown as D1Database,
+      ).revisionOf(projectId, issueId, mutationId),
     ready: async (input) =>
       createD1SearchIndexStore(
         (await mf.getD1Database('DB')) as unknown as D1Database,

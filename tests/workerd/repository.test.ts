@@ -1,3 +1,4 @@
+import { createD1SearchBudgetStore } from '@hyperbug/database-d1';
 import { measureSearchQueries } from '../fixtures/search-contract.ts';
 import { compileD1Search } from '../../packages/database/d1/src/search.ts';
 import { createD1SearchIndexStore } from '@hyperbug/database-d1';
@@ -7,11 +8,13 @@ import {
 } from '../fixtures/search-contract.ts';
 import type { SearchStore } from '@hyperbug/application';
 let searchStore: SearchStore;
+let searchIndex: import('@hyperbug/application').SearchIndexStore;
 let parseSearch: Parameters<typeof searchParserContract>[0];
 searchStoreContract(() => ({
   harness,
   store: searchStore,
-  index: createD1SearchIndexStore(registrationDb),
+  index: searchIndex,
+  budget: createD1SearchBudgetStore(registrationDb),
   measuredQueries,
 }));
 searchParserContract((source, principalId) => parseSearch(source, principalId));
@@ -528,6 +531,8 @@ beforeAll(async () => {
     method:
       | keyof IssueRepository
       | 'searchIssues'
+      | 'searchBackfill'
+      | 'searchRevision'
       | 'parseSearch'
       | 'auditAppend'
       | 'auditList'
@@ -566,6 +571,12 @@ beforeAll(async () => {
   }
   parseSearch = (source, principalId) =>
     call('parseSearch', { source, principalId });
+  searchIndex = {
+    ready: (input) => createD1SearchIndexStore(registrationDb).ready(input),
+    backfill: (input) => call('searchBackfill', input),
+    revisionOf: (projectId, issueId, mutationId) =>
+      call('searchRevision', { projectId, issueId, mutationId }),
+  };
   searchStore = {
     search: async (query) => {
       const result = await call<

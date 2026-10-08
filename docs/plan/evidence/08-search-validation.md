@@ -111,3 +111,80 @@ Context7 on 2026-10-09 resolved PostgreSQL18 to high-reputation `/websites/postg
 ### Review and boundaries
 
 Focused source review: fixed safe errors; project visibility precedes readiness; private membership loss and canonical revision/moderation exclusion; conditional index writes; bounded Unicode/SQL input; separate-field phrase behavior; strict window/pagination; no raw bodies in summaries or errors. No new dependency, dispatch/scheduler or normative-document edit. G1/G2 stay closed, 13.G6 open. B4 still owns version-aware events, durable quota admission and authorized operator reindex.
+
+## B4 — Version-aware indexing and tier budgets, 2026-10-09
+
+Scope: 08.2e handler, 08.2h, local replay/rebuild portion of 08.V5 and local/emulated 08.V6. User B2 approval remains in force; no further approval was required for this authorized batch. B1 `c0d0527`, B2 `3869c76`, B3 `faa04f8` are committed on feat/v1. Production dispatch, queue/retry and actual Free-plan evidence are intentionally outside this completion scope.
+
+### Changes and review
+
+- Exact-revision internal events and existing outbox mutation/timeline witnesses share the bounded canonical indexing path. Stale/future events perform no update; repeated unchanged events perform no derived write; deletes/redactions clear derived text. Current canonical revision/projection/moderation/deletion fences remain in conditional writes.
+- Server/operator `reindexSearch` requires current administrator `project:configure` authorization and the presented token's fresh ceremony, before one resumable page. Composition roots supply index stores; no public reindex endpoint, UI, startup sweep or queue dispatcher was added.
+- Additive generated D1 `0029_search_budget` / PostgreSQL `0028_search_budget` create only the constrained singleton ledger. Atomic daily allocation is 1M reads/20k writes, reserves 20k/8 for search and 2k/`8 + 512 × limit` for index pages, rejects concurrency exhaustion, denies clock rollback resets and never refunds failures/replays. Both profiles share these port semantics; Node does not enable Minimum deployment.
+- D1 invocation metadata bounds subsequent work; missing/invalid metadata fails closed. Existing authoritative search IP/route admission is 30/min Minimum, 120/min Standard. Safe quota/unavailable/incomplete errors remain distinct, and direct canonical reads remain independent of local search allocation.
+- Main SQL independently fences candidate growth after readiness, including an internal overflow sentinel. Cursor policy1 binds candidate/tokenization policy and retires policy-less pre-release cursors with `CURSOR_STALE`; AST/envelope version1 remains unchanged.
+
+Focused security/persistence/performance review examined parameter binding, current visibility, zero-candidate text gating, exact revision witnesses, replay/conditional writes, permission/freshness before reindex, atomic quota reservation and private fixed errors. No security/performance baseline deviation, widened threshold, scanner/lint exclusion, dependency upgrade or normative-document change. ADR0013 records the execution-plan tradeoff.
+
+### Commands and results
+
+Versions remain B2's Node24.21.0, pnpm11.26.0, Vitest5.0.1, drizzle-kit0.31.11, Miniflare/workerd and actual isolated PostgreSQL18.6. Workerd is emulated D1; PostgreSQL is a real local disposable Unix-socket service. Deliberately unselected tests from `-t` are not disabled tests.
+
+| Command/check | Result |
+| --- | --- |
+| `corepack pnpm db:generate:d1`; `corepack pnpm db:generate:postgres` | Pass; additive 0029/0028 SQL, constraints, snapshots and journals reviewed |
+| `corepack pnpm test:workerd tests/workerd/repository.test.ts tests/workerd/issue-route.test.ts tests/workerd/minimum-tier-route.test.ts -t 'search\|late and repeated phrases\|fresh\|upgrade\|migration'` | Composed selected scope 22 pass after narrow replay assertion repair; covers fresh/upgrade, parser/store/HTTP and actual configured local Minimum route |
+| `corepack pnpm test:postgres tests/postgres/repository.test.ts tests/postgres/issue-route.test.ts -t 'search\|late and repeated phrases\|fresh\|upgrade\|migration'` | Composed selected scope 20 pass after same repair; includes real fresh/upgrade migration evidence |
+| `corepack pnpm exec vitest run --project unit tests/unit/pagination.test.ts` | 7 pass, including operator current-role/fresh-token guards and fixed timeout/provider failures |
+| `corepack pnpm test:contract` | 1 pass |
+| Store repository commands narrowed to `-t 'replays current outbox'` | 1 pass each; repairs one invalid-event assertion in the initial pass |
+| Native repository commands narrowed to final compiler/store/measurement cases | D1 8 pass; PostgreSQL `-t 'measures bounded search\|search dual-store\|late and repeated phrases'` 8 pass after candidate/text materialization repair |
+| PostgreSQL repository `-t 'measures bounded search'` after final plan assertions and private text gate | 1 pass; four statements, canonical probe bound, scoped GIN, denied-project zero scan and overflow sentinel verified |
+| Store repository commands narrowed to cursor policy retirement and Minimum quota cases | Pass on both stores; local concurrency/read/write exhaustion and long-body bounded reindex |
+| `corepack pnpm typecheck`; `corepack pnpm lint` | Final pass, including runtime projects and import boundaries |
+| `corepack pnpm db:check` | Pass; historical journal timestamp warnings unchanged |
+| `corepack pnpm db:migrate:d1:local` | Pass, local/emulated 0029 application only |
+| `node tooling/postgres-test-cluster.mjs corepack pnpm db:migrate:postgres --apply` | Pass, 0000–0028 applied with no pending migration; disposable PG18.6 cluster removed |
+
+Initial static verification found fixture import/interface errors, corrected without exclusions. The first selected runtime pass had 21 D1 /19 PostgreSQL passing and one invalid-event assertion failure each: validation intentionally throws before returning a Promise, so the assertion was corrected to synchronous rejection. Failed exact-substring editing attempts made no source changes; subsequent commands accidentally ran anyway, adding unnecessary narrow runs. Later apply_patch context mismatch likewise made no change. These attempts are recorded rather than represented as required verification.
+
+Final plan investigation found that the ordinary materialized candidate LIMIT still allowed a global Issues sequential scan including private distractors. Recursive ordered index probes removed it, but an inlined text membership shape lost GIN/repeated derived work. Independent materialized FTS hit sets restored GIN; their first join plan then multiplied canonical fetches (160,000 for 4,000 candidates × 40 hits, ~136ms). Materializing canonical summaries once per candidate fixed that cross product. A shortened-column measurement probe initially failed on missing internal `project_id`; the compiler now includes all internal predicate columns without fetching raw Markdown. Narrow semantic/plan rechecks passed; no assertion or ceiling was relaxed. Tests now reject canonical sequential scans and canonical probe multiplication. Final private-plan assertion verifies Issues/search_documents execute zero loops.
+
+### Final native measurements
+
+The committed JSON replaces B3's earlier query artifacts; B3 numbers above remain historical, not the current compiler's measurements. Fixture: 8,000 Issues/index documents, 4,000 scoped candidates (2,000 visible/2,000 stale hidden), 4,000 private-project distractors. Timestamp ties remain. Phrase/negative-filter/empty shapes each use four store statements and return 20/25/25 rows.
+
+| Profile | Phrase | Negative/filter | Empty |
+| --- | --- | --- | --- |
+| D1 main rows read | 16,223 | 33,157 | 29,170 |
+| D1 total store rows read including readiness/relations | 22,267 | 39,211 | 35,224 |
+| D1 store wall time, ms | 5.95 | 9.54 | 8.56 |
+| PostgreSQL store wall time, ms | 28.09 | 23.81 | 23.91 |
+
+This representative fixture is Standard. Minimum refuses its >256 candidates before FTS; Standard does not claim the 20k Minimum row allocation. D1 writes are zero. Plans show project/ID or creation indexes and scoped FTS5. PostgreSQL uses recursive creation-index probes (one row/step), canonical project/ID probes (4,000 loops, one row each), scoped `search_vector_gin` (40 rows for phrase/term), and one-time text hit materialization. No canonical global sequential scan or per-result application SQL. All actual loops/rows/buffers and the denied-private probe are retained in [D1 query evidence](08-d1-search-query.json) / [PostgreSQL query evidence](08-postgres-search-query.json). These measured plans are regression evidence, not a guarantee for arbitrary database statistics. B3's VACUUM ANALYZE/autovacuum GIN pending-list prerequisite remains; no query-side maintenance.
+
+Minimum reindex fixture: ten 28,667-character bodies/6,000 distinct tokens each. [D1 measurement](08-d1-minimum-reindex.json) records 11 work statements, 55 reads, 46 writes, below 2,000/5,128 admission; [PostgreSQL measurement](08-postgres-minimum-reindex.json) verifies same ten-document/ledger semantics without D1 billing metadata. D1 combined reindex-and-follow-up-search wall time is 26.88ms, PostgreSQL 72.75ms; timing includes I/O and is neither isolated reindex CPU nor Worker CPU. Ledger counters include one index reservation and the subsequent search: 22,000 reads/5,136 writes. Concurrent read reservations admit exactly 10/15 ×100k; write reservations admit exactly 2/3 ×10k. Allocation exhaustion rejects before index work and preserves documents; next-day reset works, backwards-day reset fails. Local Minimum HTTP exercises incomplete/quota errors, bounded successful search, private access denial and independent direct Issue access.
+
+### Documentation lookup and limitations
+
+Context7 resolve/query on 2026-10-09: high-reputation `/websites/postgresql_18` for GIN, materialized CTE optimization fences, recursive UNION ALL and LATERAL; `/llmstxt/developers_cloudflare_d1_llms-full_txt` for D1 daily quota failures and rows_read/rows_written metadata. References: [PostgreSQL WITH](https://www.postgresql.org/docs/18/queries-with.html), [LATERAL](https://www.postgresql.org/docs/18/queries-table-expressions.html#QUERIES-LATERAL), [D1 limits](https://developers.cloudflare.com/d1/platform/limits/), [D1 return metadata](https://developers.cloudflare.com/d1/worker-api/return-object/). SQLite materialized-CTE queries against `/websites/sqlite_docs` and `/sqlite/sqlite` returned no matches; focused native workerd checks support the chosen syntax. Elysia lookup credential gap and FTS Unicode differences remain documented above.
+
+Exact provider quota error spellings, FTS internal billing and cancellation are unsubstantiated by those lookups. Fixed error classification safely defaults unknown failures to unavailable. Local counters/emulator rows cannot prove actual account-wide quota, billing attribution, 10ms Free CPU or hosted exhaustion. Remaining 4M reads/80k writes need provider-global budgeting/headroom in Module09/13. Queue/retry/backlog/dead-letter/reconciliation scheduling is unimplemented by design. No hosted rollout, remote migration, push, SPA, Module14 or Module07 remainder work occurred.
+
+### HANDOFF-08 requirement audit
+
+| Requirement | Final outcome/evidence |
+| --- | --- |
+| 08.1a–e | Complete: approved SEARCH-SPEC/AST1/numeric bounds, parser/direct AST, seven filters, authenticated me, safe errors; B1/B2 corpus/fuzz on Node/workerd and both stores |
+| 08.2a/b | Complete: bound-value FTS5 and PostgreSQL GIN compilers, additive dual migrations, shared native semantic corpus and current plan evidence |
+| 08.2c | Complete locally: canonical visibility/moderation/revision predicates, stale hidden/private/removed-membership fixtures, bounded current suggestions; no count endpoint |
+| 08.2d | Complete: immutable strict tuple keysets, fingerprint/policy validation, independent result window, two fixed batched relation queries |
+| 08.2e | Handler complete and locally verified: exact revision, outbox witness, replay/stale/future/delete/redaction. Combined checkbox remains open for Module09 dispatch |
+| 08.2f/g | Complete locally: explicit bounded initial/reconciliation pages, recorded delay/retry policy, incomplete/unavailable distinction, deadline and independent direct access |
+| 08.2h | Complete at authorized local scope: conservative atomic quotas, metering, rate admission, operator administrator/freshness guards; hosted account/CPU claims excluded |
+| 08.V1–V4 | Pass at recorded scopes: corpus/fuzz, stale authorization and representative native plans/rows/statements/latency; B4 corrects B3 plan weaknesses |
+| 08.V5 | Out-of-order replay and canonical rebuild pass both stores; combined checkbox open for queue/retry verification in Module09 |
+| 08.V6 | Pass only locally/emulated: quota denial, private/no expansion, partial-index errors and bounded reindex. Actual Free CPU/account quota is 13.G6 |
+| Four commits/progress/scope | B1–B3 hashes above; B4 commit closes this batch. Affected 02/06/07/08/09/10 records updated. Protected drafts untracked; Module08 In progress, G1/G2 closed, 13.G6 open |
+
+Final housekeeping: scoped `corepack pnpm exec oxfmt --check` over changed tracked/new batch paths passes (32 matched files); `git diff --check` passes. Python Path/regex/URL-decoding validation checks 468 local links in changed documents; JSON syntax, remaining 08.2e/V5 checkboxes, local V6, Module08 In progress, unchanged G1/G2/13.G6 and protected drafts all pass. Final typecheck/lint/boundaries pass after the last compiler/test refinement. No reader-site/configuration change, so docs build/secret scan are not applicable. No broad already-green lane was rerun. Later authorized Module09 work connects dispatch/retry/reconciliation, Module10 composes all three-profile backend acceptance, and Module13 supplies hosted tier evidence; these are the next owners, not unfinished work within this authorized four-batch goal.

@@ -204,6 +204,13 @@
       "when": 1791473002036,
       "tag": "0028_search_index",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "6",
+      "when": 1791476251362,
+      "tag": "0029_search_budget",
+      "breakpoints": true
     }
   ]
 }

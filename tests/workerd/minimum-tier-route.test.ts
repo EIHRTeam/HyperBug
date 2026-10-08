@@ -1,3 +1,6 @@
+import { searchHttpContract } from '../fixtures/search-contract.ts';
+import { createD1SearchIndexStore } from '@hyperbug/database-d1';
+import type { D1Database } from '@cloudflare/workers-types';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -431,4 +434,112 @@ it('exercises the audited account-management APIs on the tier', async () => {
     },
   );
   expect([403, 404]).toContain(suspension.status);
+});
+
+searchHttpContract(() => ({
+  query: async (sql, values = []) =>
+    (
+      await (
+        await mf.getD1Database('DB')
+      )
+        .prepare(sql)
+        .bind(...values)
+        .all()
+    ).results,
+  index: {
+    ready: async (input) =>
+      createD1SearchIndexStore(
+        (await mf.getD1Database('DB')) as unknown as D1Database,
+      ).ready(input),
+    revisionOf: async (projectId, issueId, mutationId) =>
+      createD1SearchIndexStore(
+        (await mf.getD1Database('DB')) as unknown as D1Database,
+      ).revisionOf(projectId, issueId, mutationId),
+    backfill: async (input) =>
+      createD1SearchIndexStore(
+        (await mf.getD1Database('DB')) as unknown as D1Database,
+      ).backfill({ ...input, tier: 'cloudflare-minimum' }),
+  },
+  fetch: (path) => request(path, { method: 'GET' }),
+}));
+
+it('minimum search hides private readiness and preserves direct access when the local allowance is exhausted', async () => {
+  const db = await mf.getD1Database('DB'),
+    projectId = crypto.randomUUID(),
+    privateId = crypto.randomUUID(),
+    author = crypto.randomUUID(),
+    issueId = crypto.randomUUID();
+  for (const id of [projectId, privateId])
+    await db
+      .prepare(
+        'INSERT INTO projects (id, slug, name, visibility, created_at, updated_at) VALUES (?, ?, ?, ?, 1000, 1000)',
+      )
+      .bind(
+        id,
+        'search-min-' + id,
+        'Minimum search',
+        id === projectId ? 'public' : 'private',
+      )
+      .run();
+  await db
+    .prepare(
+      "INSERT INTO principals (id, kind, display_name, created_at) VALUES (?, 'user', 'Minimum author', 1000)",
+    )
+    .bind(author)
+    .run();
+  await db
+    .prepare(
+      'INSERT INTO issues (id, project_id, number, title, body, body_text, body_text_version, author_id, created_at, updated_at, last_mutation_id) VALUES (?, ?, 1, ?, ?, ?, ?, ?, 1000, 1000, ?)',
+    )
+    .bind(
+      issueId,
+      projectId,
+      'Visible',
+      'safe',
+      'safe',
+      'search-v1',
+      author,
+      crypto.randomUUID(),
+    )
+    .run();
+  await createD1SearchIndexStore(db as unknown as D1Database).backfill({
+    projectId,
+    tier: 'cloudflare-minimum',
+  });
+  const path = '/api/v1/projects/' + projectId + '/search';
+  const day = Math.floor(Date.now() / 86400000);
+  await db
+    .prepare(
+      'INSERT INTO search_budget (id, day, reads, writes) VALUES (1, ?, 1000000, 0) ON CONFLICT(id) DO UPDATE SET day = excluded.day, reads = excluded.reads, writes = excluded.writes',
+    )
+    .bind(day)
+    .run();
+  try {
+    const response = await request(path, { method: 'GET' });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'SEARCH_BUDGET_EXHAUSTED' },
+    });
+    expect(
+      (
+        await request('/api/v1/projects/' + privateId + '/search', {
+          method: 'GET',
+        })
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await request('/api/v1/projects/' + projectId + '/issues/' + issueId, {
+          method: 'GET',
+        })
+      ).status,
+    ).toBe(200);
+    const invalid = await request(path + '?limit=11', { method: 'GET' });
+    expect(invalid.status).toBe(400);
+    expect(await invalid.json()).toMatchObject({
+      error: { code: 'SEARCH_VALUE' },
+    });
+  } finally {
+    await db.prepare('DELETE FROM search_budget').run();
+  }
 });

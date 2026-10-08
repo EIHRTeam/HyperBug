@@ -1,3 +1,4 @@
+import { createPostgresSearchBudgetStore } from '@hyperbug/database-postgres';
 import { measureSearchQueries } from '../fixtures/search-contract.ts';
 import { compilePostgresSearch } from '../../packages/database/postgres/src/search.ts';
 import { createPostgresSearchIndexStore } from '@hyperbug/database-postgres';
@@ -11,6 +12,7 @@ searchStoreContract(() => ({
   harness,
   store: createPostgresSearchStore(pool),
   index: createPostgresSearchIndexStore(pool),
+  budget: createPostgresSearchBudgetStore(pool),
   measuredQueries,
 }));
 searchParserContract(parseSearchQuery);
@@ -638,7 +640,7 @@ it('migrates a fresh database and protects history from truncation', async () =>
           "SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema = 'public' AND table_name != 'hyperbug_schema_migrations'",
         )
       ).rows[0].count,
-    ).toBe(50);
+    ).toBe(51);
     await expect(
       fresh.query('TRUNCATE upload_legacy_recoveries'),
     ).rejects.toThrow('Retain legacy cleanup target');
@@ -836,6 +838,7 @@ it('measures bounded search with 8000 canonical and stale-index rows', async () 
     measuredQueries,
     profile: 'postgres',
     compile: compilePostgresSearch,
+    execute: async (sql, values) => (await pool.query(sql, values)).rows,
     explain: async (sql, values) =>
       (
         await pool.query(

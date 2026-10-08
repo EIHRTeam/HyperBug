@@ -304,6 +304,7 @@ beforeAll(async () => {
     commentStore: configured.commentStore,
     issueRepository: configured.issueRepository,
     searchStore: configured.searchStore,
+    searchIndexStore: configured.searchIndexStore,
     accountAdministration: configured.accountAdministration,
     auditAppend: configured.auditAppend,
     bootstrapCode: enrollmentCode,

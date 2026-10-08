@@ -5,6 +5,9 @@ import {
   parseSearchQuery,
   searchTokenText,
   type SearchIndexStore,
+  type SearchBudgetStore,
+  handleSearchIndexEvent,
+  handleSearchOutboxEvent,
   type SearchAst,
   type SearchStore,
 } from '@hyperbug/application';
@@ -59,6 +62,7 @@ export function searchStoreContract(
     harness: RepositoryHarness;
     store: SearchStore;
     index: SearchIndexStore;
+    budget: SearchBudgetStore;
     measuredQueries: () => string[];
   },
 ) {
@@ -229,7 +233,7 @@ export function searchStoreContract(
       const raw = JSON.parse(
         atob(first.nextCursor!.replaceAll('-', '+').replaceAll('_', '/')),
       );
-      raw.v = 2;
+      raw.policy = 2;
       const after = btoa(JSON.stringify(raw))
         .replaceAll('+', '-')
         .replaceAll('/', '_')
@@ -342,6 +346,204 @@ export function searchStoreContract(
         (await store.search({ projectId, ast: parseSearchQuery('startup') }))
           .items,
       ).toEqual([]);
+    });
+    it('replays current outbox revisions, ignores stale and duplicate events and rebuilds deletes/redactions', async () => {
+      const { projectId, principalId, ids } = await seed(),
+        { harness, index, store } = get(),
+        issueId = ids[0]!;
+      const event = (revision: number) => ({
+        version: 1 as const,
+        projectId,
+        issueId,
+        revision,
+      });
+      await harness.query(
+        "UPDATE issues SET revision = 2, title = 'new text', body_text = 'new text' WHERE id = ?",
+        [issueId],
+      );
+      const mutationId = crypto.randomUUID();
+      await harness.query(
+        'INSERT INTO timeline_events (id, project_id, issue_id, aggregate_revision, actor_id, action, created_at, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          mutationId,
+          projectId,
+          issueId,
+          2,
+          principalId,
+          'issue.edit',
+          1000,
+          '{}',
+        ],
+      );
+      expect(
+        (
+          await handleSearchOutboxEvent(index, {
+            projectId,
+            aggregateId: issueId,
+            eventType: 'issue.edit',
+            payload: { issueId, mutationId },
+          })
+        ).updated,
+      ).toBe(1);
+      expect((await handleSearchIndexEvent(index, event(1))).updated).toBe(0);
+      expect((await handleSearchIndexEvent(index, event(2))).updated).toBe(0);
+      expect((await handleSearchIndexEvent(index, event(3))).processed).toBe(0);
+      await harness.query(
+        "UPDATE issues SET revision = 3, moderation = 'redacted', body_text = NULL, body_text_version = NULL WHERE id = ?",
+        [issueId],
+      );
+      expect((await handleSearchIndexEvent(index, event(3))).updated).toBe(1);
+      await harness.query(
+        'UPDATE issues SET revision = 4, deleted_at = ? WHERE id = ?',
+        [2000, issueId],
+      );
+      expect((await handleSearchIndexEvent(index, event(4))).updated).toBe(1);
+      expect((await handleSearchIndexEvent(index, event(2))).updated).toBe(0);
+      expect(
+        await harness.query(
+          'SELECT revision, active, title, body FROM search_documents WHERE issue_id = ?',
+          [issueId],
+        ),
+      ).toEqual([{ revision: 4, active: 0, title: '', body: '' }]);
+      await harness.query('DELETE FROM search_documents WHERE project_id = ?', [
+        projectId,
+      ]);
+      await index.backfill({ projectId });
+      expect(
+        (await store.search({ projectId, ast: parseSearchQuery('') })).items,
+      ).toHaveLength(3);
+      const before = get().measuredQueries().length;
+      expect(() =>
+        handleSearchIndexEvent(index, { ...event(4), revision: -1 }),
+      ).toThrow('SEARCH_VALUE');
+      await expect(
+        index.backfill({ projectId, limit: 11, tier: 'cloudflare-minimum' }),
+      ).rejects.toMatchObject({ code: 'SEARCH_COMPLEXITY' });
+      expect(get().measuredQueries().length).toBe(before);
+    });
+    it('atomically reserves minimum quotas, denies exhaustion before index work and bounds a full-body reindex', async () => {
+      const { projectId, principalId, ids } = await seed(),
+        { harness, budget, index, store, measuredQueries } = get();
+      await harness.query('DELETE FROM search_budget');
+      try {
+        const nowMs = Date.now();
+        const reservations = await Promise.all(
+          Array.from({ length: 15 }, () =>
+            budget.reserve({ reads: 100000, writes: 1, nowMs }),
+          ),
+        );
+        expect(reservations.filter(Boolean)).toHaveLength(10);
+        const before = measuredQueries().length;
+        await expect(
+          store.search({
+            projectId,
+            tier: 'cloudflare-minimum',
+            ast: parseSearchQuery(''),
+          }),
+        ).rejects.toMatchObject({ code: 'SEARCH_BUDGET_EXHAUSTED' });
+        expect(measuredQueries().length - before).toBe(1);
+        await expect(
+          index.backfill({ projectId, tier: 'cloudflare-minimum', limit: 1 }),
+        ).rejects.toMatchObject({ code: 'SEARCH_BUDGET_EXHAUSTED' });
+        expect(
+          (
+            await harness.query(
+              'SELECT revision FROM search_documents WHERE issue_id = ?',
+              [ids[0]!],
+            )
+          )[0],
+        ).toEqual({ revision: 1 });
+        await harness.query('DELETE FROM search_budget');
+        const writeReservations = await Promise.all(
+          Array.from({ length: 3 }, () =>
+            budget.reserve({ reads: 1, writes: 10000, nowMs }),
+          ),
+        );
+        expect(writeReservations.filter(Boolean)).toHaveLength(2);
+        await expect(
+          index.backfill({ projectId, tier: 'cloudflare-minimum', limit: 1 }),
+        ).rejects.toMatchObject({ code: 'SEARCH_BUDGET_EXHAUSTED' });
+        await harness.query('DELETE FROM search_budget');
+        const body = Array.from(
+          { length: 6000 },
+          (_, n) => 'x' + n.toString(36),
+        ).join(' ');
+        await harness.query(
+          'UPDATE issues SET revision = 2, body_text = ?, body = ? WHERE project_id = ?',
+          [body, body, projectId],
+        );
+        for (let number = 5; number <= 10; number++)
+          await harness.query(
+            'INSERT INTO issues (id, project_id, number, title, body, body_text, body_text_version, author_id, created_at, updated_at, last_mutation_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+              crypto.randomUUID(),
+              projectId,
+              number,
+              'Quota fixture',
+              body,
+              body,
+              'search-test-v1',
+              principalId,
+              1000,
+              1000,
+              crypto.randomUUID(),
+            ],
+          );
+        const start = performance.now();
+        const result = await index.backfill({
+          projectId,
+          tier: 'cloudflare-minimum',
+        });
+        expect(result.processed).toBe(10);
+        expect(result.updated).toBe(10);
+        if (result.usage) {
+          expect(result.usage.statements).toBe(11);
+          expect(result.usage.rowsRead).toBeLessThanOrEqual(2000);
+          expect(result.usage.rowsWritten).toBeLessThanOrEqual(5128);
+        }
+        expect(
+          (
+            await store.search({
+              projectId,
+              tier: 'cloudflare-minimum',
+              ast: parseSearchQuery('x10'),
+            })
+          ).items,
+        ).toHaveLength(10);
+        const { mkdir, writeFile } = await import('node:fs/promises');
+        await mkdir('.local/evidence', { recursive: true });
+        await writeFile(
+          '.local/evidence/08-' +
+            (result.usage ? 'd1' : 'postgres') +
+            '-minimum-reindex.json',
+          JSON.stringify(
+            {
+              documents: 10,
+              bodyCodePoints: body.length,
+              uniqueBodyTokens: 6000,
+              elapsedMs: performance.now() - start,
+              result,
+              ledger: await harness.query(
+                'SELECT day, reads, writes FROM search_budget',
+              ),
+            },
+            null,
+            2,
+          ) + '\n',
+        );
+        expect(
+          await budget.reserve({
+            reads: 1,
+            writes: 1,
+            nowMs: nowMs + 86400000,
+          }),
+        ).toBe(true);
+        expect(await budget.reserve({ reads: 1, writes: 1, nowMs })).toBe(
+          false,
+        );
+      } finally {
+        await harness.query('DELETE FROM search_budget');
+      }
     });
     it('preserves late and repeated phrases beyond native PostgreSQL position limits', async () => {
       const { projectId, ids } = await seed(),
@@ -481,6 +683,10 @@ export async function measureSearchQueries(get: {
     options: import('@hyperbug/application').SearchPageOptions,
     columns: string,
   ) => { sql: string; values: (string | number | null)[] };
+  execute?: (
+    sql: string,
+    values: (string | number | null)[],
+  ) => Promise<Record<string, unknown>[]>;
   explain?: (
     sql: string,
     values: (string | number | null)[],
@@ -588,6 +794,27 @@ export async function measureSearchQueries(get: {
       expect(JSON.stringify(plan)).toMatch(
         /VIRTUAL TABLE INDEX|search_vector_gin/,
       );
+    if (profile === 'postgres') {
+      expect(JSON.stringify(plan)).not.toMatch(
+        /"Node Type":"Seq Scan"[^}]*"Relation Name":"issues"/u,
+      );
+      // Text membership must not multiply canonical fetches by the posting-list size.
+      const inspect = (value: unknown): void => {
+        if (Array.isArray(value)) {
+          for (const entry of value) inspect(entry);
+        } else if (value && typeof value === 'object') {
+          const node = value as Record<string, unknown>;
+          if (node['Relation Name'] === 'issues') {
+            expect(Number(node['Actual Loops'])).toBeLessThanOrEqual(4097);
+            expect(
+              Number(node['Actual Rows']) * Number(node['Actual Loops']),
+            ).toBeLessThanOrEqual(4097);
+          }
+          for (const entry of Object.values(node)) inspect(entry);
+        }
+      };
+      inspect(plan);
+    }
     const metadata = get.metadata
       ? await get.metadata(compiled.sql, compiled.values)
       : null;
@@ -617,6 +844,51 @@ export async function measureSearchQueries(get: {
       relationMetadata,
     });
   }
+  let unauthorizedPlan: unknown = null;
+  if (get.explain) {
+    const denied = {
+      projectId: otherId,
+      principalId,
+      ast: parseSearchQuery('needle'),
+    };
+    const compiled = get.compile(
+      denied,
+      await searchPageOptions(denied),
+      'id, created_at',
+    );
+    unauthorizedPlan = await get.explain(compiled.sql, compiled.values);
+    const inspect = (value: unknown): void => {
+      if (Array.isArray(value)) {
+        for (const entry of value) inspect(entry);
+      } else if (value && typeof value === 'object') {
+        const node = value as Record<string, unknown>;
+        if (
+          node['Relation Name'] === 'issues' ||
+          node['Relation Name'] === 'search_documents'
+        )
+          expect(node['Actual Loops']).toBe(0);
+        for (const entry of Object.values(node)) inspect(entry);
+      }
+    };
+    inspect(unauthorizedPlan);
+  }
+  const raced = {
+    projectId,
+    principalId,
+    ast: parseSearchQuery('needle'),
+    tier: 'cloudflare-minimum' as const,
+  };
+  const fenced = get.compile(
+    raced,
+    await searchPageOptions(raced),
+    'id, created_at',
+  );
+  const fencedRows = get.execute
+    ? await get.execute(fenced.sql, fenced.values)
+    : await harness.query(fenced.sql, fenced.values as (string | number)[]);
+  expect(fencedRows).toEqual([
+    { id: null, created_at: null, search_overflow: 1 },
+  ]);
   const before = measuredQueries().length;
   await expect(
     store.search({
@@ -625,13 +897,14 @@ export async function measureSearchQueries(get: {
       tier: 'cloudflare-minimum',
     }),
   ).rejects.toMatchObject({ code: 'SEARCH_BUDGET_EXHAUSTED' });
-  expect(measuredQueries().length - before).toBe(1);
+  expect(measuredQueries().length - before).toBe(2);
   await mkdir('.local/evidence', { recursive: true });
   await writeFile(
     `.local/evidence/08-${profile}-search-query.json`,
     JSON.stringify(
       {
         profile,
+        unauthorizedPlan,
         fixture: {
           issues: 8000,
           publicVisible: 2000,

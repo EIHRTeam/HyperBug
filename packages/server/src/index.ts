@@ -1,5 +1,5 @@
 import { searchIssues, type SearchContext } from './search.ts';
-import type { SearchStore } from '@hyperbug/application';
+import type { SearchStore, SearchIndexStore } from '@hyperbug/application';
 import { accountsRoutes } from './route-accounts.ts';
 import { pluginsRoutes } from './route-plugins.ts';
 import { registrationRoutes } from './route-registration.ts';
@@ -322,6 +322,7 @@ export interface AppOptions {
   /** Project-scoped issue persistence (the module-02 repository). */
   issueRepository?: IssueRepository | null;
   searchStore?: SearchStore | null;
+  searchIndexStore?: SearchIndexStore | null;
   /** Issue comment persistence with history and moderation. */
   commentStore?: CommentStore | null;
   /** Issue/comment reaction persistence. */
@@ -457,6 +458,7 @@ export function createApp({
   mediaOrigin = null,
   issueRepository = null,
   searchStore = null,
+  searchIndexStore = null,
   commentStore = null,
   reactionStore = null,
   timelineStore = null,
@@ -940,6 +942,8 @@ export function createApp({
   const searchContext: SearchContext = {
     ...projectContext,
     search: searchStore,
+    index: searchIndexStore,
+    admission: boundSensitiveAdmission,
     tier: deployment.tier,
   };
   const issueContext: IssueContext = {
@@ -3012,3 +3016,6 @@ export {
   createTurnstileVerifier,
   turnstileOutboundLimits,
 } from './turnstile.ts';
+
+export { reindexSearch } from './search.ts';
+export type { SearchContext } from './search.ts';
