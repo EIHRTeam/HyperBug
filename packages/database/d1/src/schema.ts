@@ -133,6 +133,12 @@ export const issues = table(
       t.id,
     ),
     index('issue_author').on(t.authorId, t.id),
+    index('issue_project_author_created').on(
+      t.projectId,
+      t.authorId,
+      t.createdAt,
+      t.id,
+    ),
     index('issue_type_filter').on(t.projectId, t.typeId, t.createdAt, t.id),
     index('issue_milestone_filter').on(
       t.projectId,
@@ -1808,5 +1814,32 @@ export const pluginEventOutbox = table(
       sql`${t.availableAt} >= ${t.createdAt} AND (${t.deliveredAt} IS NULL OR ${t.deliveredAt} >= ${t.createdAt})`,
     ),
     validId('plugin_event_id', t.eventId),
+  ],
+);
+
+/** Derived search state only. Canonical Issue revision and visibility remain authoritative. */
+export const searchDocuments = table(
+  'search_documents',
+  {
+    rowid: integer('rowid').primaryKey({ autoIncrement: true }),
+    issueId: id('issue_id').notNull(),
+    projectId: id('project_id').notNull(),
+    revision: integer('revision').notNull(),
+    projectionVersion: text('projection_version'),
+    active: integer('active').notNull().default(0),
+    scope: text('scope').notNull(),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+  },
+  (t) => [
+    unique('search_issue').on(t.issueId),
+    index('search_project_issue').on(t.projectId, t.issueId),
+    foreignKey({
+      columns: [t.projectId, t.issueId],
+      foreignColumns: [issues.projectId, issues.id],
+      name: 'search_issue_fk',
+    }),
+    check('search_revision', sql`${t.revision} BETWEEN 1 AND 2147483647`),
+    check('search_active', sql`${t.active} IN (0,1)`),
   ],
 );

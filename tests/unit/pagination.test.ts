@@ -1,3 +1,6 @@
+import { searchParserContract } from '../fixtures/search-contract.ts';
+import { parseSearchQuery } from '@hyperbug/application';
+searchParserContract(parseSearchQuery);
 import { describe, expect, it } from 'vitest';
 import {
   issuePage,

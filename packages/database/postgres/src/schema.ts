@@ -12,6 +12,7 @@ import {
   check,
   foreignKey,
   primaryKey,
+  customType,
 } from 'drizzle-orm/pg-core';
 const id = (name: string) => uuid(name);
 const instant = (name: string) => bigint(name, { mode: 'number' });
@@ -133,6 +134,12 @@ export const issues = table(
       t.id,
     ),
     index('issue_author').on(t.authorId, t.id),
+    index('issue_project_author_created').on(
+      t.projectId,
+      t.authorId,
+      t.createdAt,
+      t.id,
+    ),
     index('issue_type_filter').on(t.projectId, t.typeId, t.createdAt, t.id),
     index('issue_milestone_filter').on(
       t.projectId,
@@ -1779,5 +1786,47 @@ export const pluginEventOutbox = table(
       sql`${t.availableAt} >= ${t.createdAt} AND (${t.deliveredAt} IS NULL OR ${t.deliveredAt} >= ${t.createdAt})`,
     ),
     validId('plugin_event_id', t.eventId),
+  ],
+);
+
+const searchVector = customType<{ data: string }>({
+  dataType: () => 'tsvector',
+});
+
+/** Derived search state only. Canonical Issue revision and visibility remain authoritative. */
+export const searchDocuments = table(
+  'search_documents',
+  {
+    issueId: id('issue_id').notNull(),
+    projectId: id('project_id').notNull(),
+    revision: integer('revision').notNull(),
+    projectionVersion: text('projection_version'),
+    active: integer('active').notNull().default(0),
+    scope: text('scope').notNull(),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    titleVector: searchVector('title_vector')
+      .generatedAlwaysAs(sql`to_tsvector('simple', title)`)
+      .notNull(),
+    bodyVector: searchVector('body_vector')
+      .generatedAlwaysAs(sql`to_tsvector('simple', body)`)
+      .notNull(),
+    searchVector: searchVector('search_vector')
+      .generatedAlwaysAs(
+        sql`to_tsvector('simple', scope || ' ' || title || ' ' || body)`,
+      )
+      .notNull(),
+  },
+  (t) => [
+    unique('search_issue').on(t.issueId),
+    index('search_project_issue').on(t.projectId, t.issueId),
+    foreignKey({
+      columns: [t.projectId, t.issueId],
+      foreignColumns: [issues.projectId, issues.id],
+      name: 'search_issue_fk',
+    }),
+    check('search_revision', sql`${t.revision} BETWEEN 1 AND 2147483647`),
+    check('search_active', sql`${t.active} IN (0,1)`),
+    index('search_vector_gin').using('gin', t.searchVector),
   ],
 );

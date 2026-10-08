@@ -1,3 +1,12 @@
+import {
+  searchStoreContract,
+  searchParserContract,
+} from '../fixtures/search-contract.ts';
+import type { SearchStore } from '@hyperbug/application';
+let searchStore: SearchStore;
+let parseSearch: Parameters<typeof searchParserContract>[0];
+searchStoreContract(() => ({ harness, store: searchStore, measuredQueries }));
+searchParserContract((source, principalId) => parseSearch(source, principalId));
 import { expiredCleanupContract } from '../fixtures/expired-cleanup-contract.ts';
 import { createD1ExpiredCleanupStore } from '@hyperbug/database-d1';
 import { uploadScanContract } from '../fixtures/upload-scan-contract.ts';
@@ -510,6 +519,8 @@ beforeAll(async () => {
   async function call<T>(
     method:
       | keyof IssueRepository
+      | 'searchIssues'
+      | 'parseSearch'
       | 'auditAppend'
       | 'auditList'
       | 'registryInspect'
@@ -545,6 +556,27 @@ beforeAll(async () => {
       });
     return payload.value;
   }
+  parseSearch = (source, principalId) =>
+    call('parseSearch', { source, principalId });
+  searchStore = {
+    search: async (query) => {
+      const result = await call<
+        Omit<Awaited<ReturnType<SearchStore['search']>>, 'relations'> & {
+          relations: {
+            labels: [string, string[]][];
+            assignees: [string, string[]][];
+          };
+        }
+      >('searchIssues', query);
+      return {
+        ...result,
+        relations: {
+          labels: new Map(result.relations.labels),
+          assignees: new Map(result.relations.assignees),
+        },
+      };
+    },
+  };
   registry = {
     async inspect(signal) {
       signal.throwIfAborted();
@@ -1183,7 +1215,7 @@ it('migrates a fresh database and keeps foreign keys enabled', async () => {
         "SELECT count(*) AS count FROM sqlite_master WHERE type = 'trigger'",
       )
       .first('count'),
-  ).toBe(43);
+  ).toBe(46);
 });
 it('widens key purpose on a populated D1 registry without losing guards', async () => {
   const db = await mf.getD1Database('KEY_UPGRADE');

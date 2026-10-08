@@ -1,3 +1,15 @@
+import {
+  searchStoreContract,
+  searchParserContract,
+} from '../fixtures/search-contract.ts';
+import { parseSearchQuery } from '@hyperbug/application';
+import { createPostgresSearchStore } from '@hyperbug/database-postgres';
+searchStoreContract(() => ({
+  harness,
+  store: createPostgresSearchStore(pool),
+  measuredQueries,
+}));
+searchParserContract(parseSearchQuery);
 import { expiredCleanupContract } from '../fixtures/expired-cleanup-contract.ts';
 import { createPostgresExpiredCleanupStore } from '@hyperbug/database-postgres';
 import { uploadScanContract } from '../fixtures/upload-scan-contract.ts';
@@ -622,7 +634,7 @@ it('migrates a fresh database and protects history from truncation', async () =>
           "SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema = 'public' AND table_name != 'hyperbug_schema_migrations'",
         )
       ).rows[0].count,
-    ).toBe(49);
+    ).toBe(50);
     await expect(
       fresh.query('TRUNCATE upload_legacy_recoveries'),
     ).rejects.toThrow('Retain legacy cleanup target');

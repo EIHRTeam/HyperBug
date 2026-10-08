@@ -1,3 +1,9 @@
+import {
+  searchPageOptions,
+  searchPage,
+  type SearchStore,
+} from '@hyperbug/application';
+import { compilePostgresSearch } from './search.ts';
 import { projectMarkdownText } from '@hyperbug/security/markdown';
 import { resolvePostgresIssueFormDefaults } from './content-definitions.ts';
 import { consumeFormAttachments } from './form-attachments.ts';
@@ -665,3 +671,26 @@ export { createPostgresUploadLegacyInventoryStore } from './upload-legacy-invent
 export { createPostgresUploadLegacyRecoveryStore } from './upload-legacy-recovery.ts';
 
 export { createPostgresExpiredCleanupStore } from './expired-cleanup.ts';
+
+export function createPostgresSearchStore(db: Pool): SearchStore {
+  const repository = createPostgresRepository(db);
+  return {
+    async search(query) {
+      const options = await searchPageOptions(query);
+      const compiled = compilePostgresSearch(query, options, listColumns);
+      const rows = (await db.query<IssueRow>(compiled.sql, compiled.values))
+        .rows;
+      const page = searchPage(query, options, rows.map(toListItem));
+      const relations = page.items.length
+        ? await repository.relations(
+            query.projectId,
+            page.items.map((row) => row.id),
+          )
+        : {
+            labels: new Map<string, string[]>(),
+            assignees: new Map<string, string[]>(),
+          };
+      return { ...page, relations };
+    },
+  };
+}

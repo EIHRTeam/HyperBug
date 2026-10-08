@@ -170,6 +170,9 @@ importers:
 
   packages/application:
     dependencies:
+      '@hyperbug/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@hyperbug/domain':
         specifier: workspace:*
         version: link:../domain

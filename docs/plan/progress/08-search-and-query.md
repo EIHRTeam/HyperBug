@@ -10,26 +10,26 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend
 - Prerequisites: 07 complete; event contracts from 02, async dispatch completed in 09.
 - Implementation started: B1 specification, runtime-independent AST/bounds and shared fixture preparation; no parser/store/route implementation yet.
-- Completed checklist IDs: 08.1a, 08.1c, 08.1d, 08.1e (specification outcomes only). 08.1b semantics are specified; runtime support remains unchecked until B2.
-- Active/next checklist group: Verify B1 (08.1a–e); obtain the handoff-required specification/endpoint approval before B2.
+- Completed checklist IDs: 08.1a–e, 08.2a/b/d, 08.V1/V2. Dispatch/queue and B3/B4 lifecycle/budget acceptance remain open.
+- Active/next checklist group: B3 08.2c/f/g and 08.V3/V4.
 - Last updated: 2026-10-09.
-- Blocking issues discovered: B2 requires explicit approval of SEARCH-SPEC, numeric bounds, AST version and endpoint shape. Module 09 dispatch/queue acceptance remains a separate integration handoff.
+- Blocking issues discovered: None for B2; the user approved SEARCH-SPEC/bounds/AST/endpoint shape. Module 09 dispatch/queue acceptance remains a separate integration handoff.
 - Evidence: [B1 specification validation](../evidence/08-search-validation.md); runtime search acceptance remains unperformed.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 08.1 | Define public query semantics | B1 verified; 08.1b runtime support pending | [SEARCH-SPEC](../../SEARCH-SPEC.md) |
-| 08.2 | Implement database compilers and index lifecycle | Not started | None yet |
+| 08.1 | Define public query semantics | Complete, B1/B2 locally verified | [SEARCH-SPEC](../../SEARCH-SPEC.md) |
+| 08.2 | Implement database compilers and index lifecycle | B2 compilers/cursors verified; B3/B4 remain | [Search evidence](../evidence/08-search-validation.md) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. B1 static/unit/contract verification passed; commit it on `feat/v1` and leave parser/store acceptance unchecked.
-2. Obtain user approval of [SEARCH-SPEC](../../SEARCH-SPEC.md), bounds, AST v1 and proposed dedicated project search/suggestion routes before B2 code or migrations.
-3. B2 implements parser/validation and dual-store compilers/cursors; B3 lifecycle/current authorization/measurements; B4 handlers/tier budgets. Module 09 dispatch and queue/retry verification remain open.
+1. Commit verified B2, then implement B3 08.2c/f/g with canonical authorization/readiness, bounded initial indexing/reconciliation and representative query measurements (08.V3/V4).
+2. B4 implements version-aware handlers, explicit operator reindex and tier budgets; verify local replay/quota/row bounds.
+3. Keep 08.2e dispatch and 08.V5 queue/retry integration open for Module 09; no remote acceptance/gate closure.
 
 ## Next-session cautions
 
@@ -89,3 +89,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: HANDOFF-08 requires user approval of the specification/bounds/AST/endpoint shape before B2. 08.1b runtime support and 08.V1/V2 await parser/both-store execution. 08.2e dispatch and 08.V5 queue/retry remain module 09 work.
 - Next actions: Finish B1 verification/commit, present the concrete spec for approval, then B2 only after approval.
 - Next-session cautions: Module 08 remains In progress. Preserve feat/v1, protected untracked root documents, existing cursor/projection semantics, G1/G2 closed and 13.G6 open. Local/emulated checks cannot establish actual Free-plan quotas.
+
+### 2026-10-09 — B2 approval and compiler implementation
+
+- Scope and checklist IDs: B2 08.1b/08.2a/b/d and 08.V1/V2 parser/store evidence. User explicitly approved the presented B1 spec/bounds/AST/endpoint decision.
+- Progress: Parser/direct-AST validation, dual-store parameterized compilers, fixed-window keyset pagination and batch relations verified; 08.1b/08.2a/b/d and 08.V1/V2 complete at the recorded local scopes.
+- Change summary: Keep search-derived data separate from canonical Issues; project-scoped FTS5/GIN membership and canonical current-revision/moderation predicates precede results. Traversal has a SQL result cap independent of untrusted cursor counters.
+- Files/artifacts: Application search module, database compilers/store exports/schemas, D1 0028/PG 0027 migration families, approved SEARCH-SPEC/ADR 0013; shared fixtures to be executed after the batch is written.
+- Verification: Types/lint/boundaries pass; unit 6/contract 1 pass; D1/workerd and real isolated PG18.6 selected search/migration suites 14 each pass, with final narrowed three-store-check refinements replacing prior results. db:check and local D1/isolated PG migration application pass. Initial install/static/locale/count failures and exact commands are in [B2 evidence](../evidence/08-search-validation.md#b2--parser-and-dual-store-compilers-2026-10-09).
+- Decisions and deviations: Approved dedicated search/suggestions endpoint shapes; no normative document changes. Drizzle-generated additive D1 migration includes manually reviewed external-content FTS5 table/triggers unsupported by schema generation; no canonical table rewrite/backfill or remote application.
+- Blockers/open questions: None for approval. B3 lifecycle/readiness/query measurement and B4 update handlers/tier budgets remain future batches; dispatch/queue acceptance stays Module 09.
+- Next actions: Commit B2, then B3 canonical service/route authorization/readiness, bounded initial lifecycle and larger-dataset measurements.
+- Next-session cautions: Preserve older migration history and protected untracked drafts; no remote migration/deployment or gate closure. Search index writes do not enter canonical Issue mutation routes.

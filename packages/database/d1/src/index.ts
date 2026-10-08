@@ -1,3 +1,9 @@
+import {
+  searchPageOptions,
+  searchPage,
+  type SearchStore,
+} from '@hyperbug/application';
+import { compileD1Search } from './search.ts';
 import { projectMarkdownText } from '@hyperbug/security/markdown';
 import type { D1Database } from '@cloudflare/workers-types';
 export { createD1RateCounterStore } from './rate-limit.ts';
@@ -773,3 +779,30 @@ export { createD1UploadLegacyInventoryStore } from './upload-legacy-inventory.ts
 export { createD1UploadLegacyRecoveryStore } from './upload-legacy-recovery.ts';
 
 export { createD1ExpiredCleanupStore } from './expired-cleanup.ts';
+
+export function createD1SearchStore(db: D1Database): SearchStore {
+  const repository = createD1Repository(db);
+  return {
+    async search(query) {
+      const options = await searchPageOptions(query);
+      const compiled = compileD1Search(query, options, listColumns);
+      const rows = (
+        await db
+          .prepare(compiled.sql)
+          .bind(...compiled.values)
+          .all<IssueRow>()
+      ).results;
+      const page = searchPage(query, options, rows.map(toListItem));
+      const relations = page.items.length
+        ? await repository.relations(
+            query.projectId,
+            page.items.map((row) => row.id),
+          )
+        : {
+            labels: new Map<string, string[]>(),
+            assignees: new Map<string, string[]>(),
+          };
+      return { ...page, relations };
+    },
+  };
+}

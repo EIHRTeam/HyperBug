@@ -1,13 +1,13 @@
 # ADR 0013: Bounded search contract and derived index
 
-Status: Proposed; user approval is required before B2 implementation by HANDOFF-08.
+Status: Accepted direction; user approved SEARCH-SPEC and B2 on 2026-10-09. Runtime acceptance remains required.
 Date: 2026-10-09.
 
 ## Context
 
 Module 08 must provide shared search semantics on D1 and PostgreSQL while preserving current authorization, the existing plain-text projection, keyset pagination and strict resource bounds. PERFORMANCE §§16–19 and 76 require an explicit decision for search/pagination/denormalization. Native FTS5 and PostgreSQL query languages and ranking are not interchangeable public contracts.
 
-## Proposed decision
+## Decision
 
 Adopt [SEARCH-SPEC](../SEARCH-SPEC.md): independently versioned AST v1 with at most four OR branches and sixteen predicates, project-scoped search and filter-suggestion routes with stricter page/window budgets, and immutable creation-time/ID ordering. Reuse the existing cursor envelope rules with a resolved-query fingerprint and traversal budget; preserve ordinary list cursors. Expose only the seven MVP filters. Do not publish raw FTS syntax or native relevance scores.
 

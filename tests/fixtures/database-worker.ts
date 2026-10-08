@@ -1,3 +1,9 @@
+import { createD1SearchStore } from '@hyperbug/database-d1';
+import {
+  parseSearchQuery,
+  SearchError,
+  type SearchQuery,
+} from '@hyperbug/application';
 import {
   keyRegistryRuntimeProof,
   minimumPasswordRegistryProof,
@@ -38,6 +44,8 @@ import type {
 import { boundedD1 } from './d1-bind-guard.ts';
 
 type Message =
+  | { method: 'searchIssues'; input: SearchQuery }
+  | { method: 'parseSearch'; input: { source: string; principalId?: string } }
   | { method: 'auditAppend'; input: AuditEvent }
   | { method: 'auditList'; input: AuditListOptions }
   | { method: 'auditScenarios' }
@@ -151,6 +159,25 @@ export default {
     try {
       let value: unknown;
       switch (message.method) {
+        case 'parseSearch':
+          value = parseSearchQuery(
+            message.input.source,
+            message.input.principalId,
+          );
+          break;
+        case 'searchIssues': {
+          const result = await createD1SearchStore(
+            measured as unknown as D1Database,
+          ).search(message.input);
+          value = {
+            ...result,
+            relations: {
+              labels: [...result.relations.labels],
+              assignees: [...result.relations.assignees],
+            },
+          };
+          break;
+        }
         case 'auditAppend':
           await audit.append(message.input, signal);
           value = null;
@@ -331,7 +358,9 @@ export default {
         {
           error: {
             code:
-              error instanceof DomainError || error instanceof IssueFormError
+              error instanceof DomainError ||
+              error instanceof IssueFormError ||
+              error instanceof SearchError
                 ? error.code
                 : 'PERSISTENCE_FAILURE',
           },
