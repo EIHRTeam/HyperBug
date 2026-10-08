@@ -149,3 +149,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: No blocker within authorized handoff scope. Module09 dispatch/queue/retry/reconciliation and provider-global headroom, Module10 composed acceptance and actual Free CPU/quota 13.G6 remain open.
 - Next actions: Commit verified B4 as the fourth batch; stop Module08 implementation. Later authorized Module09 connects 08.2e dispatch and completes 08.V5; Module10/13 supply remaining gate evidence.
 - Next-session cautions: Preserve feat/v1 batch history, protected untracked drafts, earlier migrations, current canonical authorization and numeric ceilings. No remote rollout/push, SPA or Module07/14 expansion. G1/G2 stay closed and 13.G6 open; local evidence must not be promoted to hosted acceptance.
+
+### 2026-10-09 — User-authorized commit and push
+
+- Scope and checklist IDs: Publish the four completed Module08 batch commits; no implementation checklist change.
+- Progress: User explicitly requested commit and push. All implementation was already committed; `git push origin feat/v1` succeeded, advancing the remote from `1841761` to `48d0cf0`.
+- Change summary: Published B1 `c0d0527`, B2 `3869c76`, B3 `faa04f8` and B4 `48d0cf0`; append this operational record as a separate documentation commit.
+- Files/artifacts: This progress entry and origin/feat/v1 history.
+- Verification: `git status --short`, branch/upstream and four-commit history inspection confirmed feat/v1 with a clean tracked tree; push exited successfully. `git diff --check` validates this documentation entry. Application tests are not rerun because no behavior changed; remote CI is not claimed.
+- Decisions and deviations: Current explicit user authorization supersedes the prior no-push boundary for these commits. Protected root drafts remain untracked and excluded.
+- Blockers/open questions: None for pushing. Existing Module09 dispatch/queue and Module10/13 acceptance remain open.
+- Next actions: Commit and push this progress record; confirm local/remote branch agreement.
+- Next-session cautions: Module08 remains In progress; G1/G2 closed and 13.G6 open. A Git push does not apply migrations or deploy the application.
