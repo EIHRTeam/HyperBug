@@ -1382,3 +1382,16 @@ asyncStoreContract(() => ({
   harness,
   store: createD1AsyncStore(registrationDb),
 }));
+
+import {
+  createD1PluginRegistryStore as asyncRegistryFactory,
+  createD1PluginSettingsStore as asyncSettingsFactory,
+} from '@hyperbug/database-d1';
+import { asyncConsumerContract } from '../fixtures/async-consumer-contract.ts';
+asyncConsumerContract(() => ({
+  harness,
+  store: createD1AsyncStore(registrationDb),
+  search: createD1SearchIndexStore(registrationDb),
+  registry: asyncRegistryFactory(registrationDb),
+  settings: asyncSettingsFactory(registrationDb),
+}));

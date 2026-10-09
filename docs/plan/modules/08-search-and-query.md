@@ -25,7 +25,7 @@ Provide one bounded search language and AST with separate optimized D1 and Postg
 - [x] **08.2b** Implement the same AST for PostgreSQL tsvector/tsquery with GIN and appropriate relational indexes.
 - [x] **08.2c** Apply project/object authorization and moderation rules to current canonical records, including suggestions, counts, and stale-index results.
 - [x] **08.2d** Implement stable keyset pagination with sort tie-breakers, strict result limits, and batched hydration.
-- [ ] **08.2e** Implement version-aware search update handlers that ignore stale events and handle deletions/redactions; connect dispatch in 09.
+- [x] **08.2e** Implement version-aware search update handlers that ignore stale events and handle deletions/redactions; connect dispatch in 09.
 - [x] **08.2f** Define acceptable index delay, retry, reconciliation, and bounded rebuild behavior. Provide a safe temporary initial indexing path for integration tests before dispatch is wired.
 - [x] **08.2g** Define timeout/degraded behavior that leaves direct Issue access usable and never expands authorization.
 - [x] **08.2h** Define and implement tier-scoped search budgets: bounded result windows and scan limits for the Cloudflare Free minimum tier, quota-aware degradation with documented safe errors, an explicit distinction between an unfinished index and an unauthorized result, and a bounded administrator-triggered reindex that respects the free row-read and row-write budgets. Follow [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md). Local reservation/row evidence is in [search acceptance](../evidence/08-search-validation.md); account-wide quotas and actual Free CPU remain 13.G6.
@@ -36,7 +36,7 @@ Provide one bounded search language and AST with separate optimized D1 and Postg
 - [x] **08.V2** Fuzz bounded parsing and reject complexity limits before expensive database work.
 - [x] **08.V3** Verify hidden/deleted/unauthorized data is absent from results and counts even with a deliberately stale index.
 - [x] **08.V4** Record query plans, index usage, rows read, query counts, and latency with representative larger datasets; investigate full scans and N+1.
-- [ ] **08.V5** Replay updates out of order and rebuild an index from canonical data; complete queue/retry verification in module 09.
+- [x] **08.V5** Replay updates out of order and rebuild an index from canonical data; complete queue/retry verification in module 09.
 - [x] **08.V6** Verify minimum-tier search behavior when a quota is exhausted: bounded documented errors, no scan of unauthorized rows, no authorization expansion through a stale or partial index, and a reindex that stays inside the recorded row budgets. Verified against local/emulated tier allowances only; no actual Free-plan quota/CPU claim.
 
 ## Source coverage

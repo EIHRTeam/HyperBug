@@ -1,3 +1,4 @@
+import { configureNodeAsync } from './async-processing.ts';
 import { isAbsolute } from 'node:path';
 import { Pool, type PoolConfig } from 'pg';
 import type { RuntimeConfig } from '@hyperbug/config';
@@ -110,6 +111,7 @@ export interface NodeAbuseAdmission {
   readonly auditAppend: AuditAppend | null;
   /** Trusted maintenance call; the runtime also schedules it every five minutes. */
   purgeExpiredRateCounters(nowMs: number): Promise<number>;
+  runAsync(): Promise<void>;
   ready(signal: AbortSignal): Promise<boolean>;
   close(): Promise<void>;
 }
@@ -168,6 +170,7 @@ export function configureNodeAbuseAdmission(
       purgeExpiredRateCounters: async () => {
         throw new Error('Rate counter cleanup unavailable');
       },
+      runAsync: async () => {},
       ready: async () => false,
       close: async () => {},
     });
@@ -248,11 +251,13 @@ export function configureNodeAbuseAdmission(
     // Idle-client errors carry connection details; emit only a fixed message.
     console.error('PostgreSQL security connection unavailable');
   });
+  const asyncRuntime = configureNodeAsync(pool);
   const accountStore = createPostgresAccountRegistrationStore(pool);
   const rateStore = createPostgresRateCounterStore(pool);
   const cleanup = startNodeExpiredCleanup(
     createPostgresExpiredCleanupStore(pool),
     expiredSessionRetentionSeconds * 1000,
+    asyncRuntime.run,
   );
   const keyRegistry = createPostgresKeyRegistry(pool);
   const keyProvider =
@@ -307,6 +312,7 @@ export function configureNodeAbuseAdmission(
     accountAdministration: createPostgresAccountAdministration(pool),
     passkeyStores: createPostgresPasskeyStores(pool),
     auditAppend,
+    runAsync: asyncRuntime.run,
     purgeExpiredRateCounters: (nowMs: number) =>
       rateStore.purgeExpired(nowMs, 1000),
     async ready(signal: AbortSignal): Promise<boolean> {
@@ -326,6 +332,7 @@ export function configureNodeAbuseAdmission(
     },
     close: async () => {
       await cleanup.close();
+      await asyncRuntime.close();
       await pool.end();
     },
   });

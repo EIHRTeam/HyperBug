@@ -1,3 +1,4 @@
+import { createPostgresAsyncStore } from '@hyperbug/database-postgres';
 import { searchHttpContract } from '../fixtures/search-contract.ts';
 import { createPostgresSearchIndexStore } from '@hyperbug/database-postgres';
 import { uploadHttpContract } from '../fixtures/upload-http-contract.ts';
@@ -592,6 +593,7 @@ it('delivers the issue lifecycle on Node/PostgreSQL', async () => {
   );
   expect(audited[0]!.count).toBe(0);
   await contentHttpContract({
+    asyncStore: createPostgresAsyncStore(pool),
     projectId: project.id,
     token: staffToken,
     call,

@@ -18,11 +18,19 @@ export function startNodeRateCounterCleanup(store: RateCounterStore) {
 export function startNodeExpiredCleanup(
   store: ExpiredCleanupStore,
   retentionMs: number,
+  background?: () => Promise<void>,
 ) {
-  return startNodeCleanup(
-    (nowMs) => store.purgeExpired(nowMs, retentionMs, expiredCleanupBatchSize),
-    'Expired cleanup unavailable',
-  );
+  return startNodeCleanup(async (nowMs) => {
+    const count = await store.purgeExpired(
+      nowMs,
+      retentionMs,
+      expiredCleanupBatchSize,
+    );
+    await background?.().catch(() => {
+      console.error('Async dispatch unavailable');
+    });
+    return count;
+  }, 'Expired cleanup unavailable');
 }
 
 function startNodeCleanup(

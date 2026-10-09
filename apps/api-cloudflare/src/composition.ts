@@ -1,3 +1,5 @@
+import type { AsyncPluginBinding } from '@hyperbug/application';
+import { configureCloudflareAsync } from './async-processing.ts';
 import { expiredCleanupBatchSize } from '@hyperbug/application';
 import { configureWorkerUploads } from './uploads.ts';
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker';
@@ -58,6 +60,7 @@ import { createIngressAttestation } from './ingress-attestation.ts';
 export function createCloudflareApi(
   env: Env,
   standardFactory?: (deployment: DeploymentConfig) => AccountPasswordService,
+  asyncPlugins: readonly AsyncPluginBinding[] = [],
 ) {
   // Workers permits AOT compilation during module initialization, before requests.
   const config = loadConfig(env, 'cloudflare');
@@ -130,6 +133,20 @@ export function createCloudflareApi(
   const taxonomyStore = env.DB ? createD1TaxonomyStore(env.DB) : null;
   const pluginRegistry = env.DB ? createD1PluginRegistryStore(env.DB) : null;
   const pluginSettings = env.DB ? createD1PluginSettingsStore(env.DB) : null;
+  const asyncRuntime =
+    env.DB && config.deployment.tier === 'standard'
+      ? configureCloudflareAsync(
+          env.DB,
+          (
+            env as {
+              ASYNC_TASKS?: import('@cloudflare/workers-types').Queue<
+                import('@hyperbug/application').TaskReference
+              >;
+            }
+          ).ASYNC_TASKS ?? null,
+          asyncPlugins,
+        )
+      : null;
   const pluginEventOutbox = env.DB ? createD1PluginEventOutbox(env.DB) : null;
   const accountAdministration = env.DB
     ? createD1AccountAdministration(env.DB)
@@ -386,6 +403,10 @@ export function createCloudflareApi(
       }
       return app.fetch(request);
     },
+    async queue(batch: MessageBatch<unknown>) {
+      if (!asyncRuntime) throw new Error('Async consumer unavailable');
+      await asyncRuntime.queue(batch);
+    },
     async scheduled(_controller: ScheduledController, bindings: Env) {
       if (!bindings.DB) throw new Error('Expired cleanup unavailable');
       const cleanupConfig = loadConfig(bindings, 'cloudflare');
@@ -394,6 +415,7 @@ export function createCloudflareApi(
         cleanupConfig.security.retentionSeconds.expiredSessions * 1000,
         expiredCleanupBatchSize,
       );
+      await asyncRuntime?.dispatch();
     },
   } satisfies ExportedHandler<Env>;
 }

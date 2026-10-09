@@ -872,3 +872,16 @@ it('Graphile adapter migrates, schedules stable references and bounds invalid sc
     await worker.close();
   }
 });
+
+import {
+  createPostgresPluginRegistryStore as asyncRegistryFactory,
+  createPostgresPluginSettingsStore as asyncSettingsFactory,
+} from '@hyperbug/database-postgres';
+import { asyncConsumerContract } from '../fixtures/async-consumer-contract.ts';
+asyncConsumerContract(() => ({
+  harness,
+  store: createPostgresAsyncStore(pool),
+  search: createPostgresSearchIndexStore(pool),
+  registry: asyncRegistryFactory(pool),
+  settings: asyncSettingsFactory(pool),
+}));

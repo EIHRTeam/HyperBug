@@ -28,8 +28,8 @@ Previous milestone: 2026-10-04 (Module 07 form attachment consumption 07.2b–d/
 | 05 | [Plugin protocol, SDK, registry, and trusted runtime](modules/05-plugin-foundation.md) | Complete (2026-10-01; 05.2a/05.3d audit portions resumed and closed the same day — no suspended remainders) | [Session record](progress/05-plugin-foundation.md) |
 | 06 | [Projects, issues, discussion, and triage backend](modules/06-issue-core.md) | Complete (2026-10-01; 06.1c/06.2c audit portions suspended as explicit deferred remainders) | [Session record](progress/06-issue-core.md) |
 | 07 | [Markdown policy, issue forms, templates, and attachments](modules/07-content-and-attachments.md) | In progress (07.1/07.2a–d/V2/07.3a/b/d/e/g/i/V3/V5/V7 verified at recorded scopes; complete cleanup/scanner/CORS and suspended audit remain) | [Session record](progress/07-content-and-attachments.md) |
-| 08 | [Structured search, filters, and query performance](modules/08-search-and-query.md) | In progress | [B1–B4 local implementation and acceptance](progress/08-search-and-query.md); Module09 dispatch/queue and real tier evidence remain open |
-| 09 | [Outbox delivery, queues, durable workflows, and cleanup](modules/09-async-and-workflows.md) | In progress (B1 portable async model verified; B2–B5 authorized) | [Session record](progress/09-async-and-workflows.md) |
+| 08 | [Structured search, filters, and query performance](modules/08-search-and-query.md) | Complete (local scope; Module 09 dispatch/retry verified) | [B1–B4 local implementation and acceptance](progress/08-search-and-query.md); Module09 dispatch/queue and real tier evidence remain open |
+| 09 | [Outbox delivery, queues, durable workflows, and cleanup](modules/09-async-and-workflows.md) | In progress (B1–B3 verified; B4/B5 pending) | [Session record](progress/09-async-and-workflows.md) |
 | 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | Not started | [Session record](progress/10-backend-acceptance.md) |
 | 11 | [Static web application, authentication client, and UI foundation](modules/11-static-web-foundation.md) | Not started | [Session record](progress/11-static-web-foundation.md) |
 | 12 | [Public feedback, discussion, and staff web workflows](modules/12-web-product-workflows.md) | Not started | [Session record](progress/12-web-product-workflows.md) |
@@ -1221,3 +1221,7 @@ Module 08 is In progress. User approved SEARCH-SPEC/bounds/AST v1/dedicated sear
 ### 2026-10-10 — Module 09 mission resumed; B1 verified
 
 HANDOFF-09 lifts the Module 09 hold for its five bounded non-audit batches. Portable dispatch/idempotency/failure/job stores pass both databases; 09.1b/09.1e, 09.2a and 09.3a accepted at the recorded scope. [Owning progress](progress/09-async-and-workflows.md) and [evidence](evidence/09-async-validation.md) retain exact checks and remaining platform/consumer/hosted work. Module 08's two dispatch/retry items are explicit B3 handoffs. Module 09 remains In progress; 09.3e stays suspended; no G1/G2/13.G6 change.
+
+### 2026-10-10 — Module 09 B3 closes Module 08 dispatch/retry
+
+Module 08 08.2e/08.V5 are verified through connected search/plugin consumers and both-store fault injection; its implementation/local checklist is complete. [Module09 evidence](evidence/09-async-validation.md) and [owning progress](progress/09-async-and-workflows.md) distinguish simulated provider faults from actual D1/PostgreSQL and HTTP journeys. Module09 B4/B5 and suspended 09.3e remain; Standard deployed performance and actual tier release acceptance still belong to open G1/G2/13.G6 gates. No SPA or later feature/audit scope opens.

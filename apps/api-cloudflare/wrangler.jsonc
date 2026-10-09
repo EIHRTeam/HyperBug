@@ -10,6 +10,21 @@
   ],
   "observability": { "enabled": true, "head_sampling_rate": 1 },
   "triggers": { "crons": ["*/5 * * * *"] },
+  "queues": {
+    "producers": [
+      { "binding": "ASYNC_TASKS", "queue": "hyperbug-local-events" },
+    ],
+    "consumers": [
+      {
+        "queue": "hyperbug-local-events",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 4,
+        "retry_delay": 30,
+        "max_concurrency": 2,
+      },
+    ],
+  },
   "secrets": { "required": ["HYPERBUG_KEY_RING", "HYPERBUG_ABUSE_KEY_RING"] },
   "vars": {
     "HYPERBUG_ENV": "local",
@@ -64,6 +79,24 @@
       "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-api-local-turnstile",
       "triggers": { "crons": ["*/5 * * * *"] },
+      "queues": {
+        "producers": [
+          {
+            "binding": "ASYNC_TASKS",
+            "queue": "hyperbug-local-turnstile-events",
+          },
+        ],
+        "consumers": [
+          {
+            "queue": "hyperbug-local-turnstile-events",
+            "max_batch_size": 10,
+            "max_batch_timeout": 5,
+            "max_retries": 4,
+            "retry_delay": 30,
+            "max_concurrency": 2,
+          },
+        ],
+      },
       "secrets": {
         "required": [
           "HYPERBUG_KEY_RING",
@@ -97,6 +130,21 @@
       "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-api-staging",
       "triggers": { "crons": ["*/5 * * * *"] },
+      "queues": {
+        "producers": [
+          { "binding": "ASYNC_TASKS", "queue": "hyperbug-staging-events" },
+        ],
+        "consumers": [
+          {
+            "queue": "hyperbug-staging-events",
+            "max_batch_size": 10,
+            "max_batch_timeout": 5,
+            "max_retries": 4,
+            "retry_delay": 30,
+            "max_concurrency": 2,
+          },
+        ],
+      },
       "workers_dev": false,
       "preview_urls": false,
       "secrets": {
@@ -119,6 +167,21 @@
       "observability": { "enabled": true, "head_sampling_rate": 0.1 },
       "name": "hyperbug-api",
       "triggers": { "crons": ["*/5 * * * *"] },
+      "queues": {
+        "producers": [
+          { "binding": "ASYNC_TASKS", "queue": "hyperbug-production-events" },
+        ],
+        "consumers": [
+          {
+            "queue": "hyperbug-production-events",
+            "max_batch_size": 10,
+            "max_batch_timeout": 5,
+            "max_retries": 4,
+            "retry_delay": 30,
+            "max_concurrency": 2,
+          },
+        ],
+      },
       "workers_dev": false,
       "preview_urls": false,
       "secrets": {

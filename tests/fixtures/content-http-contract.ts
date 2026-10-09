@@ -1,3 +1,4 @@
+import { createOutboxDispatcher, type AsyncStore } from '@hyperbug/application';
 import { expect } from 'vitest';
 import {
   contentPolicyVersion,
@@ -7,6 +8,7 @@ import {
 
 export async function contentHttpContract(options: {
   projectId: string;
+  asyncStore: AsyncStore;
   token: string;
   call(
     path: string,
@@ -27,6 +29,24 @@ export async function contentHttpContract(options: {
   ): Promise<Record<string, unknown>[]>;
 }) {
   const { projectId, token, call, query } = options;
+  const unavailable = createOutboxDispatcher({
+    store: options.asyncStore,
+    queue: {
+      enqueue: async () => {
+        throw new Error('non-critical queue unavailable');
+      },
+      schedule: async () => {
+        throw new Error('non-critical queue unavailable');
+      },
+    },
+  });
+  await unavailable();
+  const unauthorized = await call(`/api/v1/projects/${projectId}/issues`, {
+    method: 'POST',
+    body: { title: 'Denied despite queue outage', body: '' },
+  });
+  expect(unauthorized.status).toBe(401);
+  await unauthorized.json();
   const body =
     '# Safe\n\n**bold** <script>secret-script</script><svg><text>x</text></svg> ![private](https://tracker.example/pixel)';
   const created = await call(`/api/v1/projects/${projectId}/issues`, {
@@ -44,6 +64,20 @@ export async function contentHttpContract(options: {
     representationEtag: string;
   };
   expect(issue.body).toBe(body);
+  const queued = await query(
+    'SELECT id,delivered_at FROM outbox WHERE project_id=? AND aggregate_id=? AND event_type=?',
+    [projectId, issue.id, 'issue.create'],
+  );
+  expect(queued).toHaveLength(1);
+  expect(queued[0]!.delivered_at).toBeNull();
+  await unavailable();
+  expect(
+    (
+      await query('SELECT delivered_at FROM outbox WHERE id=?', [
+        String(queued[0]!.id),
+      ])
+    )[0]!.delivered_at,
+  ).toBeNull();
   expect(issue.bodyTree).toEqual(deriveMarkdownTree(body));
   expect(issue.contentPolicyVersion).toBe(contentPolicyVersion);
   expect(issue.representationEtag).toBe(

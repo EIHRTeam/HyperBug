@@ -242,3 +242,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: No B2 blocker; Standard deployment performance and Minimum/Workflows evidence remain unverified.
 - Next actions: B3 wire current plugin configuration/permissions and search handler; inject commit/send/processing/ack failures and close Module 08 handoffs.
 - Next-session cautions: Preserve source events until consumer completion; provider dedupe does not replace idempotency; stalled work cannot release capacity early; all gates/protected files unchanged.
+
+### 2026-10-10 — Module 09 B3 search/plugin dispatch and crash recovery
+
+- Scope and checklist IDs: 09.1c/09.1d, 09.2d, 09.V1/V2/V5; close 08.2e/08.V5 integration handoffs.
+- Progress: Connected consumers and both-store injected failure/HTTP outage acceptance pass; Module 08 checklist is now complete at its documented local scope.
+- Change summary: Existing search handler is dispatched unchanged; trusted host plugin bindings reload lifecycle/settings and reauthorize delayed actions. Standard roots use the current Cron/Node interval; provider startup failure preserves canonical API availability and source events.
+- Files/artifacts: Application async-consumers, both app async roots/composition/task wiring, Wrangler queue bounds, shared crash/HTTP tests; [evidence](../evidence/09-async-validation.md).
+- Verification: Connected consumers 3 each D1/PG, explicit added processing-failure case 1 each, complete issue-route/HTTP journeys 2 each pass; types/lint/boundaries/build/secret/scoped-format/diff pass. Queue failures/downstream idempotency are deliberately injected; stores and HTTP runtimes are actual local services/emulation.
+- Decisions and deviations: No envelope/producer/search contract change. Missing host bindings retry boundedly; disabled/uninstalled plugins cancel. Core permission callbacks are required per binding. Primary focused review only; no audit resumed.
+- Blockers/open questions: None for B3; B4 workflow/scheduling and B5 Minimum/hosted quota proofs remain. Standard paid-profile performance stays unverified.
+- Next actions: B4 durable adapters/conformance and consolidated cleanup/operator documentation.
+- Next-session cautions: Preserve idempotency and current permissions/configuration; no official provider/features or public API expansion. G1/G2 closed, 13.G6 open; protect untracked drafts/handoffs.

@@ -138,6 +138,9 @@ const app = createApp({
     ? async () => (await abuse.staffEnrollmentStore?.countActiveStaff()) === 0
     : null,
 });
+void abuse.runAsync().catch(() => {
+  console.error('Async dispatch unavailable');
+});
 let listener: Awaited<ReturnType<typeof listenNode>>;
 try {
   const tls = await loadNodeTls(process.env.HYPERBUG_TLS_FILE);

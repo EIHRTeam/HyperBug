@@ -6,13 +6,13 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress
+- Status: Complete (implementation/local acceptance; hosted tier evidence remains Module 13)
 - Delivery scope: MVP backend
 - Prerequisites: 07 complete; event contracts from 02, async dispatch completed in 09.
 - Implementation: B1–B4 implemented and locally verified: specification/parser, both-store compilers, routes/authorization, lifecycle, version-aware handlers and tier budgets.
-- Completed checklist IDs: 08.1a–e, 08.2a–d/f–h, 08.V1–V4 and local/emulated 08.V6. 08.2e handler and 08.V5 replay/rebuild are verified; their dispatch/queue portions remain open for Module09.
-- Active/next checklist group: Authorized Module08 implementation ends here; later authorized Module09 work connects 08.2e dispatch and verifies 08.V5 queue/retry.
-- Last updated: 2026-10-09.
+- Completed checklist IDs: 08.1a–e, 08.2a–d/f–h, 08.V1–V4 and local/emulated 08.V6. 08.2e handler and 08.V5 replay/rebuild are verified; their dispatch/queue portions are verified by Module09 B3.
+- Active/next checklist group: Authorized Module08 implementation ends here; Module09 B3 closes 08.2e dispatch and 08.V5 queue/retry.
+- Last updated: 2026-10-10.
 - Blocking issues discovered: No local implementation blocker. Module09 dispatch/queue acceptance and account-wide/actual Free CPU evidence remain separate integration/release work.
 - Evidence: [B1–B4 search validation and completion audit](../evidence/08-search-validation.md), with committed dual-store plans and Minimum reindex measurements.
 
@@ -21,13 +21,13 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 08.1 | Define public query semantics | Complete, B1/B2 locally verified | [SEARCH-SPEC](../../SEARCH-SPEC.md) |
-| 08.2 | Implement database compilers and index lifecycle | Both-store compilers/lifecycle/handler/budgets verified locally; dispatch remains Module09 | [Search evidence](../evidence/08-search-validation.md) |
+| 08.2 | Implement database compilers and index lifecycle | Both-store compilers/lifecycle/handler/budgets verified locally; dispatch verified by Module09 B3 | [Search evidence](../evidence/08-search-validation.md) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. A later authorized Module09 batch connects existing outbox/revision handlers, bounded retry/reconciliation and queue/retry acceptance; the current hold is not lifted by Module08.
+1. Preserve Module09 B3 dispatch/retry acceptance; continue its workflow/Minimum batches without changing search contracts.
 2. Module10 accepts the integrated backend before G1. Module13 owns provider-global quota allocation, actual Free CPU/exhaustion and 13.G6 evidence.
 3. No SPA, Module07 remainder, later audit or unrelated implementation is authorized by this handoff.
 
@@ -174,3 +174,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for requested search CI/CodeQL repair. Exhaustive hosted provider spellings remain a pre-existing documented uncertainty; original/alternate resource triggers and legitimate classifications are verified locally.
 - Next actions: Publish this checkpoint, confirm PR checks finish successfully, then retain the existing Module09/10/13 handoff boundaries; no further search implementation planned.
 - Next-session cautions: Preserve protected drafts, migrations, G1/G2 closed and 13.G6 open; no Module09 dispatch or SPA work.
+
+### 2026-10-10 — Module 09 B3 search/plugin dispatch and crash recovery
+
+- Scope and checklist IDs: 09.1c/09.1d, 09.2d, 09.V1/V2/V5; close 08.2e/08.V5 integration handoffs.
+- Progress: Connected consumers and both-store injected failure/HTTP outage acceptance pass; Module 08 checklist is now complete at its documented local scope.
+- Change summary: Existing search handler is dispatched unchanged; trusted host plugin bindings reload lifecycle/settings and reauthorize delayed actions. Standard roots use the current Cron/Node interval; provider startup failure preserves canonical API availability and source events.
+- Files/artifacts: Application async-consumers, both app async roots/composition/task wiring, Wrangler queue bounds, shared crash/HTTP tests; [evidence](../evidence/09-async-validation.md).
+- Verification: Connected consumers 3 each D1/PG, explicit added processing-failure case 1 each, complete issue-route/HTTP journeys 2 each pass; types/lint/boundaries/build/secret/scoped-format/diff pass. Queue failures/downstream idempotency are deliberately injected; stores and HTTP runtimes are actual local services/emulation.
+- Decisions and deviations: No envelope/producer/search contract change. Missing host bindings retry boundedly; disabled/uninstalled plugins cancel. Core permission callbacks are required per binding. Primary focused review only; no audit resumed.
+- Blockers/open questions: None for B3; B4 workflow/scheduling and B5 Minimum/hosted quota proofs remain. Standard paid-profile performance stays unverified.
+- Next actions: B4 durable adapters/conformance and consolidated cleanup/operator documentation.
+- Next-session cautions: Preserve idempotency and current permissions/configuration; no official provider/features or public API expansion. G1/G2 closed, 13.G6 open; protect untracked drafts/handoffs.

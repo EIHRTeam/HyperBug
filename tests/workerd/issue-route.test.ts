@@ -1,3 +1,4 @@
+import { createD1AsyncStore } from '@hyperbug/database-d1';
 import { searchHttpContract } from '../fixtures/search-contract.ts';
 import { createD1SearchIndexStore } from '@hyperbug/database-d1';
 import { uploadHttpContract } from '../fixtures/upload-http-contract.ts';
@@ -695,6 +696,7 @@ it('delivers the issue lifecycle on workerd/D1', async () => {
     .first<{ count: number }>();
   expect(audited?.count).toBe(0);
   await contentHttpContract({
+    asyncStore: createD1AsyncStore(db as unknown as D1Database),
     projectId: project.id,
     token: staffToken,
     call,
