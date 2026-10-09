@@ -496,3 +496,5 @@ export * from './search.ts';
 export * from './search-index.ts';
 
 export * from './search-budget.ts';
+
+export * from './async-processing.ts';

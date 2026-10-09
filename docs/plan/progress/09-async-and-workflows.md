@@ -6,13 +6,13 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (narrow Phase 03 dependency only)
+- Status: In progress (full non-audit mission authorized 2026-10-10)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
-- Implementation started: Bounded abuse-counter cleanup scheduling only; the main 09.1–09.3 prerequisites remain open.
-- Completed implementation checklist IDs: None.
-- Active/next checklist group: 09.1 after prerequisites; partial 09.3d scheduler support for Phase 03 does not complete that item.
-- Last updated: 2026-09-28.
+- Implementation started: B1 portable model accepted; existing cleanup scheduler retained pending B4 expansion.
+- Completed implementation checklist IDs: 09.1b/09.1e, 09.2a, 09.3a (portable model; see B1 evidence).
+- Active/next checklist group: B2 — 09.1a, 09.2b/09.2c.
+- Last updated: 2026-10-10.
 - Blocking issues discovered: None during planning; prerequisite completion is still required.
 - Evidence: [Phase 03 rate evidence](../evidence/03-rate-limits-validation.md) records local bounded counter cleanup; no other Module 09 behavior or deployed scheduler acceptance is claimed.
 
@@ -28,8 +28,8 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. Hold Module 09 implementation under the 2026-09-28 user instruction; preserve only the already implemented bounded counter cleanup.
-2. After a later user instruction, read the latest master and dependency progress records and verify prerequisites before 09.1.
+1. Continue authorized B2–B5 under HANDOFF-09; the Module 09 hold is lifted.
+2. Close Module 08 dispatch/retry handoffs in B3; keep suspended audit and acceptance gates open.
 
 ## Next-session cautions
 
@@ -206,3 +206,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: No blocker within authorized handoff scope. Module09 dispatch/queue/retry/reconciliation and provider-global headroom, Module10 composed acceptance and actual Free CPU/quota 13.G6 remain open.
 - Next actions: Commit verified B4 as the fourth batch; stop Module08 implementation. Later authorized Module09 connects 08.2e dispatch and completes 08.V5; Module10/13 supply remaining gate evidence.
 - Next-session cautions: Preserve feat/v1 batch history, protected untracked drafts, earlier migrations, current canonical authorization and numeric ceilings. No remote rollout/push, SPA or Module07/14 expansion. G1/G2 stay closed and 13.G6 open; local evidence must not be promoted to hosted acceptance.
+
+### 2026-10-10 — Module 09 mission start and B1 selection
+
+- Scope and checklist IDs: HANDOFF-09 B1: 09.1b/09.1e, 09.2a, 09.3a; later B2–B5 remain ordered follow-ups.
+- Progress: Inspected clean tracked working tree on feat/v1 and the existing source outboxes, search bridge and cleanup roots. No implementation outcome accepted yet.
+- Change summary: Recorded the user-authorized lifting of the Module 09 hold and the explicit Module 08 integration handoff; 08.2e/08.V5 are not circular prerequisites.
+- Files/artifacts: This record; HANDOFF-09.md remains protected and untracked.
+- Verification: Read current scripts/policies; Context7 resolve/query for Cloudflare Queues/Workflows, Graphile Worker and Drizzle. Runtime verification follows each complete batch.
+- Decisions and deviations: Add separate dispatcher/idempotency/job state; preserve Module 02 outbox rows and Module 05 envelopes. At-least-once delivery and database/queue publication are separate commits. No normative specifications change.
+- Blockers/open questions: None identified; hosted quotas/local platform support require actual evidence. Audit 09.3e stays suspended.
+- Next actions: Implement and verify B1, commit it, then B2 adapters/bounds.
+- Next-session cautions: G1/G2 closed and 13.G6 open; protect all six untracked handoff/review/draft files; never deploy Standard-only limits on the authorized Free account.
+
+### 2026-10-10 — Module 09 B1 portable async model
+
+- Scope and checklist IDs: 09.1b/09.1e, 09.2a, 09.3a; Module 02 producer compatibility.
+- Progress: Portable model and both database stores verified; platform adapters and consumers remain B2–B5.
+- Change summary: Added sidecar publication/execution leases, retry/failure/replay state and stable identities; bounded checkpointed jobs atomically record step witnesses. Producer outbox/envelope shapes unchanged.
+- Files/artifacts: Application/database async-processing modules, additive D1 0030/PostgreSQL 0029 migrations; [evidence](../evidence/09-async-validation.md).
+- Verification: Focused unit 1, contract 1, workerd/D1 3 and real isolated PostgreSQL 18.6 3 passed; typecheck/lint/boundaries/db:check/diff passed. Initial syntax/lint and PG bigint inference failures corrected; unrelated tests deliberately filtered. No hosted resources.
+- Decisions and deviations: Explicit at-least-once; source acknowledgement follows consumer completion, never queue publication. Replay requires fresh operator authorization. Primary focused review only; audit remains suspended.
+- Blockers/open questions: None for B1; platform support and hosted quotas remain unverified.
+- Next actions: B2 TaskQueue adapters, bounded dispatch/consumption and telemetry.
+- Next-session cautions: Keep failed records replayable and fences conditional; preserve existing migrations/protected files and G1/G2/13.G6 states.

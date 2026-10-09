@@ -726,3 +726,5 @@ export function createPostgresSearchStore(db: Pool): SearchStore {
 export { createPostgresSearchIndexStore } from './search-index.ts';
 
 export { createPostgresSearchBudgetStore } from './search-budget.ts';
+
+export { createPostgresAsyncStore } from './async-processing.ts';

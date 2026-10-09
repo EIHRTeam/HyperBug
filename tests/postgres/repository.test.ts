@@ -848,3 +848,7 @@ it('measures bounded search with 8000 canonical and stale-index rows', async () 
       ).rows,
   });
 }, 60000);
+
+import { createPostgresAsyncStore } from '@hyperbug/database-postgres';
+import { asyncStoreContract } from '../fixtures/async-contract.ts';
+asyncStoreContract(() => ({ harness, store: createPostgresAsyncStore(pool) }));

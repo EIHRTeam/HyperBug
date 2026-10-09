@@ -1861,3 +1861,94 @@ export const searchBudget = table(
     ),
   ],
 );
+
+/** Module 09 sidecars leave the producer outboxes and envelopes unchanged. */
+export const asyncDeliveries = table(
+  'async_deliveries',
+  {
+    deliveryId: text('delivery_id').primaryKey(),
+    source: text('source').notNull(),
+    eventId: id('event_id').notNull(),
+    state: text('state').notNull().default('pending'),
+    attempts: integer('attempts').notNull().default(0),
+    publicationAttempts: integer('publication_attempts').notNull().default(0),
+    availableAt: instant('available_at').notNull(),
+    createdAt: instant('created_at').notNull(),
+    updatedAt: instant('updated_at').notNull(),
+    publishToken: text('publish_token'),
+    publishUntil: instant('publish_until').notNull().default(0),
+    workToken: text('work_token'),
+    workUntil: instant('work_until').notNull().default(0),
+    failure: text('failure'),
+  },
+  (t) => [
+    unique('async_source_event').on(t.source, t.eventId),
+    index('async_pending').on(t.state, t.availableAt, t.deliveryId),
+    index('async_terminal').on(t.state, t.updatedAt, t.deliveryId),
+    check('async_source', sql`${t.source} IN ('core','plugin')`),
+    check('async_state', sql`${t.state} IN ('pending','done','failed')`),
+    check(
+      'async_attempts',
+      sql`${t.attempts} BETWEEN 0 AND 5 AND ${t.publicationAttempts} BETWEEN 0 AND 5`,
+    ),
+    check(
+      'async_failure',
+      sql`${t.failure} IS NULL OR ${t.failure} IN ('invalid','unsupported','permanent','transient','timeout','lease-exhausted')`,
+    ),
+    validId('async_event_id', t.eventId),
+    validTime('async_created', t.createdAt),
+    validTime('async_available', t.availableAt),
+    validTime('async_updated', t.updatedAt),
+  ],
+);
+export const asyncJobs = table(
+  'async_jobs',
+  {
+    id: id('id').primaryKey(),
+    kind: text('kind').notNull().default('conformance'),
+    status: text('status').notNull().default('pending'),
+    checkpoint: integer('checkpoint').notNull().default(0),
+    progress: integer('progress').notNull().default(0),
+    attempts: integer('attempts').notNull().default(0),
+    maxSteps: integer('max_steps').notNull(),
+    resultReference: text('result_reference'),
+    leaseToken: text('lease_token'),
+    leaseUntil: instant('lease_until').notNull().default(0),
+    createdAt: instant('created_at').notNull(),
+    updatedAt: instant('updated_at').notNull(),
+  },
+  (t) => [
+    index('async_job_pending').on(t.status, t.leaseUntil, t.id),
+    check(
+      'async_job_status',
+      sql`${t.status} IN ('pending','running','completed','failed','cancelled')`,
+    ),
+    check('async_job_kind', sql`${t.kind} = 'conformance'`),
+    check(
+      'async_job_bounds',
+      sql`${t.maxSteps} BETWEEN 1 AND 16 AND ${t.checkpoint} BETWEEN 0 AND ${t.maxSteps} AND ${t.progress} BETWEEN 0 AND 100 AND ${t.attempts} BETWEEN 0 AND 5`,
+    ),
+    check(
+      'async_job_result_bound',
+      sql`${t.resultReference} IS NULL OR length(${t.resultReference}) <= 512`,
+    ),
+    validId('async_job_id', t.id),
+    validTime('async_job_updated', t.updatedAt),
+    validTime('async_job_created', t.createdAt),
+  ],
+);
+export const asyncJobSteps = table(
+  'async_job_steps',
+  {
+    jobId: id('job_id')
+      .notNull()
+      .references(() => asyncJobs.id),
+    step: integer('step').notNull(),
+    committedAt: instant('committed_at').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jobId, t.step] }),
+    check('async_step_bound', sql`${t.step} BETWEEN 0 AND 15`),
+    validTime('async_step_time', t.committedAt),
+  ],
+);

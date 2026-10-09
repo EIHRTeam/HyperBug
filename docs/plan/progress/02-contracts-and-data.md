@@ -532,3 +532,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: No blocker within authorized handoff scope. Module09 dispatch/queue/retry/reconciliation and provider-global headroom, Module10 composed acceptance and actual Free CPU/quota 13.G6 remain open.
 - Next actions: Commit verified B4 as the fourth batch; stop Module08 implementation. Later authorized Module09 connects 08.2e dispatch and completes 08.V5; Module10/13 supply remaining gate evidence.
 - Next-session cautions: Preserve feat/v1 batch history, protected untracked drafts, earlier migrations, current canonical authorization and numeric ceilings. No remote rollout/push, SPA or Module07/14 expansion. G1/G2 stay closed and 13.G6 open; local evidence must not be promoted to hosted acceptance.
+
+### 2026-10-10 — Module 09 B1 portable async model
+
+- Scope and checklist IDs: 09.1b/09.1e, 09.2a, 09.3a; Module 02 producer compatibility.
+- Progress: Portable model and both database stores verified; platform adapters and consumers remain B2–B5.
+- Change summary: Added sidecar publication/execution leases, retry/failure/replay state and stable identities; bounded checkpointed jobs atomically record step witnesses. Producer outbox/envelope shapes unchanged.
+- Files/artifacts: Application/database async-processing modules, additive D1 0030/PostgreSQL 0029 migrations; [evidence](../evidence/09-async-validation.md).
+- Verification: Focused unit 1, contract 1, workerd/D1 3 and real isolated PostgreSQL 18.6 3 passed; typecheck/lint/boundaries/db:check/diff passed. Initial syntax/lint and PG bigint inference failures corrected; unrelated tests deliberately filtered. No hosted resources.
+- Decisions and deviations: Explicit at-least-once; source acknowledgement follows consumer completion, never queue publication. Replay requires fresh operator authorization. Primary focused review only; audit remains suspended.
+- Blockers/open questions: None for B1; platform support and hosted quotas remain unverified.
+- Next actions: B2 TaskQueue adapters, bounded dispatch/consumption and telemetry.
+- Next-session cautions: Keep failed records replayable and fences conditional; preserve existing migrations/protected files and G1/G2/13.G6 states.

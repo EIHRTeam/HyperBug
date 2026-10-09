@@ -18,15 +18,15 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 ### Step 09.1 — Implement reliable event dispatch
 
 - [ ] **09.1a** Implement TaskQueue adapters for Cloudflare Queues and Graphile Worker: enqueue, bounded scheduling, stable event/job/delivery IDs, retry metadata, and explicit payload versions.
-- [ ] **09.1b** Implement an outbox dispatcher with bounded leasing/claiming, retry, acknowledgement, lease expiry, and reconciliation after crashes.
+- [x] **09.1b** Implement an outbox dispatcher with bounded leasing/claiming, retry, acknowledgement, lease expiry, and reconciliation after crashes.
 - [ ] **09.1c** Demonstrate that committed business data cannot permanently lose its event when queue publication fails. Do not claim cross-service atomicity between a database and queue.
 - [ ] **09.1d** Validate every message at consumption; store references instead of plaintext credentials or large bodies, and recheck relevant current permissions/configuration before delayed sensitive actions.
-- [ ] **09.1e** Implement application-level idempotency records and downstream idempotency identities; define the unavoidable duplicate-risk policy for external providers without idempotent APIs.
+- [x] **09.1e** Implement application-level idempotency records and downstream idempotency identities; define the unavoidable duplicate-risk policy for external providers without idempotent APIs.
 - [ ] **09.1f** Implement the minimum tier's dispatch path: a D1 outbox claimed by a bounded Cron-driven dispatcher that stays SQL-heavy and JavaScript-light within the free per-invocation CPU, query-count and subrequest budgets, consolidates schedules into the available Cron Trigger count, and reports backlog age without relying on platform message retention.
 
 ### Step 09.2 — Bound failure and fan-out
 
-- [ ] **09.2a** Define retry counts/backoff, transient/permanent failure classification, poison-message handling, DLQ or equivalent failed-job storage, and authorized replay.
+- [x] **09.2a** Define retry counts/backoff, transient/permanent failure classification, poison-message handling, DLQ or equivalent failed-job storage, and authorized replay.
 - [ ] **09.2b** Bound consumer concurrency, dispatch batch size, downstream calls, and per-event fan-out; implement backpressure and non-critical circuit breaking.
 - [ ] **09.2c** Add queue lag, retry/failure/DLQ growth, processing duration, and outbox age telemetry with safe metadata.
 - [ ] **09.2d** Connect plugin events and search-index updates; verify duplicate/out-of-order delivery cannot revert newer state.
@@ -34,7 +34,7 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 
 ### Step 09.3 — Implement durable workflow and retention foundations
 
-- [ ] **09.3a** Define a portable workflow/job model with status, cursor/checkpoint, progress, retries, result references, cancellation, and idempotent bounded steps.
+- [x] **09.3a** Define a portable workflow/job model with status, cursor/checkpoint, progress, retries, result references, cancellation, and idempotent bounded steps.
 - [ ] **09.3b** Implement Cloudflare Workflows and self-host PostgreSQL state + Graphile Worker adapters. Keep platform workflow objects out of domain contracts.
 - [ ] **09.3c** Add a conformance workflow that resumes after a process crash without duplicating committed work; use small serializable checkpoints and object storage for large artifacts.
 - [ ] **09.3d** Schedule upload intent/orphan/multipart cleanup, expired session/token cleanup, and configured retention jobs on both profiles.

@@ -1375,3 +1375,10 @@ it('measures bounded search with 8000 canonical and stale-index rows', async () 
       ).meta,
   });
 }, 60000);
+
+import { createD1AsyncStore } from '@hyperbug/database-d1';
+import { asyncStoreContract } from '../fixtures/async-contract.ts';
+asyncStoreContract(() => ({
+  harness,
+  store: createD1AsyncStore(registrationDb),
+}));

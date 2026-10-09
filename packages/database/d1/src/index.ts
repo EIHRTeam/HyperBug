@@ -839,3 +839,5 @@ export function createD1SearchStore(db: D1Database): SearchStore {
 export { createD1SearchIndexStore } from './search-index.ts';
 
 export { createD1SearchBudgetStore } from './search-budget.ts';
+
+export { createD1AsyncStore } from './async-processing.ts';
