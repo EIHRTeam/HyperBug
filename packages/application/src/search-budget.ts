@@ -35,11 +35,33 @@ export function searchBudgetOptions(input: SearchBudgetReservation) {
 export function searchAvailability(error: unknown): SearchError {
   if (error instanceof SearchError) return error;
   const message = error instanceof Error ? error.message : '';
-  return new SearchError(
-    /(?:daily.*(?:limit|exceed)|quota|(?:read|write).*limit.*exceed)/iu.test(
-      message,
+  // A fixed number of literal searches per line keeps provider input linear.
+  // Match the former regex's ordering and non-dotAll line boundaries.
+  const exhausted = message.split(/[\n\r\u2028\u2029]/u).some((line) => {
+    const text = line.toLowerCase();
+    if (text.includes('quota')) return true;
+    const daily = text.indexOf('daily');
+    if (
+      daily !== -1 &&
+      (text.indexOf('limit', daily + 5) !== -1 ||
+        text.indexOf('exceed', daily + 5) !== -1)
     )
-      ? 'SEARCH_BUDGET_EXHAUSTED'
-      : 'SEARCH_UNAVAILABLE',
+      return true;
+    const read = text.indexOf('read'),
+      write = text.indexOf('write');
+    const start =
+      read === -1
+        ? write === -1
+          ? -1
+          : write + 5
+        : write === -1
+          ? read + 4
+          : Math.min(read + 4, write + 5);
+    if (start === -1) return false;
+    const limit = text.indexOf('limit', start);
+    return limit !== -1 && text.indexOf('exceed', limit + 5) !== -1;
+  });
+  return new SearchError(
+    exhausted ? 'SEARCH_BUDGET_EXHAUSTED' : 'SEARCH_UNAVAILABLE',
   );
 }

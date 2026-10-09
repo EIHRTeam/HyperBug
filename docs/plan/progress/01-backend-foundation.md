@@ -592,3 +592,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for this repair; the separate singleton-plan failure is corrected and both full PostgreSQL lanes pass.
 - Next actions: This check repair is complete. Retain existing module/acceptance remainders and inspect current head before reusing the hosted evidence.
 - Next-session cautions: Never stage protected SECURITY/review/HANDOFF drafts. This CI repair does not resume later audits, SPA or release acceptance work.
+
+### 2026-10-10 — PR 2 dependency audit repair
+
+- Scope and checklist IDs: User-authorized failed-check repair, 01.3b; no gate or roadmap expansion.
+- Progress: Hosted quality failure reproduced: source-map-js 1.2.1 and sharp 0.35.4 have high-severity advisories. Both patched; local `corepack pnpm audit --audit-level high` exits 0 with zero high/critical and one existing esbuild moderate advisory (GHSA-67mh-4wv8-2f99).
+- Change summary: Exact patched transitive resolutions (source-map-js 1.2.2, Miniflare sharp 0.35.5), retaining frozen installs and lifecycle policy. sharp's matched native graph brings libvips 1.3.4; reviewed package license and bundled notices before adding that exact development-only license allowance.
+- Files/artifacts: `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `tooling/licenses.mjs`, `docs/development/TOOLCHAIN.md`; Module08 owns the separate search fixture and CodeQL repair.
+- Verification: Node24.21.0/pnpm11.26.0: frozen install, `db:check`, `typecheck`, `lint`, `scan:licenses`, `scan:secrets`, `audit --audit-level high`, `build`, `docs:build` pass; unit386/contract1, workerd283 (2 existing optional skips), Node124 (14 existing optional skips), PostgreSQL18.6 full201 (2 existing optional skips) pass. `format:check` on the working tree reports three protected untracked drafts; the same checker on a temporary clean tracked checkout plus the new regression file passes (496 files), without editing those drafts. Migration journal timestamp warnings predate this patch and remain unchanged. Test-generated audit timing artifacts restored to the original tracked contents.
+- Documentation lookup: Registry confirms both patched versions exist and support Node 24.21.0. Context7 resolve/query on 2026-10-10, `/websites/pnpm_io`, documents root overrides, parent selectors and audit remediation at https://pnpm.io/settings/dependency-resolution and https://pnpm.io/cli/audit. Installed Miniflare pins sharp exactly, requiring a scoped override; `pnpm why --recursive sharp source-map-js` confirms only patched versions remain.
+- Decisions and deviations: No audit suppression, threshold change, broad dependency upgrade or build-script relaxation. License check initially rejected the new libvips version; reviewed LGPL-3.0-or-later and bundled notices (including cairo MPL-1.1) and extended only its exact version allowance.
+- Blockers/open questions: Hosted rerun pending; the unrelated moderate advisory is outside this failed high-severity check repair.
+- Next actions: Finish PostgreSQL checks, publish this reviewed candidate to PR2 using the selected u202F connector account, and verify hosted checks.
+- Next-session cautions: Preserve protected untracked drafts and all module/gate remainders; dependency repair does not deploy an application.

@@ -40,6 +40,7 @@ import { postgresNodeBindings } from '../fixtures/postgres-node-bindings.ts';
 // suspension.
 const databaseName = 'hyperbug_issue_route_test';
 const redirectUri = 'http://localhost:5173/oauth/callback';
+const allowedOrigins = ['http://localhost:5173'];
 const clients = [
   {
     clientId: 'issues-cli',
@@ -257,7 +258,7 @@ beforeAll(async () => {
       { HYPERBUG_ENV: 'local', ALLOWED_ORIGINS: 'http://localhost:5173' },
       'node',
     ),
-    allowedOrigins: ['http://localhost:5173'],
+    allowedOrigins,
   };
   storage = await startLocalS3();
   const storageFile = join(directory, 'upload-storage.json');
@@ -732,8 +733,15 @@ it('delivers the issue lifecycle on Node/PostgreSQL', async () => {
       await listener.close();
       listener = await listenNode(replacement.createApp(appOptions), 0);
       base = listener.url;
+      allowedOrigins.push(base);
     },
   });
+  // The replacement bundles its own application classes. Restore the source
+  // composition before other contracts use source-backed repository errors.
+  await listener.close();
+  listener = await listenNode(createApp(appOptions), 0);
+  base = listener.url;
+  allowedOrigins.push(base);
 }, 30000);
 
 searchHttpContract(() => ({

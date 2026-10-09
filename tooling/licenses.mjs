@@ -29,7 +29,7 @@ for (const [license, packages] of Object.entries(report)) {
         (license === 'LGPL-3.0-or-later' &&
           pkg.name.startsWith('@img/sharp-libvips-') &&
           pkg.versions.every((version) =>
-            ['1.3.1', '1.3.3'].includes(version),
+            ['1.3.1', '1.3.3', '1.3.4'].includes(version),
           )) ||
         (license === 'MPL-2.0' &&
           (pkg.name === 'lightningcss' ||
