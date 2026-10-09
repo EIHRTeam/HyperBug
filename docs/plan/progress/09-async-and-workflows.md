@@ -9,27 +9,27 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Status: In progress (full non-audit mission authorized 2026-10-10)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
-- Implementation started: B1 portable model accepted; existing cleanup scheduler retained pending B4 expansion.
-- Completed implementation checklist IDs: 09.1b/09.1e, 09.2a, 09.3a (portable model; see B1 evidence).
-- Active/next checklist group: B2 — 09.1a, 09.2b/09.2c.
+- Implementation started: B1–B4 implemented and verified at documented local scope.
+- Completed implementation checklist IDs: 09.1a–e, 09.2a–d, 09.3a–d/f, 09.V1–V5.
+- Active/next checklist group: B5 — 09.1f, 09.2e, 09.3g, 09.V6.
 - Last updated: 2026-10-10.
-- Blocking issues discovered: None during planning; prerequisite completion is still required.
-- Evidence: [Phase 03 rate evidence](../evidence/03-rate-limits-validation.md) records local bounded counter cleanup; no other Module 09 behavior or deployed scheduler acceptance is claimed.
+- Blocking issues discovered: None in B4; B5 hosted CPU/quota evidence remains unverified.
+- Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 09.1 | Implement reliable event dispatch | Not started | None yet |
-| 09.2 | Bound failure and fan-out | Not started | None yet |
-| 09.3 | Implement durable workflow and retention foundations | In progress (narrow dependency) | Bounded abuse-counter schedule only; 09.3d remains open |
+| 09.1 | Implement reliable event dispatch | In progress (B5 pending) | [B1–B4 evidence](../evidence/09-async-validation.md) |
+| 09.2 | Bound failure and fan-out | In progress (B5 pending) | [B1–B4 evidence](../evidence/09-async-validation.md) |
+| 09.3 | Implement durable workflow and retention foundations | In progress (B5 pending; audit suspended) | [B4 evidence](../evidence/09-async-validation.md#b4--workflows-and-scheduled-maintenance) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. Continue authorized B2–B5 under HANDOFF-09; the Module 09 hold is lifted.
-2. Close Module 08 dispatch/retry handoffs in B3; keep suspended audit and acceptance gates open.
+1. Implement and verify B5 Minimum dispatch, failed retention, quota observability and checkpoint gating.
+2. Verify temporary hosted resources within HANDOFF-09 authorization; keep G1/G2/13.G6 open.
 
 ## Next-session cautions
 
@@ -254,3 +254,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for B3; B4 workflow/scheduling and B5 Minimum/hosted quota proofs remain. Standard paid-profile performance stays unverified.
 - Next actions: B4 durable adapters/conformance and consolidated cleanup/operator documentation.
 - Next-session cautions: Preserve idempotency and current permissions/configuration; no official provider/features or public API expansion. G1/G2 closed, 13.G6 open; protect untracked drafts/handoffs.
+
+### 2026-10-10 — B4 implementation checkpoint
+
+- Scope and checklist IDs: 09.3b/c/d/f and 09.V3/V4.
+- Progress: Workflow adapters and resumable maintenance cursor implemented; verification remains pending, no B4 checkbox closed.
+- Change summary: Named Cloudflare steps and PostgreSQL/Graphile checkpoints; scheduler-owned bounded upload retention and resumable one-project cleanup; consolidate existing entry points.
+- Files/artifacts: Application workflow/maintenance modules, app workflow adapters, async config and additive D1 0032/PG 0031 maintenance migrations; operator documentation/tests in preparation.
+- Verification: B3 committed ef7f66d; B4 runtime checks not yet run. Wrangler skill/current installed v4.144.0 and type schemas inspected.
+- Decisions and deviations: Graphile reconciliation must use replace rather than unsafe_dedupe because failed provider jobs retain keys; application idempotency remains authoritative and retry bounds unchanged. Expected-checkpoint fencing prevents a retried named Cloudflare step from advancing a different database step.
+- Blockers/open questions: Local Workflow persistence/lifecycle support requires actual installed-runtime proof. No source-policy deviation or scope expansion identified.
+- Next actions: Finish B4 conformance/scheduler/docs and verify once per affected lane before commit.
+- Next-session cautions: B4 is uncommitted; do not confuse implementation with acceptance. All protected files/gates/suspended audit remain unchanged.
+
+### 2026-10-10 — Module 09 B4 durable workflows and scheduling
+
+- Scope and checklist IDs: 09.3b/c/d/f and local 09.V3/V4; scheduler/database/runtime integration only.
+- Progress: B4 implemented and locally verified; B5 and suspended 09.3e remain open.
+- Change summary: Native Workflows and PostgreSQL/Graphile checkpoint adapters, persistent bounded upload cleanup cursors, configured retention on existing schedulers, fixed exhausted Graphile key reconciliation, internal operator runbook.
+- Files/artifacts: Runtime workflow/scheduler roots, application workflow/maintenance ports, config policy, additive maintenance migrations, shared cleanup/native workflow tests; [B4 evidence](../evidence/09-async-validation.md#b4--workflows-and-scheduled-maintenance).
+- Verification: Actual persistent local Workflow restart/resume/cancel 1; actual PostgreSQL Graphile/cleanup 2; D1 cleanup 1; typecheck/lint/db:check/build/types/secrets/scoped format/diff pass. Initial fixture/type failures corrected; exact commands and boundaries in evidence.
+- Decisions and deviations: No new dependency or normative change; tiny conformance has no artificial artifact reference. Graphile replace keys permit reconciliation of exhausted provider jobs. Existing upload/authorization semantics retained.
+- Blockers/open questions: Hosted Free CPU/quota headroom and Minimum budget/recovery pending B5; no paid Standard acceptance claim.
+- Next actions: Implement B5, verify authorized temporary hosted behavior and cleanup, then close only evidence-backed checklist items.
+- Next-session cautions: No hosted resources yet; preserve protected untracked drafts, source outbox/envelopes, audit suspension and G1/G2/13.G6 state.

@@ -35,19 +35,19 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 ### Step 09.3 — Implement durable workflow and retention foundations
 
 - [x] **09.3a** Define a portable workflow/job model with status, cursor/checkpoint, progress, retries, result references, cancellation, and idempotent bounded steps.
-- [ ] **09.3b** Implement Cloudflare Workflows and self-host PostgreSQL state + Graphile Worker adapters. Keep platform workflow objects out of domain contracts.
-- [ ] **09.3c** Add a conformance workflow that resumes after a process crash without duplicating committed work; use small serializable checkpoints and object storage for large artifacts.
-- [ ] **09.3d** Schedule upload intent/orphan/multipart cleanup, expired session/token cleanup, and configured retention jobs on both profiles.
+- [x] **09.3b** Implement Cloudflare Workflows and self-host PostgreSQL state + Graphile Worker adapters. Keep platform workflow objects out of domain contracts.
+- [x] **09.3c** Add a conformance workflow that resumes after a process crash without duplicating committed work; use small serializable checkpoints and object storage for large artifacts.
+- [x] **09.3d** Schedule upload intent/orphan/multipart cleanup, expired session/token cleanup, and configured retention jobs on both profiles.
 - [ ] **09.3e** **Audit portion suspended — no audit for now.** Audit controlled retention/deletion and administrative replay; ensure cleanup is bounded, repeatable, permission-aware, and does not delete referenced active attachments.
-- [ ] **09.3f** Write `docs/ASYNC-PROCESSING.md` covering delivery semantics, operational recovery, safe replay, and adapter differences.
+- [x] **09.3f** Write `docs/ASYNC-PROCESSING.md` covering delivery semantics, operational recovery, safe replay, and adapter differences.
 - [ ] **09.3g** Implement the minimum tier's checkpointed D1 job runner as the substitute for multi-step workflow durability, with capability gating for bulk, import/export and long-running jobs, and a recorded capability ceiling that the public capability document reports.
 
 ## Verification and acceptance
 
 - [x] **09.V1** Inject failures before/after commit, before/after queue send, during processing, and after a side effect before acknowledgement.
 - [x] **09.V2** Test duplicate, stale, malformed, unsupported-version, permanently failing, and slow-provider messages; verify retry budgets and failed-job visibility.
-- [ ] **09.V3** Run both workflow adapters through restart/resume/cancel and bounded-output checks.
-- [ ] **09.V4** Verify final search consistency, plugin dispatch, quota recovery, and abandoned upload cleanup on both profiles.
+- [x] **09.V3** Run both workflow adapters through restart/resume/cancel and bounded-output checks.
+- [x] **09.V4** Verify final search consistency, plugin dispatch, quota recovery, and abandoned upload cleanup on both profiles.
 - [x] **09.V5** Demonstrate that ordinary Issue creation succeeds while a non-critical provider is unavailable, without losing eventual work or bypassing security.
 - [ ] **09.V6** Verify the minimum tier's async path: crash and restart resume without duplicating committed work or losing queued events, quota exhaustion produces bounded errors and a visible backlog, the Cron budget consolidation holds, and dispatch and job state remain observable within the free logging limits.
 

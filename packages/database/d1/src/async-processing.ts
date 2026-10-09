@@ -9,6 +9,8 @@ import {
   type AsyncStore,
   type JobStore,
   type AsyncJob,
+  type AsyncMaintenanceStore,
+  type CleanupCheckpoint,
 } from '@hyperbug/application';
 
 type Row = Record<string, unknown>;
@@ -32,9 +34,10 @@ const limitCheck = (limit: number, max: number = ASYNC_LIMITS.batch) => {
   if (!Number.isInteger(limit) || limit < 1 || limit > max)
     throw new AsyncError('invalid');
 };
-export function createD1AsyncStore(
-  db: D1Database,
-): AsyncStore & Omit<JobStore, 'claim'> & { claimJob: JobStore['claim'] } {
+export function createD1AsyncStore(db: D1Database): AsyncStore &
+  Omit<JobStore, 'claim'> & {
+    claimJob: JobStore['claim'];
+  } & AsyncMaintenanceStore {
   const query = async (sql: string, values: unknown[]): Promise<Row[]> =>
     (
       await db
@@ -54,6 +57,70 @@ export function createD1AsyncStore(
     time(now);
   };
   return {
+    async claimCleanup(token, now) {
+      time(now);
+      tokenCheck(token);
+      await mutate([
+        [
+          "INSERT INTO async_maintenance (name,updated_at) VALUES ('uploads',?) ON CONFLICT (name) DO NOTHING",
+          [now],
+        ],
+        [
+          "UPDATE async_maintenance SET lease_token=?,lease_until=?,updated_at=?,project_id=COALESCE(project_id,(SELECT id FROM projects ORDER BY id LIMIT 1)) WHERE name='uploads' AND lease_until<=?",
+          [token, now + 90_000, now, now],
+        ],
+      ]);
+      const row = (
+        await query(
+          "SELECT project_id,temporary,orphan FROM async_maintenance WHERE name='uploads' AND lease_token=? AND project_id IS NOT NULL",
+          [token],
+        )
+      )[0];
+      if (!row) return null;
+      return {
+        projectId: String(row.project_id),
+        temporary:
+          row.temporary === null
+            ? null
+            : (JSON.parse(
+                String(row.temporary),
+              ) as CleanupCheckpoint['temporary']),
+        orphan:
+          row.orphan === null
+            ? null
+            : (JSON.parse(String(row.orphan)) as CleanupCheckpoint['orphan']),
+      };
+    },
+    async saveCleanup(token, now, temporary, orphan) {
+      time(now);
+      tokenCheck(token);
+      for (const cursor of [temporary, orphan])
+        if (cursor && JSON.stringify(cursor).length > 1024)
+          throw new AsyncError('invalid');
+      await mutate([
+        [
+          "UPDATE async_maintenance SET temporary=?,orphan=?,project_id=CASE WHEN ?=1 THEN COALESCE((SELECT id FROM projects WHERE id>async_maintenance.project_id ORDER BY id LIMIT 1),(SELECT id FROM projects ORDER BY id LIMIT 1)) ELSE project_id END,lease_token=NULL,lease_until=0,updated_at=? WHERE name='uploads' AND lease_token=? AND lease_until>?",
+          [
+            temporary ? JSON.stringify(temporary) : null,
+            orphan ? JSON.stringify(orphan) : null,
+            !temporary && !orphan ? 1 : 0,
+            now,
+            token,
+            now,
+          ],
+        ],
+      ]);
+    },
+    async recoverableJobs(now, limit) {
+      time(now);
+      limitCheck(limit);
+      return (
+        await query(
+          "SELECT id FROM async_jobs WHERE status IN ('pending','running') AND lease_until<=? ORDER BY lease_until,id LIMIT ?",
+          [now, limit],
+        )
+      ).map((row) => String(row.id));
+    },
     async claim(now, token, limit) {
       time(now);
       tokenCheck(token);

@@ -1395,3 +1395,11 @@ asyncConsumerContract(() => ({
   registry: asyncRegistryFactory(registrationDb),
   settings: asyncSettingsFactory(registrationDb),
 }));
+
+import { asyncMaintenanceContract } from '../fixtures/async-maintenance-contract.ts';
+asyncMaintenanceContract(() => ({
+  harness,
+  store: createD1AsyncStore(registrationDb),
+  uploads: createD1UploadIntentStore(registrationDb, formUploadQuota),
+  definitions: createD1ContentDefinitionStore(registrationDb),
+}));

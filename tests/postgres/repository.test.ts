@@ -885,3 +885,76 @@ asyncConsumerContract(() => ({
   registry: asyncRegistryFactory(pool),
   settings: asyncSettingsFactory(pool),
 }));
+
+import { asyncMaintenanceContract } from '../fixtures/async-maintenance-contract.ts';
+asyncMaintenanceContract(() => ({
+  harness,
+  store: createPostgresAsyncStore(pool),
+  uploads: createPostgresUploadIntentStore(pool, formUploadQuota),
+  definitions: createPostgresContentDefinitionStore(pool),
+}));
+
+import {
+  createPostgresWorkflowAdapter,
+  createGraphileWorkflowTask,
+  postgresJobStore,
+} from '../../apps/api-node/src/workflow.ts';
+it('Graphile workflow resumes after commit-before-enqueue crash, fences cancellation and recovers exhausted retained keys', async () => {
+  const jobs = postgresJobStore(pool),
+    id = crypto.randomUUID();
+  let crashed = false;
+  const first = await startGraphileTasks(pool, async () => 'ack', {
+    hyperbug_workflow: createGraphileWorkflowTask(jobs, async () => {
+      crashed = true;
+      throw new Error('Injected commit-before-next-enqueue failure');
+    }),
+  });
+  await createPostgresWorkflowAdapter(jobs, first.utils).start(id, 2);
+  await expect.poll(() => crashed).toBe(true);
+  await first.close();
+  expect((await jobs.get(id))?.checkpoint).toBe(1);
+  const second = await startGraphileTasks(pool, async () => 'ack', {
+    hyperbug_workflow: createGraphileWorkflowTask(jobs, async (ref) => {
+      await createPostgresWorkflowAdapter(jobs, second.utils).resume(ref.jobId);
+    }),
+  });
+  try {
+    const adapter = createPostgresWorkflowAdapter(jobs, second.utils);
+    await adapter.resume(id);
+    await expect
+      .poll(async () => (await jobs.get(id))?.status)
+      .toBe('completed');
+    expect(
+      (
+        await pool.query(
+          'SELECT step FROM async_job_steps WHERE job_id=$1 ORDER BY step',
+          [id],
+        )
+      ).rows,
+    ).toEqual([{ step: 0 }, { step: 1 }]);
+    const cancelled = crypto.randomUUID();
+    await jobs.create(cancelled, 2, Date.now());
+    await adapter.cancel(cancelled);
+    await adapter.resume(cancelled);
+    expect((await jobs.get(cancelled))?.status).toBe('cancelled');
+    const reference = taskReference('core', crypto.randomUUID());
+    await second.queue.schedule(reference, 3600000);
+    await pool.query(
+      'UPDATE graphile_worker._private_jobs SET attempts=max_attempts WHERE key=$1',
+      [reference.deliveryId],
+    );
+    await second.queue.schedule(reference, 3600000);
+    const retained = (
+      await pool.query(
+        'SELECT attempts,max_attempts FROM graphile_worker._private_jobs WHERE key=$1',
+        [reference.deliveryId],
+      )
+    ).rows;
+    expect(retained).toEqual([{ attempts: 0, max_attempts: 5 }]);
+    expect(
+      new TextEncoder().encode(JSON.stringify(await jobs.get(id))).length,
+    ).toBeLessThanOrEqual(1024);
+  } finally {
+    await second.close();
+  }
+}, 15000);

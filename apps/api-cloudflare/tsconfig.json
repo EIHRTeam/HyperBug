@@ -4,6 +4,10 @@
     "lib": ["ES2023"],
     "types": []
   },
-  "include": ["src/**/*.ts", "worker-configuration.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "worker-configuration.d.ts",
+    "../../tests/fixtures/async-workflow-worker.ts"
+  ],
   "exclude": ["src/ingress.ts", "ingress-configuration.d.ts"]
 }

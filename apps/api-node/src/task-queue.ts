@@ -27,7 +27,7 @@ export function createGraphileTaskQueue(
       throw new AsyncError('invalid');
     await utils.addJob('hyperbug_event', reference, {
       jobKey: reference.deliveryId,
-      jobKeyMode: 'unsafe_dedupe',
+      jobKeyMode: 'replace',
       maxAttempts: ASYNC_LIMITS.attempts,
       runAt: new Date(Date.now() + delayMs),
     });

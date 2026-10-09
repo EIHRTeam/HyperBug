@@ -15,7 +15,7 @@ import {
   parseOAuthClients,
   parsePasskeyConfiguration,
 } from '@hyperbug/server';
-import { loadConfig } from '@hyperbug/config';
+import { loadAsyncMaintenancePolicy, loadConfig } from '@hyperbug/config';
 import { jsonTelemetry } from '@hyperbug/observability';
 import { createNodeTurnstileVerifier } from './turnstile.ts';
 import { initialStandardPasswordPolicy } from '@hyperbug/security';
@@ -56,6 +56,12 @@ const uploadStorage = await configureNodeUploads(
   abuse.uploadIntentStore,
   process.env.HYPERBUG_UPLOAD_STORAGE_FILE,
   config.environment,
+);
+const asyncPolicy = loadAsyncMaintenancePolicy(process.env);
+abuse.configureAsyncUploads(
+  uploadStorage.uploads,
+  asyncPolicy.orphanRetentionMs,
+  asyncPolicy.terminalRetentionMs,
 );
 const keyProvider = abuse.keyProvider;
 const bootstrapCode = await loadNodeBootstrapEnrollmentCode(

@@ -10,3 +10,5 @@ export default createCloudflareApi(env, (deployment) =>
     initialStandardPasswordPolicy.maximum.memoryKiB,
   ),
 );
+
+export { HyperBugWorkflow } from './workflow.ts';

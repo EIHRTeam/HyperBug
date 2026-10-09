@@ -1,3 +1,8 @@
+import {
+  postgresJobStore,
+  createPostgresWorkflowAdapter,
+  createGraphileWorkflowTask,
+} from './workflow.ts';
 import type { Pool } from 'pg';
 import {
   createPostgresAsyncStore,
@@ -10,6 +15,8 @@ import {
   createAsyncProcessor,
   createOutboxDispatcher,
   type AsyncPluginBinding,
+  type UploadDependencies,
+  runScheduledUploadCleanup,
 } from '@hyperbug/application';
 import { startGraphileTasks } from './task-queue.ts';
 
@@ -18,7 +25,11 @@ export function configureNodeAsync(
   pool: Pool,
   bindings: readonly AsyncPluginBinding[] = [],
 ) {
-  const store = createPostgresAsyncStore(pool);
+  const store = createPostgresAsyncStore(pool),
+    jobs = postgresJobStore(pool);
+  let uploads: UploadDependencies | null = null,
+    orphanRetentionMs = 86400000,
+    terminalRetentionMs = 2592000000;
   const report = (metric: unknown) =>
     console.log(JSON.stringify({ component: 'async', metric }));
   const process = createAsyncProcessor({
@@ -39,8 +50,20 @@ export function configureNodeAsync(
     if (closed) return Promise.resolve();
     if (active) return active;
     const attempt = (async () => {
+      await store.purgeTerminal(
+        Math.max(0, Date.now() - terminalRetentionMs),
+        10,
+      );
+      if (uploads)
+        await runScheduledUploadCleanup(store, uploads, orphanRetentionMs);
       if (!worker) {
-        worker = await startGraphileTasks(pool, process);
+        worker = await startGraphileTasks(pool, process, {
+          hyperbug_workflow: createGraphileWorkflowTask(jobs, async (ref) => {
+            await createPostgresWorkflowAdapter(jobs, worker!.utils).resume(
+              ref.jobId,
+            );
+          }),
+        });
         dispatch = createOutboxDispatcher({
           store,
           queue: worker.queue,
@@ -48,6 +71,12 @@ export function configureNodeAsync(
         });
       }
       await dispatch!();
+      await store.recoverableJobs(Date.now(), 1).then((ids) =>
+        ids.reduce(async (previous, id) => {
+          await previous;
+          await createPostgresWorkflowAdapter(jobs, worker!.utils).resume(id);
+        }, Promise.resolve()),
+      );
     })();
     active = attempt;
     void attempt
@@ -59,6 +88,15 @@ export function configureNodeAsync(
   };
   return {
     store,
+    configureUploads(
+      dependencies: UploadDependencies | null,
+      orphanMs: number,
+      terminalMs: number,
+    ) {
+      uploads = dependencies;
+      orphanRetentionMs = orphanMs;
+      terminalRetentionMs = terminalMs;
+    },
     run,
     async close() {
       closed = true;

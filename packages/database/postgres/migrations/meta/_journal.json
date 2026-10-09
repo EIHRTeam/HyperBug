@@ -218,6 +218,13 @@
       "when": 1791567320303,
       "tag": "0030_async_telemetry_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1791568393994,
+      "tag": "0031_async_maintenance",
+      "breakpoints": true
     }
   ]
 }

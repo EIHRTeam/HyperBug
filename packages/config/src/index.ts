@@ -98,3 +98,5 @@ export function loadConfig(
     security: loadSecurityConfig(env, environment),
   });
 }
+
+export { loadAsyncMaintenancePolicy } from './async.ts';

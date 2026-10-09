@@ -1954,3 +1954,24 @@ export const asyncJobSteps = table(
     validTime('async_step_time', t.committedAt),
   ],
 );
+
+export const asyncMaintenance = table(
+  'async_maintenance',
+  {
+    name: text('name').primaryKey(),
+    projectId: id('project_id'),
+    temporary: text('temporary'),
+    orphan: text('orphan'),
+    leaseToken: text('lease_token'),
+    leaseUntil: instant('lease_until').notNull().default(0),
+    updatedAt: instant('updated_at').notNull(),
+  },
+  (t) => [
+    check('async_maintenance_name', sql`${t.name} = 'uploads'`),
+    check(
+      'async_maintenance_checkpoint',
+      sql`(${t.temporary} IS NULL OR length(${t.temporary}) <= 1024) AND (${t.orphan} IS NULL OR length(${t.orphan}) <= 1024)`,
+    ),
+    validTime('async_maintenance_time', t.updatedAt),
+  ],
+);

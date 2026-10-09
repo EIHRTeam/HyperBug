@@ -112,6 +112,11 @@ export interface NodeAbuseAdmission {
   /** Trusted maintenance call; the runtime also schedules it every five minutes. */
   purgeExpiredRateCounters(nowMs: number): Promise<number>;
   runAsync(): Promise<void>;
+  configureAsyncUploads(
+    uploads: import('@hyperbug/application').UploadDependencies | null,
+    orphanMs: number,
+    terminalMs: number,
+  ): void;
   ready(signal: AbortSignal): Promise<boolean>;
   close(): Promise<void>;
 }
@@ -170,6 +175,7 @@ export function configureNodeAbuseAdmission(
       purgeExpiredRateCounters: async () => {
         throw new Error('Rate counter cleanup unavailable');
       },
+      configureAsyncUploads: () => {},
       runAsync: async () => {},
       ready: async () => false,
       close: async () => {},
@@ -313,6 +319,7 @@ export function configureNodeAbuseAdmission(
     passkeyStores: createPostgresPasskeyStores(pool),
     auditAppend,
     runAsync: asyncRuntime.run,
+    configureAsyncUploads: asyncRuntime.configureUploads,
     purgeExpiredRateCounters: (nowMs: number) =>
       rateStore.purgeExpired(nowMs, 1000),
     async ready(signal: AbortSignal): Promise<boolean> {

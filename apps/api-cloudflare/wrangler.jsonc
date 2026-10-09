@@ -10,6 +10,13 @@
   ],
   "observability": { "enabled": true, "head_sampling_rate": 1 },
   "triggers": { "crons": ["*/5 * * * *"] },
+  "workflows": [
+    {
+      "name": "hyperbug-local-workflow",
+      "binding": "ASYNC_WORKFLOW",
+      "class_name": "HyperBugWorkflow",
+    },
+  ],
   "queues": {
     "producers": [
       { "binding": "ASYNC_TASKS", "queue": "hyperbug-local-events" },
@@ -79,6 +86,13 @@
       "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-api-local-turnstile",
       "triggers": { "crons": ["*/5 * * * *"] },
+      "workflows": [
+        {
+          "name": "hyperbug-local-turnstile-workflow",
+          "binding": "ASYNC_WORKFLOW",
+          "class_name": "HyperBugWorkflow",
+        },
+      ],
       "queues": {
         "producers": [
           {
@@ -130,6 +144,13 @@
       "observability": { "enabled": true, "head_sampling_rate": 1 },
       "name": "hyperbug-api-staging",
       "triggers": { "crons": ["*/5 * * * *"] },
+      "workflows": [
+        {
+          "name": "hyperbug-staging-workflow",
+          "binding": "ASYNC_WORKFLOW",
+          "class_name": "HyperBugWorkflow",
+        },
+      ],
       "queues": {
         "producers": [
           { "binding": "ASYNC_TASKS", "queue": "hyperbug-staging-events" },
@@ -167,6 +188,13 @@
       "observability": { "enabled": true, "head_sampling_rate": 0.1 },
       "name": "hyperbug-api",
       "triggers": { "crons": ["*/5 * * * *"] },
+      "workflows": [
+        {
+          "name": "hyperbug-production-workflow",
+          "binding": "ASYNC_WORKFLOW",
+          "class_name": "HyperBugWorkflow",
+        },
+      ],
       "queues": {
         "producers": [
           { "binding": "ASYNC_TASKS", "queue": "hyperbug-production-events" },

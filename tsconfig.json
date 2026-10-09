@@ -28,6 +28,7 @@
     "apps/api-cloudflare",
     "tests/fixtures/worker.ts",
     "tests/fixtures/account-worker.ts",
-    "tests/fixtures/minimum-tier-worker.ts"
+    "tests/fixtures/minimum-tier-worker.ts",
+    "tests/fixtures/async-workflow-worker.ts"
   ]
 }

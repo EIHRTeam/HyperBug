@@ -107,6 +107,11 @@ export const cloudflareWasmAssets = [
  */
 export const fixtureTargets = [
   {
+    name: 'async-workflow-worker',
+    entry: 'tests/fixtures/async-workflow-worker.ts',
+    outDir: 'dist/async-workflow-worker',
+  },
+  {
     name: 'async-queue-worker',
     entry: 'tests/fixtures/async-queue-worker.ts',
     outDir: 'dist/async-queue-worker',

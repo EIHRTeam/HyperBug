@@ -1,3 +1,7 @@
+import { loadAsyncMaintenancePolicy } from '@hyperbug/config';
+import { createD1AsyncStore } from '@hyperbug/database-d1';
+import { runScheduledUploadCleanup } from '@hyperbug/application';
+import { createCloudflareWorkflowAdapter, d1JobStore } from './workflow.ts';
 import type { AsyncPluginBinding } from '@hyperbug/application';
 import { configureCloudflareAsync } from './async-processing.ts';
 import { expiredCleanupBatchSize } from '@hyperbug/application';
@@ -415,6 +419,36 @@ export function createCloudflareApi(
         cleanupConfig.security.retentionSeconds.expiredSessions * 1000,
         expiredCleanupBatchSize,
       );
+      const maintenance = createD1AsyncStore(bindings.DB);
+      const policy = loadAsyncMaintenancePolicy(
+        bindings as {
+          ASYNC_ORPHAN_RETENTION_SECONDS?: string;
+          ASYNC_TERMINAL_RETENTION_SECONDS?: string;
+        },
+      );
+      await maintenance.purgeTerminal(
+        Math.max(0, Date.now() - policy.terminalRetentionMs),
+        10,
+      );
+      if (uploads)
+        await runScheduledUploadCleanup(
+          maintenance,
+          uploads,
+          policy.orphanRetentionMs,
+        );
+      const workflow = bindings.ASYNC_WORKFLOW;
+      if (workflow) {
+        const adapter = createCloudflareWorkflowAdapter(
+          d1JobStore(bindings.DB),
+          workflow,
+        );
+        await maintenance.recoverableJobs(Date.now(), 1).then((ids) =>
+          ids.reduce(async (previous, id) => {
+            await previous;
+            await adapter.resume(id);
+          }, Promise.resolve()),
+        );
+      }
       await asyncRuntime?.dispatch();
     },
   } satisfies ExportedHandler<Env>;
