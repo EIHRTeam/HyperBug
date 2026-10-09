@@ -4,14 +4,15 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@elysia/node": "1.4.6",
     "@hyperbug/application": "workspace:*",
-    "@hyperbug/security": "workspace:*",
-    "@hyperbug/server": "workspace:*",
+    "@hyperbug/blob-s3": "workspace:*",
     "@hyperbug/config": "workspace:*",
     "@hyperbug/database-postgres": "workspace:*",
     "@hyperbug/observability": "workspace:*",
-    "@elysia/node": "1.4.6",
-    "pg": "8.23.0",
-    "@hyperbug/blob-s3": "workspace:*"
+    "@hyperbug/security": "workspace:*",
+    "@hyperbug/server": "workspace:*",
+    "graphile-worker": "0.18.0",
+    "pg": "8.23.0"
   }
 }

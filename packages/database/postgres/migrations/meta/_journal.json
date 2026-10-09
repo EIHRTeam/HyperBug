@@ -211,6 +211,13 @@
       "when": 1791566864122,
       "tag": "0029_async_processing",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1791567320303,
+      "tag": "0030_async_telemetry_indexes",
+      "breakpoints": true
     }
   ]
 }

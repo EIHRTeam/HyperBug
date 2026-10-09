@@ -221,9 +221,9 @@ export function createD1AsyncStore(
       const row = (
         await query(
           `SELECT
-        (SELECT count(*) FROM outbox WHERE delivered_at IS NULL)+(SELECT count(*) FROM plugin_event_outbox WHERE delivered_at IS NULL) AS pending,
-        (SELECT count(*) FROM async_deliveries WHERE state='failed') AS failed,
-        (SELECT min(created_at) FROM (SELECT created_at FROM outbox WHERE delivered_at IS NULL UNION ALL SELECT created_at FROM plugin_event_outbox WHERE delivered_at IS NULL) age) AS oldest_at`,
+        (SELECT count(*) FROM (SELECT id FROM outbox WHERE delivered_at IS NULL LIMIT 1001) core_count)+(SELECT count(*) FROM (SELECT event_id FROM plugin_event_outbox WHERE delivered_at IS NULL LIMIT 1001) plugin_count) AS pending,
+        (SELECT count(*) FROM (SELECT delivery_id FROM async_deliveries WHERE state='failed' LIMIT 1001) failed_count) AS failed,
+        (SELECT min(created_at) FROM (SELECT created_at FROM (SELECT created_at FROM outbox WHERE delivered_at IS NULL ORDER BY created_at,id LIMIT 1) core_age UNION ALL SELECT created_at FROM (SELECT created_at FROM plugin_event_outbox WHERE delivered_at IS NULL ORDER BY created_at,event_id LIMIT 1) plugin_age) age) AS oldest_at`,
           [],
         )
       )[0]!;

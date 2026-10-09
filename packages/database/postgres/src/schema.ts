@@ -281,6 +281,7 @@ export const outbox = table(
   },
   (t) => [
     index('outbox_pending').on(t.deliveredAt, t.availableAt, t.id),
+    index('outbox_pending_age').on(t.deliveredAt, t.createdAt, t.id),
     check('outbox_attempts', sql`${t.attempts} >= 0`),
     check('outbox_version', sql`${t.eventVersion} > 0`),
     validJson('outbox_payload', t.payload),
@@ -1760,6 +1761,7 @@ export const pluginEventOutbox = table(
   },
   (t) => [
     index('plugin_event_pending').on(t.deliveredAt, t.availableAt, t.eventId),
+    index('plugin_event_pending_age').on(t.deliveredAt, t.createdAt, t.eventId),
     index('plugin_event_plugin').on(t.pluginId, t.createdAt),
     check(
       'plugin_event_id_scope',

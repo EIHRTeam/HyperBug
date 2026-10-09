@@ -17,7 +17,7 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 
 ### Step 09.1 — Implement reliable event dispatch
 
-- [ ] **09.1a** Implement TaskQueue adapters for Cloudflare Queues and Graphile Worker: enqueue, bounded scheduling, stable event/job/delivery IDs, retry metadata, and explicit payload versions.
+- [x] **09.1a** Implement TaskQueue adapters for Cloudflare Queues and Graphile Worker: enqueue, bounded scheduling, stable event/job/delivery IDs, retry metadata, and explicit payload versions.
 - [x] **09.1b** Implement an outbox dispatcher with bounded leasing/claiming, retry, acknowledgement, lease expiry, and reconciliation after crashes.
 - [ ] **09.1c** Demonstrate that committed business data cannot permanently lose its event when queue publication fails. Do not claim cross-service atomicity between a database and queue.
 - [ ] **09.1d** Validate every message at consumption; store references instead of plaintext credentials or large bodies, and recheck relevant current permissions/configuration before delayed sensitive actions.
@@ -27,8 +27,8 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 ### Step 09.2 — Bound failure and fan-out
 
 - [x] **09.2a** Define retry counts/backoff, transient/permanent failure classification, poison-message handling, DLQ or equivalent failed-job storage, and authorized replay.
-- [ ] **09.2b** Bound consumer concurrency, dispatch batch size, downstream calls, and per-event fan-out; implement backpressure and non-critical circuit breaking.
-- [ ] **09.2c** Add queue lag, retry/failure/DLQ growth, processing duration, and outbox age telemetry with safe metadata.
+- [x] **09.2b** Bound consumer concurrency, dispatch batch size, downstream calls, and per-event fan-out; implement backpressure and non-critical circuit breaking.
+- [x] **09.2c** Add queue lag, retry/failure/DLQ growth, processing duration, and outbox age telemetry with safe metadata.
 - [ ] **09.2d** Connect plugin events and search-index updates; verify duplicate/out-of-order delivery cannot revert newer state.
 - [ ] **09.2e** Implement the minimum tier's failed-job storage in D1 with authorized replay and bounded retention; the provider dead-letter queue's 24-hour free retention must not be the only replay source, and a quota-exhausted dispatch must surface a visible backlog instead of dropping work.
 

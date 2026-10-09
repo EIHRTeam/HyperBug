@@ -30,3 +30,22 @@ Verified with Node 24, Vitest 5.0.1, installed Miniflare 5.20260926.1-alpha/work
 - Scoped `corepack pnpm exec oxfmt --write` used on changed code; final scoped check recorded at commit.
 
 Invariants exercised: concurrent claim exclusion, lease expiry/reclamation, stale-worker fencing, source acknowledgement, duplicate acknowledgement, poison retention, denied/fresh authorized replay, crash retry exhaustion, atomic step witnesses/checkpoints, cancel fencing, result bounds. Primary focused review checked conditional writes and transaction ordering; no independent audit claim. B1 closes 09.1b/09.1e, 09.2a, 09.3a at this portable-store scope. Platform/consumer/full workflow acceptance remains B2–B5.
+
+## B2 — queue adapters, bounds and telemetry
+
+Added `graphile-worker@0.18.0` exactly to the Node app (registry engine >=22.18.0, MIT; Node 24 compatible). Its transitive graph is frozen in pnpm-lock.yaml; lifecycle allowBuilds unchanged and all 11 installed license expressions pass. No other direct dependency added. Context7 initially found no Miniflare library; alternate resolution selected `/cloudflare/workers-sdk`, then query retrieved current v4 queue option schemas and broker retry/DLQ behavior. Installed Miniflare supports this slice, proven below rather than inferred.
+
+Adapters: `apps/api-cloudflare/src/task-queue.ts` uses Queue.send/json with bounded delay, per-message ack/retry and bounded batch consumption. `apps/api-node/src/task-queue.ts` uses WorkerUtils/addJob with stable job keys, unsafe_dedupe plus application idempotency, five attempts, bounded delay and a two-concurrent-worker runner with graceful shutdown. A provider key alone is never business idempotency. Cloudflare retry overflow is deferred, never dropped by the adapter.
+
+`async-runner.ts` bounds dispatch to ten references and one downstream send per event, two active underlying sends/handlers, a 1,000 ms deadline, and a 30-second isolate-local circuit after three transient failures. Underlying stalled native work holds its slot after timeout. Timed-out publication may still succeed; source state remains recoverable and duplicate consumption is expected. Telemetry carries only bounded counts, outcomes, duration and lag/age; diagnostic failures cannot change delivery state. Backlog counts are lower bounds at saturation (1,001 per source/failure category); oldest timestamp is exact via new covering pending-age indexes. D1 0031/PostgreSQL 0030 contain only those two indexes and do not alter outbox row shapes.
+
+Verification:
+
+- `corepack pnpm test:unit tests/unit/async-processing.test.ts`: 3 passed, including stalled handler/send capacity and malformed reference rejection.
+- `corepack pnpm test:workerd tests/workerd/async-queue.test.ts`: 1 passed, actual local Queue delivery/retry/ack in 32.26 s with identical stable identity and attempts 1 -> 2. No mock broker or hosted claim.
+- `corepack pnpm test:postgres tests/postgres/repository.test.ts -t 'Graphile adapter'`: 1 passed on isolated PostgreSQL 18.6; actual Graphile schema migration, delayed task execution, scheduling bound and graceful shutdown; 171 unrelated cases filtered.
+- After bounded telemetry/index changes, `corepack pnpm test:workerd tests/workerd/repository.test.ts -t 'retains poison failures'` and the corresponding `test:postgres` command: 1 passed each; remaining cases filtered. Both complete migration sequences include the new indexes.
+- `corepack pnpm typecheck`, `corepack pnpm lint`, `corepack pnpm db:check`, `corepack pnpm scan:licenses`, `corepack pnpm scan:secrets`, `git diff --check`: passed. Historical Drizzle journal warnings unchanged. Fixture build is performed by the Queue lane using existing build tooling.
+- Scoped formatting checked at commit. No hosted resources created. No paid-plan acceptance inferred.
+
+Primary focused performance/security review checked fixed fan-out, lower-bound telemetry scans, diagnostic isolation, safe error output, unresolved-work capacity and replay after ambiguous publication. B2 closes 09.1a, 09.2b/09.2c for the adapter/runner mechanisms. Production consumer wiring, full failures and workflow/Minimum paths remain B3–B5.

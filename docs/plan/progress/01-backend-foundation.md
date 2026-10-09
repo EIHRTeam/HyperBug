@@ -606,3 +606,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for the two requested failed checks or CodeQL fix; the unrelated moderate advisory is outside this failed high-severity check repair.
 - Next actions: Publish this documentation checkpoint and confirm current PR checks finish successfully; no further implementation planned for this repair.
 - Next-session cautions: Preserve protected untracked drafts and all module/gate remainders; dependency repair does not deploy an application.
+
+### 2026-10-10 — Module 09 B2 queues, bounds and telemetry
+
+- Scope and checklist IDs: 09.1a, 09.2b/09.2c; additive telemetry indexes and Graphile dependency.
+- Progress: Both queue adapters, bounded runner and safe telemetry verified; consumer wiring remains B3.
+- Change summary: Cloudflare send/schedule/ack/retry and actual PostgreSQL Graphile delayed tasks; two underlying-operation slots survive deadlines; bounded dispatch/fan-out/backlog telemetry and non-critical circuit breaking.
+- Files/artifacts: App task-queue adapters, application async-runner, shared fixture/tests/build target, Node manifest/lock; D1 0031/PG 0030 indexes; [evidence](../evidence/09-async-validation.md).
+- Verification: Unit 3, local Queue retry 1, actual Graphile/PostgreSQL 1, changed-backlog D1/PG 1 each passed; type/lint/boundaries/db/license/secrets/diff passed. Unrelated cases filtered; no hosted resource created.
+- Decisions and deviations: Added only graphile-worker@0.18.0 directly; lifecycle/license policy passes. Miniflare initial lookup miss resolved via workers-sdk and actual local proof. Backlog counts saturate as documented lower bounds; oldest age uses covering indexes.
+- Blockers/open questions: No B2 blocker; Standard deployment performance and Minimum/Workflows evidence remain unverified.
+- Next actions: B3 wire current plugin configuration/permissions and search handler; inject commit/send/processing/ack failures and close Module 08 handoffs.
+- Next-session cautions: Preserve source events until consumer completion; provider dedupe does not replace idempotency; stalled work cannot release capacity early; all gates/protected files unchanged.

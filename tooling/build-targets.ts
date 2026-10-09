@@ -107,6 +107,11 @@ export const cloudflareWasmAssets = [
  */
 export const fixtureTargets = [
   {
+    name: 'async-queue-worker',
+    entry: 'tests/fixtures/async-queue-worker.ts',
+    outDir: 'dist/async-queue-worker',
+  },
+  {
     name: 'scanner-worker',
     entry: 'tests/fixtures/scanner-worker.ts',
     outDir: 'dist/scanner-worker',

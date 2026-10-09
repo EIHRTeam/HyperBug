@@ -852,3 +852,23 @@ it('measures bounded search with 8000 canonical and stale-index rows', async () 
 import { createPostgresAsyncStore } from '@hyperbug/database-postgres';
 import { asyncStoreContract } from '../fixtures/async-contract.ts';
 asyncStoreContract(() => ({ harness, store: createPostgresAsyncStore(pool) }));
+
+import { startGraphileTasks } from '../../apps/api-node/src/task-queue.ts';
+import { taskReference, validateTaskReference } from '@hyperbug/application';
+it('Graphile adapter migrates, schedules stable references and bounds invalid scheduling on PostgreSQL 18', async () => {
+  const observed: string[] = [];
+  const worker = await startGraphileTasks(pool, async (value) => {
+    observed.push(validateTaskReference(value).deliveryId);
+    return 'ack';
+  });
+  try {
+    const ref = taskReference('core', crypto.randomUUID());
+    await worker.queue.schedule(ref, 100);
+    await expect
+      .poll(() => observed, { timeout: 5000 })
+      .toEqual([ref.deliveryId]);
+    await expect(worker.queue.schedule(ref, 3_600_001)).rejects.toThrow();
+  } finally {
+    await worker.close();
+  }
+});
