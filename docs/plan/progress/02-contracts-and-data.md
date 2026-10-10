@@ -652,3 +652,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native dispatch CPU exceeds the bound; earlier missing native delivery cause remains unknown.
 - Next actions: Report the measured failure; a new user direction after the HANDOFF-09 stop is required before further performance implementation or hosted acceptance. Native CPU profiling is the next proposed investigation. Preserve 09.2e/09.3g and Module08's existing dispatch/retry closure.
 - Next-session cautions: No further hosted probe/refactor after the failure. Keep original data/history and committed batches; retained inactive fixture has one timeline/one audit record. Raw DNS absence unverified, custom-domain mapping absent. No push or PR edit; G1/G2 closed and 13.G6 open.
+
+### 2026-10-11 — Metering and initialization profiling checkpoint
+
+- Scope and checklist IDs: Authorized Module09 B5 09.1f/09.V6 performance continuation and affected integration seams; no audit resume.
+- Progress: Direct metering facades, phase-specific factory construction, internal async exports and deferred upload configuration locally verified. Native r4 produced no event within its bounded window; CPU acceptance remains open.
+- Change summary: Preserve SQL, existing handlers, permissions, quotas and numeric limits. Keep default package entries and adapter imports; no lint exemption, dependency or migration.
+- Files/artifacts: Minimum composition/meter, internal application/D1 async entries, unit coverage; [profiling evidence](../evidence/09-async-validation.md#authorized-cpu-profiling-continuation--2026-10-11), [r4 receipt](../evidence/09-hosted-native-meter-retry-receipt.json).
+- Verification: Unit meter 3, search availability 28, workerd queue/workflow/Minimum 5 pass; typecheck, lint/boundaries, build and final Minimum target build, scoped format, secrets, docs build and diff pass. Local CPU/startup sampling is diagnostic only. R4 cleanup verifies 120 original records, foreign keys, singleton state, original two Workers/mappings and zero owned resources/work; live processes terminal.
+- Decisions and deviations: Human approval permits continued bounded attempts after failures. Reverted lint-rejected internal adapter/contract paths rather than adding exclusions. Fixed copied fixture missing IDs only after proving no writes; TLS readiness and OAuth refresh handled. No native execution/CPU inferred from handlers, registration or local timing.
+- Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
+- Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
+- Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.

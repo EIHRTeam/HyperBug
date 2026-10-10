@@ -5,7 +5,7 @@ import {
   createD1PluginRegistryStore,
   createD1PluginSettingsStore,
   createD1ExpiredCleanupStore,
-} from '@hyperbug/database-d1';
+} from '@hyperbug/database-d1/async';
 import {
   createAsyncProcessor,
   createAsyncEventHandler,
@@ -13,13 +13,10 @@ import {
   runScheduledUploadCleanup,
   MINIMUM_ASYNC_LIMITS,
   type JobStore,
-} from '@hyperbug/application';
+} from '@hyperbug/application/async';
 import { loadAsyncMaintenancePolicy } from '@hyperbug/config';
 import { minimumInvocationBudget } from './async-budget.ts';
-import {
-  configureWorkerUploads,
-  type WorkerUploadBindings,
-} from './uploads.ts';
+import type { WorkerUploadBindings } from './uploads.ts';
 
 /** A single phase per existing Cron tick. No queue or Workflow binding is used. */
 export async function runMinimumAsyncTick(input: {
@@ -35,8 +32,7 @@ export async function runMinimumAsyncTick(input: {
   const clock = input.now ?? Date.now,
     budget = minimumInvocationBudget(),
     db = budget.db(input.db);
-  const store = createD1AsyncStore(db),
-    minimum = createD1MinimumAsyncStore(db);
+  const minimum = createD1MinimumAsyncStore(db);
   const phase = Math.floor(input.scheduledTime / 300000) % 5;
   let outcome = 'done';
   let jobState: { checkpoint: number; terminal: boolean } | null = null;
@@ -46,18 +42,20 @@ export async function runMinimumAsyncTick(input: {
         admission = await minimum.admitAndClaim(clock(), token),
         refs = admission.references;
       if (!admission.admitted) outcome = 'quota-exhausted';
-      const process = createAsyncProcessor({
-        store: minimum.executionStore(),
-        clock,
-        token: () => token,
-        handle: createAsyncEventHandler({
-          search: minimum.searchStore(),
-          registry: createD1PluginRegistryStore(db),
-          settings: createD1PluginSettingsStore(db),
-          tier: 'cloudflare-minimum',
-        }),
-      });
-      if (refs[0]) await process(refs[0]);
+      if (refs[0]) {
+        const process = createAsyncProcessor({
+          store: minimum.executionStore(),
+          clock,
+          token: () => token,
+          handle: createAsyncEventHandler({
+            search: minimum.searchStore(),
+            registry: createD1PluginRegistryStore(db),
+            settings: createD1PluginSettingsStore(db),
+            tier: 'cloudflare-minimum',
+          }),
+        });
+        await process(refs[0]);
+      }
     } else if (!(await minimum.reserve(clock()))) outcome = 'quota-exhausted';
     else if (phase === 1) {
       await createD1ExpiredCleanupStore(db).purgeExpired(
@@ -66,6 +64,8 @@ export async function runMinimumAsyncTick(input: {
         1,
       );
     } else if (phase === 2) {
+      const store = createD1AsyncStore(db);
+      const { configureWorkerUploads } = await import('./uploads.ts');
       const uploads = configureWorkerUploads(
         db,
         {
@@ -88,6 +88,7 @@ export async function runMinimumAsyncTick(input: {
           clock,
         );
     } else if (phase === 3) {
+      const store = createD1AsyncStore(db);
       await store.purgeTerminal(
         Math.max(
           0,
@@ -105,6 +106,7 @@ export async function runMinimumAsyncTick(input: {
         1,
       );
     } else {
+      const store = createD1AsyncStore(db);
       const ids = await store.recoverableJobs(clock(), 1),
         jobs: JobStore = { ...store, claim: store.claimJob };
       if (ids[0]) {

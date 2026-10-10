@@ -3,7 +3,7 @@ import type {
   D1PreparedStatement,
   R2Bucket,
 } from '@cloudflare/workers-types';
-import { MINIMUM_ASYNC_LIMITS, AsyncError } from '@hyperbug/application';
+import { MINIMUM_ASYNC_LIMITS, AsyncError } from '@hyperbug/application/async';
 
 /** Count before I/O, including every SQL statement in an atomic batch. */
 export function minimumInvocationBudget() {
@@ -44,57 +44,52 @@ export function minimumInvocationBudget() {
   };
   const originals = new WeakMap<D1PreparedStatement, D1PreparedStatement>();
   const statement = (raw: D1PreparedStatement): D1PreparedStatement => {
-    const wrapped = new Proxy(raw, {
-      get(target, key) {
-        if (key === 'bind')
-          return (...values: unknown[]) => statement(target.bind(...values));
-        if (key === 'first')
-          return async (column?: string) => {
-            take(1);
-            const value = await target.all<Record<string, unknown>>();
-            result(value);
-            const row = value.results[0];
-            return row ? (column === undefined ? row : row[column]) : null;
-          };
-        if (key === 'raw')
-          return () => {
-            throw new AsyncError('unsupported');
-          };
-        if (['run', 'all'].includes(String(key)))
-          return async (...args: unknown[]) => {
-            take(1);
-            return result(await Reflect.get(target, key).apply(target, args));
-          };
-        const member = Reflect.get(target, key);
-        return typeof member === 'function' ? member.bind(target) : member;
+    const wrapped = {
+      bind: (...values: unknown[]) => statement(raw.bind(...values)),
+      async first<T>(column?: string) {
+        take(1);
+        const value = await raw.all<Record<string, unknown>>();
+        result(value);
+        const row = value.results[0];
+        return (
+          row ? (column === undefined ? row : row[column]) : null
+        ) as T | null;
       },
-    });
+      async run<T>() {
+        take(1);
+        return result(await raw.run<T>());
+      },
+      async all<T>() {
+        take(1);
+        return result(await raw.all<T>());
+      },
+      raw() {
+        throw new AsyncError('unsupported');
+      },
+    } as D1PreparedStatement;
     originals.set(wrapped, raw);
     return wrapped;
   };
   return {
     db(raw: D1Database): D1Database {
-      return new Proxy(raw, {
-        get(target, key) {
-          if (key === 'prepare')
-            return (sql: string) => statement(target.prepare(sql));
-          if (key === 'batch')
-            return async (items: D1PreparedStatement[]) => {
-              take(items.length);
-              return result(
-                await target.batch(
-                  items.map((item) => originals.get(item) ?? item),
-                ),
-              );
-            };
-          if (key === 'exec' || key === 'withSession')
-            return () => {
-              throw new AsyncError('unsupported');
-            };
-          const member = Reflect.get(target, key);
-          return typeof member === 'function' ? member.bind(target) : member;
+      return {
+        prepare: (sql: string) => statement(raw.prepare(sql)),
+        async batch<T>(items: D1PreparedStatement[]) {
+          take(items.length);
+          return result(
+            await raw.batch<T>(
+              items.map((item) => originals.get(item) ?? item),
+            ),
+          );
         },
-      });
+        exec() {
+          throw new AsyncError('unsupported');
+        },
+        withSession() {
+          throw new AsyncError('unsupported');
+        },
+        dump: () => raw.dump(),
+      } as D1Database;
     },
     bucket(raw: R2Bucket): R2Bucket {
       return new Proxy(raw, {

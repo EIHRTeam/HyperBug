@@ -1,0 +1,42 @@
+[
+  {
+    "version": "before",
+    "lane": "canonical",
+    "ticks": 30,
+    "samples": 125,
+    "sampledActiveUs": 79293,
+    "sampledIdleUs": 22815,
+    "d1LeafUs": 21021,
+    "meterLeafUs": 1693
+  },
+  {
+    "version": "before",
+    "lane": "empty",
+    "ticks": 30,
+    "samples": 51,
+    "sampledActiveUs": 45106,
+    "sampledIdleUs": 15707,
+    "d1LeafUs": 7539,
+    "meterLeafUs": 1183
+  },
+  {
+    "version": "after",
+    "lane": "canonical",
+    "ticks": 30,
+    "samples": 111,
+    "sampledActiveUs": 63785,
+    "sampledIdleUs": 23441,
+    "d1LeafUs": 14890,
+    "meterLeafUs": 1024
+  },
+  {
+    "version": "after",
+    "lane": "empty",
+    "ticks": 30,
+    "samples": 53,
+    "sampledActiveUs": 37485,
+    "sampledIdleUs": 10441,
+    "d1LeafUs": 13402,
+    "meterLeafUs": 2693
+  }
+]

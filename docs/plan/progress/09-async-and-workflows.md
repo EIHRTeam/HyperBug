@@ -6,21 +6,21 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Blocked (native Cron dispatch measured 20 ms against the required 10 ms Free CPU bound)
+- Status: In progress (authorized CPU investigation; native canonical Cron remains 20 ms versus 10 ms)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
 - Active/next checklist group: B5 — 09.1f and 09.V6 (native Cron CPU fit).
-- Last updated: 2026-10-10.
-- Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work measured 20 ms on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Hosted acceptance stopped under HANDOFF-09. Cleanup and preservation results are recorded in the latest session.
+- Last updated: 2026-10-11.
+- Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work measured 20 ms on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Human authorization on 2026-10-11 overrides the stop-after-failure rule for bounded profiling/refactoring and native retries with cleanup. Cleanup and preservation results are recorded in the latest session.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 09.1 | Implement reliable event dispatch | Blocked (native Cron proof) | [B1–B5 partial evidence](../evidence/09-async-validation.md) |
+| 09.1 | Implement reliable event dispatch | In progress (native CPU fit) | [B1–B5 partial evidence](../evidence/09-async-validation.md) |
 | 09.2 | Bound failure and fan-out | Complete | [B1–B5 partial evidence](../evidence/09-async-validation.md) |
 | 09.3 | Implement durable workflow and retention foundations | Complete (09.3e suspended) | [B4 evidence](../evidence/09-async-validation.md#b4--workflows-and-scheduled-maintenance) |
 
@@ -28,14 +28,14 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. Diagnose or obtain actual native Cron delivery evidence on authorized test infrastructure; registration alone does not close 09.1f/09.V6.
+1. Continue the authorized CPU investigation with the compiled module graph and bounded native Cron observation; registration/local timing do not close 09.1f/09.V6.
 2. Preserve the passing local/hosted-function refactor and the completed cleanup. No new permission or bound waiver is inferred; existing test/refactor authorization persists. Keep G1/G2 closed and 13.G6 open.
 
 ## Next-session cautions
 
 Assume at-least-once delivery and crash-after-side-effect replay. Queue deduplication alone does not guarantee business idempotency.
 
-B1–B4 and the unaccepted B5 prototype are committed (latest d9ee49d); the dispatcher performance batch is prepared for its commit. No owned hosted resources or tail process remain. Owned Worker/Queue/Workflow/custom-domain mappings are removed; raw DNS inventory remains unverified (403). D1 baseline rows/history and appended migrations are preserved. Inspect the final receipts before any new hosted use.
+B1–B4, the B5 prototype and dispatcher batching (b5c5206) are committed. The current metering/initialization refactor is locally verified for its checkpoint commit. No owned hosted resources or tail process remain. Owned Worker/Queue/Workflow/custom-domain mappings are removed; raw DNS inventory remains unverified (403). D1 baseline rows/history and appended migrations are preserved. Inspect the final receipts before any new hosted use.
 
 ## Session log
 
@@ -386,3 +386,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native CPU exceeds 10 ms; pending authorization to profile/refactor and run bounded native retries after failures.
 - Next actions: Await the pending question's answer; if authorized, begin measured profiling and the relevant focused checks.
 - Next-session cautions: Keep 09.1f/09.V6 open, 09.3e suspended and G1/G2/13.G6 unchanged. Do not restart completed test handles or stage protected/private files.
+
+### 2026-10-11 — Continued performance investigation authorized
+
+- Scope and checklist IDs: 09.1f/09.V6 and authorized Module08 metering seam.
+- Progress: Human authorizes profiling/refactoring across profiles if needed and bounded native retries with cleanup after each attempt. Latest 20 ms native result remains unaccepted.
+- Change summary: Resume investigation; preserve every contract, security check and numeric limit.
+- Files/artifacts: Module09/master status, affected progress records; ignored local profiling helpers.
+- Verification: Context7 Workers resolve/query on 2026-10-11 documents local CPU profiling and distinction from hosted CPU; implementation checks pending.
+- Decisions and deviations: Human authorization supersedes HANDOFF-09 stop-after-bound-failure and historical pending-approval entries. No audit resume or gate closure.
+- Blockers/open questions: Native canonical dispatch must fit 10 ms; local profiles cannot establish acceptance.
+- Next actions: Profile measured costs, optimize demonstrated hotspots, focused checks and bounded native retries with cleanup.
+- Next-session cautions: 09.1f/09.V6 open, 09.3e suspended, G1/G2 closed and 13.G6 open. No push/PR edit; protect root drafts, original data and backups.
+
+### 2026-10-11 — Metering and initialization profiling checkpoint
+
+- Scope and checklist IDs: Authorized Module09 B5 09.1f/09.V6 performance continuation and affected integration seams; no audit resume.
+- Progress: Direct metering facades, phase-specific factory construction, internal async exports and deferred upload configuration locally verified. Native r4 produced no event within its bounded window; CPU acceptance remains open.
+- Change summary: Preserve SQL, existing handlers, permissions, quotas and numeric limits. Keep default package entries and adapter imports; no lint exemption, dependency or migration.
+- Files/artifacts: Minimum composition/meter, internal application/D1 async entries, unit coverage; [profiling evidence](../evidence/09-async-validation.md#authorized-cpu-profiling-continuation--2026-10-11), [r4 receipt](../evidence/09-hosted-native-meter-retry-receipt.json).
+- Verification: Unit meter 3, search availability 28, workerd queue/workflow/Minimum 5 pass; typecheck, lint/boundaries, build and final Minimum target build, scoped format, secrets, docs build and diff pass. Local CPU/startup sampling is diagnostic only. R4 cleanup verifies 120 original records, foreign keys, singleton state, original two Workers/mappings and zero owned resources/work; live processes terminal.
+- Decisions and deviations: Human approval permits continued bounded attempts after failures. Reverted lint-rejected internal adapter/contract paths rather than adding exclusions. Fixed copied fixture missing IDs only after proving no writes; TLS readiness and OAuth refresh handled. No native execution/CPU inferred from handlers, registration or local timing.
+- Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
+- Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
+- Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.
