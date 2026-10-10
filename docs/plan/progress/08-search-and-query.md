@@ -330,3 +330,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: 09.1f/09.V6 CPU and representative native recovery remain open. 09.3e suspended; G1/G2 closed, 13.G6 open.
 - Next actions: Fresh bounded native r6 with new suffix/backup; maximum body and affected recovery only after canonical CPU fit; cleanup after each attempt.
 - Next-session cautions: Preserve fresh reservation fencing, source quotas, post-I/O accounting and current projection checks; do not stage protected files or private logs; no push/PR edit.
+
+
+### 2026-10-11 — Native admission result and cursor consolidation
+
+- Scope and checklist IDs: Authorized Module09 09.1f/09.V6 performance continuation and Module08 indexing seam.
+- Progress: Native r6 canonical dispatch took 14 ms CPU and still fails 10 ms; source indexed/acknowledged once. Cleanup verified before continuing. Consolidated cursor initialization and advancement reduces canonical work from eleven to ten SQL statements, preserving three provider round trips.
+- Change summary: Missing cursors use the existing zero prefix; one gated UPSERT initializes/advances or resets both bounded source cursors. Admission refusal retains all state. No lease, retry, quota, authorization or index contract changes.
+- Files/artifacts: D1 Minimum adapter and admission suite; [r6 receipt](../evidence/09-hosted-native-admission-retry-receipt.json), [detailed evidence](../evidence/09-async-validation.md#native-admission-result-and-cursor-consolidation--2026-10-11).
+- Verification: Focused Minimum workerd seven tests, typecheck, lint/boundaries and build pass. r6 preserved 130 baseline rows, singleton values, foreign keys and original two Workers/mappings; all owned resources/mutable work removed and processes terminal. No unchanged PostgreSQL lane rerun.
+- Decisions and deviations: Human now permits raising the project target and reducing Minimum capacity after repeated measured optimization failures. No target/capacity change applied yet. Context7 Workers resolve/query (2026-10-11) explicitly lists Free Cron CPU 10 ms; higher internal targets cannot establish provider acceptance. Native r6 arrived after the monitor deadline; tail/state prove execution. During continuation gap it emitted harmless empty ticks before cleanup.
+- Blockers/open questions: 09.1f/09.V6 remain open; 09.3e suspended, G1/G2 closed, 13.G6 open.
+- Next actions: Bounded fresh r7 native retry against the ten-statement path with independent backup and cleanup; measure representative size/recovery only after canonical fit.
+- Next-session cautions: No push/PR edit; preserve history and baseline data. Do not rerun inventory after seeding. Higher project CPU target must not rewrite provider limits or imply full Free acceptance.

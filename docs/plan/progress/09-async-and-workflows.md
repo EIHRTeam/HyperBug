@@ -6,14 +6,14 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (authorized CPU investigation; latest native canonical Cron remains 12 ms versus 10 ms)
+- Status: In progress (authorized CPU investigation; latest native canonical Cron remains 14 ms versus 10 ms)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
 - Active/next checklist group: B5 — 09.1f and 09.V6 (native Cron CPU fit).
 - Last updated: 2026-10-11.
-- Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work most recently measured 12 ms in r5 on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Human authorization on 2026-10-11 overrides the stop-after-failure rule for bounded profiling/refactoring and native retries with cleanup. Cleanup and preservation results are recorded in the latest session.
+- Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work most recently measured 14 ms in r6 on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Human authorization on 2026-10-11 overrides the stop-after-failure rule for bounded profiling/refactoring and native retries with cleanup. Cleanup and preservation results are recorded in the latest session.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
 
 ## Step tracking
@@ -28,7 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. Continue the authorized CPU investigation with combined claim/search admission and bounded native Cron observation; registration/local timing do not close 09.1f/09.V6.
+1. Continue the authorized CPU investigation with combined cursor initialization/advancement and bounded native Cron observation; registration/local timing do not close 09.1f/09.V6.
 2. Preserve the passing local/hosted-function refactor and the completed cleanup. No new permission or bound waiver is inferred; existing test/refactor authorization persists. Keep G1/G2 closed and 13.G6 open.
 
 ## Next-session cautions
@@ -422,3 +422,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: 09.1f/09.V6 CPU and representative native recovery remain open. 09.3e suspended; G1/G2 closed, 13.G6 open.
 - Next actions: Fresh bounded native r6 with new suffix/backup; maximum body and affected recovery only after canonical CPU fit; cleanup after each attempt.
 - Next-session cautions: Preserve fresh reservation fencing, source quotas, post-I/O accounting and current projection checks; do not stage protected files or private logs; no push/PR edit.
+
+
+### 2026-10-11 — Native admission result and cursor consolidation
+
+- Scope and checklist IDs: Authorized Module09 09.1f/09.V6 performance continuation and Module08 indexing seam.
+- Progress: Native r6 canonical dispatch took 14 ms CPU and still fails 10 ms; source indexed/acknowledged once. Cleanup verified before continuing. Consolidated cursor initialization and advancement reduces canonical work from eleven to ten SQL statements, preserving three provider round trips.
+- Change summary: Missing cursors use the existing zero prefix; one gated UPSERT initializes/advances or resets both bounded source cursors. Admission refusal retains all state. No lease, retry, quota, authorization or index contract changes.
+- Files/artifacts: D1 Minimum adapter and admission suite; [r6 receipt](../evidence/09-hosted-native-admission-retry-receipt.json), [detailed evidence](../evidence/09-async-validation.md#native-admission-result-and-cursor-consolidation--2026-10-11).
+- Verification: Focused Minimum workerd seven tests, typecheck, lint/boundaries and build pass. r6 preserved 130 baseline rows, singleton values, foreign keys and original two Workers/mappings; all owned resources/mutable work removed and processes terminal. No unchanged PostgreSQL lane rerun.
+- Decisions and deviations: Human now permits raising the project target and reducing Minimum capacity after repeated measured optimization failures. No target/capacity change applied yet. Context7 Workers resolve/query (2026-10-11) explicitly lists Free Cron CPU 10 ms; higher internal targets cannot establish provider acceptance. Native r6 arrived after the monitor deadline; tail/state prove execution. During continuation gap it emitted harmless empty ticks before cleanup.
+- Blockers/open questions: 09.1f/09.V6 remain open; 09.3e suspended, G1/G2 closed, 13.G6 open.
+- Next actions: Bounded fresh r7 native retry against the ten-statement path with independent backup and cleanup; measure representative size/recovery only after canonical fit.
+- Next-session cautions: No push/PR edit; preserve history and baseline data. Do not rerun inventory after seeding. Higher project CPU target must not rewrite provider limits or imply full Free acceptance.

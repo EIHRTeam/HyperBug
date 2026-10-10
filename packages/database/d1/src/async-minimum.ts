@@ -99,7 +99,7 @@ export function createD1MinimumAsyncStore(db: D1Database) {
     ) =>
       `SELECT '${source}' AS source,'${prefix}' AS prefix,id,available_at,created_at FROM (
         SELECT e.${key} AS id,e.available_at,e.created_at FROM ${table} e WHERE e.delivered_at IS NULL AND e.available_at<=?
-        AND (e.available_at,e.${key})>(SELECT available_at,event_id FROM async_minimum_cursors WHERE source='${source}')
+        AND (e.available_at,e.${key})>(COALESCE((SELECT available_at FROM async_minimum_cursors WHERE source='${source}'),0),COALESCE((SELECT event_id FROM async_minimum_cursors WHERE source='${source}'),''))
         ORDER BY e.available_at,e.${key} LIMIT 1)`;
     const candidates =
       candidate('core', 'outbox', 'id', 'search-update:') +
@@ -109,18 +109,16 @@ export function createD1MinimumAsyncStore(db: D1Database) {
       "SELECT delivery_id FROM async_deliveries WHERE state='pending' AND available_at<=? ORDER BY available_at,delivery_id LIMIT 1";
     return [
       db
-        .prepare(`INSERT INTO async_minimum_cursors (source,available_at,event_id)
-        SELECT source,0,'' FROM (SELECT 'core' AS source UNION ALL SELECT 'plugin') WHERE ${gate} ON CONFLICT DO NOTHING`)
-        .bind(...gateParams),
-      db
         .prepare(`WITH candidates AS MATERIALIZED (${candidates})
         INSERT INTO async_deliveries (delivery_id,source,event_id,created_at,updated_at,available_at)
         SELECT prefix||id,source,id,created_at,?,? FROM candidates WHERE ${gate} ON CONFLICT DO NOTHING`)
         .bind(now, now, now, now, ...gateParams),
       db
-        .prepare(`WITH candidates AS MATERIALIZED (${candidates}) UPDATE async_minimum_cursors SET
-        available_at=COALESCE((SELECT available_at FROM candidates c WHERE c.source=async_minimum_cursors.source),0),
-        event_id=COALESCE((SELECT id FROM candidates c WHERE c.source=async_minimum_cursors.source),'') WHERE ${gate}`)
+        .prepare(`WITH candidates AS MATERIALIZED (${candidates})
+        INSERT INTO async_minimum_cursors (source,available_at,event_id)
+        SELECT s.source,COALESCE(c.available_at,0),COALESCE(c.id,'')
+        FROM (SELECT 'core' AS source UNION ALL SELECT 'plugin') s LEFT JOIN candidates c ON c.source=s.source
+        WHERE ${gate} ON CONFLICT(source) DO UPDATE SET available_at=excluded.available_at,event_id=excluded.event_id`)
         .bind(now, now, ...gateParams),
       db
         .prepare(`UPDATE async_deliveries SET state='failed',failure='lease-exhausted',updated_at=?

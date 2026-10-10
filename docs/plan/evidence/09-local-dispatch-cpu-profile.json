@@ -38,5 +38,25 @@
     "sampledIdleUs": 10441,
     "d1LeafUs": 13402,
     "meterLeafUs": 2693
+  },
+  {
+    "version": "combined-admission",
+    "lane": "canonical",
+    "ticks": 30,
+    "samples": 122,
+    "sampledActiveUs": 74361,
+    "sampledIdleUs": 29098,
+    "d1LeafUs": 24241,
+    "meterLeafUs": 1820
+  },
+  {
+    "version": "combined-admission",
+    "lane": "empty",
+    "ticks": 30,
+    "samples": 40,
+    "sampledActiveUs": 26426,
+    "sampledIdleUs": 18136,
+    "d1LeafUs": 10577,
+    "meterLeafUs": 518
   }
 ]

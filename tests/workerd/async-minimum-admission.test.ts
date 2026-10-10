@@ -88,7 +88,8 @@ const processor = (
     }),
   });
 function countCalls(db: D1Database) {
-  let calls = 0;
+  let calls = 0,
+    statements = 0;
   const originals = new WeakMap<D1PreparedStatement, D1PreparedStatement>();
   const wrap = (raw: D1PreparedStatement): D1PreparedStatement => {
     const proxy = new Proxy(raw, {
@@ -99,6 +100,7 @@ function countCalls(db: D1Database) {
         if (key === 'all' || key === 'run' || key === 'first')
           return (...args: unknown[]) => {
             calls++;
+            statements++;
             return member.apply(target, args);
           };
         return typeof member === 'function' ? member.bind(target) : member;
@@ -109,10 +111,12 @@ function countCalls(db: D1Database) {
   };
   return {
     calls: () => calls,
+    statements: () => statements,
     db: {
       prepare: (sql: string) => wrap(db.prepare(sql)),
       batch: (items: D1PreparedStatement[]) => {
         calls++;
+        statements += items.length;
         return db.batch(items.map((item) => originals.get(item) ?? item));
       },
     } as D1Database,
@@ -137,6 +141,7 @@ it('Minimum canonical indexing uses three provider calls and charges search only
       )(admission.references[0]),
     ).toBe('ack');
     expect(counted.calls()).toBe(3);
+    expect(counted.statements()).toBe(10);
     expect(
       (await f.db.prepare('SELECT * FROM search_budget').all()).results,
     ).toEqual(budget);
@@ -160,6 +165,51 @@ it('Minimum canonical indexing uses three provider calls and charges search only
     expect(
       (await f.db.prepare('SELECT * FROM search_budget').all()).results,
     ).toEqual(budget);
+  } finally {
+    await f.mf.dispose();
+  }
+}, 25000);
+
+it('Minimum initializes missing cursors and wraps an empty prefix to discover an older pending source', async () => {
+  const f = await fixture();
+  try {
+    const first = createD1MinimumAsyncStore(f.db),
+      admitted = await first.admitAndClaim(f.now, 'first');
+    await processor(first, f.db, 'first', f.now)(admitted.references[0]);
+    const older = crypto.randomUUID();
+    await f.db
+      .prepare(
+        "INSERT INTO outbox(id,project_id,aggregate_id,event_type,payload,created_at,available_at) VALUES (?,?,?,'comment.create','{}',?,?)",
+      )
+      .bind(older, f.project, f.issue, f.now - 1, f.now - 1)
+      .run();
+    // No source follows the previous cursor: this tick resets both prefixes.
+    expect(
+      (await createD1MinimumAsyncStore(f.db).admitAndClaim(f.now + 1, 'wrap'))
+        .references,
+    ).toEqual([]);
+    expect(
+      (
+        await f.db
+          .prepare(
+            'SELECT source,available_at,event_id FROM async_minimum_cursors ORDER BY source',
+          )
+          .all()
+      ).results,
+    ).toEqual([
+      { source: 'core', available_at: 0, event_id: '' },
+      { source: 'plugin', available_at: 0, event_id: '' },
+    ]);
+    const next = createD1MinimumAsyncStore(f.db),
+      recovered = await next.admitAndClaim(f.now + 2, 'older');
+    expect(recovered.references[0]?.eventId).toBe(older);
+    await processor(next, f.db, 'older', f.now + 2)(recovered.references[0]);
+    expect(
+      await f.db
+        .prepare('SELECT delivered_at FROM outbox WHERE id=?')
+        .bind(older)
+        .first(),
+    ).toEqual({ delivered_at: f.now + 2 });
   } finally {
     await f.mf.dispose();
   }
