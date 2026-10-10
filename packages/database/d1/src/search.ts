@@ -1,5 +1,6 @@
 import {
   searchTokenText,
+  SEARCH_MINIMUM_PROJECTION_PREFIX,
   SEARCH_SCAN_LIMITS,
   SearchError,
   SEARCH_BOUNDS,
@@ -15,6 +16,10 @@ export function compileD1Search(
   columns: string,
 ) {
   const ast = validateSearchAst(query.ast);
+  const minimum = options.tier === 'cloudflare-minimum';
+  const projection = minimum
+    ? `'${SEARCH_MINIMUM_PROJECTION_PREFIX}' || i.body_text_version`
+    : 'i.body_text_version';
   const values: (string | number | null)[] = [];
   const bind = (value: string | number | null) => {
     values.push(value);
@@ -34,7 +39,7 @@ export function compileD1Search(
                   .match(/[\p{L}\p{N}\p{M}]+/gu) ?? [];
               if (!terms.length) return leaf.negated ? '1' : '0';
               const quote = (term: string) => `"${term.replaceAll('"', '""')}"`;
-              const match = `scope : "p${query.projectId.replaceAll('-', '')}" AND {title body} : (${leaf.phrase ? quote(searchTokenText(leaf.value).trim()) : terms.map(quote).join(' AND ')})`;
+              const match = `scope : "p${query.projectId.replaceAll('-', '')}" AND ${minimum ? 'title' : '{title body}'} : (${leaf.phrase ? quote(searchTokenText(leaf.value).trim()) : terms.map(quote).join(' AND ')})`;
               bytes += new TextEncoder().encode(match).length;
               if (bytes > SEARCH_BOUNDS.ftsExpressionBytes)
                 throw new SearchError('SEARCH_COMPLEXITY');
@@ -76,7 +81,7 @@ export function compileD1Search(
     AND EXISTS (SELECT 1 FROM projects p WHERE p.id = i.project_id AND (p.visibility = 'public' OR EXISTS (
       SELECT 1 FROM project_roles r JOIN principals a ON a.id = r.principal_id
       WHERE r.project_id = p.id AND r.principal_id = ${principal} AND a.kind = 'staff' AND a.status = 'active')))
-    AND EXISTS (SELECT 1 FROM search_documents d WHERE d.project_id = i.project_id AND d.issue_id = i.id AND d.active = 1 AND d.revision = i.revision AND d.projection_version = i.body_text_version)
+    AND EXISTS (SELECT 1 FROM search_documents d WHERE d.project_id = i.project_id AND d.issue_id = i.id AND d.active = 1 AND d.revision = i.revision AND d.projection_version = ${projection})
     ORDER BY i.created_at DESC, i.id DESC LIMIT ${window}
   ) ${boundary} ORDER BY created_at DESC, id DESC LIMIT ${limit}`;
   values.unshift(query.projectId, query.projectId, query.principalId ?? null);

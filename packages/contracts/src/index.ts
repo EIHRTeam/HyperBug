@@ -94,6 +94,15 @@ export const InstanceDocumentSchema = Type.Object(
       },
       { additionalProperties: false },
     ),
+    search: Type.Object(
+      {
+        textScope: Type.Union([
+          Type.Literal('title'),
+          Type.Literal('title-and-body'),
+        ]),
+      },
+      { additionalProperties: false },
+    ),
     limits: Type.Object(
       { documented: Type.String({ minLength: 1, maxLength: 2048 }) },
       { additionalProperties: false },

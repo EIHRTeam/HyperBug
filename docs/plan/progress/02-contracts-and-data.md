@@ -664,3 +664,14 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
 - Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
 - Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.
+
+### 2026-10-11 — Module09 fresh-schema acceptance expectation
+
+- Scope/checklist IDs: Module09 09.1f/09.V6 performance verification; Module02 fresh-schema test dependency.
+- Progress/change summary: Correct PostgreSQL fresh-table expectation from 51 to 55 for the four already-implemented Module09 async sidecar tables. No migration, schema or persistent contract change.
+- Files/artifacts: PostgreSQL repository test; [Module09 evidence](../evidence/09-async-validation.md#coherent-minimum-title-only-implementation--2026-10-11).
+- Verification: Initial accidental broad run exposed the stale count; corrected focused PostgreSQL migration/search/async/capability selection passes 14 checks. Broad matrix not repeated.
+- Decisions/deviations: Test maintenance for existing Module09 data model; no new capacity or data deletion.
+- Blockers/open questions: Module09 native CPU remains unaccepted; no Module02 gate/status change.
+- Next actions: Continue Module09 native measurement/owned cleanup.
+- Next-session cautions: Protect original hosted rows and immutable migration history; no staging/production action or audit resume.

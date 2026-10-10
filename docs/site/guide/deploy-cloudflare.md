@@ -40,3 +40,9 @@ The instance capability document reports background mode, dispatch batch and job
 Async work reserves a separate daily allowance of 1.5 million D1 reads and 30,000 writes. A denied reservation preserves pending work and reports backlog age. Each invocation stops at 45 SQL statements/combined subrequests, including diagnostic headroom. These allocations do not measure total account usage or guarantee Free CPU acceptance.
 
 `ASYNC_ORPHAN_RETENTION_SECONDS` defaults to 86,400 seconds after intent expiry (range 3,600–31,536,000). `ASYNC_TERMINAL_RETENTION_SECONDS` defaults to 2,592,000 seconds (range 86,400–31,536,000). Failed events remain replayable during the terminal window; expiry retires their source and failure metadata atomically. Pending retries are preserved. Refer to the internal async processing runbook for authorized replay and recovery. The separate Minimum release acceptance gate remains open.
+
+## Search capacity
+
+Cloudflare Minimum searches Issue titles only. Cloudflare Standard searches titles and canonical plain-text bodies. Structured filters remain available; Issue bodies and comments keep their existing content limits. The instance capability document reports `search.textScope` as `title` or `title-and-body`.
+
+When changing profiles, stop dispatchers using the old search mode and rebuild the derived index with the existing authorized administrator service, one bounded page at a time. Follow its returned cursor; Minimum allows at most ten documents per page. Search returns `SEARCH_INDEX_INCOMPLETE` until rebuilding completes. Rebuild again when rolling back. Earlier Minimum search cursors return `CURSOR_STALE`; start a new search. This capacity reduction is locally implemented and awaits native CPU validation; the 10 ms Free provider ceiling and the separate release acceptance gate remain unchanged.

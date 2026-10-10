@@ -197,7 +197,7 @@ export function createD1MinimumAsyncStore(db: D1Database) {
           AND EXISTS (SELECT 1 FROM async_minimum_budget WHERE id=1 AND reservation_token=?) AND ${canonicalSearch}=1)
           INSERT INTO search_budget(id,day,reads,writes) SELECT 1,?,?,? WHERE changes()=1 AND EXISTS (SELECT 1 FROM candidate)
           ${searchBudgetConflictSql} RETURNING id,
-          (SELECT json_object('id',i.id,'revision',i.revision,'title',i.title,'body_text',i.body_text,'body_text_version',i.body_text_version,'moderation',i.moderation,'deleted_at',i.deleted_at)
+          (SELECT json_object('id',i.id,'revision',i.revision,'title',i.title,'body_text',CASE WHEN i.body_text IS NULL THEN NULL ELSE '' END,'body_text_version',i.body_text_version,'moderation',i.moderation,'deleted_at',i.deleted_at)
             FROM issues i JOIN candidate c ON c.project_id=i.project_id AND c.aggregate_id=i.id AND c.aggregate_revision=i.revision) AS source`)
           .bind(
             now,

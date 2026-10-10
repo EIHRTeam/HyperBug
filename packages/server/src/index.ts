@@ -515,6 +515,7 @@ export function createApp({
       export: false,
       longRunning: false,
     },
+    search: { textScope: tierSelected ? 'title' : 'title-and-body' },
     limits: {
       documented: 'docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas',
     },

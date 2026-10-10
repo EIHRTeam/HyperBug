@@ -640,7 +640,7 @@ it('migrates a fresh database and protects history from truncation', async () =>
           "SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema = 'public' AND table_name != 'hyperbug_schema_migrations'",
         )
       ).rows[0].count,
-    ).toBe(51);
+    ).toBe(55); // Includes the four Module 09 async sidecar tables.
     await expect(
       fresh.query('TRUNCATE upload_legacy_recoveries'),
     ).rejects.toThrow('Retain legacy cleanup target');

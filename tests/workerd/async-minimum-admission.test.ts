@@ -147,10 +147,16 @@ it('Minimum canonical indexing uses three provider calls and charges search only
     ).toEqual(budget);
     expect(
       await f.db
-        .prepare('SELECT revision FROM search_documents WHERE issue_id=?')
+        .prepare(
+          'SELECT revision,body,projection_version FROM search_documents WHERE issue_id=?',
+        )
         .bind(f.issue)
         .first(),
-    ).toEqual({ revision: 1 });
+    ).toEqual({
+      revision: 1,
+      body: '',
+      projection_version: expect.stringMatching(/^title-v1:/),
+    });
     await f.db
       .prepare(
         'UPDATE async_minimum_budget SET reads=1500000,writes=30000 WHERE id=1',

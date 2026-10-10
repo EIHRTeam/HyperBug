@@ -42,7 +42,7 @@ export const minimumDegradations = Object.freeze({
       'Complete append-only audit, authorized browsing, bounded operator queries and quota/backlog alerts',
   }),
   'FREE-05': Object.freeze({
-    summary: 'Free-plan storage, request, query and scheduling ceilings',
+    summary: 'Title-only Issue search and Free-plan capacity ceilings',
     compensation:
       'Measured instance ceiling, quota pre-checks, bounded batches and explicit capacity errors',
   }),

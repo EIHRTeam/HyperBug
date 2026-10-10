@@ -451,11 +451,34 @@ Every session affecting this module MUST append an entry following the [required
 
 ### 2026-10-11 — Refined cold-binding investigation during native wait
 
-- Scope/checklist IDs: Authorized09.1f/09.V6 and affected Module08 seam; no application or normative change.
+- Scope/checklist IDs: Authorized 09.1f/09.V6 and affected Module08 seam; no application or normative change.
 - Progress/change summary: Confirm r7 monitor/tail/watchdog live, one Cron, pending canonical state. Private staged-import prototype showed no clear local gain and is unapplied. Refined local measurement includes first D1 binding use by seeding outside the Worker.
 - Files/artifacts: [Detailed investigation](../evidence/09-async-validation.md#native-r7-waiting-and-refined-cold-cost-investigation--2026-10-11), safe profile aggregates; private prototypes ignored.
 - Verification: Twenty fresh local isolates per diagnostic, actual canonical producer and D1 emulation; source/index acknowledgements observed locally. Not hosted CPU acceptance. Current Context7 trace enablement lookup records no default tracing and no substantiated benefit from disabling it. No green application lane repeated.
-- Decisions/deviations: Preserve current ten-statement deployment and all limits while native outcome is pending. User permits measured target/capacity revision after repeated failure; any higher project target must disclose unchanged provider10ms and retain recovery/backlog/security. No target or logging waiver applied.
-- Blockers/open questions: Native execution/CPU/cleanup pending. Module09 open,09.3e suspended; G1/G2 closed,13.G6 open.
+- Decisions/deviations: Preserve current ten-statement deployment and all limits while native outcome is pending. User permits measured target/capacity revision after repeated failure; any higher project target must disclose unchanged provider 10 ms and retain recovery/backlog/security. No target or logging waiver applied.
+- Blockers/open questions: Native execution/CPU/cleanup pending. Module09 open, 09.3e suspended; G1/G2 closed, 13.G6 open.
 - Next actions: Revalidate native handles and canonical state; collect r7 CPU or absolute timeout cleanup. After failure verify cleanup before capacity/target work; after fit run prepared representative/recovery checks.
-- Next-session cautions: Tail1863, monitor87992, watchdog20221; r7 deadline19:39:09 UTC, automatic cleanup19:44:09 UTC or earlier failure. Read ignored live-handles.json. Watchdog captures canonical state before restoring data. Do not restart because observation expired or rerun inventory; no push/PR edit.
+- Next-session cautions: Tail 1863, monitor 87992, watchdog 20221; r7 deadline 19:39:09 UTC, automatic cleanup 19:44:09 UTC or earlier failure. Read ignored live-handles.json. Watchdog captures canonical state before restoring data. Do not restart because observation expired or rerun inventory; no push/PR edit.
+
+
+### 2026-10-11 — Maximum-content title-only capacity prototype
+
+- Scope/checklist IDs: Authorized 09.1f/09.V6 performance continuation and conditional Module08 capacity alternative.
+- Progress/change summary: Private maximum-content prototype verifies smaller index/source payload and lower cold local samples for title-only work. No production source, target or capacity change. r7 remains a verified live wait.
+- Files/artifacts: [Detailed measurements and limitations](../evidence/09-async-validation.md#maximum-content-title-only-prototype--2026-10-11), safe profile aggregates; private prototype ignored.
+- Verification: Twenty fresh actual local workerd/D1 isolates per full-text/title-only variant; canonical maximum 200-title/32768-body producer, current index revision 1 and 5,562-byte versus 2-byte body inspected. No native acceptance; sequential sparse profiles are not a controlled speedup. No broad green lane repeated.
+- Decisions/deviations: If native r7 fails, title-only is a measured fallback candidate; implement query/readiness/version/cursor/rebuild/disclosure consistently before deployment. User permits higher project target with reduced Minimum capacity after repeated failure; provider 10 ms stays separate and release gates remain open.
+- Blockers/open questions: Native r7 CPU/cleanup pending; no fallback activated.
+- Next actions: Inspect native monitor 87992/watchdog 20221 and canonical state; verify cleanup before a failed-trial fallback, or complete representative/recovery tests after fit.
+- Next-session cautions: Preserve source f0c9a1d trial, unchanged standard contracts and all security/lease/quota checks. Do not ship private title-source suppression without production mode safeguards; no inventory rerun, push/PR edit or audit/gate closure.
+
+### 2026-10-11 — Coherent Minimum title-only capacity implementation
+
+- Scope and checklist IDs: Authorized 09.1f/09.V6 performance continuation, Module08 capacity reduction and affected contract/acceptance checks.
+- Progress/change summary: Minimum source/index/query now use titles only with distinct readiness identity and cursor policy 2; Standard retains full text. Bounded bidirectional reconciliation preserves canonical data. Instance capability and paired reader disclosure updated. Native r7 remains on full-text f0c9a1d; no target change or hosted fallback yet.
+- Files/artifacts: Search adapters/application/capability contracts and tests, [ADR 0014](../../decisions/0014-minimum-title-search.md), [detailed evidence](../evidence/09-async-validation.md#coherent-minimum-title-only-implementation--2026-10-11), safe profiles and bilingual guides.
+- Verification: Workerd 19, unit 34, corrected focused PostgreSQL 14 and shared async workerd three pass; typecheck/lint/boundaries/build/docs/secrets/scoped format/diff and foundation contract pass. Accidental broad PostgreSQL run had 208 pass/four failures/two existing skips; relevant capability, sidecar table-count and claim fixture expectations fixed and focused regressions pass. Broad matrix not repeated/claimed green. Twenty current-production local cold/warm profiles verify empty indexed body; median cold 6,938.5 microseconds is diagnostic only.
+- Decisions/deviations: Human authorizes this reduced capacity after repeated native failures. ADR records review and upgrade/downgrade behavior. No canonical truncation, quota/security relaxation, schema or dependency change. Internal/project CPU target remains 10 ms; provider limit independently unchanged.
+- Blockers/open questions: r7 native outcome/cleanup pending; 09.1f/09.V6 open.
+- Next actions: Collect native r7; verify cleanup, then fresh bounded title-only native measurement and representative recovery.
+- Next-session cautions: r7 tail 1863/monitor 87992/watchdog 20221; deadlines 19:39/19:44 UTC. Preserve 135 baseline rows; no inventory rerun, push/PR edit, protected/private staging or audit/gate closure.

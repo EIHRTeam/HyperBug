@@ -301,7 +301,7 @@ export interface SearchStore {
 interface SearchCursor {
   v: 1;
   resource: 'issues.search';
-  policy: 1;
+  policy: 1 | 2;
   project: string;
   filter: string;
   sort: 'created_desc';
@@ -345,7 +345,7 @@ export async function searchPageOptions(
     bounds: SEARCH_BOUNDS,
     scanLimit: SEARCH_SCAN_LIMITS[tier],
     tokenizer: 1,
-    policy: 1,
+    policy: tier === 'cloudflare-minimum' ? 2 : 1,
   });
   const fingerprint = Array.from(
     new Uint8Array(
@@ -370,7 +370,11 @@ export async function searchPageOptions(
       ) as SearchCursor;
       if (raw && typeof raw === 'object' && 'v' in raw && raw.v !== 1)
         throw new SearchError('CURSOR_STALE');
-      if (raw?.resource === 'issues.search' && raw.policy !== 1)
+      if (
+        raw?.resource === 'issues.search' &&
+        raw.tier === tier &&
+        raw.policy !== (tier === 'cloudflare-minimum' ? 2 : 1)
+      )
         throw new SearchError('CURSOR_STALE');
       if (
         !raw ||
@@ -419,7 +423,7 @@ export function searchPage(
   const cursor: SearchCursor = {
     v: 1,
     resource: 'issues.search',
-    policy: 1,
+    policy: options.tier === 'cloudflare-minimum' ? 2 : 1,
     project: query.projectId,
     filter: options.fingerprint,
     sort: 'created_desc',

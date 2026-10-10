@@ -159,6 +159,7 @@ it('reports the enabled tier truthfully and records its audited enablement', asy
       longRunning: boolean;
     };
     tier: string;
+    search: { textScope: string };
     degradationIds: string[];
     passwordHashPolicy: { algorithm: string; downgraded: boolean };
     authentication: {
@@ -170,6 +171,7 @@ it('reports the enabled tier truthfully and records its audited enablement', asy
     };
   };
   expect(document.tier).toBe('cloudflare-minimum');
+  expect(document.search).toEqual({ textScope: 'title' });
   expect(document.background).toEqual({
     mode: 'checkpointed-cron',
     dispatchBatch: 1,

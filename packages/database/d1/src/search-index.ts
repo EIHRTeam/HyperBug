@@ -10,6 +10,8 @@ import {
   SEARCH_MINIMUM_BUDGET,
   searchAvailability,
   searchTokenText,
+  searchProjectionVersion,
+  SEARCH_MINIMUM_PROJECTION_PREFIX,
   SEARCH_SCAN_LIMITS,
   SearchError,
   type SearchIndexStore,
@@ -45,9 +47,13 @@ export function createD1SearchIndexStore(
       assertId(query.projectId);
       if (query.principalId) assertId(query.principalId);
       const maximum = SEARCH_SCAN_LIMITS[query.tier ?? 'standard'];
+      const projection =
+        query.tier === 'cloudflare-minimum'
+          ? `'${SEARCH_MINIMUM_PROJECTION_PREFIX}' || i.body_text_version`
+          : 'i.body_text_version';
       const result = await db
         .prepare(`SELECT count(*) AS scanned, COALESCE(sum(missing), 0) AS missing FROM (
-        SELECT CASE WHEN i.moderation = 'visible' AND i.deleted_at IS NULL AND (i.body_text IS NULL OR i.body_text_version IS NULL OR NOT EXISTS (SELECT 1 FROM search_documents d WHERE d.project_id = i.project_id AND d.issue_id = i.id AND d.active = 1 AND d.revision = i.revision AND d.projection_version = i.body_text_version)) THEN 1 ELSE 0 END AS missing
+        SELECT CASE WHEN i.moderation = 'visible' AND i.deleted_at IS NULL AND (i.body_text IS NULL OR i.body_text_version IS NULL OR NOT EXISTS (SELECT 1 FROM search_documents d WHERE d.project_id = i.project_id AND d.issue_id = i.id AND d.active = 1 AND d.revision = i.revision AND d.projection_version = ${projection})) THEN 1 ELSE 0 END AS missing
         FROM issues i WHERE i.project_id = ?
         AND EXISTS (SELECT 1 FROM projects p WHERE p.id = i.project_id AND (p.visibility = 'public' OR EXISTS (SELECT 1 FROM project_roles r JOIN principals a ON a.id = r.principal_id WHERE r.project_id = p.id AND r.principal_id = ? AND a.kind = 'staff' AND a.status = 'active')))
         ORDER BY i.created_at DESC, i.id DESC LIMIT ?)`)
@@ -59,6 +65,10 @@ export function createD1SearchIndexStore(
     },
     async backfill(query) {
       const { projectId, after, limit } = searchBackfillOptions(query);
+      const bodySource =
+        query.tier === 'cloudflare-minimum'
+          ? "CASE WHEN body_text IS NULL THEN NULL ELSE '' END"
+          : 'body_text';
       try {
         if (
           query.tier === 'cloudflare-minimum' &&
@@ -100,7 +110,7 @@ export function createD1SearchIndexStore(
             admitted = await work
               .prepare(`${searchBudgetReservationSql},
             (SELECT json_object('id',id,'revision',revision,'title',title,
-              'body_text',body_text,'body_text_version',body_text_version,
+              'body_text',${bodySource},'body_text_version',body_text_version,
               'moderation',moderation,'deleted_at',deleted_at)
              FROM issues WHERE project_id=? AND id=? AND revision=?) AS source`)
               .bind(
@@ -120,7 +130,7 @@ export function createD1SearchIndexStore(
           rows = (
             await work
               .prepare(
-                `SELECT id, revision, title, body_text, body_text_version, moderation, deleted_at FROM issues WHERE project_id = ? ${query.event ? 'AND id = ? AND revision = ?' : after ? 'AND id > ?' : ''} ORDER BY id LIMIT ?`,
+                `SELECT id, revision, title, ${bodySource} AS body_text, body_text_version, moderation, deleted_at FROM issues WHERE project_id = ? ${query.event ? 'AND id = ? AND revision = ?' : after ? 'AND id > ?' : ''} ORDER BY id LIMIT ?`,
               )
               .bind(
                 projectId,
@@ -157,11 +167,13 @@ export function createD1SearchIndexStore(
                 row.id,
                 projectId,
                 row.revision,
-                row.body_text_version,
+                searchProjectionVersion(row.body_text_version, query.tier),
                 active ? 1 : 0,
                 `p${projectId.replaceAll('-', '')}`,
                 active ? searchTokenText(row.title) : '',
-                active ? searchTokenText(row.body_text!) : '',
+                active && query.tier !== 'cloudflare-minimum'
+                  ? searchTokenText(row.body_text!)
+                  : '',
                 projectId,
                 row.id,
                 row.revision,

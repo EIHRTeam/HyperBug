@@ -1247,3 +1247,7 @@ Human approval supersedes the stop-after-failure rule for bounded performance pr
 ### 2026-10-11 — Native module graph fails; combined admission verified locally
 
 Latest native canonical dispatch is 12 ms versus the unchanged 10 ms limit. r5 cleanup preserves 125 original records/singletons and both original Workers/domain mappings. The next D1 claim/search admission batch passes focused local checks and awaits a fresh bounded native retry. [Evidence](evidence/09-async-validation.md#native-module-graph-result-and-atomic-search-admission--2026-10-11). 09.1f/09.V6 remain open, 09.3e suspended; G1/G2 closed, 13.G6 open.
+
+### 2026-10-11 — Minimum search capacity reduction prepared
+
+Under standing user authorization after repeated native CPU failures, [ADR 0014](../decisions/0014-minimum-title-search.md) reduces Minimum text search to titles, with mode-specific readiness/cursors, bounded rebuild and capability/paired reader disclosure. Focused workerd/PostgreSQL/unit checks pass; current-production local profiling remains diagnostic. Native r7 still runs full-text f0c9a1d and awaits outcome/cleanup. Project target remains 10 ms; provider/release acceptance unchanged. 09.1f/09.V6 remain open; 09.3e suspended, G1/G2 closed and 13.G6 open. [Evidence](evidence/09-async-validation.md#coherent-minimum-title-only-implementation--2026-10-11). No push/PR edit.

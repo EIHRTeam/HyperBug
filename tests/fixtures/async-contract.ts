@@ -33,8 +33,11 @@ export function asyncStoreContract(
           projectId,
           issueId,
           JSON.stringify({ issueId, mutationId: nextId() }),
-          now,
-          now,
+          // This suite shares a database with older producer fixtures. Its
+          // own source must lead the bounded oldest-first claim; unrelated
+          // backlog must not turn a lease test into a capacity test.
+          0,
+          0,
         ],
       );
       const ref = taskReference('core', eventId);

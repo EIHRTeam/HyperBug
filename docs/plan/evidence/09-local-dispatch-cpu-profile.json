@@ -530,5 +530,495 @@
     ],
     "version": "binding-cold-f0c9a1d",
     "method": "Twenty fresh workerd isolates; canonical seeding through host-side D1 repository proxy, no Worker fetch before cold profiling; then one warm tick; requested sampling100 microseconds; diagnostic not hosted CPU"
+  },
+  {
+    "label": "full-text",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 695,
+    "sampledActiveUs": 183374,
+    "sampledIdleUs": 289053,
+    "tickMedianUs": 9252.5,
+    "tickRangeUs": [
+      6771,
+      11918
+    ],
+    "index": {
+      "revision": 1,
+      "title_bytes": 371,
+      "body_bytes": 5562
+    },
+    "leafUs": [
+      [
+        "(program)",
+        26778
+      ],
+      [
+        "(anonymous)",
+        24392
+      ],
+      [
+        "fetch",
+        18721
+      ],
+      [
+        "_send",
+        14788
+      ],
+      [
+        "searchTokenText",
+        13201
+      ],
+      [
+        "toJson",
+        11243
+      ],
+      [
+        "addAggregatedD1MetaToSpan",
+        10514
+      ],
+      [
+        "runMinimumAsyncTick",
+        9826
+      ],
+      [
+        "(garbage collector)",
+        9102
+      ],
+      [
+        "backfill",
+        6681
+      ],
+      [
+        "admitAndClaim",
+        3446
+      ],
+      [
+        "complete",
+        3041
+      ]
+    ],
+    "version": "maximum-content-full-text-f0c9a1d",
+    "method": "Twenty fresh workerd isolates per variant; host-side canonical maximum title200/body32768 preparation before profiling; first Worker request cold D1 then warm; sampling100 microseconds; diagnostic, private title-only write prototype lacks production mode/readiness/cursor changes",
+    "applied": true
+  },
+  {
+    "label": "full-text",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 132,
+    "sampledActiveUs": 51267,
+    "sampledIdleUs": 53403,
+    "tickMedianUs": 2576.5,
+    "tickRangeUs": [
+      1849,
+      3570
+    ],
+    "index": {
+      "revision": 1,
+      "title_bytes": 371,
+      "body_bytes": 5562
+    },
+    "leafUs": [
+      [
+        "(anonymous)",
+        12001
+      ],
+      [
+        "toJson",
+        3467
+      ],
+      [
+        "(program)",
+        3187
+      ],
+      [
+        "mapD1Result",
+        2988
+      ],
+      [
+        "searchTokenText",
+        2299
+      ],
+      [
+        "fetch",
+        2257
+      ],
+      [
+        "text",
+        2042
+      ],
+      [
+        "revisionOf",
+        1941
+      ],
+      [
+        "setTimeout",
+        1657
+      ],
+      [
+        "runMinimumAsyncTick",
+        1601
+      ],
+      [
+        "_send",
+        1518
+      ],
+      [
+        "randomUUID",
+        1289
+      ]
+    ],
+    "version": "maximum-content-full-text-f0c9a1d",
+    "method": "Twenty fresh workerd isolates per variant; host-side canonical maximum title200/body32768 preparation before profiling; first Worker request cold D1 then warm; sampling100 microseconds; diagnostic, private title-only write prototype lacks production mode/readiness/cursor changes",
+    "applied": true
+  },
+  {
+    "label": "title-only-prototype",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 554,
+    "sampledActiveUs": 138310,
+    "sampledIdleUs": 284769,
+    "tickMedianUs": 7033.5,
+    "tickRangeUs": [
+      5081,
+      8156
+    ],
+    "index": {
+      "revision": 1,
+      "title_bytes": 371,
+      "body_bytes": 2
+    },
+    "leafUs": [
+      [
+        "(program)",
+        21869
+      ],
+      [
+        "(anonymous)",
+        19380
+      ],
+      [
+        "toJson",
+        18549
+      ],
+      [
+        "searchTokenText",
+        14041
+      ],
+      [
+        "fetch",
+        12078
+      ],
+      [
+        "runMinimumAsyncTick",
+        7928
+      ],
+      [
+        "backfill",
+        5306
+      ],
+      [
+        "_send",
+        4646
+      ],
+      [
+        "admitAndClaim",
+        3097
+      ],
+      [
+        "mapD1Result",
+        2709
+      ],
+      [
+        "setAttributes",
+        2346
+      ],
+      [
+        "enterSpan",
+        2317
+      ]
+    ],
+    "version": "maximum-content-title-only-prototype-f0c9a1d",
+    "method": "Twenty fresh workerd isolates per variant; host-side canonical maximum title200/body32768 preparation before profiling; first Worker request cold D1 then warm; sampling100 microseconds; diagnostic, private title-only write prototype lacks production mode/readiness/cursor changes",
+    "applied": false
+  },
+  {
+    "label": "title-only-prototype",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 170,
+    "sampledActiveUs": 52488,
+    "sampledIdleUs": 55445,
+    "tickMedianUs": 2632.5,
+    "tickRangeUs": [
+      1887,
+      3004
+    ],
+    "index": {
+      "revision": 1,
+      "title_bytes": 371,
+      "body_bytes": 2
+    },
+    "leafUs": [
+      [
+        "(garbage collector)",
+        17224
+      ],
+      [
+        "(anonymous)",
+        3725
+      ],
+      [
+        "(program)",
+        3485
+      ],
+      [
+        "fetch",
+        2837
+      ],
+      [
+        "toJson",
+        2288
+      ],
+      [
+        "_send",
+        1984
+      ],
+      [
+        "setTimeout",
+        1670
+      ],
+      [
+        "runMinimumAsyncTick",
+        1541
+      ],
+      [
+        "toArrayOfObjects",
+        1540
+      ],
+      [
+        "claimStatements",
+        1280
+      ],
+      [
+        "result",
+        1148
+      ],
+      [
+        "admitAndClaim",
+        1144
+      ]
+    ],
+    "version": "maximum-content-title-only-prototype-f0c9a1d",
+    "method": "Twenty fresh workerd isolates per variant; host-side canonical maximum title200/body32768 preparation before profiling; first Worker request cold D1 then warm; sampling100 microseconds; diagnostic, private title-only write prototype lacks production mode/readiness/cursor changes",
+    "applied": false
+  },
+  {
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 512,
+    "sampledActiveUs": 142595,
+    "sampledIdleUs": 272662,
+    "tickMedianUs": 6938.5,
+    "tickRangeUs": [
+      6101,
+      9656
+    ],
+    "leafUs": [
+      [
+        "(anonymous)",
+        32105
+      ],
+      [
+        "(program)",
+        18237
+      ],
+      [
+        "fetch",
+        14583
+      ],
+      [
+        "searchTokenText",
+        9605
+      ],
+      [
+        "runMinimumAsyncTick",
+        9135
+      ],
+      [
+        "toJson",
+        6828
+      ],
+      [
+        "addAggregatedD1MetaToSpan",
+        5150
+      ],
+      [
+        "_send",
+        4281
+      ],
+      [
+        "setAttributes",
+        3360
+      ],
+      [
+        "admitAndClaim",
+        3357
+      ],
+      [
+        "text",
+        2960
+      ],
+      [
+        "_sendOrThrow",
+        2828
+      ],
+      [
+        "backfill",
+        2704
+      ],
+      [
+        "mapD1Result",
+        2699
+      ],
+      [
+        "batch",
+        2596
+      ],
+      [
+        "handleSearchIndexEvent",
+        2301
+      ],
+      [
+        "complete",
+        1800
+      ],
+      [
+        "formatWithOptions",
+        1446
+      ],
+      [
+        "aggregateD1Meta",
+        1422
+      ],
+      [
+        "enterSpan",
+        1418
+      ]
+    ],
+    "version": "current-production-title-only-working-tree-from-f0c9a1d",
+    "method": "Twenty fresh local workerd/D1 isolates using the current production title-only implementation; host-side actual repository producer; 200-code-point title and 32768-code-point body; first D1 Worker request cold then one warm; 100-microsecond requested sparse sampling. Diagnostic only, not native CPU or a controlled speedup.",
+    "applied": true,
+    "hostedAcceptance": false,
+    "index": {
+      "revision": 1,
+      "titleUtf8Bytes": 371,
+      "bodyUtf8Bytes": 0
+    }
+  },
+  {
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 169,
+    "sampledActiveUs": 54760,
+    "sampledIdleUs": 51136,
+    "tickMedianUs": 2617.0,
+    "tickRangeUs": [
+      1587,
+      4566
+    ],
+    "leafUs": [
+      [
+        "(garbage collector)",
+        12387
+      ],
+      [
+        "(anonymous)",
+        11175
+      ],
+      [
+        "_send",
+        4509
+      ],
+      [
+        "toJson",
+        3455
+      ],
+      [
+        "fetch",
+        3014
+      ],
+      [
+        "(program)",
+        1921
+      ],
+      [
+        "validateTaskReference",
+        1407
+      ],
+      [
+        "runMinimumAsyncTick",
+        1395
+      ],
+      [
+        "setAttributes",
+        1274
+      ],
+      [
+        "statement",
+        1156
+      ],
+      [
+        "setTimeout",
+        1038
+      ],
+      [
+        "createD1PluginRegistryStore",
+        1020
+      ],
+      [
+        "text",
+        895
+      ],
+      [
+        "admitAndClaim",
+        773
+      ],
+      [
+        "validateSearchIndexEvent",
+        767
+      ],
+      [
+        "createD1SearchIndexStore",
+        762
+      ],
+      [
+        "addD1MetaToSpan",
+        761
+      ],
+      [
+        "Timeout",
+        758
+      ],
+      [
+        "enterSpan",
+        733
+      ],
+      [
+        "_wrappedFetch",
+        706
+      ]
+    ],
+    "version": "current-production-title-only-working-tree-from-f0c9a1d",
+    "method": "Twenty fresh local workerd/D1 isolates using the current production title-only implementation; host-side actual repository producer; 200-code-point title and 32768-code-point body; first D1 Worker request cold then one warm; 100-microsecond requested sparse sampling. Diagnostic only, not native CPU or a controlled speedup.",
+    "applied": true,
+    "hostedAcceptance": false,
+    "index": {
+      "revision": 1,
+      "titleUtf8Bytes": 371,
+      "bodyUtf8Bytes": 0
+    }
   }
 ]

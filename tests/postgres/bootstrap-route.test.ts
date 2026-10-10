@@ -328,6 +328,7 @@ it('publishes the unauthenticated instance capability document', async () => {
       export: false,
       longRunning: false,
     },
+    search: { textScope: 'title-and-body' },
     limits: {
       documented: 'docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas',
     },

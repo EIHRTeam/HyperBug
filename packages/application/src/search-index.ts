@@ -1,6 +1,16 @@
 import { assertId } from '@hyperbug/domain';
 import { SearchError } from './search.ts';
 import { searchAvailability } from './search-budget.ts';
+/** Derived-only mode identity; canonical Markdown projection versions stay intact. */
+export const SEARCH_MINIMUM_PROJECTION_PREFIX = 'title-v1:';
+export function searchProjectionVersion(
+  canonical: string | null,
+  tier?: 'standard' | 'cloudflare-minimum',
+) {
+  return canonical === null || tier !== 'cloudflare-minimum'
+    ? canonical
+    : SEARCH_MINIMUM_PROJECTION_PREFIX + canonical;
+}
 export interface SearchBackfillQuery {
   projectId: string;
   after?: string;

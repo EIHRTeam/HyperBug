@@ -1,6 +1,7 @@
 import { postgresSearchCandidates } from './search-candidates.ts';
 import {
   searchTokenText,
+  SEARCH_MINIMUM_PROJECTION_PREFIX,
   SEARCH_SCAN_LIMITS,
   SearchError,
   SEARCH_BOUNDS,
@@ -16,6 +17,10 @@ export function compilePostgresSearch(
   columns: string,
 ) {
   const ast = validateSearchAst(query.ast);
+  const minimum = options.tier === 'cloudflare-minimum';
+  const projection = minimum
+    ? `'${SEARCH_MINIMUM_PROJECTION_PREFIX}' || i.body_text_version`
+    : 'i.body_text_version';
   const values: (string | number | null)[] = [];
   const bind = (value: string | number | null) => {
     values.push(value);
@@ -43,9 +48,12 @@ export function compilePostgresSearch(
                 throw new SearchError('SEARCH_COMPLEXITY');
               const literal = bind(searchTokenText(leaf.value).trim());
               const textQuery = `plainto_tsquery('simple', ${literal})`;
-              const fields = leaf.phrase
-                ? `(d.title LIKE ${bind('%' + searchTokenText(leaf.value) + '%')} OR d.body LIKE ${bind('%' + searchTokenText(leaf.value) + '%')})`
-                : `(d.title_vector @@ ${textQuery} OR d.body_vector @@ ${textQuery})`;
+              const titleMatch = leaf.phrase
+                ? `d.title LIKE ${bind('%' + searchTokenText(leaf.value) + '%')}`
+                : `d.title_vector @@ ${textQuery}`;
+              const fields = minimum
+                ? `(${titleMatch})`
+                : `(${titleMatch} OR ${leaf.phrase ? `d.body LIKE ${bind('%' + searchTokenText(leaf.value) + '%')}` : `d.body_vector @@ ${textQuery}`})`;
               const scope = bind(`p${query.projectId.replaceAll('-', '')}`);
               const hit = `search_hits_${textHits.length}`;
               textHits.push(`${hit} AS MATERIALIZED (SELECT d.issue_id FROM search_documents d WHERE (SELECT count(*) FROM candidate_issues) BETWEEN 1 AND ${SEARCH_SCAN_LIMITS[options.tier]} AND d.project_id = ${bind(query.projectId)}::uuid AND d.active = 1
@@ -91,7 +99,7 @@ export function compilePostgresSearch(
     AND EXISTS (SELECT 1 FROM projects p WHERE p.id = i.project_id AND (p.visibility = 'public' OR EXISTS (
       SELECT 1 FROM project_roles r JOIN principals a ON a.id = r.principal_id
       WHERE r.project_id = p.id AND r.principal_id = ${principal}::uuid AND a.kind = 'staff' AND a.status = 'active')))
-    AND EXISTS (SELECT 1 FROM search_documents d WHERE d.project_id = i.project_id AND d.issue_id = i.id AND d.active = 1 AND d.revision = i.revision AND d.projection_version = i.body_text_version)
+    AND EXISTS (SELECT 1 FROM search_documents d WHERE d.project_id = i.project_id AND d.issue_id = i.id AND d.active = 1 AND d.revision = i.revision AND d.projection_version = ${projection})
     ORDER BY i.created_at DESC, i.id DESC LIMIT ${window}
   ) matches ${boundary} ORDER BY created_at DESC, id DESC LIMIT ${limit}`;
   const candidates = postgresSearchCandidates(

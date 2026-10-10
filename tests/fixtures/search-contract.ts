@@ -441,7 +441,140 @@ export function searchStoreContract(
         expect(get().measuredQueries().length).toBe(before);
       },
     );
-    it('atomically reserves minimum quotas, denies exhaustion before index work and bounds a full-body reindex', async () => {
+    it('switches search scope with bounded rebuilds, retires Minimum cursors and preserves canonical content and authorization', async () => {
+      const { projectId, principalId, ids } = await seed(),
+        { harness, store, index } = get();
+      await harness.query('DELETE FROM search_budget');
+      const ast = parseSearchQuery(''),
+        original = await store.search({ projectId, ast, limit: 2 });
+      const canonical = await harness.query(
+        'SELECT id, title, body, body_text, body_text_version, revision FROM issues WHERE project_id = ? ORDER BY id',
+        [projectId],
+      );
+      const rebuild = async (tier: 'standard' | 'cloudflare-minimum') => {
+        let after: string | undefined;
+        do {
+          const page = await index.backfill({
+            projectId,
+            tier,
+            limit: 2,
+            ...(after ? { after } : {}),
+          });
+          expect(page.processed).toBeLessThanOrEqual(2);
+          after = page.nextCursor ?? undefined;
+        } while (after);
+      };
+      const run = async (q: string) =>
+        (
+          await store.search({
+            projectId,
+            tier: 'cloudflare-minimum',
+            ast: parseSearchQuery(q),
+          })
+        ).items;
+      await expect(run('')).rejects.toMatchObject({
+        code: 'SEARCH_INDEX_INCOMPLETE',
+      });
+      await index.backfill({ projectId, tier: 'cloudflare-minimum', limit: 1 });
+      await expect(run('')).rejects.toMatchObject({
+        code: 'SEARCH_INDEX_INCOMPLETE',
+      });
+      await rebuild('cloudflare-minimum');
+      expect(await run('crash')).toEqual([]);
+      expect(await run('"startup failure"')).toHaveLength(2);
+      expect(await run('CAFÉ 東京')).toHaveLength(1);
+      expect(await run('-crash')).toHaveLength(4);
+      const documents = await harness.query(
+        'SELECT body, projection_version FROM search_documents WHERE project_id = ?',
+        [projectId],
+      );
+      expect(documents).toHaveLength(4);
+      for (const document of documents)
+        expect(document).toEqual({
+          body: '',
+          projection_version: 'title-v1:search-test-v1',
+        });
+      const first = await store.search({
+        projectId,
+        tier: 'cloudflare-minimum',
+        ast,
+        limit: 2,
+      });
+      const retired = JSON.parse(
+        atob(first.nextCursor!.replaceAll('-', '+').replaceAll('_', '/')),
+      );
+      expect(retired.policy).toBe(2);
+      retired.policy = 1;
+      await expect(
+        store.search({
+          projectId,
+          tier: 'cloudflare-minimum',
+          ast,
+          after: btoa(JSON.stringify(retired))
+            .replaceAll('+', '-')
+            .replaceAll('/', '_')
+            .replace(/=+$/u, ''),
+        }),
+      ).rejects.toMatchObject({ code: 'CURSOR_STALE' });
+      await harness.query(
+        "UPDATE issues SET moderation = 'hidden' WHERE id = ?",
+        [ids[0]!],
+      );
+      expect(await run('CAFÉ')).toEqual([]);
+      await harness.query(
+        "UPDATE issues SET moderation = 'visible' WHERE id = ?",
+        [ids[0]!],
+      );
+      await harness.query(
+        "UPDATE projects SET visibility = 'private' WHERE id = ?",
+        [projectId],
+      );
+      expect(await run('')).toEqual([]);
+      await harness.query(
+        'DELETE FROM project_roles WHERE project_id = ? AND principal_id = ?',
+        [projectId, principalId],
+      );
+      expect(
+        (
+          await store.search({
+            projectId,
+            principalId,
+            tier: 'cloudflare-minimum',
+            ast,
+          })
+        ).items,
+      ).toEqual([]);
+      await harness.query(
+        "UPDATE projects SET visibility = 'public' WHERE id = ?",
+        [projectId],
+      );
+      await expect(store.search({ projectId, ast })).rejects.toMatchObject({
+        code: 'SEARCH_INDEX_INCOMPLETE',
+      });
+      await rebuild('standard');
+      expect(
+        (await store.search({ projectId, ast: parseSearchQuery('crash') }))
+          .items,
+      ).toHaveLength(1);
+      expect(
+        (
+          await store.search({
+            projectId,
+            ast,
+            limit: 2,
+            after: original.nextCursor!,
+          })
+        ).items,
+      ).toHaveLength(2);
+      expect(
+        await harness.query(
+          'SELECT id, title, body, body_text, body_text_version, revision FROM issues WHERE project_id = ? ORDER BY id',
+          [projectId],
+        ),
+      ).toEqual(canonical);
+      await harness.query('DELETE FROM search_budget');
+    });
+    it('atomically reserves minimum quotas, denies exhaustion before index work and bounds reindexing with large canonical bodies', async () => {
       const { projectId, principalId, ids } = await seed(),
         { harness, budget, index, store, measuredQueries } = get();
       await harness.query('DELETE FROM search_budget');
@@ -539,7 +672,7 @@ export function searchStoreContract(
               ast: parseSearchQuery('x10'),
             })
           ).items,
-        ).toHaveLength(10);
+        ).toHaveLength(0);
         const { mkdir, writeFile } = await import('node:fs/promises');
         await mkdir('.local/evidence', { recursive: true });
         await writeFile(
