@@ -343,3 +343,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: 09.1f/09.V6 remain open; 09.3e suspended, G1/G2 closed, 13.G6 open.
 - Next actions: Bounded fresh r7 native retry against the ten-statement path with independent backup and cleanup; measure representative size/recovery only after canonical fit.
 - Next-session cautions: No push/PR edit; preserve history and baseline data. Do not rerun inventory after seeding. Higher project CPU target must not rewrite provider limits or imply full Free acceptance.
+
+
+### 2026-10-11 — Ten-statement native retry running
+
+- Scope and checklist IDs: Authorized Module09 09.1f/09.V6 performance continuation; no target/capacity change yet.
+- Progress/change summary: f0c9a1d committed locally. Fresh r7 backup, native-only Worker, canonical producer fixture and one Cron are ready; tail confirmed live. Source pending; observation/cleanup are in progress.
+- Files/artifacts: [Detailed retry/profile record](../evidence/09-async-validation.md#native-r7-in-progress-and-coldwarm-diagnostic); ignored r7 and cold-profile helpers.
+- Verification: Reuse seven workerd checks and passed typecheck/lint/build/docs/secrets/scoped format/diff. Twenty cold/warm local isolate profiles provide diagnostic initialization evidence; not hosted acceptance. REST producer fixture used after custom-domain TLS readiness failure; no explicit tick or public API acceptance.
+- Decisions/deviations: Native observation 65 minutes, automatic owned cleanup on CPU failure or absolute 70-minute bound. Credentials refreshed before watchdog cleanup; no numeric runtime limit changed. Standing user permission allows lower Minimum capacity and higher project target if repeated optimization still fails; provider 10 ms remains independently disclosed.
+- Blockers/open questions: Native r7 result and cleanup pending; 09.1f/09.V6 open.
+- Next actions: Collect live native result; if fit, representative body/recovery proof; if failed, verify cleanup before measured capacity reduction. Every attempt must finish cleanup.
+- Next-session cautions: Owned Worker hyperbug-09-native-219f58b807f6, tail session1863, monitor87992; watchdog restarted after adding credential refresh. Deadline 19:39:09 UTC, cleanup bound19:44:09 UTC. Preserve 135 baseline records; no inventory rerun, push/PR edit or gate/audit changes.

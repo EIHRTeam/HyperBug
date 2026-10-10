@@ -58,5 +58,171 @@
     "sampledIdleUs": 18136,
     "d1LeafUs": 10577,
     "meterLeafUs": 518
+  },
+  {
+    "version": "cursor-consolidation-f0c9a1d",
+    "lane": "cold-canonical",
+    "ticks": 20,
+    "samples": 479,
+    "sampledActiveUs": 139254,
+    "sampledIdleUs": 456531,
+    "leafUs": [
+      [
+        "(anonymous)",
+        31639
+      ],
+      [
+        "fetch",
+        19740
+      ],
+      [
+        "runMinimumAsyncTick",
+        9300
+      ],
+      [
+        "admitAndClaim",
+        7508
+      ],
+      [
+        "toJson",
+        6869
+      ],
+      [
+        "searchTokenText",
+        6398
+      ],
+      [
+        "addD1MetaToSpan",
+        6243
+      ],
+      [
+        "firstIfArray",
+        4716
+      ],
+      [
+        "backfill",
+        4579
+      ],
+      [
+        "setAttributes",
+        3331
+      ],
+      [
+        "refsOf",
+        2944
+      ],
+      [
+        "aggregateD1Meta",
+        2859
+      ],
+      [
+        "batch",
+        2848
+      ],
+      [
+        "prepare",
+        2833
+      ],
+      [
+        "complete",
+        2364
+      ],
+      [
+        "handleSearchIndexEvent",
+        2292
+      ],
+      [
+        "URL",
+        2224
+      ],
+      [
+        "text",
+        1925
+      ]
+    ],
+    "method": "Twenty fresh local workerd isolates, one cold then one warm canonical dispatch each; Profiler 100 microseconds; diagnostic, not hosted CPU"
+  },
+  {
+    "version": "cursor-consolidation-f0c9a1d",
+    "lane": "warm-canonical",
+    "ticks": 20,
+    "samples": 115,
+    "sampledActiveUs": 51330,
+    "sampledIdleUs": 96514,
+    "leafUs": [
+      [
+        "(anonymous)",
+        10924
+      ],
+      [
+        "runMinimumAsyncTick",
+        4979
+      ],
+      [
+        "_send",
+        4266
+      ],
+      [
+        "(program)",
+        4109
+      ],
+      [
+        "fetch",
+        3531
+      ],
+      [
+        "toJson",
+        3307
+      ],
+      [
+        "admitAndClaim",
+        1650
+      ],
+      [
+        "setAttributes",
+        1270
+      ],
+      [
+        "backfill",
+        1023
+      ],
+      [
+        "reservation",
+        964
+      ],
+      [
+        "formatLog",
+        923
+      ],
+      [
+        "load",
+        908
+      ],
+      [
+        "mapD1Result",
+        899
+      ],
+      [
+        "now",
+        894
+      ],
+      [
+        "normalizeSearchText",
+        891
+      ],
+      [
+        "clearTimeoutImpl",
+        891
+      ],
+      [
+        "searchBackfillOptions",
+        880
+      ],
+      [
+        "claimStatements",
+        834
+      ]
+    ],
+    "method": "Twenty fresh local workerd isolates, one cold then one warm canonical dispatch each; Profiler 100 microseconds; diagnostic, not hosted CPU"
   }
 ]
