@@ -11,7 +11,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
-- Active/next checklist group: B5 — 09.1f and 09.V6 (native Cron CPU fit).
+- Active/next checklist group: B5 — 09.1f and 09.V6 (collect r7/cleanup, then native title-only maximum-content and recovery evidence).
 - Last updated: 2026-10-11.
 - Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work most recently measured 14 ms in r6 on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Human authorization on 2026-10-11 overrides the stop-after-failure rule for bounded profiling/refactoring and native retries with cleanup. Cleanup and preservation results are recorded in the latest session.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
@@ -482,3 +482,14 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: r7 native outcome/cleanup pending; 09.1f/09.V6 open.
 - Next actions: Collect native r7; verify cleanup, then fresh bounded title-only native measurement and representative recovery.
 - Next-session cautions: r7 tail 1863/monitor 87992/watchdog 20221; deadlines 19:39/19:44 UTC. Preserve 135 baseline rows; no inventory rerun, push/PR edit, protected/private staging or audit/gate closure.
+
+### 2026-10-11 — Native propagation investigation and title-trial preparation
+
+- Scope/checklist IDs: Authorized 09.1f/09.V6 native performance continuation; 13.G6 evidence dependency.
+- Progress/change summary: f6a1e9e commits coherent title-only capacity reduction locally. r7 remains pending beyond the documented propagation period; no new native CPU result or target change. Next title-only maximum-content/quota trial is prepared privately, not deployed.
+- Files/artifacts: [Propagation/preparation record](../evidence/09-async-validation.md#native-propagation-investigation-and-prepared-next-trial); ignored r7 comparison/receipt and r8 producer helpers.
+- Verification: Context7 Workers resolve/query (2026-10-11) documents up to 15-minute schedule propagation, 30-minute new-Worker history display lag and empty-versus-omitted Cron deployment semantics. Provider registration/tail read at 19:26:56; source pending at 19:21:05, no native tail event by 19:35:28. Reuse f6a1e9e application checks; no unchanged lane repeated.
+- Decisions/deviations: Retain the original bounded wait and independent automatic cleanup. No CPU inference, unbounded retry or new resource creation.
+- Blockers/open questions: Native scheduling delay unexplained; r7 outcome/cleanup pending; 09.1f/09.V6 open.
+- Next actions: Collect monitor/watchdog; verify cleanup and original resources using prepared helpers; publish safe receipt. Only then fresh r8 backup/inventory, committed-source build and maximum-content native trial.
+- Next-session cautions: r7 tail 1863/monitor 87992/watchdog 20221; absolute deadlines 19:39:09/19:44:09 UTC. Preserve 135 baseline records and singleton values. Do not rerun r7 inventory, deploy r8 before cleanup, stage private/protected files, push/PR edit or resume audits/close gates.
