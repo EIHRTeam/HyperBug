@@ -3,7 +3,7 @@ import {
   createD1SearchBudgetStore,
   searchBudgetReservationSql,
 } from './search-budget.ts';
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, D1Result } from '@cloudflare/workers-types';
 import {
   searchBackfillOptions,
   searchBudgetOptions,
@@ -14,10 +14,20 @@ import {
   SearchError,
   type SearchIndexStore,
   type SearchSourceRow,
+  type SearchBackfillQuery,
 } from '@hyperbug/application';
 import { assertId } from '@hyperbug/domain';
 
-export function createD1SearchIndexStore(db: D1Database): SearchIndexStore {
+export interface ClaimedSearchAdmission {
+  result: D1Result<{ id: number; source: string | null }>;
+  meter: ReturnType<typeof searchMeter>;
+}
+export function createD1SearchIndexStore(
+  db: D1Database,
+  claimedAdmission?: (
+    query: SearchBackfillQuery,
+  ) => ClaimedSearchAdmission | null,
+): SearchIndexStore {
   return {
     async revisionOf(projectId, issueId, mutationId) {
       assertId(projectId);
@@ -60,14 +70,17 @@ export function createD1SearchIndexStore(db: D1Database): SearchIndexStore {
           }))
         )
           throw new SearchError('SEARCH_BUDGET_EXHAUSTED');
-        const meter = searchMeter(
-          db,
-          query.tier === 'cloudflare-minimum'
-            ? SEARCH_MINIMUM_BUDGET.indexReads
-            : 20000,
-          8 + limit * SEARCH_MINIMUM_BUDGET.indexWritesPerDocument,
-          limit + 1,
-        );
+        const claimed = claimedAdmission?.(query) ?? null;
+        const meter =
+          claimed?.meter ??
+          searchMeter(
+            db,
+            query.tier === 'cloudflare-minimum'
+              ? SEARCH_MINIMUM_BUDGET.indexReads
+              : 20000,
+            8 + limit * SEARCH_MINIMUM_BUDGET.indexWritesPerDocument,
+            limit + 1,
+          );
         const work = meter.db;
         let rows: SearchSourceRow[];
         if (query.tier === 'cloudflare-minimum' && query.event) {
@@ -79,21 +92,26 @@ export function createD1SearchIndexStore(db: D1Database): SearchIndexStore {
           const { day } = searchBudgetOptions(reservation);
           // RETURNING only evaluates the canonical source after admission succeeds.
           // The later write still rechecks its revision, projection and visibility.
-          const admitted = await work
-            .prepare(`${searchBudgetReservationSql},
+          let admitted: D1Result<{ id: number; source: string | null }>;
+          if (claimed) {
+            meter.account(claimed.result);
+            admitted = claimed.result;
+          } else
+            admitted = await work
+              .prepare(`${searchBudgetReservationSql},
             (SELECT json_object('id',id,'revision',revision,'title',title,
               'body_text',body_text,'body_text_version',body_text_version,
               'moderation',moderation,'deleted_at',deleted_at)
              FROM issues WHERE project_id=? AND id=? AND revision=?) AS source`)
-            .bind(
-              day,
-              reservation.reads,
-              reservation.writes,
-              projectId,
-              query.event.issueId,
-              query.event.revision,
-            )
-            .all<{ id: number; source: string | null }>();
+              .bind(
+                day,
+                reservation.reads,
+                reservation.writes,
+                projectId,
+                query.event.issueId,
+                query.event.revision,
+              )
+              .all<{ id: number; source: string | null }>();
           if (admitted.results.length !== 1)
             throw new SearchError('SEARCH_BUDGET_EXHAUSTED');
           const source = admitted.results[0]!.source;

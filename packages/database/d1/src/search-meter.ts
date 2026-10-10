@@ -61,6 +61,10 @@ export function searchMeter(
   };
   return {
     usage,
+    // For one source-admission statement in the caller's atomic claim batch.
+    // Reserve its statement slot before I/O, then validate metadata at consumption.
+    before,
+    account,
     db: {
       prepare: (sql: string) => wrap(db.prepare(sql)),
       async batch<T>(input: D1PreparedStatement[]) {

@@ -1,20 +1,42 @@
 import type {
   D1Database,
   D1PreparedStatement,
+  D1Result,
 } from '@cloudflare/workers-types';
 import {
   MINIMUM_ASYNC_LIMITS,
   taskReference,
   validateTaskReference,
   AsyncError,
+  SEARCH_MINIMUM_BUDGET,
+  searchBudgetOptions,
   type AsyncStore,
   type SearchIndexStore,
 } from '@hyperbug/application';
 import { assertId } from '@hyperbug/domain';
 import { createD1AsyncStore, asyncBacklogSql } from './async-processing.ts';
-import { createD1SearchIndexStore } from './search-index.ts';
+import {
+  createD1SearchIndexStore,
+  type ClaimedSearchAdmission,
+} from './search-index.ts';
+import { searchMeter } from './search-meter.ts';
+import { searchBudgetConflictSql } from './search-budget.ts';
 
 type Row = Record<string, unknown>;
+// A conservative subset of the ordinary consumer validator: lowercase UUIDv4
+// and the exact compact producer JSON. Other serializations use the usual path.
+const sqlUuid = (value: string) => `(length(CAST(${value} AS BLOB))=36
+  AND substr(${value},9,1)='-' AND substr(${value},14,1)='-' AND substr(${value},19,1)='-' AND substr(${value},24,1)='-'
+  AND substr(${value},15,1)='4' AND substr(${value},20,1) GLOB '[89ab]'
+  AND length(replace(${value},'-',''))=32 AND replace(${value},'-','') NOT GLOB '*[^0-9a-f]*')`;
+const canonicalSearch = `CASE WHEN json_valid(e.payload) THEN CASE WHEN
+  e.event_version=1 AND e.event_type IN ('issue.create','issue.edit','issue.close','issue.reopen','issue.labels','issue.assignees','issue.type','issue.milestone','issue.moderate','issue.redact','issue.delete')
+  AND ${sqlUuid('e.id')} AND ${sqlUuid('e.project_id')} AND ${sqlUuid('e.aggregate_id')}
+  AND ${sqlUuid("json_extract(e.payload,'$.mutationId')")}
+  AND e.payload=json_object('issueId',e.aggregate_id,'mutationId',json_extract(e.payload,'$.mutationId'))
+  AND t.aggregate_revision BETWEEN 1 AND 2147483647 THEN 1 ELSE 0 END ELSE 0 END`;
+const timelineJoin = `JOIN timeline_events t ON t.project_id=e.project_id AND t.issue_id=e.aggregate_id
+  AND t.id=CASE WHEN json_valid(e.payload) THEN json_extract(e.payload,'$.mutationId') ELSE NULL END`;
 const validate = (now: number, token: string) => {
   if (
     !Number.isSafeInteger(now) ||
@@ -51,6 +73,8 @@ export function createD1MinimumAsyncStore(db: D1Database) {
     claimedToken: string | null = null;
   let completedBacklog: Awaited<ReturnType<AsyncStore['backlog']>> | null =
     null;
+  let claimedSearch: ClaimedSearchAdmission | null = null,
+    searchDay: number | null = null;
   const backlogOf = (row: Row) => ({
     pending: Number(row.pending),
     failed: Number(row.failed),
@@ -114,6 +138,7 @@ export function createD1MinimumAsyncStore(db: D1Database) {
         CASE source WHEN 'core' THEN (SELECT aggregate_id FROM outbox e WHERE e.id=async_deliveries.event_id) ELSE NULL END AS aggregate_id,
         CASE source WHEN 'core' THEN (SELECT t.aggregate_revision FROM outbox e JOIN timeline_events t ON t.project_id=e.project_id AND t.issue_id=e.aggregate_id
           AND t.id=CASE WHEN json_valid(e.payload) THEN json_extract(e.payload,'$.mutationId') ELSE NULL END WHERE e.id=async_deliveries.event_id) ELSE NULL END AS aggregate_revision,
+        CASE source WHEN 'core' THEN (SELECT ${canonicalSearch} FROM outbox e ${timelineJoin} WHERE e.id=async_deliveries.event_id) ELSE 0 END AS search_eligible,
         created_at`)
         .bind(
           token,
@@ -131,6 +156,8 @@ export function createD1MinimumAsyncStore(db: D1Database) {
     cached = row;
     claimedToken = token;
     completedBacklog = null;
+    claimedSearch = null;
+    searchDay = null;
   };
   const refsOf = (rows: Row[]) =>
     rows.map((row) =>
@@ -151,12 +178,53 @@ export function createD1MinimumAsyncStore(db: D1Database) {
     async admitAndClaim(now: number, token: string) {
       // Admission identities are fresh even when a caller reuses an execution token.
       const admissionToken = crypto.randomUUID();
+      const allocation = {
+        reads: SEARCH_MINIMUM_BUDGET.indexReads,
+        writes: 8 + SEARCH_MINIMUM_BUDGET.indexWritesPerDocument,
+        nowMs: Date.now(),
+      };
+      const { day } = searchBudgetOptions(allocation);
+      const meter = searchMeter(db, allocation.reads, allocation.writes, 2);
+      // This source statement has its search slot checked before the whole batch.
+      meter.before(1);
       const result = await db.batch<Row>([
         reservation(db, now, admissionToken),
         ...claimStatements(now, token, true, admissionToken),
+        db
+          .prepare(`WITH candidate AS MATERIALIZED (
+          SELECT e.project_id,e.aggregate_id,t.aggregate_revision FROM async_deliveries d
+          JOIN outbox e ON e.id=d.event_id AND d.source='core' ${timelineJoin}
+          WHERE d.delivery_id=(SELECT delivery_id FROM async_deliveries WHERE state='pending' AND available_at<=? ORDER BY available_at,delivery_id LIMIT 1)
+          AND d.work_token=? AND d.work_until>? AND d.publish_token=? AND d.publish_until>?
+          AND EXISTS (SELECT 1 FROM async_minimum_budget WHERE id=1 AND reservation_token=?) AND ${canonicalSearch}=1)
+          INSERT INTO search_budget(id,day,reads,writes) SELECT 1,?,?,? WHERE changes()=1 AND EXISTS (SELECT 1 FROM candidate)
+          ${searchBudgetConflictSql} RETURNING id,
+          (SELECT json_object('id',i.id,'revision',i.revision,'title',i.title,'body_text',i.body_text,'body_text_version',i.body_text_version,'moderation',i.moderation,'deleted_at',i.deleted_at)
+            FROM issues i JOIN candidate c ON c.project_id=i.project_id AND c.aggregate_id=i.id AND c.aggregate_revision=i.revision) AS source`)
+          .bind(
+            now,
+            token,
+            now,
+            token,
+            now,
+            admissionToken,
+            day,
+            allocation.reads,
+            allocation.writes,
+          ),
       ]);
-      const rows = result.at(-1)?.results ?? [];
+      const rows = result.at(-2)?.results ?? [];
       remember(rows[0] ?? null, token);
+      if (cached?.search_eligible === 1) {
+        claimedSearch = {
+          result: result.at(-1)! as unknown as D1Result<{
+            id: number;
+            source: string | null;
+          }>,
+          meter,
+        };
+        searchDay = day;
+      }
       return {
         admitted: result[0]!.results.length === 1,
         references: refsOf(rows),
@@ -164,7 +232,22 @@ export function createD1MinimumAsyncStore(db: D1Database) {
     },
     /** Only an exact validated source lookup may use the immutable claim witness. */
     searchStore(): SearchIndexStore {
-      const search = createD1SearchIndexStore(db);
+      const search = createD1SearchIndexStore(db, (query) => {
+        if (
+          !claimedSearch ||
+          query.tier !== 'cloudflare-minimum' ||
+          !query.event ||
+          query.limit !== 1 ||
+          query.projectId !== cached?.project_id ||
+          query.event.issueId !== cached.aggregate_id ||
+          query.event.revision !== Number(cached.aggregate_revision) ||
+          searchDay !== Math.floor(Date.now() / 86400000)
+        )
+          return null;
+        const admission = claimedSearch;
+        claimedSearch = null;
+        return admission;
+      });
       return {
         ...search,
         async revisionOf(projectId, issueId, mutationId) {
@@ -173,6 +256,7 @@ export function createD1MinimumAsyncStore(db: D1Database) {
           assertId(mutationId);
           if (
             cached?.source === 'core' &&
+            cached.search_eligible === 1 &&
             cached.project_id === projectId &&
             cached.aggregate_id === issueId
           ) {

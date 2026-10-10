@@ -318,3 +318,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
 - Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
 - Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.
+
+
+### 2026-10-11 — Combined Minimum claim/search admission checkpoint
+
+- Scope/checklist IDs: Authorized continuing 09.1f/09.V6 performance work and Module08 D1 search integration.
+- Progress/change summary: Native module-graph r5 still fails at 12 ms against 10 ms; cleanup verified. Canonical claim/search admission now shares one atomic batch; all existing handler checks and numeric limits remain. Alternate JSON retains ordinary validation.
+- Files/artifacts: D1 async/search budget/index/meter, workerd admission test, [evidence](../evidence/09-async-validation.md#native-module-graph-result-and-atomic-search-admission--2026-10-11), [r5 receipt](../evidence/09-hosted-native-module-retry-receipt.json).
+- Verification: workerd6 plus D1 search13, availability unit28 and meter unit3 pass; typecheck/lint/boundaries/build/scoped format pass. Initial overly complex GLOB fixed without changing acceptance policy. No unchanged PostgreSQL rerun.
+- Decisions/deviations: Human retry authorization persists. r5 source acknowledged but CPU fails; local provider-call reduction is not hosted acceptance. Original two Workers/domain mappings independently compared and preserved; r5 local inventory helper overwrote only private inventory/state, so comparison used preserved r4 baseline. No hosted mutation resulted.
+- Blockers/open questions: 09.1f/09.V6 CPU and representative native recovery remain open. 09.3e suspended; G1/G2 closed, 13.G6 open.
+- Next actions: Fresh bounded native r6 with new suffix/backup; maximum body and affected recovery only after canonical CPU fit; cleanup after each attempt.
+- Next-session cautions: Preserve fresh reservation fencing, source quotas, post-I/O accounting and current projection checks; do not stage protected files or private logs; no push/PR edit.

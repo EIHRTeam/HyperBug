@@ -1242,3 +1242,8 @@ The user authorizes committing and pushing the prepared B5 prototype and Module0
 ### 2026-10-11 — Authorized Module09 CPU investigation resumed
 
 Human approval supersedes the stop-after-failure rule for bounded performance profiling/refactoring and native retries with cleanup. Module09 is In progress; 09.1f/09.V6 remain open, 09.2e/09.3g and Module08 integration closure remain verified. Meter/factory/internal-entry changes pass focused checks. Native r4 timed out without delivery and was cleaned: 120 original records/singletons and two original Workers/mappings preserved, owned work/resources zero. [Evidence](evidence/09-async-validation.md#authorized-cpu-profiling-continuation--2026-10-11) and [receipt](evidence/09-hosted-native-meter-retry-receipt.json). Next: compiled module-graph attempt; 09.3e suspended, G1/G2 closed, 13.G6 open. No push or PR edit.
+
+
+### 2026-10-11 — Native module graph fails; combined admission verified locally
+
+Latest native canonical dispatch is 12 ms versus the unchanged 10 ms limit. r5 cleanup preserves 125 original records/singletons and both original Workers/domain mappings. The next D1 claim/search admission batch passes focused local checks and awaits a fresh bounded native retry. [Evidence](evidence/09-async-validation.md#native-module-graph-result-and-atomic-search-admission--2026-10-11). 09.1f/09.V6 remain open, 09.3e suspended; G1/G2 closed, 13.G6 open.

@@ -6,14 +6,14 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (authorized CPU investigation; native canonical Cron remains 20 ms versus 10 ms)
+- Status: In progress (authorized CPU investigation; latest native canonical Cron remains 12 ms versus 10 ms)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
 - Active/next checklist group: B5 — 09.1f and 09.V6 (native Cron CPU fit).
 - Last updated: 2026-10-11.
-- Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work measured 20 ms on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Human authorization on 2026-10-11 overrides the stop-after-failure rule for bounded profiling/refactoring and native retries with cleanup. Cleanup and preservation results are recorded in the latest session.
+- Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work most recently measured 12 ms in r5 on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Human authorization on 2026-10-11 overrides the stop-after-failure rule for bounded profiling/refactoring and native retries with cleanup. Cleanup and preservation results are recorded in the latest session.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
 
 ## Step tracking
@@ -28,7 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. Continue the authorized CPU investigation with the compiled module graph and bounded native Cron observation; registration/local timing do not close 09.1f/09.V6.
+1. Continue the authorized CPU investigation with combined claim/search admission and bounded native Cron observation; registration/local timing do not close 09.1f/09.V6.
 2. Preserve the passing local/hosted-function refactor and the completed cleanup. No new permission or bound waiver is inferred; existing test/refactor authorization persists. Keep G1/G2 closed and 13.G6 open.
 
 ## Next-session cautions
@@ -410,3 +410,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
 - Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
 - Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.
+
+
+### 2026-10-11 — Combined Minimum claim/search admission checkpoint
+
+- Scope/checklist IDs: Authorized continuing 09.1f/09.V6 performance work and Module08 D1 search integration.
+- Progress/change summary: Native module-graph r5 still fails at 12 ms against 10 ms; cleanup verified. Canonical claim/search admission now shares one atomic batch; all existing handler checks and numeric limits remain. Alternate JSON retains ordinary validation.
+- Files/artifacts: D1 async/search budget/index/meter, workerd admission test, [evidence](../evidence/09-async-validation.md#native-module-graph-result-and-atomic-search-admission--2026-10-11), [r5 receipt](../evidence/09-hosted-native-module-retry-receipt.json).
+- Verification: workerd6 plus D1 search13, availability unit28 and meter unit3 pass; typecheck/lint/boundaries/build/scoped format pass. Initial overly complex GLOB fixed without changing acceptance policy. No unchanged PostgreSQL rerun.
+- Decisions/deviations: Human retry authorization persists. r5 source acknowledged but CPU fails; local provider-call reduction is not hosted acceptance. Original two Workers/domain mappings independently compared and preserved; r5 local inventory helper overwrote only private inventory/state, so comparison used preserved r4 baseline. No hosted mutation resulted.
+- Blockers/open questions: 09.1f/09.V6 CPU and representative native recovery remain open. 09.3e suspended; G1/G2 closed, 13.G6 open.
+- Next actions: Fresh bounded native r6 with new suffix/backup; maximum body and affected recovery only after canonical CPU fit; cleanup after each attempt.
+- Next-session cautions: Preserve fresh reservation fencing, source quotas, post-I/O accounting and current projection checks; do not stage protected files or private logs; no push/PR edit.
