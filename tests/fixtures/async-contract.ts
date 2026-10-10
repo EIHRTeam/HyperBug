@@ -102,7 +102,13 @@ export function asyncStoreContract(
       expect(
         await store.purgeTerminal(now + 400_000, 10),
       ).toBeGreaterThanOrEqual(0);
-      expect(await store.begin(ref, 'retained', now + 400_001)).toBe('failed');
+      expect(await store.begin(ref, 'retired', now + 400_001)).toBe('done');
+      expect(await store.replay(ref, now + 400_001)).toBe(false);
+      expect(
+        (await store.claim(now + 400_002, 'no-resurrection', 10)).some(
+          (r) => r.eventId === ref.eventId,
+        ),
+      ).toBe(false);
     });
     it('resumes bounded job checkpoints after a crash and fences cancellation and duplicate committed steps', async () => {
       const { store, harness } = get();

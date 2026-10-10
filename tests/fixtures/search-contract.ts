@@ -347,80 +347,100 @@ export function searchStoreContract(
           .items,
       ).toEqual([]);
     });
-    it('replays current outbox revisions, ignores stale and duplicate events and rebuilds deletes/redactions', async () => {
-      const { projectId, principalId, ids } = await seed(),
-        { harness, index, store } = get(),
-        issueId = ids[0]!;
-      const event = (revision: number) => ({
-        version: 1 as const,
-        projectId,
-        issueId,
-        revision,
-      });
-      await harness.query(
-        "UPDATE issues SET revision = 2, title = 'new text', body_text = 'new text' WHERE id = ?",
-        [issueId],
-      );
-      const mutationId = crypto.randomUUID();
-      await harness.query(
-        'INSERT INTO timeline_events (id, project_id, issue_id, aggregate_revision, actor_id, action, created_at, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          mutationId,
+    it.each(['standard', 'cloudflare-minimum'] as const)(
+      'replays current outbox revisions, ignores stale and duplicate events and rebuilds deletes/redactions (%s)',
+      async (tier) => {
+        const { projectId, principalId, ids } = await seed(),
+          { harness, index, store } = get(),
+          issueId = ids[0]!;
+        const event = (revision: number) => ({
+          version: 1 as const,
           projectId,
           issueId,
-          2,
-          principalId,
-          'issue.edit',
-          1000,
-          '{}',
-        ],
-      );
-      expect(
-        (
-          await handleSearchOutboxEvent(index, {
-            projectId,
-            aggregateId: issueId,
-            eventType: 'issue.edit',
-            payload: { issueId, mutationId },
-          })
-        ).updated,
-      ).toBe(1);
-      expect((await handleSearchIndexEvent(index, event(1))).updated).toBe(0);
-      expect((await handleSearchIndexEvent(index, event(2))).updated).toBe(0);
-      expect((await handleSearchIndexEvent(index, event(3))).processed).toBe(0);
-      await harness.query(
-        "UPDATE issues SET revision = 3, moderation = 'redacted', body_text = NULL, body_text_version = NULL WHERE id = ?",
-        [issueId],
-      );
-      expect((await handleSearchIndexEvent(index, event(3))).updated).toBe(1);
-      await harness.query(
-        'UPDATE issues SET revision = 4, deleted_at = ? WHERE id = ?',
-        [2000, issueId],
-      );
-      expect((await handleSearchIndexEvent(index, event(4))).updated).toBe(1);
-      expect((await handleSearchIndexEvent(index, event(2))).updated).toBe(0);
-      expect(
+          revision,
+        });
         await harness.query(
-          'SELECT revision, active, title, body FROM search_documents WHERE issue_id = ?',
+          "UPDATE issues SET revision = 2, title = 'new text', body_text = 'new text' WHERE id = ?",
           [issueId],
-        ),
-      ).toEqual([{ revision: 4, active: 0, title: '', body: '' }]);
-      await harness.query('DELETE FROM search_documents WHERE project_id = ?', [
-        projectId,
-      ]);
-      await index.backfill({ projectId });
-      expect(
-        (await store.search({ projectId, ast: parseSearchQuery('') })).items,
-      ).toHaveLength(3);
-      const before = get().measuredQueries().length;
-      expect(() =>
-        handleSearchIndexEvent(index, { ...event(4), revision: -1 }),
-      ).toThrow('SEARCH_VALUE');
-      await expect(
-        index.backfill({ projectId, limit: 11, tier: 'cloudflare-minimum' }),
-      ).rejects.toMatchObject({ code: 'SEARCH_COMPLEXITY' });
-      expect(get().measuredQueries().length).toBe(before);
-    });
+        );
+        const mutationId = crypto.randomUUID();
+        await harness.query(
+          'INSERT INTO timeline_events (id, project_id, issue_id, aggregate_revision, actor_id, action, created_at, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            mutationId,
+            projectId,
+            issueId,
+            2,
+            principalId,
+            'issue.edit',
+            1000,
+            '{}',
+          ],
+        );
+        expect(
+          (
+            await handleSearchOutboxEvent(
+              index,
+              {
+                projectId,
+                aggregateId: issueId,
+                eventType: 'issue.edit',
+                payload: { issueId, mutationId },
+              },
+              tier,
+            )
+          ).updated,
+        ).toBe(1);
+        expect(
+          (await handleSearchIndexEvent(index, event(1), tier)).updated,
+        ).toBe(0);
+        expect(
+          (await handleSearchIndexEvent(index, event(2), tier)).updated,
+        ).toBe(0);
+        expect(
+          (await handleSearchIndexEvent(index, event(3), tier)).processed,
+        ).toBe(0);
+        await harness.query(
+          "UPDATE issues SET revision = 3, moderation = 'redacted', body_text = NULL, body_text_version = NULL WHERE id = ?",
+          [issueId],
+        );
+        expect(
+          (await handleSearchIndexEvent(index, event(3), tier)).updated,
+        ).toBe(1);
+        await harness.query(
+          'UPDATE issues SET revision = 4, deleted_at = ? WHERE id = ?',
+          [2000, issueId],
+        );
+        expect(
+          (await handleSearchIndexEvent(index, event(4), tier)).updated,
+        ).toBe(1);
+        expect(
+          (await handleSearchIndexEvent(index, event(2), tier)).updated,
+        ).toBe(0);
+        expect(
+          await harness.query(
+            'SELECT revision, active, title, body FROM search_documents WHERE issue_id = ?',
+            [issueId],
+          ),
+        ).toEqual([{ revision: 4, active: 0, title: '', body: '' }]);
+        await harness.query(
+          'DELETE FROM search_documents WHERE project_id = ?',
+          [projectId],
+        );
+        await index.backfill({ projectId });
+        expect(
+          (await store.search({ projectId, ast: parseSearchQuery('') })).items,
+        ).toHaveLength(3);
+        const before = get().measuredQueries().length;
+        expect(() =>
+          handleSearchIndexEvent(index, { ...event(4), revision: -1 }),
+        ).toThrow('SEARCH_VALUE');
+        await expect(
+          index.backfill({ projectId, limit: 11, tier: 'cloudflare-minimum' }),
+        ).rejects.toMatchObject({ code: 'SEARCH_COMPLEXITY' });
+        expect(get().measuredQueries().length).toBe(before);
+      },
+    );
     it('atomically reserves minimum quotas, denies exhaustion before index work and bounds a full-body reindex', async () => {
       const { projectId, principalId, ids } = await seed(),
         { harness, budget, index, store, measuredQueries } = get();
@@ -445,6 +465,16 @@ export function searchStoreContract(
         await expect(
           index.backfill({ projectId, tier: 'cloudflare-minimum', limit: 1 }),
         ).rejects.toMatchObject({ code: 'SEARCH_BUDGET_EXHAUSTED' });
+        const deniedEventStart = measuredQueries().length;
+        await expect(
+          handleSearchIndexEvent(
+            index,
+            { version: 1, projectId, issueId: ids[0]!, revision: 1 },
+            'cloudflare-minimum',
+          ),
+        ).rejects.toMatchObject({ code: 'SEARCH_BUDGET_EXHAUSTED' });
+        const deniedStatements = measuredQueries().slice(deniedEventStart);
+        expect(deniedStatements).toHaveLength(1);
         expect(
           (
             await harness.query(

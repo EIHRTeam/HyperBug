@@ -1,3 +1,4 @@
+import { runMinimumAsyncTick } from './async-minimum.ts';
 import { loadAsyncMaintenancePolicy } from '@hyperbug/config';
 import { createD1AsyncStore } from '@hyperbug/database-d1';
 import { runScheduledUploadCleanup } from '@hyperbug/application';
@@ -411,9 +412,20 @@ export function createCloudflareApi(
       if (!asyncRuntime) throw new Error('Async consumer unavailable');
       await asyncRuntime.queue(batch);
     },
-    async scheduled(_controller: ScheduledController, bindings: Env) {
+    async scheduled(controller: ScheduledController, bindings: Env) {
       if (!bindings.DB) throw new Error('Expired cleanup unavailable');
       const cleanupConfig = loadConfig(bindings, 'cloudflare');
+      if (cleanupConfig.deployment.tier === 'cloudflare-minimum') {
+        await runMinimumAsyncTick({
+          db: bindings.DB,
+          scheduledTime: controller.scheduledTime,
+          bindings: bindings as Env &
+            import('./uploads.ts').WorkerUploadBindings,
+          sessionRetentionMs:
+            cleanupConfig.security.retentionSeconds.expiredSessions * 1000,
+        });
+        return;
+      }
       await createD1ExpiredCleanupStore(bindings.DB).purgeExpired(
         Date.now(),
         cleanupConfig.security.retentionSeconds.expiredSessions * 1000,
@@ -427,6 +439,10 @@ export function createCloudflareApi(
         },
       );
       await maintenance.purgeTerminal(
+        Math.max(0, Date.now() - policy.terminalRetentionMs),
+        10,
+      );
+      await maintenance.purgeJobs(
         Math.max(0, Date.now() - policy.terminalRetentionMs),
         10,
       );

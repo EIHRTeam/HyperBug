@@ -1921,6 +1921,7 @@ export const asyncJobs = table(
   },
   (t) => [
     index('async_job_pending').on(t.status, t.leaseUntil, t.id),
+    index('async_job_terminal').on(t.status, t.updatedAt, t.id),
     check(
       'async_job_status',
       sql`${t.status} IN ('pending','running','completed','failed','cancelled')`,
@@ -1973,5 +1974,32 @@ export const asyncMaintenance = table(
       sql`(${t.temporary} IS NULL OR length(${t.temporary}) <= 1024) AND (${t.orphan} IS NULL OR length(${t.orphan}) <= 1024)`,
     ),
     validTime('async_maintenance_time', t.updatedAt),
+  ],
+);
+
+export const asyncMinimumBudget = table(
+  'async_minimum_budget',
+  {
+    id: integer('id').primaryKey(),
+    day: integer('day').notNull(),
+    reads: integer('reads').notNull(),
+    writes: integer('writes').notNull(),
+  },
+  (t) => [
+    check(
+      'async_minimum_budget_bounds',
+      sql`${t.id}=1 AND ${t.day}>=0 AND ${t.reads} BETWEEN 0 AND 1500000 AND ${t.writes} BETWEEN 0 AND 30000`,
+    ),
+  ],
+);
+export const asyncMinimumCursors = table(
+  'async_minimum_cursors',
+  {
+    source: text('source').primaryKey(),
+    availableAt: instant('available_at').notNull(),
+    eventId: text('event_id').notNull(),
+  },
+  (t) => [
+    check('async_minimum_cursor_source', sql`${t.source} IN ('core','plugin')`),
   ],
 );

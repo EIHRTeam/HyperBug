@@ -114,6 +114,7 @@ export interface AsyncStore {
   replay(ref: TaskReference, now: number): Promise<boolean>;
   backlog(): Promise<AsyncBacklog>;
   /** Terminal references only; source retention and audit history are unaffected. */
+  /** Expire safe terminal metadata and atomically retire failed sources; pending retries are preserved. */
   purgeTerminal(before: number, limit: number): Promise<number>;
 }
 export async function replayFailedTask(input: {

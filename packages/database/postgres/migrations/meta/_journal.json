@@ -225,6 +225,13 @@
       "when": 1791568393994,
       "tag": "0031_async_maintenance",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1791569576845,
+      "tag": "0032_async_job_retention",
+      "breakpoints": true
     }
   ]
 }

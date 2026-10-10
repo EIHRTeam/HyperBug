@@ -4,7 +4,7 @@ import {
   searchAvailability,
   type SearchBudgetStore,
 } from '@hyperbug/application';
-const sql = `INSERT INTO search_budget (id, day, reads, writes) VALUES (1, ?, ?, ?)
+export const searchBudgetReservationSql = `INSERT INTO search_budget (id, day, reads, writes) VALUES (1, ?, ?, ?)
    ON CONFLICT(id) DO UPDATE SET day = excluded.day,
    reads = CASE WHEN search_budget.day = excluded.day THEN search_budget.reads + excluded.reads ELSE excluded.reads END,
    writes = CASE WHEN search_budget.day = excluded.day THEN search_budget.writes + excluded.writes ELSE excluded.writes END
@@ -15,7 +15,10 @@ export function createD1SearchBudgetStore(db: D1Database): SearchBudgetStore {
       const { day } = searchBudgetOptions(input);
       try {
         const rows = (
-          await db.prepare(sql).bind(day, input.reads, input.writes).all()
+          await db
+            .prepare(searchBudgetReservationSql)
+            .bind(day, input.reads, input.writes)
+            .all()
         ).results;
         return rows.length === 1;
       } catch (error) {

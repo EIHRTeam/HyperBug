@@ -23,6 +23,7 @@ export interface WorkerUploadBindings {
 export function configureWorkerUploads(
   db: D1Database | null,
   bindings: WorkerUploadBindings,
+  transport?: (outbound: Request) => Promise<Response>,
 ): UploadDependencies | null {
   if (
     bindings.HYPERBUG_UPLOAD_BLOB === undefined &&
@@ -45,7 +46,7 @@ export function configureWorkerUploads(
     phase = 'signing';
     const capabilities = createR2BlobAuthorization(config);
     phase = 'reconciliation';
-    const multipartReconciler = createR2MultipartReconciler(config);
+    const multipartReconciler = createR2MultipartReconciler(config, transport);
     let native: Pick<UploadDependencies, 'intents' | 'blobs'> | null = null;
     const live = () => {
       if (native) return native;

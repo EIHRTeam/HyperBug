@@ -841,3 +841,5 @@ export { createD1SearchIndexStore } from './search-index.ts';
 export { createD1SearchBudgetStore } from './search-budget.ts';
 
 export { createD1AsyncStore } from './async-processing.ts';
+
+export { createD1MinimumAsyncStore } from './async-minimum.ts';

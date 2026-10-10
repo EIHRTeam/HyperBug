@@ -491,7 +491,7 @@ export function createApp({
   const degradationNotice = tierSelected
     ? 'This instance uses Cloudflare Minimum with PBKDF2 password protection below the standard Argon2id baseline. Choose a strong password of at least 12 characters and prefer passkeys. Capacity and background capabilities are limited.'
     : null;
-  const instanceDocument: InstanceDocument = Object.freeze({
+  const instanceDocument: InstanceDocument = Object.freeze<InstanceDocument>({
     tier: deployment.tier,
     degradationIds: [...deployment.degradationIds],
     passwordHashPolicy: {
@@ -504,6 +504,16 @@ export function createApp({
       recoveryCodes: recoveryStore != null,
       passkeys: passkey != null,
       administratorAssistedRecovery: staffEnrollmentStore != null,
+    },
+    background: {
+      mode: tierSelected ? 'checkpointed-cron' : 'workflow',
+      dispatchBatch: tierSelected ? 1 : 10,
+      maxJobSteps: tierSelected ? 4 : 16,
+      checkpointBytes: 1024,
+      bulk: false,
+      import: false,
+      export: false,
+      longRunning: false,
     },
     limits: {
       documented: 'docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas',

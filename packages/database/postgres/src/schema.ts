@@ -1908,6 +1908,7 @@ export const asyncJobs = table(
   },
   (t) => [
     index('async_job_pending').on(t.status, t.leaseUntil, t.id),
+    index('async_job_terminal').on(t.status, t.updatedAt, t.id),
     check(
       'async_job_status',
       sql`${t.status} IN ('pending','running','completed','failed','cancelled')`,

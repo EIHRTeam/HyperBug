@@ -1,8 +1,12 @@
 import { searchMeter } from './search-meter.ts';
-import { createD1SearchBudgetStore } from './search-budget.ts';
+import {
+  createD1SearchBudgetStore,
+  searchBudgetReservationSql,
+} from './search-budget.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   searchBackfillOptions,
+  searchBudgetOptions,
   SEARCH_MINIMUM_BUDGET,
   searchAvailability,
   searchTokenText,
@@ -48,6 +52,7 @@ export function createD1SearchIndexStore(db: D1Database): SearchIndexStore {
       try {
         if (
           query.tier === 'cloudflare-minimum' &&
+          !query.event &&
           !(await createD1SearchBudgetStore(db).reserve({
             reads: SEARCH_MINIMUM_BUDGET.indexReads,
             writes: 8 + limit * SEARCH_MINIMUM_BUDGET.indexWritesPerDocument,
@@ -64,22 +69,53 @@ export function createD1SearchIndexStore(db: D1Database): SearchIndexStore {
           limit + 1,
         );
         const work = meter.db;
-        const rows = (
-          await work
-            .prepare(
-              `SELECT id, revision, title, body_text, body_text_version, moderation, deleted_at FROM issues WHERE project_id = ? ${query.event ? 'AND id = ? AND revision = ?' : after ? 'AND id > ?' : ''} ORDER BY id LIMIT ?`,
-            )
+        let rows: SearchSourceRow[];
+        if (query.tier === 'cloudflare-minimum' && query.event) {
+          const reservation = {
+            reads: SEARCH_MINIMUM_BUDGET.indexReads,
+            writes: 8 + limit * SEARCH_MINIMUM_BUDGET.indexWritesPerDocument,
+            nowMs: Date.now(),
+          };
+          const { day } = searchBudgetOptions(reservation);
+          // RETURNING only evaluates the canonical source after admission succeeds.
+          // The later write still rechecks its revision, projection and visibility.
+          const admitted = await work
+            .prepare(`${searchBudgetReservationSql},
+            (SELECT json_object('id',id,'revision',revision,'title',title,
+              'body_text',body_text,'body_text_version',body_text_version,
+              'moderation',moderation,'deleted_at',deleted_at)
+             FROM issues WHERE project_id=? AND id=? AND revision=?) AS source`)
             .bind(
+              day,
+              reservation.reads,
+              reservation.writes,
               projectId,
-              ...(query.event
-                ? [query.event.issueId, query.event.revision]
-                : after
-                  ? [after]
-                  : []),
-              query.event ? 1 : limit + 1,
+              query.event.issueId,
+              query.event.revision,
             )
-            .all<SearchSourceRow>()
-        ).results;
+            .all<{ id: number; source: string | null }>();
+          if (admitted.results.length !== 1)
+            throw new SearchError('SEARCH_BUDGET_EXHAUSTED');
+          const source = admitted.results[0]!.source;
+          rows = source === null ? [] : [JSON.parse(source) as SearchSourceRow];
+        } else {
+          rows = (
+            await work
+              .prepare(
+                `SELECT id, revision, title, body_text, body_text_version, moderation, deleted_at FROM issues WHERE project_id = ? ${query.event ? 'AND id = ? AND revision = ?' : after ? 'AND id > ?' : ''} ORDER BY id LIMIT ?`,
+              )
+              .bind(
+                projectId,
+                ...(query.event
+                  ? [query.event.issueId, query.event.revision]
+                  : after
+                    ? [after]
+                    : []),
+                query.event ? 1 : limit + 1,
+              )
+              .all<SearchSourceRow>()
+          ).results;
+        }
         const page = rows.slice(0, limit),
           rejectedIds: string[] = [],
           statements = [];

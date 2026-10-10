@@ -107,6 +107,11 @@ export const cloudflareWasmAssets = [
  */
 export const fixtureTargets = [
   {
+    name: 'async-minimum-worker',
+    entry: 'tests/fixtures/async-minimum-worker.ts',
+    outDir: 'dist/async-minimum-worker',
+  },
+  {
     name: 'async-workflow-worker',
     entry: 'tests/fixtures/async-workflow-worker.ts',
     outDir: 'dist/async-workflow-worker',

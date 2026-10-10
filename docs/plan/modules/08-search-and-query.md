@@ -47,4 +47,4 @@ See [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md) for the minimum-tier row-rea
 
 ## Recorded integration handoffs
 
-08.2e's version-aware outbox/revision handler is implemented and locally verified, including replay, delete/redaction and canonical rebuild. The combined checkbox stays open because Module09 dispatch is not connected. 08.V5's out-of-order/rebuild portion passes on both stores; queue/retry remains open for Module09. No gate closes here. Module08 remains In progress by the authorized HANDOFF-08 scope.
+08.2e's version-aware outbox/revision handler and 08.V5 replay/rebuild are locally verified, including delete/redaction and canonical rebuild. Module09 B3 closed their dispatch/queue/retry handoffs on both stores, so the checkboxes and Module08 implementation/local acceptance are complete. The authorized post-completion D1 batching investigation preserves these contracts, but its fresh dispatcher replay still exceeds the Free CPU bound; Module09 B5 remains blocked. Actual provider-global/Free performance and backend/release acceptance remain with Modules10/13; no gate closes here.

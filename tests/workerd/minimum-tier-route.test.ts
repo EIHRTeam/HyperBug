@@ -148,6 +148,16 @@ it('reports the enabled tier truthfully and records its audited enablement', asy
   const instance = await request('/api/v1/instance', {});
   expect(instance.status).toBe(200);
   const document = (await instance.json()) as {
+    background: {
+      mode: string;
+      dispatchBatch: number;
+      maxJobSteps: number;
+      checkpointBytes: number;
+      bulk: boolean;
+      import: boolean;
+      export: boolean;
+      longRunning: boolean;
+    };
     tier: string;
     degradationIds: string[];
     passwordHashPolicy: { algorithm: string; downgraded: boolean };
@@ -160,6 +170,16 @@ it('reports the enabled tier truthfully and records its audited enablement', asy
     };
   };
   expect(document.tier).toBe('cloudflare-minimum');
+  expect(document.background).toEqual({
+    mode: 'checkpointed-cron',
+    dispatchBatch: 1,
+    maxJobSteps: 4,
+    checkpointBytes: 1024,
+    bulk: false,
+    import: false,
+    export: false,
+    longRunning: false,
+  });
   expect(document.degradationIds).toEqual([
     'FREE-01',
     'FREE-02',

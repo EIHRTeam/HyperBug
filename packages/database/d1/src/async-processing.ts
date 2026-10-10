@@ -46,7 +46,7 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
         .all<Row>()
     ).results;
   const mutate = async (statements: Statement[]) => {
-    await db.batch(
+    return db.batch(
       statements.map(([sql, values]) => db.prepare(sql).bind(...values)),
     );
   };
@@ -111,13 +111,37 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
         ],
       ]);
     },
+    async purgeJobs(before, limit) {
+      time(before);
+      limitCheck(limit);
+      const candidates = `SELECT id FROM (
+        SELECT id,updated_at FROM (SELECT id,updated_at FROM async_jobs WHERE status='completed' AND updated_at<? ORDER BY updated_at,id LIMIT ?) c
+        UNION ALL SELECT id,updated_at FROM (SELECT id,updated_at FROM async_jobs WHERE status='cancelled' AND updated_at<? ORDER BY updated_at,id LIMIT ?) x
+        UNION ALL SELECT id,updated_at FROM (SELECT id,updated_at FROM async_jobs WHERE status='failed' AND updated_at<? ORDER BY updated_at,id LIMIT ?) f
+      ) t ORDER BY updated_at,id LIMIT ?`;
+      const parameters = [before, limit, before, limit, before, limit, limit];
+      const results = await mutate([
+        [
+          `DELETE FROM async_job_steps WHERE job_id IN (${candidates})`,
+          parameters,
+        ],
+        [
+          `DELETE FROM async_jobs WHERE id IN (${candidates}) RETURNING id`,
+          parameters,
+        ],
+      ]);
+      return results.at(-1)?.results.length ?? 0;
+    },
     async recoverableJobs(now, limit) {
       time(now);
       limitCheck(limit);
       return (
         await query(
-          "SELECT id FROM async_jobs WHERE status IN ('pending','running') AND lease_until<=? ORDER BY lease_until,id LIMIT ?",
-          [now, limit],
+          `SELECT id FROM (
+            SELECT id,lease_until FROM (SELECT id,lease_until FROM async_jobs WHERE status='pending' AND lease_until<=? ORDER BY lease_until,id LIMIT ?) p
+            UNION ALL SELECT id,lease_until FROM (SELECT id,lease_until FROM async_jobs WHERE status='running' AND lease_until<=? ORDER BY lease_until,id LIMIT ?) r
+          ) c ORDER BY lease_until,id LIMIT ?`,
+          [now, limit, now, limit, limit],
         )
       ).map((row) => String(row.id));
     },
@@ -231,7 +255,7 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
           [identity(ref)],
         )
       )[0];
-      return row?.state === 'done'
+      return !row || row.state === 'done'
         ? 'done'
         : row?.state === 'failed'
           ? 'failed'
@@ -303,12 +327,28 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
     async purgeTerminal(before, limit) {
       time(before);
       limitCheck(limit, 100);
-      // Failed entries remain replayable until source removal by an independently authorized retention policy.
-      const rows = await query(
-        "DELETE FROM async_deliveries WHERE delivery_id IN (SELECT delivery_id FROM async_deliveries WHERE state='done' AND updated_at<? ORDER BY updated_at,delivery_id LIMIT ?) RETURNING delivery_id",
-        [before, limit],
-      );
-      return rows.length;
+      const candidates = `SELECT delivery_id FROM (
+        SELECT delivery_id,updated_at FROM (SELECT delivery_id,updated_at FROM async_deliveries WHERE state='done' AND updated_at<? ORDER BY updated_at,delivery_id LIMIT ?) d
+        UNION ALL SELECT delivery_id,updated_at FROM (SELECT delivery_id,updated_at FROM async_deliveries WHERE state='failed' AND updated_at<? ORDER BY updated_at,delivery_id LIMIT ?) f
+      ) c ORDER BY updated_at,delivery_id LIMIT ?`;
+      const parameters = [before, limit, before, limit, limit];
+      // One transaction retires failed source events before removing their replay metadata.
+      // Cursor reconciliation can never recreate an expired poison delivery.
+      const results = await mutate([
+        [
+          `UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND id IN (SELECT event_id FROM async_deliveries WHERE source='core' AND delivery_id IN (${candidates}))`,
+          [before, ...parameters],
+        ],
+        [
+          `UPDATE plugin_event_outbox SET delivered_at=? WHERE delivered_at IS NULL AND event_id IN (SELECT event_id FROM async_deliveries WHERE source='plugin' AND delivery_id IN (${candidates}))`,
+          [before, ...parameters],
+        ],
+        [
+          `DELETE FROM async_deliveries WHERE delivery_id IN (${candidates}) RETURNING delivery_id`,
+          parameters,
+        ],
+      ]);
+      return results.at(-1)?.results.length ?? 0;
     },
     async create(id, maxSteps, now) {
       validateJob(id, maxSteps);

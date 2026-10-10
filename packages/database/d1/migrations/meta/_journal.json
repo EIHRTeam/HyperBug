@@ -232,6 +232,20 @@
       "when": 1791568393379,
       "tag": "0032_async_maintenance",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1791569489391,
+      "tag": "0033_async_minimum",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "6",
+      "when": 1791569576775,
+      "tag": "0034_async_job_retention",
+      "breakpoints": true
     }
   ]
 }

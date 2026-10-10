@@ -6,36 +6,36 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (full non-audit mission authorized 2026-10-10)
+- Status: Blocked (B5 hosted dispatch exceeds the required Free 10 ms CPU bound)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–d, 09.3a–d/f, 09.V1–V5.
 - Active/next checklist group: B5 — 09.1f, 09.2e, 09.3g, 09.V6.
 - Last updated: 2026-10-10.
-- Blocking issues discovered: None in B4; B5 hosted CPU/quota evidence remains unverified.
+- Blocking issues discovered: Original/optimized dispatch CPU 15 ms, real Cron with work 20 ms; authorized Module08 batching follow-up still fails at 22 ms on dispatcher replay. B5 remains uncommitted; both hosted receipts verify scoped cleanup.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 09.1 | Implement reliable event dispatch | In progress (B5 pending) | [B1–B4 evidence](../evidence/09-async-validation.md) |
-| 09.2 | Bound failure and fan-out | In progress (B5 pending) | [B1–B4 evidence](../evidence/09-async-validation.md) |
-| 09.3 | Implement durable workflow and retention foundations | In progress (B5 pending; audit suspended) | [B4 evidence](../evidence/09-async-validation.md#b4--workflows-and-scheduled-maintenance) |
+| 09.1 | Implement reliable event dispatch | Blocked (B5 CPU) | [B1–B4 evidence](../evidence/09-async-validation.md) |
+| 09.2 | Bound failure and fan-out | Blocked (B5 CPU) | [B1–B4 evidence](../evidence/09-async-validation.md) |
+| 09.3 | Implement durable workflow and retention foundations | Blocked (B5 CPU; audit suspended) | [B4 evidence](../evidence/09-async-validation.md#b4--workflows-and-scheduled-maintenance) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. Implement and verify B5 Minimum dispatch, failed retention, quota observability and checkpoint gating.
-2. Verify temporary hosted resources within HANDOFF-09 authorization; keep G1/G2/13.G6 open.
+1. The authorized Module08 D1 batching investigation did not unblock B5. Obtain a new bounded direction for batching Minimum dispatcher call boundaries under HANDOFF-09’s repeated CPU stop rule.
+2. Preserve the uncommitted B5 prototype; only resume affected local/hosted checks after that decision. Keep G1/G2 closed and 13.G6 open.
 
 ## Next-session cautions
 
 Assume at-least-once delivery and crash-after-side-effect replay. Queue deduplication alone does not guarantee business idempotency.
 
-Do not infer completed implementation from this initialized record. Inspect the current repository and prior session entries before continuing.
+B1–B4 are committed; B5 is an unaccepted, uncommitted prototype. Owned Worker/Queue/Workflow/custom-domain mappings are removed; raw DNS inventory remains unverified (403). D1 baseline rows/history and appended migrations are preserved. Inspect the final receipts before any new hosted use.
 
 ## Session log
 
@@ -278,3 +278,63 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Hosted Free CPU/quota headroom and Minimum budget/recovery pending B5; no paid Standard acceptance claim.
 - Next actions: Implement B5, verify authorized temporary hosted behavior and cleanup, then close only evidence-backed checklist items.
 - Next-session cautions: No hosted resources yet; preserve protected untracked drafts, source outbox/envelopes, audit suspension and G1/G2/13.G6 state.
+
+### 2026-10-10 — B5 hosted CPU stop checkpoint
+
+- Scope and checklist IDs: B5 09.1f/09.2e/09.3g/09.V6, no audit or later features.
+- Progress: Minimum prototype and focused local recovery/quota/retention checks pass. Actual Free-account dispatch measured 15 ms CPU, above the required 10 ms; B5 remains uncommitted and its checkboxes open.
+- Change summary: Added bounded D1 cursor import/reservations, a direct checkpoint runner, phase scheduling, failed replay-window retirement and capability fields. One optimization combined execution claim/source snapshot and removed four statements; the hosted dispatch still measured 15 ms (15 statements/43 rows read/21 rows written).
+- Files/artifacts: Uncommitted Minimum runtime/application/D1 model, additive D1 0033/0034 and PostgreSQL 0032 migrations, dual retention/capability tests and bilingual docs; ignored `.local/module09-hosted` receipts. Detailed stop evidence will follow cleanup.
+- Verification: Local workerd Minimum/replay-retention 2, PostgreSQL retention/capability 2, public Minimum document 1, maximum multipart-subrequest unit 1, optimized local recovery 1 pass; typecheck/lint/db:check/build/docs/secrets pass at recorded checkpoints. Actual Queue retry/ack, Workflow commit-before-step-result retry/cancel, D1 checkpoint/event restart recovery pass. Worker seed/edit CPU is outside async acceptance. Actual dispatch CPU is a failed required bound, not waived by successful HTTP results.
+- Decisions and deviations: Stop under HANDOFF-09's bound rule; no threshold relaxation, normative edit, additional dependency, paid capability, push or B5 commit. Free plan is user-attested; subscription endpoint denied API confirmation. Before-test analytics: D1 758 reads/0 writes; Workers 24 requests; Queue/Workflow datasets empty (snapshot, not real-time billing).
+- Blockers/open questions: 09.1f/09.V6 actual 10 ms CPU fit. Further architecture changes need a new bounded decision; preserve current prototype for review.
+- Next actions: Remove all owned hosted resources, clear mutable fixtures while preserving append-only history and every pre-existing row, write final evidence/status and report the blocker.
+- Next-session cautions: B1–B4 committed, latest 462fd3c. B5 is uncommitted. Temporary worker/Queue/Workflow/domain still require confirmed cleanup at this checkpoint; G1/G2/13.G6 and suspended 09.3e unchanged.
+
+### 2026-10-10 — Module 09 B5 blocked, hosted cleanup complete
+
+- Scope and checklist IDs: 09.1f/09.2e/09.3g/09.V6; suspended 09.3e unchanged.
+- Progress: B1–B4 committed, last 462fd3c. B5 local prototype passes focused recovery/quota/retention/capability checks; actual dispatch CPU exceeds 10 ms, so B5 stays uncommitted and four checks open. No further implementation after the stop.
+- Change summary: Preserve B1–B4 acceptance; record uncommitted B5, actual Free CPU failure and scoped cleanup.
+- Files/artifacts: Minimum application/D1/runtime modules, migrations, focused tests, internal/bilingual docs and final evidence; [detailed B5 evidence](../evidence/09-async-validation.md#b5--minimum-prototype-and-hosted-cpu-blocker) and [safe receipt](../evidence/09-hosted-minimum-receipt.json).
+- Verification: Focused local Minimum/replay-retention workerd 2, PostgreSQL retention/capability 2, Minimum capability 1, maximum multipart budget unit 1 and optimized recovery 1 pass; prior typecheck/lint/db:check/build/docs/secrets pass. Actual dispatch 15/20 ms fails required 10 ms. Final cleanup API/row/foreign-key guards pass; raw DNS inventory 403, independent absence unverified. Hosted quota exhaustion not run. Affected replay commands and limitations are in linked evidence. Final corepack pnpm docs:build, scan:secrets, scoped oxfmt --check and git diff --check pass; checklist/status/receipt/local-link/bilingual-path/empty-staging guards pass. No broad green-lane rerun.
+- Decisions and deviations: Follow HANDOFF-09 “If a bound cannot be met, stop and report.” No bound/normative change, dependency addition, B5 commit, push or PR update; audit stays suspended.
+- Blockers/open questions: Module09 B5 Free CPU fit. Further changes in Module08 require explicit bounded scope authorization; batching is a proposal, not a proven fix.
+- Next actions: Obtain that scope decision, then resume only authorized affected implementation/verification. Final scoped formatting/document checks passed; no staged files.
+- Next-session cautions: Keep B5 uncommitted and 09.1f/09.2e/09.3g/09.V6 unchecked; preserve protected drafts, baseline/append-only history and additive migrations. G1/G2 closed and 13.G6 open. Hosted owned mappings/resources are gone; ignored receipts contain private configuration and must not be staged.
+
+### 2026-10-10 — B5 resumed through authorized Module08 investigation
+
+- Scope and checklist IDs: 09.1f/09.2e/09.3g/09.V6; user authorizes only scoped Module08 D1 search profiling/batching and B5 retry.
+- Progress: Scope decision received; 15 ms versus 10 ms blocker remains until new actual evidence passes.
+- Change summary: Investigate four-call search path; combine Minimum quota admission/source retrieval without changing validation or index guards.
+- Files/artifacts: Module08 search adapters/fixtures; uncommitted B5 and existing evidence remain.
+- Verification: Current worktree/commits/receipt inspected; no acceptance check closed or hosted resource created yet.
+- Decisions and deviations: No threshold/contract relaxation; no subagents. Hosted retries use fresh owned resources and a fresh baseline backup.
+- Blockers/open questions: Actual Free CPU fit remains unproven.
+- Next actions: Finish scoped search patch/checks; then hosted CPU comparison and quota/recovery checks if CPU passes; clean resources and record final outcome.
+- Next-session cautions: Preserve B1–B4 commits, protected drafts, baseline append-only records and closed G1/G2/open13.G6; stop again if the required bound fails.
+
+### 2026-10-10 — Authorized search batching verified locally, CPU still blocked
+
+- Scope and checklist IDs: 09.1f/09.2e/09.3g/09.V6 resumed investigation;09.3e remains suspended.
+- Progress: Authorized Module08 batching removes one statement/call; fresh uninstrumented dispatcher replay still fails at 22 ms versus 10 ms. Stop again; no B5 check closed or commit.
+- Change summary: Complete the scoped investigation, retain uncommitted changes and stop hosted acceptance after the fresh CPU failure.
+- Files/artifacts: D1 search-budget/search-index, shared search-contract, bilingual deployment/internal docs, [follow-up evidence](../evidence/09-async-validation.md#authorized-module08-d1-batching-follow-up--2026-10-10) and [fresh receipt](../evidence/09-hosted-minimum-batching-receipt.json).
+- Verification: Focused workerd 4 / PostgreSQL 3, typecheck/lint/scoped format/diff pass; hosted profile/dispatcher results above, quota/max-body/recovery probes not run after stop. Owned API inventory zero, 102 baseline canonical rows exact, foreign keys valid, mutable fixture work absent and tail processes stopped. Final docs:build, secret scan, scoped formatting/diff, receipt/cleanup/checklist/local-link/empty-staging checks pass.
+- Decisions and deviations: Preserve every contract, guard and numeric ceiling; follow repeated HANDOFF-09 stop rule. No migrations/new dependencies, paid feature, audit resume, B5/search commit, push or PR update. Raw DNS absence remains independently unverified.
+- Blockers/open questions: Dispatcher22ms versus 10 ms. Candidate next direction: consolidate Minimum admission/claim/source and completion/telemetry call boundaries; needs a new user-directed decision after the stop, not a threshold waiver.
+- Next actions: Final documentation/format/receipt checks are complete; report the investigation and await the next direction after the required stop.
+- Next-session cautions: B1–B4 commits preserved; B5/search remain uncommitted, 09.1f/09.2e/09.3g/09.V6 unchecked, 09.3e suspended. G1/G2 closed and 13.G6 open; preserve protected drafts, accessible canonical rows/history and captured singleton state.
+
+### 2026-10-10 — User-authorized B5 and search checkpoint publication
+
+- Scope and checklist IDs: Commit and push the existing B5 prototype and scoped Module08 search optimization; 09.1f/09.2e/09.3g/09.V6 remain unchecked.
+- Progress: User explicitly authorizes publication of the prepared implementation and evidence. Module09 remains Blocked; this checkpoint does not establish acceptance.
+- Change summary: Preserve the bounded Minimum scheduler, quota/call budgets, retention migrations, search admission/source optimization, fixtures and CPU failure receipts. No new implementation or hosted activity.
+- Files/artifacts: Existing B5/search changes and [Module09 evidence](../evidence/09-async-validation.md); this progress record.
+- Verification: Reuse the recorded focused local/runtime checks and completed hosted cleanup; no green application lane rerun for commit preparation. Publication checks are scoped formatting, secret scan, diff hygiene and remote-ref verification.
+- Decisions and deviations: The new user instruction supersedes the prior instruction to leave B5/search uncommitted. Git CLI documentation resolved and queried through Context7 (/git/htmldocs) on 2026-10-10; normal branch push only.
+- Blockers/open questions: Latest actual dispatcher CPU is 22 ms against the required 10 ms; remaining hosted quota/acceptance evidence is incomplete.
+- Next actions: Preserve this checkpoint; further implementation or hosted acceptance requires a new user direction after the recorded stop.
+- Next-session cautions: No acceptance/checklist/gate closure, audit resume, PR edit or production deployment. G1/G2 stay closed and 13.G6 open. Exclude protected root drafts and ignored private configuration/backup artifacts.

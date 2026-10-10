@@ -33,6 +33,7 @@ function safeTelemetry(telemetry: AsyncTelemetry): AsyncTelemetry {
 export function createAsyncProcessor(input: {
   store: AsyncStore;
   handle: (event: AsyncEvent, signal: AbortSignal) => Promise<void>;
+  token?: () => string;
   telemetry?: AsyncTelemetry;
   clock?: () => number;
 }) {
@@ -62,7 +63,7 @@ export function createAsyncProcessor(input: {
     )
       return 'retry';
     active.add(ref.deliveryId);
-    const token = crypto.randomUUID();
+    const token = input.token?.() ?? crypto.randomUUID();
     let transferred = false;
     try {
       const acquired = await input.store.begin(ref, token, clock());

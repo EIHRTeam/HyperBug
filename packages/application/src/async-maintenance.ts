@@ -13,6 +13,7 @@ export interface CleanupCheckpoint {
   orphan: UploadOrphanCursor | null;
 }
 export interface AsyncMaintenanceStore {
+  purgeJobs(before: number, limit: number): Promise<number>;
   claimCleanup(token: string, now: number): Promise<CleanupCheckpoint | null>;
   saveCleanup(
     token: string,

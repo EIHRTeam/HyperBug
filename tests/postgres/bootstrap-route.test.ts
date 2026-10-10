@@ -318,6 +318,16 @@ it('publishes the unauthenticated instance capability document', async () => {
       recoveryCodes: false,
       administratorAssistedRecovery: true,
     },
+    background: {
+      mode: 'workflow',
+      dispatchBatch: 10,
+      maxJobSteps: 16,
+      checkpointBytes: 1024,
+      bulk: false,
+      import: false,
+      export: false,
+      longRunning: false,
+    },
     limits: {
       documented: 'docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas',
     },

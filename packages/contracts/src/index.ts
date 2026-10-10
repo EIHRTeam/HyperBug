@@ -78,6 +78,22 @@ export const InstanceDocumentSchema = Type.Object(
       },
       { additionalProperties: false },
     ),
+    background: Type.Object(
+      {
+        mode: Type.Union([
+          Type.Literal('workflow'),
+          Type.Literal('checkpointed-cron'),
+        ]),
+        dispatchBatch: Type.Integer({ minimum: 1, maximum: 10 }),
+        maxJobSteps: Type.Integer({ minimum: 1, maximum: 16 }),
+        checkpointBytes: Type.Literal(1024),
+        bulk: Type.Literal(false),
+        import: Type.Literal(false),
+        export: Type.Literal(false),
+        longRunning: Type.Literal(false),
+      },
+      { additionalProperties: false },
+    ),
     limits: Type.Object(
       { documented: Type.String({ minLength: 1, maxLength: 2048 }) },
       { additionalProperties: false },

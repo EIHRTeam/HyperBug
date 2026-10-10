@@ -54,6 +54,7 @@ export function configureNodeAsync(
         Math.max(0, Date.now() - terminalRetentionMs),
         10,
       );
+      await store.purgeJobs(Math.max(0, Date.now() - terminalRetentionMs), 10);
       if (uploads)
         await runScheduledUploadCleanup(store, uploads, orphanRetentionMs);
       if (!worker) {
