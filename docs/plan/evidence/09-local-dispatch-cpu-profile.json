@@ -1020,5 +1020,65 @@
       "titleUtf8Bytes": 371,
       "bodyUtf8Bytes": 0
     }
+  },
+  {
+    "version": "checkpoint-job-unbatched",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 306,
+    "sampledActiveUs": 120743,
+    "sampledIdleUs": 256974,
+    "medianActiveUs": 5517.0,
+    "minActiveUs": 4570,
+    "maxActiveUs": 15442,
+    "sqlStatements": 11,
+    "providerCalls": 10,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
+    "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
+  },
+  {
+    "version": "checkpoint-job-unbatched",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 79,
+    "sampledActiveUs": 49918,
+    "sampledIdleUs": 54674,
+    "medianActiveUs": 2735.5,
+    "minActiveUs": 252,
+    "maxActiveUs": 3381,
+    "sqlStatements": 11,
+    "providerCalls": 10,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
+    "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
+  },
+  {
+    "version": "checkpoint-job-batched",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 308,
+    "sampledActiveUs": 113263,
+    "sampledIdleUs": 280001,
+    "medianActiveUs": 5558.0,
+    "minActiveUs": 4358,
+    "maxActiveUs": 9323,
+    "sqlStatements": 11,
+    "providerCalls": 8,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
+    "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
+  },
+  {
+    "version": "checkpoint-job-batched",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 98,
+    "sampledActiveUs": 55870,
+    "sampledIdleUs": 52038,
+    "medianActiveUs": 2859.0,
+    "minActiveUs": 1883,
+    "maxActiveUs": 3798,
+    "sqlStatements": 11,
+    "providerCalls": 8,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
+    "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
   }
 ]

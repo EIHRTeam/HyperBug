@@ -351,3 +351,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native scheduling delay unexplained; r7 outcome/cleanup pending; 09.1f/09.V6 open.
 - Next actions: Collect monitor/watchdog; verify cleanup and original resources using prepared helpers; publish safe receipt. Only then fresh r8 backup/inventory, committed-source build and maximum-content native trial.
 - Next-session cautions: r7 tail 1863/monitor 87992/watchdog 20221; absolute deadlines 19:39:09/19:44:09 UTC. Preserve 135 baseline records and singleton values. Do not rerun r7 inventory, deploy r8 before cleanup, stage private/protected files, push/PR edit or resume audits/close gates.
+
+
+### 2026-10-11 — R7 cleanup and active maximum-content title trial
+
+- Scope/checklist IDs: Authorized 09.1f/09.V6 continuation; 13.G6 evidence dependency.
+- Progress/change summary: R7 unobserved timeout fully cleaned and preserved; R8 title-only maximum-content native trial active. No new CPU result or target change.
+- Files/artifacts: [Detailed trial record](../evidence/09-async-validation.md#r7-timeout-cleanup-and-active-title-only-r8-trial--2026-10-11), [R7 receipt](../evidence/09-hosted-native-cursor-retry-receipt.json); ignored R8 helpers and local phase-4 profiler.
+- Verification: R7 135 baseline records/original two Workers/mappings/FKs/singletons preserved, owned resources/work zero and all processes terminal. R8 fresh 140-record backup, max200-title/32768-body producer, registered handlers/deployment/one Cron and live processes verified. Source still pending at20:11 UTC; no scheduled history at20:13 UTC. Docs build, secrets, scoped formatting and diff hygiene pass; no repeated green application lane.
+- Decisions/deviations: Current Context7 lookup and focused provider schema introspection document separate live/history evidence; no execution inferred from registration. Standing human retry/capacity authorization persists.
+- Blockers/open questions: Native scheduling delay unresolved; CPU fit/recovery remain open. Latest productive native result14 ms; project/provider target10 ms.
+- Next actions: Collect R8 native outcome or bounded cleanup; after fit preserve maximum result and exercise quota/job restart; after failure verify cleanup before further measured optimisation.
+- Next-session cautions: Tail10791/monitor11882/watchdog4672; observation20:55:15, cleanup21:00:15 UTC2026-10-10. Check watchdog before any mutation; no inventory rerun, protected/private staging, push/PR edit or audit/gate closure.

@@ -675,3 +675,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Module09 native CPU remains unaccepted; no Module02 gate/status change.
 - Next actions: Continue Module09 native measurement/owned cleanup.
 - Next-session cautions: Protect original hosted rows and immutable migration history; no staging/production action or audit resume.
+
+
+### 2026-10-11 — D1 checkpoint-job boundary reduction
+
+- Scope/checklist IDs: Authorized 09.1f/09.V6 performance continuation and D1 persistence seam.
+- Progress/change summary: Claim classification/acquisition and commit confirmation batched; job path retains eleven SQL statements while reducing provider calls ten to eight. R8 deployment/source unchanged.
+- Files/artifacts: D1 async adapter, [job evidence](../evidence/09-async-validation.md#d1-checkpoint-job-batching-investigation--2026-10-11), [safe local profiles](../evidence/09-local-dispatch-cpu-profile.json).
+- Verification: Actual local Workflow/Minimum four and shared D1 sidecars three pass; typecheck after explicit batch-row typing, lint/boundaries/build pass. Twenty fresh cold/warm isolates before/after preserve two witnesses; median CPU shows no demonstrated improvement. Docs build, secrets, scoped formatting and diff hygiene pass. No unchanged PostgreSQL rerun.
+- Decisions/deviations: Current D1 Context7 lookup verifies batch ordering/transaction semantics. Preserve all lease, retry, cancellation, idempotency, reference and numeric guards; no new contract/schema/dependency.
+- Blockers/open questions: Native title/job CPU and recovery remain unaccepted; project/provider10 ms unchanged.
+- Next actions: Finish documentation checks/commit; collect existing R8 native outcome/cleanup, then only after CPU fit run representative recovery.
+- Next-session cautions: R8 f6a1e9e remains active with original20:55/21:00 UTC bounds; no speculative redeploy, inventory rerun, push/PR edit, protected/private staging, audit resume or gate closure.

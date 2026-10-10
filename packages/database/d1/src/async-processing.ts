@@ -51,7 +51,7 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
         .all<Row>()
     ).results;
   const mutate = async (statements: Statement[]) => {
-    return db.batch(
+    return db.batch<Row>(
       statements.map(([sql, values]) => db.prepare(sql).bind(...values)),
     );
   };
@@ -379,20 +379,17 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
       validateJob(id, 1);
       tokenCheck(token);
       time(now);
-      await mutate([
+      const results = await mutate([
         [
           "UPDATE async_jobs SET status='failed',updated_at=? WHERE id=? AND status='running' AND attempts>=5 AND lease_until<=?",
           [now, id, now],
         ],
+        [
+          "UPDATE async_jobs SET status='running',lease_token=?,lease_until=?,attempts=attempts+1,updated_at=? WHERE id=? AND status IN ('pending','running') AND attempts<5 AND lease_until<=? RETURNING id",
+          [token, now + ASYNC_LIMITS.leaseMs, now, id, now],
+        ],
       ]);
-      return (
-        (
-          await query(
-            "UPDATE async_jobs SET status='running',lease_token=?,lease_until=?,attempts=attempts+1,updated_at=? WHERE id=? AND status IN ('pending','running') AND attempts<5 AND lease_until<=? RETURNING id",
-            [token, now + ASYNC_LIMITS.leaseMs, now, id, now],
-          )
-        ).length === 1
-      );
+      return results.at(-1)?.results.length === 1;
     },
     async cancel(id, now) {
       validateJob(id, 1);
@@ -416,7 +413,7 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
         checkpoint >= ASYNC_LIMITS.steps
       )
         throw new AsyncError('invalid');
-      await mutate([
+      const results = await mutate([
         [
           "INSERT INTO async_job_steps (job_id,step,committed_at) SELECT id,checkpoint,? FROM async_jobs WHERE id=? AND checkpoint=? AND status='running' AND lease_token=? AND lease_until>? ON CONFLICT (job_id,step) DO NOTHING",
           [now, id, checkpoint, token, now],
@@ -425,8 +422,10 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
           "UPDATE async_jobs SET checkpoint=checkpoint+1,progress=((checkpoint+1)*100)/max_steps,status=CASE WHEN checkpoint+1=max_steps THEN 'completed' ELSE 'pending' END,attempts=0,result_reference=?,lease_token=NULL,lease_until=0,updated_at=? WHERE id=? AND checkpoint=? AND status='running' AND lease_token=? AND lease_until>?",
           [resultReference ?? null, now, id, checkpoint, token, now],
         ],
+        ['SELECT checkpoint FROM async_jobs WHERE id=?', [id]],
       ]);
-      return (await this.get(id))?.checkpoint === checkpoint + 1;
+      const row = results.at(-1)?.results[0];
+      return row !== undefined && number(row, 'checkpoint') === checkpoint + 1;
     },
   };
 }
