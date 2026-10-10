@@ -1,9 +1,7 @@
+import { countD1Calls } from '../fixtures/d1-call-count.ts';
 import { expect, it, vi } from 'vitest';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
-import type {
-  D1Database,
-  D1PreparedStatement,
-} from '@cloudflare/workers-types';
+import type { D1Database } from '@cloudflare/workers-types';
 import { migrationStatements } from '../fixtures/migrations.ts';
 import {
   createD1Repository,
@@ -87,46 +85,11 @@ const processor = (
       tier: 'cloudflare-minimum',
     }),
   });
-function countCalls(db: D1Database) {
-  let calls = 0,
-    statements = 0;
-  const originals = new WeakMap<D1PreparedStatement, D1PreparedStatement>();
-  const wrap = (raw: D1PreparedStatement): D1PreparedStatement => {
-    const proxy = new Proxy(raw, {
-      get(target, key) {
-        if (key === 'bind')
-          return (...values: unknown[]) => wrap(target.bind(...values));
-        const member = Reflect.get(target, key);
-        if (key === 'all' || key === 'run' || key === 'first')
-          return (...args: unknown[]) => {
-            calls++;
-            statements++;
-            return member.apply(target, args);
-          };
-        return typeof member === 'function' ? member.bind(target) : member;
-      },
-    });
-    originals.set(proxy, raw);
-    return proxy;
-  };
-  return {
-    calls: () => calls,
-    statements: () => statements,
-    db: {
-      prepare: (sql: string) => wrap(db.prepare(sql)),
-      batch: (items: D1PreparedStatement[]) => {
-        calls++;
-        statements += items.length;
-        return db.batch(items.map((item) => originals.get(item) ?? item));
-      },
-    } as D1Database,
-  };
-}
 
 it('Minimum canonical indexing uses three provider calls and charges search only once', async () => {
   const f = await fixture();
   try {
-    const counted = countCalls(f.db),
+    const counted = countD1Calls(f.db),
       minimum = createD1MinimumAsyncStore(counted.db);
     const admission = await minimum.admitAndClaim(f.now, 'canonical');
     const budget = (await f.db.prepare('SELECT * FROM search_budget').all())

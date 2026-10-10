@@ -843,3 +843,4 @@ export { createD1SearchBudgetStore } from './search-budget.ts';
 export { createD1AsyncStore } from './async-processing.ts';
 
 export { createD1MinimumAsyncStore } from './async-minimum.ts';
+export { createD1MinimumJobStore } from './async-minimum-jobs.ts';

@@ -34,6 +34,40 @@ const limitCheck = (limit: number, max: number = ASYNC_LIMITS.batch) => {
   if (!Number.isInteger(limit) || limit < 1 || limit > max)
     throw new AsyncError('invalid');
 };
+export const asyncJobOf = (r: Row): AsyncJob => ({
+  id: String(r.id),
+  kind: 'conformance',
+  status: r.status as AsyncJob['status'],
+  checkpoint: number(r, 'checkpoint'),
+  progress: number(r, 'progress'),
+  attempts: number(r, 'attempts'),
+  resultReference:
+    r.result_reference === null ? null : String(r.result_reference),
+  maxSteps: number(r, 'max_steps'),
+  updatedAt: number(r, 'updated_at'),
+});
+
+/** Internal builders shared by ordinary and Minimum job claims. */
+export const jobClaimStatements = (
+  id: string,
+  token: string,
+  now: number,
+): Statement[] => {
+  validateJob(id, 1);
+  tokenCheck(token);
+  time(now);
+  return [
+    [
+      "UPDATE async_jobs SET status='failed',updated_at=? WHERE id=? AND status='running' AND attempts>=5 AND lease_until<=?",
+      [now, id, now],
+    ],
+    [
+      "UPDATE async_jobs SET status='running',lease_token=?,lease_until=?,attempts=attempts+1,updated_at=? WHERE id=? AND status IN ('pending','running') AND attempts<5 AND lease_until<=? RETURNING id",
+      [token, now + ASYNC_LIMITS.leaseMs, now, id, now],
+    ],
+  ];
+};
+
 /** Bounded counts and indexed oldest-source age, shared with Minimum completion. */
 export const asyncBacklogSql = `SELECT
         (SELECT count(*) FROM (SELECT id FROM outbox WHERE delivered_at IS NULL LIMIT 1001) core_count)+(SELECT count(*) FROM (SELECT event_id FROM plugin_event_outbox WHERE delivered_at IS NULL LIMIT 1001) plugin_count) AS pending,
@@ -360,35 +394,10 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
     async get(id) {
       validateJob(id, 1);
       const r = (await query('SELECT * FROM async_jobs WHERE id=?', [id]))[0];
-      return r
-        ? {
-            id: String(r.id),
-            kind: 'conformance',
-            status: r.status as AsyncJob['status'],
-            checkpoint: number(r, 'checkpoint'),
-            progress: number(r, 'progress'),
-            attempts: number(r, 'attempts'),
-            resultReference:
-              r.result_reference === null ? null : String(r.result_reference),
-            maxSteps: number(r, 'max_steps'),
-            updatedAt: number(r, 'updated_at'),
-          }
-        : null;
+      return r ? asyncJobOf(r) : null;
     },
     async claimJob(id, token, now) {
-      validateJob(id, 1);
-      tokenCheck(token);
-      time(now);
-      const results = await mutate([
-        [
-          "UPDATE async_jobs SET status='failed',updated_at=? WHERE id=? AND status='running' AND attempts>=5 AND lease_until<=?",
-          [now, id, now],
-        ],
-        [
-          "UPDATE async_jobs SET status='running',lease_token=?,lease_until=?,attempts=attempts+1,updated_at=? WHERE id=? AND status IN ('pending','running') AND attempts<5 AND lease_until<=? RETURNING id",
-          [token, now + ASYNC_LIMITS.leaseMs, now, id, now],
-        ],
-      ]);
+      const results = await mutate(jobClaimStatements(id, token, now));
       return results.at(-1)?.results.length === 1;
     },
     async cancel(id, now) {

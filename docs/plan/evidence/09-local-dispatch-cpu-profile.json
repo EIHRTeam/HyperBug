@@ -1080,5 +1080,83 @@
     "providerCalls": 8,
     "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
     "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
+  },
+  {
+    "version": "checkpoint-job-compact-prototype",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 262,
+    "sampledActiveUs": 89339,
+    "sampledIdleUs": 261449,
+    "medianActiveUs": 4171.0,
+    "minActiveUs": 3534,
+    "maxActiveUs": 10152,
+    "sqlStatements": 9,
+    "providerCalls": 4,
+    "applied": false,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates; host-side store setup; requested 100-microsecond sampling",
+    "acceptance": "Sparse local diagnostic only. Exclude only (idle), including (program) as in earlier records. A zero means no active sample, not zero CPU. Sequential runs and sampler variation do not establish a causal native speedup. Provider calls include backlog. No native acceptance."
+  },
+  {
+    "version": "checkpoint-job-compact-prototype",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 57,
+    "sampledActiveUs": 32793,
+    "sampledIdleUs": 46556,
+    "medianActiveUs": 1855.0,
+    "minActiveUs": 0,
+    "maxActiveUs": 3245,
+    "sqlStatements": 9,
+    "providerCalls": 4,
+    "applied": false,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates; host-side store setup; requested 100-microsecond sampling",
+    "acceptance": "Sparse local diagnostic only. Exclude only (idle), including (program) as in earlier records. A zero means no active sample, not zero CPU. Sequential runs and sampler variation do not establish a causal native speedup. Provider calls include backlog. No native acceptance."
+  },
+  {
+    "version": "checkpoint-job-compact-production",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 271,
+    "sampledActiveUs": 88009,
+    "sampledIdleUs": 268702,
+    "medianActiveUs": 4436.5,
+    "minActiveUs": 3557,
+    "maxActiveUs": 5231,
+    "sqlStatements": 9,
+    "providerCalls": 4,
+    "applied": true,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates; host-side store setup; requested 100-microsecond sampling",
+    "acceptance": "Sparse local diagnostic only. Exclude only (idle), including (program) as in earlier records. A zero means no active sample, not zero CPU. Sequential runs and sampler variation do not establish a causal native speedup. Provider calls include backlog. No native acceptance.",
+    "sourceFilesSha256": {
+      "apps/api-cloudflare/src/async-minimum.ts": "0cb9e925d20a478c38fa9730029d8411f19b64d56a057b31c9e047930be24b88",
+      "packages/database/d1/src/async-minimum-jobs.ts": "cd89eae4f23c440fec030ecadf5dd69dde3d88dbe881e64c7212036de508207e",
+      "packages/database/d1/src/async-minimum-budget.ts": "a2d2355a3fa1e22ab1284e098fee0069815313522fe7d7ad5e14ba0839c45303",
+      "packages/database/d1/src/async-processing.ts": "3634adbd37817bc75aa3984b1389541a923fdb4f41757c13db0f64996a3ae23b",
+      "packages/database/d1/src/async-minimum.ts": "f18395fcde0bc9749ed3f5209c0ea52e7d0c6fb55665c0aafc437aef0019e800"
+    }
+  },
+  {
+    "version": "checkpoint-job-compact-production",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 61,
+    "sampledActiveUs": 41638,
+    "sampledIdleUs": 52350,
+    "medianActiveUs": 1961.5,
+    "minActiveUs": 386,
+    "maxActiveUs": 5493,
+    "sqlStatements": 9,
+    "providerCalls": 4,
+    "applied": true,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates; host-side store setup; requested 100-microsecond sampling",
+    "acceptance": "Sparse local diagnostic only. Exclude only (idle), including (program) as in earlier records. A zero means no active sample, not zero CPU. Sequential runs and sampler variation do not establish a causal native speedup. Provider calls include backlog. No native acceptance.",
+    "sourceFilesSha256": {
+      "apps/api-cloudflare/src/async-minimum.ts": "0cb9e925d20a478c38fa9730029d8411f19b64d56a057b31c9e047930be24b88",
+      "packages/database/d1/src/async-minimum-jobs.ts": "cd89eae4f23c440fec030ecadf5dd69dde3d88dbe881e64c7212036de508207e",
+      "packages/database/d1/src/async-minimum-budget.ts": "a2d2355a3fa1e22ab1284e098fee0069815313522fe7d7ad5e14ba0839c45303",
+      "packages/database/d1/src/async-processing.ts": "3634adbd37817bc75aa3984b1389541a923fdb4f41757c13db0f64996a3ae23b",
+      "packages/database/d1/src/async-minimum.ts": "f18395fcde0bc9749ed3f5209c0ea52e7d0c6fb55665c0aafc437aef0019e800"
+    }
   }
 ]

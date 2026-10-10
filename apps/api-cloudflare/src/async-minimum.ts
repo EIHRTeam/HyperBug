@@ -2,6 +2,7 @@ import type { D1Database } from '@cloudflare/workers-types';
 import {
   createD1AsyncStore,
   createD1MinimumAsyncStore,
+  createD1MinimumJobStore,
   createD1PluginRegistryStore,
   createD1PluginSettingsStore,
   createD1ExpiredCleanupStore,
@@ -12,7 +13,6 @@ import {
   runConformanceStep,
   runScheduledUploadCleanup,
   MINIMUM_ASYNC_LIMITS,
-  type JobStore,
 } from '@hyperbug/application/async';
 import { loadAsyncMaintenancePolicy } from '@hyperbug/config';
 import { minimumInvocationBudget } from './async-budget.ts';
@@ -55,6 +55,21 @@ export async function runMinimumAsyncTick(input: {
           }),
         });
         await process(refs[0]);
+      }
+    } else if (phase === 4) {
+      const minimumJobs = createD1MinimumJobStore(db),
+        selection = await minimumJobs.admit(clock()),
+        jobs = minimumJobs.store;
+      if (!selection.admitted) outcome = 'quota-exhausted';
+      if (selection.job) {
+        if (selection.job.maxSteps > MINIMUM_ASYNC_LIMITS.steps)
+          await jobs.cancel(selection.job.id, clock());
+        else
+          jobState = await runConformanceStep(
+            jobs,
+            { version: 1, jobId: selection.job.id },
+            clock,
+          );
       }
     } else if (!(await minimum.reserve(clock()))) outcome = 'quota-exhausted';
     else if (phase === 1) {
@@ -105,21 +120,6 @@ export async function runMinimumAsyncTick(input: {
         ),
         1,
       );
-    } else {
-      const store = createD1AsyncStore(db);
-      const ids = await store.recoverableJobs(clock(), 1),
-        jobs: JobStore = { ...store, claim: store.claimJob };
-      if (ids[0]) {
-        const job = await jobs.get(ids[0]);
-        if (job && job.maxSteps > MINIMUM_ASYNC_LIMITS.steps)
-          await jobs.cancel(job.id, clock());
-        else
-          jobState = await runConformanceStep(
-            jobs,
-            { version: 1, jobId: ids[0] },
-            clock,
-          );
-      }
     }
   } catch {
     // Leases/source/checkpoints survive budget limits and interrupted I/O.

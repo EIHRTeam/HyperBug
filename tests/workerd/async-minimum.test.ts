@@ -1,3 +1,4 @@
+import { countD1Calls } from '../fixtures/d1-call-count.ts';
 import { expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -12,12 +13,14 @@ import {
   createD1PluginRegistryStore,
   createD1PluginSettingsStore,
   createD1MinimumAsyncStore,
+  createD1MinimumJobStore,
 } from '@hyperbug/database-d1';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   createAsyncProcessor,
   createAsyncEventHandler,
   startMinimumJob,
+  runConformanceStep,
 } from '@hyperbug/application';
 
 it('Minimum resumes D1 events/jobs across runtime restart, preserves exhausted backlog and enforces invocation/retention bounds', async () => {
@@ -143,6 +146,18 @@ it('Minimum resumes D1 events/jobs across runtime restart, preserves exhausted b
           .first()
       )?.delivered_at,
     ).toBeNull();
+    const restartedRaw = createD1AsyncStore(db as unknown as D1Database),
+      currentJobs = { ...restartedRaw, claim: restartedRaw.claimJob },
+      quotaJob = crypto.randomUUID();
+    await startMinimumJob(currentJobs, {
+      kind: 'conformance',
+      id: quotaJob,
+      maxSteps: 1,
+      now,
+    });
+    const untouched = await currentJobs.get(quotaJob);
+    expect((await tick(4)).outcome).toBe('quota-exhausted');
+    expect(await currentJobs.get(quotaJob)).toEqual(untouched);
     now += 86400000;
     await tick(0);
     expect(
@@ -153,6 +168,20 @@ it('Minimum resumes D1 events/jobs across runtime restart, preserves exhausted b
           .first()
       )?.delivered_at,
     ).toBe(now);
+    await tick(4);
+    expect((await currentJobs.get(quotaJob))?.status).toBe('completed');
+    const oversized = crypto.randomUUID();
+    await currentJobs.create(oversized, 5, now);
+    await tick(4);
+    expect((await currentJobs.get(oversized))?.status).toBe('cancelled');
+    expect(
+      (
+        await db
+          .prepare('SELECT step FROM async_job_steps WHERE job_id=?')
+          .bind(oversized)
+          .all()
+      ).results,
+    ).toHaveLength(0);
     await tick(1);
     await tick(2);
     now += 2592000001;
@@ -166,6 +195,93 @@ it('Minimum resumes D1 events/jobs across runtime restart, preserves exhausted b
     await rm(persistence, { recursive: true, force: true });
   }
 }, 25000);
+
+it('Minimum batched job witnesses preserve cancellation and replacement-lease fences', async () => {
+  const mf = new Miniflare(
+    convertV4MiniflareOptions({
+      modules: [
+        {
+          type: 'ESModule',
+          path: 'empty.mjs',
+          contents: 'export default {fetch(){return new Response("ok")}}',
+        },
+      ],
+      compatibilityDate: '2026-09-16',
+      d1Databases: { DB: 'minimum-job-witnesses' },
+    }),
+  );
+  try {
+    const db = (await mf.getD1Database('DB')) as unknown as D1Database;
+    for (const migration of await migrationStatements('d1'))
+      await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+    const raw = createD1AsyncStore(db),
+      now = Date.now(),
+      id = crypto.randomUUID();
+    await raw.create(id, 2, now);
+    const counted = countD1Calls(db);
+    for (let step = 0; step < 2; step++) {
+      const beforeCalls = counted.calls(),
+        beforeStatements = counted.statements();
+      const minimum = createD1MinimumJobStore(counted.db),
+        selection = await minimum.admit(now + step);
+      expect(selection.job?.id).toBe(id);
+      expect(
+        await runConformanceStep(
+          minimum.store,
+          { version: 1, jobId: id },
+          () => now + step,
+        ),
+      ).toEqual({ checkpoint: step + 1, terminal: step === 1 });
+      await createD1AsyncStore(counted.db).backlog();
+      expect(counted.calls() - beforeCalls).toBe(4);
+      expect(counted.statements() - beforeStatements).toBe(9);
+    }
+    expect(
+      (
+        await db
+          .prepare(
+            'SELECT step FROM async_job_steps WHERE job_id=? ORDER BY step',
+          )
+          .bind(id)
+          .all()
+      ).results,
+    ).toEqual([{ step: 0 }, { step: 1 }]);
+    for (const kind of ['cancel', 'replace'] as const) {
+      const other = crypto.randomUUID();
+      await raw.create(other, 1, now + 10);
+      const minimum = createD1MinimumJobStore(db);
+      expect((await minimum.admit(now + 10)).job?.id).toBe(other);
+      await minimum.store.get(other);
+      expect(await minimum.store.claim(other, 'original', now + 10)).toBe(true);
+      if (kind === 'cancel') await raw.cancel(other, now + 11);
+      else
+        expect(await raw.claimJob(other, 'replacement', now + 30011)).toBe(
+          true,
+        );
+      const snapshot = await minimum.store.get(other);
+      expect(snapshot?.checkpoint).toBe(0);
+      expect(
+        await minimum.store.commitStep(
+          other,
+          'original',
+          snapshot!.checkpoint,
+          now + (kind === 'cancel' ? 12 : 30012),
+        ),
+      ).toBe(false);
+      expect(
+        (
+          await db
+            .prepare('SELECT step FROM async_job_steps WHERE job_id=?')
+            .bind(other)
+            .all()
+        ).results,
+      ).toHaveLength(0);
+      if (kind === 'replace') await raw.cancel(other, now + 30013);
+    }
+  } finally {
+    await mf.dispose();
+  }
+});
 
 it('Minimum atomic admission cannot consume work when quota is refused, even with reused lease tokens', async () => {
   const mf = new Miniflare(

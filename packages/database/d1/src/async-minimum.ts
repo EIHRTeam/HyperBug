@@ -1,10 +1,13 @@
+import {
+  minimumReservation as reservation,
+  validateMinimumReservation as validate,
+} from './async-minimum-budget.ts';
 import type {
   D1Database,
   D1PreparedStatement,
   D1Result,
 } from '@cloudflare/workers-types';
 import {
-  MINIMUM_ASYNC_LIMITS,
   taskReference,
   validateTaskReference,
   AsyncError,
@@ -37,34 +40,6 @@ const canonicalSearch = `CASE WHEN json_valid(e.payload) THEN CASE WHEN
   AND t.aggregate_revision BETWEEN 1 AND 2147483647 THEN 1 ELSE 0 END ELSE 0 END`;
 const timelineJoin = `JOIN timeline_events t ON t.project_id=e.project_id AND t.issue_id=e.aggregate_id
   AND t.id=CASE WHEN json_valid(e.payload) THEN json_extract(e.payload,'$.mutationId') ELSE NULL END`;
-const validate = (now: number, token: string) => {
-  if (
-    !Number.isSafeInteger(now) ||
-    now < 0 ||
-    !/^[a-zA-Z0-9-]{1,64}$/.test(token)
-  )
-    throw new AsyncError('invalid');
-};
-const reservation = (db: D1Database, now: number, token: string | null) => {
-  validate(now, token ?? 'reserve');
-  const day = Math.floor(now / 86400000),
-    l = MINIMUM_ASYNC_LIMITS;
-  return db
-    .prepare(`INSERT INTO async_minimum_budget (id,day,reads,writes,reservation_token) VALUES (1,?,?,?,?)
-    ON CONFLICT(id) DO UPDATE SET day=excluded.day,reservation_token=excluded.reservation_token,
-      reads=CASE WHEN async_minimum_budget.day<excluded.day THEN excluded.reads ELSE async_minimum_budget.reads+excluded.reads END,
-      writes=CASE WHEN async_minimum_budget.day<excluded.day THEN excluded.writes ELSE async_minimum_budget.writes+excluded.writes END
-    WHERE async_minimum_budget.day<=excluded.day AND (async_minimum_budget.day<excluded.day OR
-      (async_minimum_budget.reads+excluded.reads<=? AND async_minimum_budget.writes+excluded.writes<=?)) RETURNING id`)
-    .bind(
-      day,
-      l.invocationReads,
-      l.invocationWrites,
-      token,
-      l.dailyReads,
-      l.dailyWrites,
-    );
-};
 
 /** Cursor import avoids repeatedly scanning a long prefix of failed source events. */
 export function createD1MinimumAsyncStore(db: D1Database) {
