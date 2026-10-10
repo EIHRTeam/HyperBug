@@ -399,3 +399,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Latest productive native14 ms; title-only CPU and required recovery remain unproven; scheduling delay unexplained.
 - Next actions: Finish/commit safe records, then fresh R9 backup and seeded-before-deploy declarative Cron diagnostic under standing authorization.
 - Next-session cautions: R8 all terminal/cleaned; do not repoll or restart its handles or overwrite its inventory. No quota/job case was run. Keep protected/private files out of commits; no push/PR edit, paid feature, audit/gate closure.
+
+
+### 2026-10-11 — Declarative Cron maximum-fixture deployment
+
+- Scope/checklist IDs: Authorized 09.1f/09.V6 continuation; 13.G6 evidence dependency.
+- Progress/change summary: Fresh R9 baseline145 records verified; maximum fixture committed before initial declarative-Cron deployment. Production behavior/target unchanged; native result pending.
+- Files/artifacts: [Deployment checkpoint](../evidence/09-async-validation.md#r9-declarative-cron-deployment-checkpoint--2026-10-11); ignored R9 backup, actual config, control-plane evidence and live handles.
+- Verification: Actual Wrangler4.144.0 types/dry-run/deploy pass; startup5 ms, one schedule and active tail confirmed. Delayed pre-run headroom: D1 reads4,984,041/writes99,294, Worker requests99,001; not billing. Immediate denied-fetch TLS witness failed, then returned401 at21:26:20 UTC and appeared in live tail; no scheduled execution inferred. Docs build, secrets and diff hygiene pass; scoped Markdown formatting unavailable because configured ignore rules exclude those files.
+- Decisions/deviations: Exclusively declarative initial Cron tests a distinct documented procedure. No secret deployment, REST schedule mutation or explicit tick. User authorizes continued performance/capacity work; project/provider10 ms unchanged pending native outcome.
+- Blockers/open questions: Native title-only CPU and recovery remain unproven; prior productive native14 ms.
+- Next actions: Observe native result to bound; after fit preserve maximum revision/projection/body evidence before guarded quota/job recovery; otherwise cleanup and independently compare145 baseline records/resources.
+- Next-session cautions: R9 tail85877/monitor76068/watchdog73306 live; observation22:28:10.027/cleanup22:33:10.027 UTC2026-10-10. Never rerun inventory, mutate during cleanup, or extend a running watcher via metadata. Protect untracked/private files; no push/PR edit, paid capability, audit or gate closure.
