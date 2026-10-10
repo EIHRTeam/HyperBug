@@ -218,3 +218,30 @@ Cleanup passed: owned Worker/domain/Queue/Workflow API inventory zero; tail proc
 Delayed adaptive headroom snapshots, not real-time billing: before at 12:12:55 UTC, D1 used 3,172 reads / 74 writes (remaining 4,996,828 / 99,926) and Workers used 71 requests (remaining 99,929). After cleanup at 13:14:26 UTC, D1 used 4,840 / 307 (remaining 4,995,160 / 99,693) and Workers used 125 requests (remaining 99,875). Queue/Workflow datasets were empty.
 
 No dependency, normative/public-contract change, threshold waiver, audit resume, push or PR edit. G1/G2 remain closed and 13.G6 open. The verified performance batch is committed as `b5c5206` (`perf(async): batch minimum admission and completion`), independently of incomplete native Cron acceptance; preserve the full goal and remaining checks. Final receipt, cleanup, checklist, relative-file link, secrets, scoped formatting and diff checks passed.
+
+
+## Native scheduler diagnostic and dispatch CPU failure — 2026-10-10
+
+This continuation investigates native scheduling under the existing test authorization. The prior performance batch remains `b5c5206`; no application code changes in this session. Context7 Workers resolve/query on 2026-10-10 confirms the scheduled handler and `triggers.crons` configuration; it did not substantiate an invocation-paused explanation. Wrangler 4.144.0 refreshed expired OAuth after a read-only 401, then confirmed the account's two existing Workers had no Cron triggers. Both Workers and their two domains were preserved.
+
+A new random-suffix, scheduled-only Worker initially had no route, database binding or application imports. A registered live tail observed an actual native Cron witness. This distinguishes native provider delivery from dispatcher behavior without substituting an explicit tick or redeploying solely because an observation expired. The same Worker was then deployed with the unchanged production Minimum function and a protected canonical repository fixture endpoint. Its single five-minute Cron forces dispatch phase 0 to avoid deleting pre-existing expired identity records; production five-phase rotation remains covered by the local runtime tests. No full production-root or paid Standard acceptance is claimed.
+
+The [safe receipt](09-hosted-native-scheduler-receipt.json) records actual native events on the user-attested Workers Free account:
+
+| Native invocation (UTC) | CPU | Statements / combined subrequests | D1 reads / writes | Result |
+| --- | --- | --- | --- | --- |
+| 14:35:46 scheduled-only witness | 0 ms | No data calls | None | Native delivery observed |
+| 14:40:52 empty production-function dispatch | 7 ms | 7 / 7 | 27 / 3 | Within bound, empty work only |
+| 14:45:56 canonical Issue dispatch | **20 ms** | 11 / 11 | 53 / 22 | **Fails required 10 ms; stop** |
+
+The productive native tick indexed canonical revision 1, acknowledged the outbox event and completed its delivery with one attempt. Each native invocation emitted one safe summary without exceptions. No explicit tick was invoked. The protected seed request measured 25 ms outside async acceptance; this fixture endpoint is not public API performance evidence. Earlier explicit 1–10 ms samples remain valid observations, but cannot substitute for the native 20 ms result or establish a controlled comparative regression. `09.1f`/`09.V6` remain unchecked. `09.2e`/`09.3g` retain their verified mechanisms.
+
+HANDOFF-09 says: “If a bound cannot be met, stop and report.” After the native failure, actions were limited to read-only receipts, owned-resource cleanup, data restoration and documentation. No performance refactor, further acceptance probe, threshold waiver or paid capability followed the failure. The prior deployment's missing Cron cause remains unknown; the current blocker is actual native CPU fit.
+
+Backup and cleanup: the fresh logical snapshot restored locally with valid foreign keys and 115 canonical records across 59 tables; no migration was required. Owned Worker/domain/Queue/Workflow inventory is zero, tail exited zero, every original record/column matches, foreign keys remain valid and owned mutable event/job/search work is zero. Captured async cursors/budget and search budget match exactly. One inactive principal/project/Issue and one timeline/one audit record remain; append-only and additive migration history are preserved. Original two Workers and two domain mappings remain intact. R2 was unused/unmodified. Independent raw DNS absence remains unverified; owned custom-domain mapping absence is verified.
+
+Delayed adaptive headroom, not billing: before at 14:29:21 UTC, D1 remaining 4,994,916 reads / 99,693 writes and Workers remaining 99,875 requests. After at 14:48:21 UTC, remaining D1 4,994,200 / 99,642 and Workers 99,865. No Queue/Workflow resources were created and their adaptive datasets were empty. Full details and limitations are in the receipt.
+
+Final documentation verification: `corepack pnpm docs:build`, `scan:secrets`, receipt/cleanup/checklist/relative-file link guards, canonical JSON serialization and `git diff --check` pass. Scoped oxfmt found no eligible file because the repository ignores `docs/**`; no formatting exemption was added, and no unchanged application lane reran.
+
+Next action: after this required stop, obtain a new user direction before further performance implementation or hosted acceptance. Native dispatcher CPU profiling is the proposed investigation; preserve contracts, permissions, quota/lease/retry ceilings and all committed work. Module09 remains Blocked, audit 09.3e remains suspended, G1/G2 stay closed and 13.G6 stays open. No push or PR edit.

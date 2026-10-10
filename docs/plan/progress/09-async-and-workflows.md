@@ -6,14 +6,14 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Blocked (hosted-function CPU passes; native Cron execution remains unverified)
+- Status: Blocked (native Cron dispatch measured 20 ms against the required 10 ms Free CPU bound)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
-- Active/next checklist group: B5 — 09.1f and 09.V6 (native Cron delivery/CPU evidence).
+- Active/next checklist group: B5 — 09.1f and 09.V6 (native Cron CPU fit).
 - Last updated: 2026-10-10.
-- Blocking issues discovered: The dispatcher refactor passes 12 explicit hosted-function samples at 1–10 ms CPU, including quota/recovery and all phase probes. The deployed scheduled handler and trigger were verified, but no native Cron event or prepared-source acknowledgement was observed through 13:00 UTC. Scoped cleanup preserves 107 baseline records and verifies owned resources at zero; raw DNS inventory remains unverified.
+- Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work measured 20 ms on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Hosted acceptance stopped under HANDOFF-09. Cleanup and preservation results are recorded in the latest session.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
 
 ## Step tracking
@@ -362,3 +362,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native Cron delivery/CPU remains unproven; a final read-only scheduler query at 2026-10-10T13:29:15.819Z still returned zero events without query errors. Cause is unknown; do not replace native execution with registration or explicit ticks.
 - Next actions: Preserve this coherent performance batch and obtain native Cron proof under existing test authorization. Keep 09.3e suspended, G1/G2 closed and 13.G6 open.
 - Next-session cautions: Owned Worker/domain/Queue/Workflow inventory zero, tail stopped; 107 baseline rows exact, foreign keys valid, owned mutable work zero, two new timeline/two audit records retained with inactive fixtures. Restore singleton state exactly and preserve additive history; raw DNS absence independently unverified. Protected drafts/private backups stay excluded. No push or PR edit for this batch.
+
+### 2026-10-10 — Native Cron dispatch verified but CPU bound failed
+
+- Scope and checklist IDs: Module09 09.1f/09.V6 native scheduler verification under existing test authorization; audit remains suspended.
+- Progress: Real native delivery, canonical indexing and acknowledgement observed. Productive native tick measured 20 ms against the required 10 ms CPU bound; 09.1f/09.V6 remain open.
+- Change summary: Isolated provider delivery with a scheduled-only Worker, then tested the unchanged Minimum function on the same Worker. No application code, contract, dependency or migration change.
+- Files/artifacts: [Native evidence](../evidence/09-async-validation.md#native-scheduler-diagnostic-and-dispatch-cpu-failure--2026-10-10), [safe receipt](../evidence/09-hosted-native-scheduler-receipt.json), internal/paired reader guidance and status records; private helpers remain ignored.
+- Verification: Native witness 0 ms, empty dispatch 7 ms, canonical dispatch 20 ms; final index revision 1, source acknowledged, delivery attempts 1. Owned resources zero and tail stopped; all 115 original records/columns and captured singleton state verified, foreign keys valid, original two Workers/domains preserved. Final docs:build, secrets, receipt/cleanup/checklist/link guards, JSON serialization and diff hygiene pass. Scoped oxfmt had no eligible files because repository ignore rules exclude docs; no application lane rerun for this documentation-only session.
+- Decisions and deviations: Stop after CPU failure under HANDOFF-09. Fixed probe dispatch phase protects original expired identity rows; seed request CPU is outside async acceptance. No paid feature, threshold waiver, audit resume or gate closure.
+- Blockers/open questions: Native dispatch CPU exceeds the bound; earlier missing native delivery cause remains unknown.
+- Next actions: Report the measured failure; a new user direction after the HANDOFF-09 stop is required before further performance implementation or hosted acceptance. Native CPU profiling is the next proposed investigation. Preserve 09.2e/09.3g and Module08's existing dispatch/retry closure.
+- Next-session cautions: No further hosted probe/refactor after the failure. Keep original data/history and committed batches; retained inactive fixture has one timeline/one audit record. Raw DNS absence unverified, custom-domain mapping absent. No push or PR edit; G1/G2 closed and 13.G6 open.

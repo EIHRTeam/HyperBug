@@ -33,7 +33,7 @@ Record the release, resource configuration, verified provider tooling, and succe
 
 ## Background capability limits
 
-The Minimum async foundation has verified failure/replay/retention and checkpoint/capability mechanisms. The latest dispatcher batching probes measured 1–10 ms CPU on the Free account, including quota and restart recovery. Native Cron delivery is still unverified despite confirmed handler/trigger registration, so full async deployment acceptance remains open. The measured maximum equals the Free ceiling; these focused results do not guarantee performance for a complete production deployment.
+The Minimum async foundation has verified failure/replay/retention and checkpoint/capability mechanisms. Explicit dispatcher probes measured 1–10 ms CPU on the Free account, including quota and restart recovery. The latest native Cron indexed and acknowledged a canonical Issue but measured 20 ms against the required 10 ms CPU bound. Full async deployment acceptance remains blocked; these focused results do not establish performance for a complete production deployment.
 
 The instance capability document reports background mode, dispatch batch and job step ceilings. Minimum uses a checkpointed D1/Cron runner: one event or job step per corresponding phase, four steps per job and a 1,024-byte checkpoint. The existing five-minute Cron rotates five phases; each phase runs every 25 minutes. Bulk actions, import/export and long-running jobs remain unavailable. Queue or Workflow bindings are not required by Minimum.
 

@@ -1,0 +1,176 @@
+{
+  "recordedAt": "2026-10-10T14:50:49.084Z",
+  "scope": "Module09 native scheduler isolation and production-function dispatch verification",
+  "plan": "Workers Free (user-attested)",
+  "cpuLimitMs": 10,
+  "acceptance": "failed: canonical native Cron dispatch measured 20 ms",
+  "resources": {
+    "worker": "hyperbug-09-native-c43ef6b54103",
+    "hostname": "async-native-c43ef6b54103.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused and unchanged"
+  },
+  "nativeSamples": [
+    {
+      "utc": "2026-10-10T14:35:46.719Z",
+      "cpuMs": 0,
+      "wallMs": 1,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "native-scheduler-witness",
+          "cron": "*/5 * * * *",
+          "scheduledTime": 1791642946000
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T14:40:52.237Z",
+      "cpuMs": 7,
+      "wallMs": 300,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 7,
+          "subrequests": 7,
+          "reads": 27,
+          "writes": 3,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T14:45:56.898Z",
+      "cpuMs": 20,
+      "wallMs": 531,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 53,
+          "writes": 22,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    }
+  ],
+  "checks": {
+    "nativeDeliveryObserved": true,
+    "canonicalSourceAcknowledged": true,
+    "canonicalRevision": 1,
+    "searchRevision": 1,
+    "deliveryAttempts": 1,
+    "explicitTickInvocations": 0,
+    "registeredCronTriggers": 1,
+    "cron": "*/5 * * * *",
+    "stopAfterCpuFailure": true
+  },
+  "headroom": {
+    "before": {
+      "capturedAt": "2026-10-10T14:29:21.128Z",
+      "remainingD1Reads": 4994916,
+      "remainingD1Writes": 99693,
+      "remainingWorkersRequests": 99875,
+      "method": "Delayed adaptive analytics, not billing"
+    },
+    "after": {
+      "capturedAt": "2026-10-10T14:48:21.501Z",
+      "observedD1": {
+        "rowsRead": 5800,
+        "rowsWritten": 358
+      },
+      "remainingD1Reads": 4994200,
+      "remainingD1Writes": 99642,
+      "observedWorkerRequests": 135,
+      "remainingWorkerRequests": 99865,
+      "queueAndWorkflowUse": "No new resources; adaptive datasets empty",
+      "method": "Delayed adaptive analytics, not billing"
+    }
+  },
+  "backup": {
+    "method": "Logical canonical schema/records with local restore and FTS rebuild; provider internals and derived FTS shadows excluded",
+    "tables": 59,
+    "rows": 115,
+    "foreignKeysValid": true,
+    "migrationsApplied": []
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 115,
+      "foreignKeysValid": true,
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "preservation": {
+      "at": "2026-10-10T14:48:22.274Z",
+      "originalWorkersPreserved": 2,
+      "originalDomainsPreserved": 2,
+      "singletonsExact": {
+        "async_minimum_cursors": true,
+        "async_minimum_budget": true,
+        "search_budget": true
+      }
+    },
+    "tailStopped": true,
+    "rawDns": "Independent raw DNS absence not verified; owned custom-domain mapping verified absent"
+  },
+  "limitations": [
+    "Native probe invokes the unchanged production Minimum dispatch function with phase 0 fixed to preserve pre-existing expired identity records; no full production-root or paid Standard acceptance",
+    "The protected canonical seed request measured 25 ms CPU outside async acceptance; it is not a public API performance claim",
+    "The cause of the previous deployment's missing native invocations remains unknown; this scheduled-only diagnostic was a new isolation test, not a restart solely because an observation expired",
+    "No further acceptance probe or code refactor after the native 20 ms bound failure",
+    "No dependency, migration, numeric-limit waiver, audit resume, push, PR edit or G1/G2/13.G6 closure"
+  ]
+}
