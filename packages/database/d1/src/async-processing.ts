@@ -34,6 +34,11 @@ const limitCheck = (limit: number, max: number = ASYNC_LIMITS.batch) => {
   if (!Number.isInteger(limit) || limit < 1 || limit > max)
     throw new AsyncError('invalid');
 };
+/** Bounded counts and indexed oldest-source age, shared with Minimum completion. */
+export const asyncBacklogSql = `SELECT
+        (SELECT count(*) FROM (SELECT id FROM outbox WHERE delivered_at IS NULL LIMIT 1001) core_count)+(SELECT count(*) FROM (SELECT event_id FROM plugin_event_outbox WHERE delivered_at IS NULL LIMIT 1001) plugin_count) AS pending,
+        (SELECT count(*) FROM (SELECT delivery_id FROM async_deliveries WHERE state='failed' LIMIT 1001) failed_count) AS failed,
+        (SELECT min(created_at) FROM (SELECT created_at FROM (SELECT created_at FROM outbox WHERE delivered_at IS NULL ORDER BY created_at,id LIMIT 1) core_age UNION ALL SELECT created_at FROM (SELECT created_at FROM plugin_event_outbox WHERE delivered_at IS NULL ORDER BY created_at,event_id LIMIT 1) plugin_age) age) AS oldest_at`;
 export function createD1AsyncStore(db: D1Database): AsyncStore &
   Omit<JobStore, 'claim'> & {
     claimJob: JobStore['claim'];
@@ -309,15 +314,7 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
       return rows.length === 1;
     },
     async backlog() {
-      const row = (
-        await query(
-          `SELECT
-        (SELECT count(*) FROM (SELECT id FROM outbox WHERE delivered_at IS NULL LIMIT 1001) core_count)+(SELECT count(*) FROM (SELECT event_id FROM plugin_event_outbox WHERE delivered_at IS NULL LIMIT 1001) plugin_count) AS pending,
-        (SELECT count(*) FROM (SELECT delivery_id FROM async_deliveries WHERE state='failed' LIMIT 1001) failed_count) AS failed,
-        (SELECT min(created_at) FROM (SELECT created_at FROM (SELECT created_at FROM outbox WHERE delivered_at IS NULL ORDER BY created_at,id LIMIT 1) core_age UNION ALL SELECT created_at FROM (SELECT created_at FROM plugin_event_outbox WHERE delivered_at IS NULL ORDER BY created_at,event_id LIMIT 1) plugin_age) age) AS oldest_at`,
-          [],
-        )
-      )[0]!;
+      const row = (await query(asyncBacklogSql, []))[0]!;
       return {
         pending: number(row, 'pending'),
         failed: number(row, 'failed'),

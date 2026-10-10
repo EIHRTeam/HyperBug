@@ -30,7 +30,7 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 - [x] **09.2b** Bound consumer concurrency, dispatch batch size, downstream calls, and per-event fan-out; implement backpressure and non-critical circuit breaking.
 - [x] **09.2c** Add queue lag, retry/failure/DLQ growth, processing duration, and outbox age telemetry with safe metadata.
 - [x] **09.2d** Connect plugin events and search-index updates; verify duplicate/out-of-order delivery cannot revert newer state.
-- [ ] **09.2e** Implement the minimum tier's failed-job storage in D1 with authorized replay and bounded retention; the provider dead-letter queue's 24-hour free retention must not be the only replay source, and a quota-exhausted dispatch must surface a visible backlog instead of dropping work.
+- [x] **09.2e** Implement the minimum tier's failed-job storage in D1 with authorized replay and bounded retention; the provider dead-letter queue's 24-hour free retention must not be the only replay source, and a quota-exhausted dispatch must surface a visible backlog instead of dropping work.
 
 ### Step 09.3 — Implement durable workflow and retention foundations
 
@@ -40,7 +40,7 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 - [x] **09.3d** Schedule upload intent/orphan/multipart cleanup, expired session/token cleanup, and configured retention jobs on both profiles.
 - [ ] **09.3e** **Audit portion suspended — no audit for now.** Audit controlled retention/deletion and administrative replay; ensure cleanup is bounded, repeatable, permission-aware, and does not delete referenced active attachments.
 - [x] **09.3f** Write `docs/ASYNC-PROCESSING.md` covering delivery semantics, operational recovery, safe replay, and adapter differences.
-- [ ] **09.3g** Implement the minimum tier's checkpointed D1 job runner as the substitute for multi-step workflow durability, with capability gating for bulk, import/export and long-running jobs, and a recorded capability ceiling that the public capability document reports.
+- [x] **09.3g** Implement the minimum tier's checkpointed D1 job runner as the substitute for multi-step workflow durability, with capability gating for bulk, import/export and long-running jobs, and a recorded capability ceiling that the public capability document reports.
 
 ## Verification and acceptance
 

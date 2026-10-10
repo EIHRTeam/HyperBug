@@ -2,7 +2,6 @@ import type { D1Database } from '@cloudflare/workers-types';
 import {
   createD1AsyncStore,
   createD1MinimumAsyncStore,
-  createD1SearchIndexStore,
   createD1PluginRegistryStore,
   createD1PluginSettingsStore,
   createD1ExpiredCleanupStore,
@@ -42,23 +41,25 @@ export async function runMinimumAsyncTick(input: {
   let outcome = 'done';
   let jobState: { checkpoint: number; terminal: boolean } | null = null;
   try {
-    if (!(await minimum.reserve(clock()))) outcome = 'quota-exhausted';
-    else if (phase === 0) {
+    if (phase === 0) {
       const token = crypto.randomUUID(),
-        refs = await minimum.claim(clock(), token, true);
+        admission = await minimum.admitAndClaim(clock(), token),
+        refs = admission.references;
+      if (!admission.admitted) outcome = 'quota-exhausted';
       const process = createAsyncProcessor({
         store: minimum.executionStore(),
         clock,
         token: () => token,
         handle: createAsyncEventHandler({
-          search: createD1SearchIndexStore(db),
+          search: minimum.searchStore(),
           registry: createD1PluginRegistryStore(db),
           settings: createD1PluginSettingsStore(db),
           tier: 'cloudflare-minimum',
         }),
       });
       if (refs[0]) await process(refs[0]);
-    } else if (phase === 1) {
+    } else if (!(await minimum.reserve(clock()))) outcome = 'quota-exhausted';
+    else if (phase === 1) {
       await createD1ExpiredCleanupStore(db).purgeExpired(
         clock(),
         input.sessionRetentionMs,
@@ -123,7 +124,7 @@ export async function runMinimumAsyncTick(input: {
     outcome = 'bounded-error';
   }
   budget.diagnostics();
-  const backlog = await store.backlog().catch(() => null);
+  const backlog = await minimum.backlog().catch(() => null);
   const report = {
     component: 'async-minimum',
     phase,

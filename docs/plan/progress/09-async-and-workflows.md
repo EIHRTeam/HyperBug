@@ -6,36 +6,36 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Blocked (B5 hosted dispatch exceeds the required Free 10 ms CPU bound)
+- Status: Blocked (hosted-function CPU passes; native Cron execution remains unverified)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
-- Completed implementation checklist IDs: 09.1a–e, 09.2a–d, 09.3a–d/f, 09.V1–V5.
-- Active/next checklist group: B5 — 09.1f, 09.2e, 09.3g, 09.V6.
+- Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
+- Active/next checklist group: B5 — 09.1f and 09.V6 (native Cron delivery/CPU evidence).
 - Last updated: 2026-10-10.
-- Blocking issues discovered: Original/optimized dispatch CPU 15 ms, real Cron with work 20 ms; authorized Module08 batching follow-up still fails at 22 ms on dispatcher replay. B5 remains uncommitted; both hosted receipts verify scoped cleanup.
+- Blocking issues discovered: The dispatcher refactor passes 12 explicit hosted-function samples at 1–10 ms CPU, including quota/recovery and all phase probes. The deployed scheduled handler and trigger were verified, but no native Cron event or prepared-source acknowledgement was observed through 13:00 UTC. Scoped cleanup preserves 107 baseline records and verifies owned resources at zero; raw DNS inventory remains unverified.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 09.1 | Implement reliable event dispatch | Blocked (B5 CPU) | [B1–B4 evidence](../evidence/09-async-validation.md) |
-| 09.2 | Bound failure and fan-out | Blocked (B5 CPU) | [B1–B4 evidence](../evidence/09-async-validation.md) |
-| 09.3 | Implement durable workflow and retention foundations | Blocked (B5 CPU; audit suspended) | [B4 evidence](../evidence/09-async-validation.md#b4--workflows-and-scheduled-maintenance) |
+| 09.1 | Implement reliable event dispatch | Blocked (native Cron proof) | [B1–B5 partial evidence](../evidence/09-async-validation.md) |
+| 09.2 | Bound failure and fan-out | Complete | [B1–B5 partial evidence](../evidence/09-async-validation.md) |
+| 09.3 | Implement durable workflow and retention foundations | Complete (09.3e suspended) | [B4 evidence](../evidence/09-async-validation.md#b4--workflows-and-scheduled-maintenance) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. The authorized Module08 D1 batching investigation did not unblock B5. Obtain a new bounded direction for batching Minimum dispatcher call boundaries under HANDOFF-09’s repeated CPU stop rule.
-2. Preserve the uncommitted B5 prototype; only resume affected local/hosted checks after that decision. Keep G1/G2 closed and 13.G6 open.
+1. Diagnose or obtain actual native Cron delivery evidence on authorized test infrastructure; registration alone does not close 09.1f/09.V6.
+2. Preserve the passing local/hosted-function refactor and the completed cleanup. No new permission or bound waiver is inferred; existing test/refactor authorization persists. Keep G1/G2 closed and 13.G6 open.
 
 ## Next-session cautions
 
 Assume at-least-once delivery and crash-after-side-effect replay. Queue deduplication alone does not guarantee business idempotency.
 
-B1–B4 are committed; B5 is an unaccepted, uncommitted prototype. Owned Worker/Queue/Workflow/custom-domain mappings are removed; raw DNS inventory remains unverified (403). D1 baseline rows/history and appended migrations are preserved. Inspect the final receipts before any new hosted use.
+B1–B4 and the unaccepted B5 prototype are committed (latest d9ee49d); the dispatcher performance batch is prepared for its commit. No owned hosted resources or tail process remain. Owned Worker/Queue/Workflow/custom-domain mappings are removed; raw DNS inventory remains unverified (403). D1 baseline rows/history and appended migrations are preserved. Inspect the final receipts before any new hosted use.
 
 ## Session log
 
@@ -338,3 +338,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Latest actual dispatcher CPU is 22 ms against the required 10 ms; remaining hosted quota/acceptance evidence is incomplete.
 - Next actions: Preserve this checkpoint; further implementation or hosted acceptance requires a new user direction after the recorded stop.
 - Next-session cautions: No acceptance/checklist/gate closure, audit resume, PR edit or production deployment. G1/G2 stay closed and 13.G6 open. Exclude protected root drafts and ignored private configuration/backup artifacts.
+
+### 2026-10-10 — Authorized dispatcher performance retry started
+
+- Scope and checklist IDs: 09.1f/09.2e/09.3g/09.V6; user authorizes testing/refactoring across profiles if needed.
+- Progress: New bounded retry authorized after the recorded 22 ms CPU stop; acceptance remains open.
+- Change summary: Prepare token-fenced admission/claim batching, immutable revision hydration and completion/backlog batching.
+- Files/artifacts: D1 async adapters/schema, Minimum composition and focused tests; no hosted resources yet.
+- Verification: Not run; prepare the full batch before focused checks. Context7 D1 resolve/query confirms ordered transactional batches (2026-10-10).
+- Decisions and deviations: Preserve contracts, source validation, current-state index guards, all quotas and retry/lease limits. No paid capability or audit resume.
+- Blockers/open questions: Actual Free CPU fit remains unproven.
+- Next actions: Verify local concurrency/refusal/recovery and migration; then one fresh hosted CPU retry with backup and cleanup.
+- Next-session cautions: d9ee49d is the committed prototype; new edits are uncommitted. Protect private backups/root drafts; G1/G2 and 13.G6 unchanged.
+
+### 2026-10-10 — Dispatcher batching verified; native Cron evidence remains open
+
+- Scope and checklist IDs: Module09 B5 09.1f/09.2e/09.3g/09.V6, authorized tests/refactoring across profiles if needed; no audit resume.
+- Progress: Close 09.2e/09.3g from existing dual-store retention/replay/capability proofs plus fresh D1 quota/recovery/checkpoint evidence. Keep 09.1f/09.V6 open because native Cron execution was not observed; full Module09 completion is not claimed.
+- Change summary: Atomic token-fenced admission/claim, combined bounded source imports/cursors, immutable exact-source revision hydration, completion/backlog batching; retain all contracts, permissions, quotas and lease/retry ceilings.
+- Files/artifacts: D1/runtime adapters, additive D1 0035_async_admission_token, focused tests, internal/bilingual docs; [detailed evidence](../evidence/09-async-validation.md#authorized-minimum-dispatcher-batching-retry--2026-10-10) and [safe receipt](../evidence/09-hosted-minimum-dispatcher-receipt.json).
+- Verification: Three distinct Minimum workerd checks and four focused D1 migration/search cases pass; typecheck/lint/db:check/build/scoped formatting/secrets/diff/docs:build pass. Twelve explicit hosted tick samples at 1–10 ms CPU: canonical/max-body search, quota refusal/recovery, event/job redeployment recovery, expiry/terminal/no-storage phase probes. Native scheduled handler and one trigger verified, but tail and scheduler analytics showed no native run and the prepared source remained pending through 13:00 UTC. No unchanged PostgreSQL or broad green test lane rerun.
+- Decisions and deviations: No dependency, public/normative change, paid capability or gate closure. Duplicate quota helper import side effect removed. Expiry probe touched two pre-existing expired rows; restored exact values immediately. Initial and final OAuth expiry/transient user-info failures resolved sufficiently for actual API verification; final cleanup comparison resumed read-only rather than repeating successful mutations.
+- Blockers/open questions: Native Cron delivery/CPU remains unproven; a final read-only scheduler query at 2026-10-10T13:29:15.819Z still returned zero events without query errors. Cause is unknown; do not replace native execution with registration or explicit ticks.
+- Next actions: Preserve this coherent performance batch and obtain native Cron proof under existing test authorization. Keep 09.3e suspended, G1/G2 closed and 13.G6 open.
+- Next-session cautions: Owned Worker/domain/Queue/Workflow inventory zero, tail stopped; 107 baseline rows exact, foreign keys valid, owned mutable work zero, two new timeline/two audit records retained with inactive fixtures. Restore singleton state exactly and preserve additive history; raw DNS absence independently unverified. Protected drafts/private backups stay excluded. No push or PR edit for this batch.

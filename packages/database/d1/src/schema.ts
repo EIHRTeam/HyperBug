@@ -1984,6 +1984,7 @@ export const asyncMinimumBudget = table(
     day: integer('day').notNull(),
     reads: integer('reads').notNull(),
     writes: integer('writes').notNull(),
+    reservationToken: text('reservation_token'),
   },
   (t) => [
     check(

@@ -1075,3 +1075,15 @@ Final bounded read-only actual named test-D1 inventory: **0 upload intents, 0 at
 - Blockers/open questions: Latest actual dispatcher CPU is 22 ms against the required 10 ms; remaining hosted quota/acceptance evidence is incomplete.
 - Next actions: Preserve this checkpoint; further implementation or hosted acceptance requires a new user direction after the recorded stop.
 - Next-session cautions: No acceptance/checklist/gate closure, audit resume, PR edit or production deployment. G1/G2 stay closed and 13.G6 open. Exclude protected root drafts and ignored private configuration/backup artifacts.
+
+### 2026-10-10 — Dispatcher batching verified; native Cron evidence remains open
+
+- Scope and checklist IDs: Cross-module support for Module09 B5; authorized performance tests/refactoring, with audit suspension preserved.
+- Progress: 09.2e/09.3g verified; 09.1f/09.V6 remain open because native Cron execution was not observed.
+- Change summary: Maximum raw Issue body passed the dispatch probe; canonical projection limits remain unchanged. No new hosted upload or R2 acceptance is claimed.
+- Files/artifacts: D1/runtime batching, migration 0035, focused tests and paired reader guides; [Module09 session](09-async-and-workflows.md) and [receipt](../evidence/09-hosted-minimum-dispatcher-receipt.json).
+- Verification: Focused workerd/migration/search checks, typecheck, lint, db:check, build, docs:build, scoped formatting, secrets and diff hygiene pass. Twelve explicit hosted ticks measured 1–10 ms CPU; native Cron proof remains missing.
+- Decisions and deviations: No contract, permission, numeric bound, dependency or gate change; detailed probe mistakes and restorations are recorded in Module09 evidence.
+- Blockers/open questions: Native Cron delivery/CPU remains unverified; registration is not execution.
+- Next actions: Obtain native Cron evidence before closing the remaining checks.
+- Next-session cautions: Owned resources zero; all 107 original records verified, singleton state restored, history preserved. Protected drafts/private backups excluded; no push or PR edit for this batch.
