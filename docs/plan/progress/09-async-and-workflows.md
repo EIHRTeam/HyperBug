@@ -517,3 +517,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native title/job CPU and recovery remain unaccepted; project/provider10 ms unchanged.
 - Next actions: Finish documentation checks/commit; collect existing R8 native outcome/cleanup, then only after CPU fit run representative recovery.
 - Next-session cautions: R8 f6a1e9e remains active with original20:55/21:00 UTC bounds; no speculative redeploy, inventory rerun, push/PR edit, protected/private staging, audit resume or gate closure.
+
+
+### 2026-10-11 — Native wait and recovery preparation checkpoint
+
+- Scope/checklist IDs: Authorized 09.1f/09.V6 continuation; 13.G6 dependency.
+- Progress/change summary: Local9bd76ce commits D1 job batching and prior cleanup evidence. R8 source remains f6a1e9e. Private maximum/quota/job guards and phase-4 build prepared, not executed/deployed.
+- Files/artifacts: [Checkpoint evidence](../evidence/09-async-validation.md#native-wait-and-recovery-preparation-checkpoint--2026-10-11); ignored R8 live handles/helpers.
+- Verification: Pending canonical source at20:21:50 UTC, empty delayed Cron history at20:24:18 UTC. OAuth refreshed privately after expiry. Analytics budget error cleared after five-minute backoff; no Worker/D1 quota failure inferred. Previous7 focused checks/typecheck/lint/build/docs/secrets/scoped format pass; new docs build, relative-file links, secrets and diff hygiene pass.
+- Decisions/deviations: Recovery requires maximum revision/projection/body proof and sufficient cleanup headroom. No target change, speculative redeploy or refreshed inventory; no native evidence inferred.
+- Blockers/open questions: Await native outcome and required recovery; latest productive native14 ms, project/provider10 ms unchanged.
+- Next actions: Revalidate R8 processes/cleanup first; after native fit preserve maximum evidence then quota refusal/recovery and bounded job restart. If failed/unobserved, finish and independently compare cleanup before another action.
+- Next-session cautions: Tail10791/monitor11882/watchdog4672; observation20:55:15.161 and cleanup21:00:15.161 UTC2026-10-10. New private helpers are unexecuted and retain fixed deadline guards; any justified extension must coordinate all watchers/guards. Protect140 baseline records; no protected/private staging, push/PR edit, audit/gate closure.
