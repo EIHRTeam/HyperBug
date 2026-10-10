@@ -355,3 +355,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native r7 result and cleanup pending; 09.1f/09.V6 open.
 - Next actions: Collect live native result; if fit, representative body/recovery proof; if failed, verify cleanup before measured capacity reduction. Every attempt must finish cleanup.
 - Next-session cautions: Owned Worker hyperbug-09-native-219f58b807f6, tail session1863, monitor87992; watchdog restarted after adding credential refresh. Deadline 19:39:09 UTC, cleanup bound19:44:09 UTC. Preserve 135 baseline records; no inventory rerun, push/PR edit or gate/audit changes.
+
+
+### 2026-10-11 — Refined cold-binding investigation during native wait
+
+- Scope/checklist IDs: Authorized09.1f/09.V6 and affected Module08 seam; no application or normative change.
+- Progress/change summary: Confirm r7 monitor/tail/watchdog live, one Cron, pending canonical state. Private staged-import prototype showed no clear local gain and is unapplied. Refined local measurement includes first D1 binding use by seeding outside the Worker.
+- Files/artifacts: [Detailed investigation](../evidence/09-async-validation.md#native-r7-waiting-and-refined-cold-cost-investigation--2026-10-11), safe profile aggregates; private prototypes ignored.
+- Verification: Twenty fresh local isolates per diagnostic, actual canonical producer and D1 emulation; source/index acknowledgements observed locally. Not hosted CPU acceptance. Current Context7 trace enablement lookup records no default tracing and no substantiated benefit from disabling it. No green application lane repeated.
+- Decisions/deviations: Preserve current ten-statement deployment and all limits while native outcome is pending. User permits measured target/capacity revision after repeated failure; any higher project target must disclose unchanged provider10ms and retain recovery/backlog/security. No target or logging waiver applied.
+- Blockers/open questions: Native execution/CPU/cleanup pending. Module09 open,09.3e suspended; G1/G2 closed,13.G6 open.
+- Next actions: Revalidate native handles and canonical state; collect r7 CPU or absolute timeout cleanup. After failure verify cleanup before capacity/target work; after fit run prepared representative/recovery checks.
+- Next-session cautions: Tail1863, monitor87992, watchdog20221; r7 deadline19:39:09 UTC, automatic cleanup19:44:09 UTC or earlier failure. Read ignored live-handles.json. Watchdog captures canonical state before restoring data. Do not restart because observation expired or rerun inventory; no push/PR edit.

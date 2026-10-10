@@ -224,5 +224,311 @@
       ]
     ],
     "method": "Twenty fresh local workerd isolates, one cold then one warm canonical dispatch each; Profiler 100 microseconds; diagnostic, not hosted CPU"
+  },
+  {
+    "version": "staged-import-prototype",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 477,
+    "sampledActiveUs": 137970,
+    "sampledIdleUs": 490457,
+    "tickMedianUs": 7072,
+    "tickRangeUs": [
+      3985,
+      9608
+    ],
+    "leafUs": [
+      [
+        "fetch",
+        23493
+      ],
+      [
+        "(anonymous)",
+        21925
+      ],
+      [
+        "batch",
+        13660
+      ],
+      [
+        "runMinimumAsyncTick",
+        12689
+      ],
+      [
+        "searchTokenText",
+        7078
+      ],
+      [
+        "(program)",
+        6274
+      ],
+      [
+        "admitAndClaim",
+        5063
+      ],
+      [
+        "_send",
+        4584
+      ],
+      [
+        "firstIfArray",
+        4439
+      ],
+      [
+        "complete",
+        3389
+      ],
+      [
+        "result",
+        2857
+      ],
+      [
+        "toJson",
+        2707
+      ]
+    ],
+    "method": "Local private source prototype omits two import statements after external staging/lease expiry; seeding through Worker warms D1 binding before profiling; sparse sampling; no native acceptance",
+    "applied": false
+  },
+  {
+    "version": "staged-import-prototype",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 116,
+    "sampledActiveUs": 49570,
+    "sampledIdleUs": 111991,
+    "tickMedianUs": 2550.5,
+    "tickRangeUs": [
+      1273,
+      3808
+    ],
+    "leafUs": [
+      [
+        "(anonymous)",
+        7179
+      ],
+      [
+        "fetch",
+        5782
+      ],
+      [
+        "(program)",
+        5458
+      ],
+      [
+        "runMinimumAsyncTick",
+        4704
+      ],
+      [
+        "result",
+        2741
+      ],
+      [
+        "_send",
+        2680
+      ],
+      [
+        "admitAndClaim",
+        1878
+      ],
+      [
+        "handleSearchOutboxEvent",
+        1522
+      ],
+      [
+        "setAttributes",
+        1491
+      ],
+      [
+        "json",
+        1168
+      ],
+      [
+        "wrap",
+        1140
+      ],
+      [
+        "enterSpan",
+        1071
+      ]
+    ],
+    "method": "Local private source prototype omits two import statements after external staging/lease expiry; seeding through Worker warms D1 binding before profiling; sparse sampling; no native acceptance",
+    "applied": false
+  },
+  {
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 564,
+    "sampledActiveUs": 157558,
+    "sampledIdleUs": 293333,
+    "tickMedianUs": 8152.5,
+    "tickRangeUs": [
+      5508,
+      9131
+    ],
+    "leafUs": [
+      [
+        "(anonymous)",
+        23075
+      ],
+      [
+        "fetch",
+        18148
+      ],
+      [
+        "(program)",
+        16337
+      ],
+      [
+        "_send",
+        15016
+      ],
+      [
+        "addAggregatedD1MetaToSpan",
+        12658
+      ],
+      [
+        "toJson",
+        9519
+      ],
+      [
+        "runMinimumAsyncTick",
+        9042
+      ],
+      [
+        "searchTokenText",
+        7313
+      ],
+      [
+        "text",
+        7208
+      ],
+      [
+        "admitAndClaim",
+        3250
+      ],
+      [
+        "mapD1Result",
+        2629
+      ],
+      [
+        "handleSearchIndexEvent",
+        2438
+      ],
+      [
+        "formatWithOptions",
+        1947
+      ],
+      [
+        "_wrappedFetch",
+        1829
+      ],
+      [
+        "backfill",
+        1801
+      ],
+      [
+        "batch",
+        1736
+      ],
+      [
+        "snapshot",
+        1595
+      ],
+      [
+        "complete",
+        1560
+      ]
+    ],
+    "version": "binding-cold-f0c9a1d",
+    "method": "Twenty fresh workerd isolates; canonical seeding through host-side D1 repository proxy, no Worker fetch before cold profiling; then one warm tick; requested sampling100 microseconds; diagnostic not hosted CPU"
+  },
+  {
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 126,
+    "sampledActiveUs": 54988,
+    "sampledIdleUs": 61122,
+    "tickMedianUs": 2665.5,
+    "tickRangeUs": [
+      1795,
+      4002
+    ],
+    "leafUs": [
+      [
+        "(anonymous)",
+        12113
+      ],
+      [
+        "toJson",
+        8145
+      ],
+      [
+        "_send",
+        3949
+      ],
+      [
+        "runMinimumAsyncTick",
+        3810
+      ],
+      [
+        "(program)",
+        3482
+      ],
+      [
+        "admitAndClaim",
+        3313
+      ],
+      [
+        "fetch",
+        2471
+      ],
+      [
+        "addD1MetaToSpan",
+        2395
+      ],
+      [
+        "setAttributes",
+        1266
+      ],
+      [
+        "enterSpan",
+        1190
+      ],
+      [
+        "reservation",
+        1151
+      ],
+      [
+        "json",
+        1151
+      ],
+      [
+        "createD1MinimumAsyncStore",
+        957
+      ],
+      [
+        "taskReference",
+        903
+      ],
+      [
+        "bind",
+        899
+      ],
+      [
+        "validateTaskReference",
+        896
+      ],
+      [
+        "refsOf",
+        892
+      ],
+      [
+        "minimumInvocationBudget",
+        829
+      ]
+    ],
+    "version": "binding-cold-f0c9a1d",
+    "method": "Twenty fresh workerd isolates; canonical seeding through host-side D1 repository proxy, no Worker fetch before cold profiling; then one warm tick; requested sampling100 microseconds; diagnostic not hosted CPU"
   }
 ]
