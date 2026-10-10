@@ -245,3 +245,18 @@ Delayed adaptive headroom, not billing: before at 14:29:21 UTC, D1 remaining 4,9
 Final documentation verification: `corepack pnpm docs:build`, `scan:secrets`, receipt/cleanup/checklist/relative-file link guards, canonical JSON serialization and `git diff --check` pass. Scoped oxfmt found no eligible file because the repository ignores `docs/**`; no formatting exemption was added, and no unchanged application lane reran.
 
 Next action: after this required stop, obtain a new user direction before further performance implementation or hosted acceptance. Native dispatcher CPU profiling is the proposed investigation; preserve contracts, permissions, quota/lease/retry ceilings and all committed work. Module09 remains Blocked, audit 09.3e remains suspended, G1/G2 stay closed and 13.G6 stays open. No push or PR edit.
+
+
+## Proposed native CPU investigation after the stop — 2026-10-10
+
+Read-only revalidation confirms committed checkpoint `eb81571`, a clean tracked worktree and the native 20 ms receipt. The preceding goal turn made progress by replacing missing native-delivery evidence with actual delivery/index/acknowledgement and a CPU failure. No test process remains live; owned resources are already removed. Further retries are not a verified wait on that completed test.
+
+Code inspection identifies concrete profiling targets, without attributing the observed CPU to any of them:
+
+1. Module initialization and phase-specific imports/factory creation in `apps/api-cloudflare/src/async-minimum.ts`. The dispatch path builds shared async stores/facades and eagerly references helpers for other phases. The hosted probe bundle was 1.33 MB with a separately reported 11 ms deployment startup time; startup time is not invocation CPU.
+2. Invocation accounting in `apps/api-cloudflare/src/async-budget.ts`, layered with `packages/database/d1/src/search-meter.ts`. The outer meter wraps D1/database statements with Proxies and tracks originals; the inner search meter adds statement wrappers and result accounting. Every pre-I/O bound and post-result validation must remain effective.
+3. Four remaining provider call boundaries for a successful core search delivery: six-statement admission/claim, one-statement search admission/source, one-statement guarded index update, and three-statement fenced completion/backlog. Eleven statements are not eleven network calls. The receipt supplies totals, not per-boundary CPU attribution.
+
+Proposed authorized workflow: collect focused CPU evidence for initialization, accounting and calls; refactor only demonstrated hotspots across relevant profiles; run the affected correctness/concurrency/metering cases once per batch; then use uninstrumented native Cron work for acceptance, with representative canonical/max-body and affected recovery cases. Instrumented timing or local CPU profiles do not replace native acceptance. Preserve all public/producer contracts, authorization/configuration checks, canonical revision/projection guards, quotas, retry/lease/call ceilings and audit suspension. Clean owned resources and compare original data after each attempt. No paid-only setting or threshold waiver.
+
+The latest human authorization named a bounded retry; HANDOFF-09 requires “If a bound cannot be met, stop and report.” A pending explicit question requests permission for continued profiling/refactoring and bounded native retries after failures, overriding that stop rule while preserving the bound. Do not infer that the automatic goal continuation supplies this missing human decision. No implementation or hosted test follows this proposal until that answer arrives.

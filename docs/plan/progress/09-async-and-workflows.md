@@ -374,3 +374,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native dispatch CPU exceeds the bound; earlier missing native delivery cause remains unknown.
 - Next actions: Report the measured failure; a new user direction after the HANDOFF-09 stop is required before further performance implementation or hosted acceptance. Native CPU profiling is the next proposed investigation. Preserve 09.2e/09.3g and Module08's existing dispatch/retry closure.
 - Next-session cautions: No further hosted probe/refactor after the failure. Keep original data/history and committed batches; retained inactive fixture has one timeline/one audit record. Raw DNS absence unverified, custom-domain mapping absent. No push or PR edit; G1/G2 closed and 13.G6 open.
+
+### 2026-10-10 — Post-stop native profiling proposal prepared
+
+- Scope and checklist IDs: Read-only review/proposal for Module09 09.1f/09.V6 and the Module08 search-meter seam.
+- Progress: Revalidated the committed native 20 ms failure; no live test/owned resource remains. Approval for continuing after failures is pending.
+- Change summary: Identify initialization/factory creation, layered metering and four D1 call boundaries as profiling targets; no CPU causality is claimed.
+- Files/artifacts: [Prepared proposal](../evidence/09-async-validation.md#proposed-native-cpu-investigation-after-the-stop--2026-10-10), affected progress records; no application changes.
+- Verification: Current Git status, native receipt and relevant source inspected; docs:build, relative-file links and diff hygiene pass. No hosted probe, implementation, dependency or migration.
+- Decisions and deviations: Preserve all contracts/security/numeric ceilings. The explicit HANDOFF-09 stop requires a new human decision; automatic continuation does not override it.
+- Blockers/open questions: Native CPU exceeds 10 ms; pending authorization to profile/refactor and run bounded native retries after failures.
+- Next actions: Await the pending question's answer; if authorized, begin measured profiling and the relevant focused checks.
+- Next-session cautions: Keep 09.1f/09.V6 open, 09.3e suspended and G1/G2/13.G6 unchanged. Do not restart completed test handles or stage protected/private files.
