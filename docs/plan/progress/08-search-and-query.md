@@ -390,3 +390,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: r7 native outcome/cleanup pending; 09.1f/09.V6 open.
 - Next actions: Collect native r7; verify cleanup, then fresh bounded title-only native measurement and representative recovery.
 - Next-session cautions: r7 tail 1863/monitor 87992/watchdog 20221; deadlines 19:39/19:44 UTC. Preserve 135 baseline rows; no inventory rerun, push/PR edit, protected/private staging or audit/gate closure.
+
+
+### 2026-10-11 — Verified native wait and recovery evidence guards
+
+- Scope/checklist IDs: Authorized09.1f/09.V6 continuation and Module08 post-I/O search boundary review; no audit resume.
+- Progress/change summary: Same three R8 processes confirmed live; protected401 appears in live tail, separating a working observer from missing native execution. Reject early index/source acknowledgement coupling; tighten private native-fit/quota-refusal and deadline guards.
+- Files/artifacts: [Verified wait record](../evidence/09-async-validation.md#verified-native-wait-and-stricter-recovery-harness--2026-10-11); ignored native guards/helpers.
+- Verification: Live tool handles at20:27:48, active provider tail and401 witness at20:30, pending max source at20:31:30 UTC. Guard dry checks reject unobserved CPU/quota evidence; no hosted fixture mutation. Docs build, relative-file links, secrets and diff hygiene pass; no unchanged application lane repeated.
+- Decisions/deviations: Preserve post-I/O metering and processor timeout/abort before source acknowledgement. Future watcher starts use explicit bounded handle deadlines; current watchers were not restarted and keep original bounds.
+- Blockers/open questions: Native scheduling delay, maximum CPU and recovery remain unproven; project/provider10 ms unchanged.
+- Next actions: Collect existing native outcome or deadline cleanup; only after fit perform guarded quota/job recovery. Compare140 baseline rows and original resources after cleanup.
+- Next-session cautions: R8 deployedf6a1e9e; tail10791/monitor11882/watchdog4672, deadlines20:55:15.161/21:00:15.161 UTC2026-10-10. Source/job preparation differs from actual native proof. No inventory rerun, protected/private staging, push/PR edit, audit/gate closure.

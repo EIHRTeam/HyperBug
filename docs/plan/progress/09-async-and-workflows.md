@@ -11,7 +11,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
-- Active/next checklist group: B5 — 09.1f and 09.V6 (collect active r8 title-only maximum-content native result/cleanup, then recovery evidence).
+- Active/next checklist group: B5 — 09.1f and 09.V6 (fresh r9 declarative-Cron title-only maximum-content result, then recovery evidence).
 - Last updated: 2026-10-11.
 - Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work most recently measured 14 ms in r6 on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Human authorization on 2026-10-11 overrides the stop-after-failure rule for bounded profiling/refactoring and native retries with cleanup. Cleanup and preservation results are recorded in the latest session.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
@@ -28,14 +28,14 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. Collect the active r8 native result or deadline cleanup and compare original resources/data. R7 timeout cleanup is verified; measure title-only maximum content and recovery only after native CPU fit; registration/local timing do not close 09.1f/09.V6.
+1. R8 timeout cleanup is verified. Prepare one fresh declarative-Cron trial with the maximum source committed before deployment; recover quotas/jobs only after native fit. Registration/local timing do not close 09.1f/09.V6.
 2. Preserve source/capability/rebuild guards and all quota/security limits. User authorization permits capacity reduction and a project-target revision after repeated failures, while the provider ceiling and release acceptance remain separate. Keep G1/G2 closed and 13.G6 open.
 
 ## Next-session cautions
 
 Assume at-least-once delivery and crash-after-side-effect replay. Queue deduplication alone does not guarantee business idempotency.
 
-B1–B4, the B5 prototype, metering/cursor optimizations and title-only capacity reduction f6a1e9e are committed locally. The latest completed r6 cleanup is verified; r7 full-text f0c9a1d ended without native execution and is fully cleaned; its 135-row baseline and original resources are verified, and all three processes are terminal. The active title-only r8 uses fresh 140-record backup/inventory; tail10791/monitor11882/watchdog4672, observation20:55 UTC and cleanup21:00 UTC on 2026-10-10. Follow the newest live handle/outcome records before any hosted mutation; do not rerun inventory after seeding. Raw DNS inventory remains unverified (403). Preserve original rows/history and additive migrations. No push/PR edit or audit resume.
+B1–B4, the B5 prototype, metering/cursor optimizations and title-only capacity reduction f6a1e9e are committed locally. The latest completed r6 cleanup is verified; r7 full-text f0c9a1d ended without native execution and is fully cleaned; its 135-row baseline and original resources are verified, and all three processes are terminal. R8 title-only source f6a1e9e also ended unobserved and is fully cleaned; its140-row baseline, exact singleton content and original resources are verified, and all processes are terminal. Fresh R9 preparation must use a new backup/inventory and exclusively declarative Cron. Follow the newest live handle/outcome records before any hosted mutation; do not rerun inventory after seeding. Raw DNS inventory remains unverified (403). Preserve original rows/history and additive migrations. No push/PR edit or audit resume.
 
 ## Session log
 
@@ -529,3 +529,27 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Await native outcome and required recovery; latest productive native14 ms, project/provider10 ms unchanged.
 - Next actions: Revalidate R8 processes/cleanup first; after native fit preserve maximum evidence then quota refusal/recovery and bounded job restart. If failed/unobserved, finish and independently compare cleanup before another action.
 - Next-session cautions: Tail10791/monitor11882/watchdog4672; observation20:55:15.161 and cleanup21:00:15.161 UTC2026-10-10. New private helpers are unexecuted and retain fixed deadline guards; any justified extension must coordinate all watchers/guards. Protect140 baseline records; no protected/private staging, push/PR edit, audit/gate closure.
+
+
+### 2026-10-11 — Verified native wait and recovery evidence guards
+
+- Scope/checklist IDs: Authorized09.1f/09.V6 continuation and Module08 post-I/O search boundary review; no audit resume.
+- Progress/change summary: Same three R8 processes confirmed live; protected401 appears in live tail, separating a working observer from missing native execution. Reject early index/source acknowledgement coupling; tighten private native-fit/quota-refusal and deadline guards.
+- Files/artifacts: [Verified wait record](../evidence/09-async-validation.md#verified-native-wait-and-stricter-recovery-harness--2026-10-11); ignored native guards/helpers.
+- Verification: Live tool handles at20:27:48, active provider tail and401 witness at20:30, pending max source at20:31:30 UTC. Guard dry checks reject unobserved CPU/quota evidence; no hosted fixture mutation. Docs build, relative-file links, secrets and diff hygiene pass; no unchanged application lane repeated.
+- Decisions/deviations: Preserve post-I/O metering and processor timeout/abort before source acknowledgement. Future watcher starts use explicit bounded handle deadlines; current watchers were not restarted and keep original bounds.
+- Blockers/open questions: Native scheduling delay, maximum CPU and recovery remain unproven; project/provider10 ms unchanged.
+- Next actions: Collect existing native outcome or deadline cleanup; only after fit perform guarded quota/job recovery. Compare140 baseline rows and original resources after cleanup.
+- Next-session cautions: R8 deployedf6a1e9e; tail10791/monitor11882/watchdog4672, deadlines20:55:15.161/21:00:15.161 UTC2026-10-10. Source/job preparation differs from actual native proof. No inventory rerun, protected/private staging, push/PR edit, audit/gate closure.
+
+
+### 2026-10-11 — Title-only native timeout and verified cleanup
+
+- Scope/checklist IDs: Authorized09.1f/09.V6 continuation;13.G6 evidence dependency.
+- Progress/change summary: R8 has no native execution through bounded/late windows; cleanup independently verified. Strengthen exact singleton restoration checks and prepare one declarative-Cron control-plane diagnostic. No CPU target revision.
+- Files/artifacts: [R8 receipt](../evidence/09-hosted-native-title-retry-receipt.json), [outcome/next diagnostic](../evidence/09-async-validation.md#r8-title-only-timeout-cleanup-and-declarative-cron-diagnostic); ignored helpers.
+- Verification:140 baseline rows, exact singleton state,FKs, original two Workers/mappings preserved; owned resources/work zero; tail/monitor/watchdog terminal. Public status is inconclusive. Context7 Cron configuration guidance refreshed; initial Wrangler Action mismatch discarded. Docs build, relative-file links, secrets and diff hygiene pass; no unchanged application lane repeated.
+- Decisions/deviations: This is unobserved execution, not another CPU failure. Native title-only fit remains unknown; do not raise a target on this result. Exclusively declarative first deployment is a distinct bounded procedure, not a restart of timed-out live handles.
+- Blockers/open questions: Latest productive native14 ms; title-only CPU and required recovery remain unproven; scheduling delay unexplained.
+- Next actions: Finish/commit safe records, then fresh R9 backup and seeded-before-deploy declarative Cron diagnostic under standing authorization.
+- Next-session cautions: R8 all terminal/cleaned; do not repoll or restart its handles or overwrite its inventory. No quota/job case was run. Keep protected/private files out of commits; no push/PR edit, paid feature, audit/gate closure.
