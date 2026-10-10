@@ -1,0 +1,229 @@
+{
+  "profile": "postgres",
+  "fixture": {
+    "projects": 2,
+    "issuesPerProject": 2000,
+    "equalTimestampGroup": 20,
+    "openFraction": 0.25
+  },
+  "listStatements": 1,
+  "detailStatements": 1,
+  "cursorStatements": 1,
+  "listRows": 40,
+  "listPlan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Limit",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 0.28,
+            "Total Cost": 26.63,
+            "Plan Rows": 41,
+            "Plan Width": 152,
+            "Actual Startup Time": 0.002,
+            "Actual Total Time": 0.007,
+            "Actual Rows": 41,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Shared Hit Blocks": 7,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Scan Direction": "Backward",
+                "Index Name": "issue_project_state_created",
+                "Relation Name": "issues",
+                "Alias": "issues",
+                "Startup Cost": 0.28,
+                "Total Cost": 329.98,
+                "Plan Rows": 513,
+                "Plan Width": 152,
+                "Actual Startup Time": 0.002,
+                "Actual Total Time": 0.006,
+                "Actual Rows": 41,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Index Cond": "((project_id = '00000000-0000-4000-8000-000000000149'::uuid) AND (state = 'open'::text))",
+                "Rows Removed by Index Recheck": 0,
+                "Index Searches": 1,
+                "Shared Hit Blocks": 7,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.019,
+          "Triggers": [],
+          "Execution Time": 0.011
+        }
+      ]
+    }
+  ],
+  "detailPlan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Index Scan",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Scan Direction": "Forward",
+            "Index Name": "issue_project_id",
+            "Relation Name": "issues",
+            "Alias": "issues",
+            "Startup Cost": 0.28,
+            "Total Cost": 8.3,
+            "Plan Rows": 1,
+            "Plan Width": 165,
+            "Actual Startup Time": 0.001,
+            "Actual Total Time": 0.001,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Index Cond": "((project_id = '00000000-0000-4000-8000-000000000149'::uuid) AND (id = '00000000-0000-4000-8000-0000000010ea'::uuid))",
+            "Rows Removed by Index Recheck": 0,
+            "Index Searches": 1,
+            "Shared Hit Blocks": 3,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning": {
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.015,
+          "Triggers": [],
+          "Execution Time": 0.003
+        }
+      ]
+    }
+  ],
+  "cursorPlan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Limit",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 0.28,
+            "Total Cost": 28.45,
+            "Plan Rows": 41,
+            "Plan Width": 152,
+            "Actual Startup Time": 0.002,
+            "Actual Total Time": 0.008,
+            "Actual Rows": 41,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Shared Hit Blocks": 7,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Scan Direction": "Backward",
+                "Index Name": "issue_project_state_created",
+                "Relation Name": "issues",
+                "Alias": "issues",
+                "Startup Cost": 0.28,
+                "Total Cost": 325.24,
+                "Plan Rows": 473,
+                "Plan Width": 152,
+                "Actual Startup Time": 0.002,
+                "Actual Total Time": 0.007,
+                "Actual Rows": 41,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Index Cond": "((project_id = '00000000-0000-4000-8000-000000000149'::uuid) AND (state = 'open'::text) AND (ROW(created_at, id) < ROW('1789689600092'::bigint, '00000000-0000-4000-8000-000000000fb2'::uuid)))",
+                "Rows Removed by Index Recheck": 0,
+                "Index Searches": 1,
+                "Shared Hit Blocks": 7,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.024,
+          "Triggers": [],
+          "Execution Time": 0.011
+        }
+      ]
+    }
+  ]
+}

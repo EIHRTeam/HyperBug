@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "proseWrap": "preserve",
+  "singleQuote": true,
+  "trailingComma": "all",
+  "indentStyle": "space",
+  "indentWidth": 2,
+  "sortPackageJson": false,
+  "sortImports": false,
+  "ignorePatterns": [
+    "node_modules/**",
+    "dist/**",
+    "pnpm-lock.yaml",
+    "docs/**",
+    ".local/**",
+    ".agents/**",
+    "**/migrations/**",
+    "**/worker-configuration.d.ts"
+  ]
+}

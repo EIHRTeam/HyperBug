@@ -1,0 +1,999 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "da873fab-3e7c-42e8-84bb-b57d64f394b2",
+  "prevId": "b3026495-7866-429b-a15b-c908fcef127c",
+  "tables": {
+    "audit_events": {
+      "name": "audit_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "system_actor": {
+          "name": "system_actor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_id": {
+          "name": "target_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_id": {
+          "name": "request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "audit_project_order": {
+          "name": "audit_project_order",
+          "columns": [
+            "project_id",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "audit_events_project_id_projects_id_fk": {
+          "name": "audit_events_project_id_projects_id_fk",
+          "tableFrom": "audit_events",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "audit_events_actor_id_principals_id_fk": {
+          "name": "audit_events_actor_id_principals_id_fk",
+          "tableFrom": "audit_events",
+          "tableTo": "principals",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "audit_actor": {
+          "name": "audit_actor",
+          "value": "(\"audit_events\".\"actor_id\" IS NOT NULL AND \"audit_events\".\"system_actor\" IS NULL) OR (\"audit_events\".\"actor_id\" IS NULL AND \"audit_events\".\"system_actor\" IS NOT NULL)"
+        },
+        "audit_result": {
+          "name": "audit_result",
+          "value": "\"audit_events\".\"result\" IN ('success','failure')"
+        },
+        "audit_metadata": {
+          "name": "audit_metadata",
+          "value": "json_valid(\"audit_events\".\"metadata\") AND length(\"audit_events\".\"metadata\") <= 65536"
+        },
+        "audit_id": {
+          "name": "audit_id",
+          "value": "length(\"audit_events\".\"id\") = 36 AND \"audit_events\".\"id\" = lower(\"audit_events\".\"id\") AND length(replace(\"audit_events\".\"id\", '-', '')) = 32 AND replace(\"audit_events\".\"id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"audit_events\".\"id\",9,1) = '-' AND substr(\"audit_events\".\"id\",14,1) = '-' AND substr(\"audit_events\".\"id\",19,1) = '-' AND substr(\"audit_events\".\"id\",24,1) = '-' AND substr(\"audit_events\".\"id\",15,1) = '4' AND substr(\"audit_events\".\"id\",20,1) IN ('8','9','a','b')"
+        },
+        "audit_request_id": {
+          "name": "audit_request_id",
+          "value": "length(\"audit_events\".\"request_id\") = 36 AND \"audit_events\".\"request_id\" = lower(\"audit_events\".\"request_id\") AND length(replace(\"audit_events\".\"request_id\", '-', '')) = 32 AND replace(\"audit_events\".\"request_id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"audit_events\".\"request_id\",9,1) = '-' AND substr(\"audit_events\".\"request_id\",14,1) = '-' AND substr(\"audit_events\".\"request_id\",19,1) = '-' AND substr(\"audit_events\".\"request_id\",24,1) = '-' AND substr(\"audit_events\".\"request_id\",15,1) = '4' AND substr(\"audit_events\".\"request_id\",20,1) IN ('8','9','a','b')"
+        },
+        "audit_created": {
+          "name": "audit_created",
+          "value": "\"audit_events\".\"created_at\" IS NULL OR (typeof(\"audit_events\".\"created_at\") = 'integer' AND \"audit_events\".\"created_at\" BETWEEN 0 AND 8640000000000000)"
+        }
+      }
+    },
+    "issues": {
+      "name": "issues",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'open'"
+        },
+        "close_reason": {
+          "name": "close_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "author_id": {
+          "name": "author_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_mutation_id": {
+          "name": "last_mutation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "issue_project_created": {
+          "name": "issue_project_created",
+          "columns": [
+            "project_id",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "issue_project_state_created": {
+          "name": "issue_project_state_created",
+          "columns": [
+            "project_id",
+            "state",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "issue_author": {
+          "name": "issue_author",
+          "columns": [
+            "author_id",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "issue_project_number": {
+          "name": "issue_project_number",
+          "columns": [
+            "project_id",
+            "number"
+          ],
+          "isUnique": true
+        },
+        "issue_project_id": {
+          "name": "issue_project_id",
+          "columns": [
+            "project_id",
+            "id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "issues_project_id_projects_id_fk": {
+          "name": "issues_project_id_projects_id_fk",
+          "tableFrom": "issues",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "issues_author_id_principals_id_fk": {
+          "name": "issues_author_id_principals_id_fk",
+          "tableFrom": "issues",
+          "tableTo": "principals",
+          "columnsFrom": [
+            "author_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "issue_number_bound": {
+          "name": "issue_number_bound",
+          "value": "\"issues\".\"number\" > 0 AND \"issues\".\"number\" <= 2147483647"
+        },
+        "issue_revision": {
+          "name": "issue_revision",
+          "value": "\"issues\".\"revision\" > 0 AND \"issues\".\"revision\" <= 2147483647"
+        },
+        "issue_title_bound": {
+          "name": "issue_title_bound",
+          "value": "length(\"issues\".\"title\") BETWEEN 1 AND 200 AND \"issues\".\"title\" = trim(\"issues\".\"title\")"
+        },
+        "issue_body_bound": {
+          "name": "issue_body_bound",
+          "value": "length(\"issues\".\"body\") <= 32768"
+        },
+        "issue_state_consistency": {
+          "name": "issue_state_consistency",
+          "value": "(\"issues\".\"state\" = 'open' AND \"issues\".\"close_reason\" IS NULL AND \"issues\".\"closed_at\" IS NULL) OR (\"issues\".\"state\" = 'closed' AND \"issues\".\"close_reason\" IS NOT NULL AND \"issues\".\"close_reason\" IN ('completed','not_planned','duplicate','invalid','cannot_reproduce') AND \"issues\".\"closed_at\" IS NOT NULL)"
+        },
+        "issue_time_order": {
+          "name": "issue_time_order",
+          "value": "\"issues\".\"updated_at\" >= \"issues\".\"created_at\" AND (\"issues\".\"closed_at\" IS NULL OR \"issues\".\"closed_at\" >= \"issues\".\"created_at\")"
+        },
+        "issue_id": {
+          "name": "issue_id",
+          "value": "length(\"issues\".\"id\") = 36 AND \"issues\".\"id\" = lower(\"issues\".\"id\") AND length(replace(\"issues\".\"id\", '-', '')) = 32 AND replace(\"issues\".\"id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"issues\".\"id\",9,1) = '-' AND substr(\"issues\".\"id\",14,1) = '-' AND substr(\"issues\".\"id\",19,1) = '-' AND substr(\"issues\".\"id\",24,1) = '-' AND substr(\"issues\".\"id\",15,1) = '4' AND substr(\"issues\".\"id\",20,1) IN ('8','9','a','b')"
+        },
+        "issue_mutation_id": {
+          "name": "issue_mutation_id",
+          "value": "length(\"issues\".\"last_mutation_id\") = 36 AND \"issues\".\"last_mutation_id\" = lower(\"issues\".\"last_mutation_id\") AND length(replace(\"issues\".\"last_mutation_id\", '-', '')) = 32 AND replace(\"issues\".\"last_mutation_id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"issues\".\"last_mutation_id\",9,1) = '-' AND substr(\"issues\".\"last_mutation_id\",14,1) = '-' AND substr(\"issues\".\"last_mutation_id\",19,1) = '-' AND substr(\"issues\".\"last_mutation_id\",24,1) = '-' AND substr(\"issues\".\"last_mutation_id\",15,1) = '4' AND substr(\"issues\".\"last_mutation_id\",20,1) IN ('8','9','a','b')"
+        },
+        "issue_created": {
+          "name": "issue_created",
+          "value": "\"issues\".\"created_at\" IS NULL OR (typeof(\"issues\".\"created_at\") = 'integer' AND \"issues\".\"created_at\" BETWEEN 0 AND 8640000000000000)"
+        },
+        "issue_updated": {
+          "name": "issue_updated",
+          "value": "\"issues\".\"updated_at\" IS NULL OR (typeof(\"issues\".\"updated_at\") = 'integer' AND \"issues\".\"updated_at\" BETWEEN 0 AND 8640000000000000)"
+        },
+        "issue_closed": {
+          "name": "issue_closed",
+          "value": "\"issues\".\"closed_at\" IS NULL OR (typeof(\"issues\".\"closed_at\") = 'integer' AND \"issues\".\"closed_at\" BETWEEN 0 AND 8640000000000000)"
+        }
+      }
+    },
+    "mutation_receipts": {
+      "name": "mutation_receipts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "principal_id": {
+          "name": "principal_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "operation": {
+          "name": "operation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "key_hash": {
+          "name": "key_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payload_hash": {
+          "name": "payload_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "receipt_expiry": {
+          "name": "receipt_expiry",
+          "columns": [
+            "expires_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "receipt_scope": {
+          "name": "receipt_scope",
+          "columns": [
+            "principal_id",
+            "project_id",
+            "operation",
+            "key_hash"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "mutation_receipts_principal_id_principals_id_fk": {
+          "name": "mutation_receipts_principal_id_principals_id_fk",
+          "tableFrom": "mutation_receipts",
+          "tableTo": "principals",
+          "columnsFrom": [
+            "principal_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mutation_receipts_project_id_projects_id_fk": {
+          "name": "mutation_receipts_project_id_projects_id_fk",
+          "tableFrom": "mutation_receipts",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "receipt_hash_length": {
+          "name": "receipt_hash_length",
+          "value": "length(\"mutation_receipts\".\"key_hash\") = 64 AND length(\"mutation_receipts\".\"payload_hash\") = 64"
+        },
+        "receipt_expiry_bound": {
+          "name": "receipt_expiry_bound",
+          "value": "\"mutation_receipts\".\"expires_at\" > \"mutation_receipts\".\"created_at\" AND \"mutation_receipts\".\"expires_at\" <= \"mutation_receipts\".\"created_at\" + 86400000"
+        },
+        "receipt_result": {
+          "name": "receipt_result",
+          "value": "json_valid(\"mutation_receipts\".\"result\") AND length(\"mutation_receipts\".\"result\") <= 65536"
+        },
+        "receipt_id": {
+          "name": "receipt_id",
+          "value": "length(\"mutation_receipts\".\"id\") = 36 AND \"mutation_receipts\".\"id\" = lower(\"mutation_receipts\".\"id\") AND length(replace(\"mutation_receipts\".\"id\", '-', '')) = 32 AND replace(\"mutation_receipts\".\"id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"mutation_receipts\".\"id\",9,1) = '-' AND substr(\"mutation_receipts\".\"id\",14,1) = '-' AND substr(\"mutation_receipts\".\"id\",19,1) = '-' AND substr(\"mutation_receipts\".\"id\",24,1) = '-' AND substr(\"mutation_receipts\".\"id\",15,1) = '4' AND substr(\"mutation_receipts\".\"id\",20,1) IN ('8','9','a','b')"
+        },
+        "receipt_created": {
+          "name": "receipt_created",
+          "value": "\"mutation_receipts\".\"created_at\" IS NULL OR (typeof(\"mutation_receipts\".\"created_at\") = 'integer' AND \"mutation_receipts\".\"created_at\" BETWEEN 0 AND 8640000000000000)"
+        },
+        "receipt_expires": {
+          "name": "receipt_expires",
+          "value": "\"mutation_receipts\".\"expires_at\" IS NULL OR (typeof(\"mutation_receipts\".\"expires_at\") = 'integer' AND \"mutation_receipts\".\"expires_at\" BETWEEN 0 AND 8640000000000000)"
+        }
+      }
+    },
+    "outbox": {
+      "name": "outbox",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "aggregate_id": {
+          "name": "aggregate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_version": {
+          "name": "event_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "payload": {
+          "name": "payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "available_at": {
+          "name": "available_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "outbox_pending": {
+          "name": "outbox_pending",
+          "columns": [
+            "delivered_at",
+            "available_at",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "outbox_project_id_projects_id_fk": {
+          "name": "outbox_project_id_projects_id_fk",
+          "tableFrom": "outbox",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "outbox_attempts": {
+          "name": "outbox_attempts",
+          "value": "\"outbox\".\"attempts\" >= 0"
+        },
+        "outbox_version": {
+          "name": "outbox_version",
+          "value": "\"outbox\".\"event_version\" > 0"
+        },
+        "outbox_payload": {
+          "name": "outbox_payload",
+          "value": "json_valid(\"outbox\".\"payload\") AND length(\"outbox\".\"payload\") <= 65536"
+        },
+        "outbox_id": {
+          "name": "outbox_id",
+          "value": "length(\"outbox\".\"id\") = 36 AND \"outbox\".\"id\" = lower(\"outbox\".\"id\") AND length(replace(\"outbox\".\"id\", '-', '')) = 32 AND replace(\"outbox\".\"id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"outbox\".\"id\",9,1) = '-' AND substr(\"outbox\".\"id\",14,1) = '-' AND substr(\"outbox\".\"id\",19,1) = '-' AND substr(\"outbox\".\"id\",24,1) = '-' AND substr(\"outbox\".\"id\",15,1) = '4' AND substr(\"outbox\".\"id\",20,1) IN ('8','9','a','b')"
+        },
+        "outbox_aggregate_id": {
+          "name": "outbox_aggregate_id",
+          "value": "length(\"outbox\".\"aggregate_id\") = 36 AND \"outbox\".\"aggregate_id\" = lower(\"outbox\".\"aggregate_id\") AND length(replace(\"outbox\".\"aggregate_id\", '-', '')) = 32 AND replace(\"outbox\".\"aggregate_id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"outbox\".\"aggregate_id\",9,1) = '-' AND substr(\"outbox\".\"aggregate_id\",14,1) = '-' AND substr(\"outbox\".\"aggregate_id\",19,1) = '-' AND substr(\"outbox\".\"aggregate_id\",24,1) = '-' AND substr(\"outbox\".\"aggregate_id\",15,1) = '4' AND substr(\"outbox\".\"aggregate_id\",20,1) IN ('8','9','a','b')"
+        },
+        "outbox_created": {
+          "name": "outbox_created",
+          "value": "\"outbox\".\"created_at\" IS NULL OR (typeof(\"outbox\".\"created_at\") = 'integer' AND \"outbox\".\"created_at\" BETWEEN 0 AND 8640000000000000)"
+        },
+        "outbox_available": {
+          "name": "outbox_available",
+          "value": "\"outbox\".\"available_at\" IS NULL OR (typeof(\"outbox\".\"available_at\") = 'integer' AND \"outbox\".\"available_at\" BETWEEN 0 AND 8640000000000000)"
+        },
+        "outbox_delivered": {
+          "name": "outbox_delivered",
+          "value": "\"outbox\".\"delivered_at\" IS NULL OR (typeof(\"outbox\".\"delivered_at\") = 'integer' AND \"outbox\".\"delivered_at\" BETWEEN 0 AND 8640000000000000)"
+        }
+      }
+    },
+    "principals": {
+      "name": "principals",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        }
+      },
+      "indexes": {
+        "principal_identity_kind": {
+          "name": "principal_identity_kind",
+          "columns": [
+            "id",
+            "kind"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "principal_kind": {
+          "name": "principal_kind",
+          "value": "\"principals\".\"kind\" IN ('user','staff')"
+        },
+        "principal_status": {
+          "name": "principal_status",
+          "value": "\"principals\".\"status\" IN ('active','suspended','deleted')"
+        },
+        "principal_revision": {
+          "name": "principal_revision",
+          "value": "\"principals\".\"revision\" > 0 AND \"principals\".\"revision\" <= 2147483647"
+        },
+        "principal_id": {
+          "name": "principal_id",
+          "value": "length(\"principals\".\"id\") = 36 AND \"principals\".\"id\" = lower(\"principals\".\"id\") AND length(replace(\"principals\".\"id\", '-', '')) = 32 AND replace(\"principals\".\"id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"principals\".\"id\",9,1) = '-' AND substr(\"principals\".\"id\",14,1) = '-' AND substr(\"principals\".\"id\",19,1) = '-' AND substr(\"principals\".\"id\",24,1) = '-' AND substr(\"principals\".\"id\",15,1) = '4' AND substr(\"principals\".\"id\",20,1) IN ('8','9','a','b')"
+        },
+        "principal_created": {
+          "name": "principal_created",
+          "value": "\"principals\".\"created_at\" IS NULL OR (typeof(\"principals\".\"created_at\") = 'integer' AND \"principals\".\"created_at\" BETWEEN 0 AND 8640000000000000)"
+        }
+      }
+    },
+    "projects": {
+      "name": "projects",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'public'"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "next_issue_number": {
+          "name": "next_issue_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "projects_slug_unique": {
+          "name": "projects_slug_unique",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "project_visibility": {
+          "name": "project_visibility",
+          "value": "\"projects\".\"visibility\" IN ('public','private')"
+        },
+        "project_status": {
+          "name": "project_status",
+          "value": "\"projects\".\"status\" IN ('active','archived')"
+        },
+        "project_number_bound": {
+          "name": "project_number_bound",
+          "value": "\"projects\".\"next_issue_number\" >= 1 AND \"projects\".\"next_issue_number\" <= 2147483647"
+        },
+        "project_revision": {
+          "name": "project_revision",
+          "value": "\"projects\".\"revision\" > 0 AND \"projects\".\"revision\" <= 2147483647"
+        },
+        "project_slug": {
+          "name": "project_slug",
+          "value": "length(\"projects\".\"slug\") BETWEEN 1 AND 63 AND \"projects\".\"slug\" = lower(\"projects\".\"slug\")"
+        },
+        "project_time_order": {
+          "name": "project_time_order",
+          "value": "\"projects\".\"updated_at\" >= \"projects\".\"created_at\""
+        },
+        "project_id": {
+          "name": "project_id",
+          "value": "length(\"projects\".\"id\") = 36 AND \"projects\".\"id\" = lower(\"projects\".\"id\") AND length(replace(\"projects\".\"id\", '-', '')) = 32 AND replace(\"projects\".\"id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"projects\".\"id\",9,1) = '-' AND substr(\"projects\".\"id\",14,1) = '-' AND substr(\"projects\".\"id\",19,1) = '-' AND substr(\"projects\".\"id\",24,1) = '-' AND substr(\"projects\".\"id\",15,1) = '4' AND substr(\"projects\".\"id\",20,1) IN ('8','9','a','b')"
+        },
+        "project_created": {
+          "name": "project_created",
+          "value": "\"projects\".\"created_at\" IS NULL OR (typeof(\"projects\".\"created_at\") = 'integer' AND \"projects\".\"created_at\" BETWEEN 0 AND 8640000000000000)"
+        },
+        "project_updated": {
+          "name": "project_updated",
+          "value": "\"projects\".\"updated_at\" IS NULL OR (typeof(\"projects\".\"updated_at\") = 'integer' AND \"projects\".\"updated_at\" BETWEEN 0 AND 8640000000000000)"
+        }
+      }
+    },
+    "timeline_events": {
+      "name": "timeline_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "issue_id": {
+          "name": "issue_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "aggregate_revision": {
+          "name": "aggregate_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "timeline_issue_order": {
+          "name": "timeline_issue_order",
+          "columns": [
+            "project_id",
+            "issue_id",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "timeline_issue_revision": {
+          "name": "timeline_issue_revision",
+          "columns": [
+            "issue_id",
+            "aggregate_revision"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "timeline_events_actor_id_principals_id_fk": {
+          "name": "timeline_events_actor_id_principals_id_fk",
+          "tableFrom": "timeline_events",
+          "tableTo": "principals",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "timeline_issue_project_fk": {
+          "name": "timeline_issue_project_fk",
+          "tableFrom": "timeline_events",
+          "tableTo": "issues",
+          "columnsFrom": [
+            "project_id",
+            "issue_id"
+          ],
+          "columnsTo": [
+            "project_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "timeline_revision": {
+          "name": "timeline_revision",
+          "value": "\"timeline_events\".\"aggregate_revision\" > 0"
+        },
+        "timeline_metadata": {
+          "name": "timeline_metadata",
+          "value": "json_valid(\"timeline_events\".\"metadata\") AND length(\"timeline_events\".\"metadata\") <= 65536"
+        },
+        "timeline_id": {
+          "name": "timeline_id",
+          "value": "length(\"timeline_events\".\"id\") = 36 AND \"timeline_events\".\"id\" = lower(\"timeline_events\".\"id\") AND length(replace(\"timeline_events\".\"id\", '-', '')) = 32 AND replace(\"timeline_events\".\"id\", '-', '') NOT GLOB '*[^0-9a-f]*' AND substr(\"timeline_events\".\"id\",9,1) = '-' AND substr(\"timeline_events\".\"id\",14,1) = '-' AND substr(\"timeline_events\".\"id\",19,1) = '-' AND substr(\"timeline_events\".\"id\",24,1) = '-' AND substr(\"timeline_events\".\"id\",15,1) = '4' AND substr(\"timeline_events\".\"id\",20,1) IN ('8','9','a','b')"
+        },
+        "timeline_created": {
+          "name": "timeline_created",
+          "value": "\"timeline_events\".\"created_at\" IS NULL OR (typeof(\"timeline_events\".\"created_at\") = 'integer' AND \"timeline_events\".\"created_at\" BETWEEN 0 AND 8640000000000000)"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperBug Development"
+  short_description: "Develop HyperBug within its architecture and plan"
+  default_prompt: "Use $hyperbug-development to implement the next eligible HyperBug checklist item and record the session handoff."

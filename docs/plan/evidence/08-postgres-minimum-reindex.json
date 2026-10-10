@@ -1,0 +1,19 @@
+{
+  "documents": 10,
+  "bodyCodePoints": 28667,
+  "uniqueBodyTokens": 6000,
+  "elapsedMs": 64.64720900000009,
+  "result": {
+    "processed": 10,
+    "updated": 10,
+    "rejectedIds": [],
+    "nextCursor": null
+  },
+  "ledger": [
+    {
+      "day": 20734,
+      "reads": 22000,
+      "writes": 5136
+    }
+  ]
+}

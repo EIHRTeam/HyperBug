@@ -1,0 +1,292 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "ts": "always",
+        "tsx": "always",
+        "js": "always"
+      }
+    ],
+    "no-await-in-loop": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["packages/domain/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**"],
+                "message": "packages/domain is a leaf package: no imports outside itself and no external dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/contracts/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**", "!@sinclair/typebox"],
+                "message": "packages/contracts may depend only on @sinclair/typebox, so a client can read the contract without Elysia."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/security/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!unified",
+                  "!remark-parse",
+                  "!remark-gfm",
+                  "!remark-rehype",
+                  "!rehype-raw",
+                  "!rehype-sanitize",
+                  "!hast-util-to-html",
+                  "!hast",
+                  "!yaml"
+                ],
+                "message": "packages/security may import only reviewed platform-neutral content libraries; no infrastructure dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/config/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**"],
+                "message": "packages/config is a leaf package: no imports outside itself and no external dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/plugin-api/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@sinclair/typebox",
+                  "!@sinclair/typebox/**"
+                ],
+                "message": "packages/plugin-api is the public contract: only @sinclair/typebox may be imported, so one contract serves both profiles."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/plugin-sdk/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**", "!@hyperbug/plugin-api"],
+                "message": "packages/plugin-sdk may import only @hyperbug/plugin-api; the SDK re-exports the contract without host dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/plugin-runtime/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**", "!@hyperbug/plugin-api"],
+                "message": "packages/plugin-runtime currently may import only @hyperbug/plugin-api; Core integration dependencies arrive with module 05.2."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/observability/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["*", "!./**", "../**"],
+                "message": "packages/observability is a leaf package: no imports outside itself and no external dependencies."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/application/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@hyperbug/domain",
+                  "!@hyperbug/contracts",
+                  "!@hyperbug/plugin-api"
+                ],
+                "message": "packages/application may import only @hyperbug/domain, @hyperbug/contracts and @hyperbug/plugin-api."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/testing/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@hyperbug/contracts",
+                  "!@hyperbug/domain",
+                  "!@hyperbug/application"
+                ],
+                "message": "packages/testing may import only @hyperbug/contracts, @hyperbug/domain and @hyperbug/application."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/database/d1/**/*.ts",
+        "packages/database/postgres/**/*.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@hyperbug/domain",
+                  "!@hyperbug/application",
+                  "!@hyperbug/security",
+                  "!@hyperbug/plugin-api",
+                  "!drizzle-orm",
+                  "!drizzle-orm/**",
+                  "!drizzle-kit",
+                  "!pg",
+                  "!@cloudflare/workers-types",
+                  "!@hyperbug/security/**"
+                ],
+                "message": "database adapters may import only @hyperbug/domain, @hyperbug/application, @hyperbug/security, @hyperbug/plugin-api and their own persistence libraries; persistence types stay out of the domain."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/server/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*",
+                  "!./**",
+                  "../**",
+                  "!@hyperbug/application",
+                  "!@hyperbug/domain",
+                  "!@hyperbug/contracts",
+                  "!@hyperbug/security",
+                  "!@hyperbug/config",
+                  "!@hyperbug/observability",
+                  "!elysia",
+                  "!elysia/**",
+                  "!@simplewebauthn/server",
+                  "!@simplewebauthn/server/**",
+                  "!@hyperbug/plugin-api",
+                  "!@hyperbug/security/**"
+                ],
+                "message": "packages/server may import only the shared server-side packages, Elysia and the pinned WebAuthn verifier and @hyperbug/plugin-api."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "tests/**/*.ts",
+        "tooling/**/*.ts",
+        "tooling/**/*.mjs",
+        "packages/database/**/migrations/**/*.ts"
+      ],
+      "rules": {
+        "no-await-in-loop": "off"
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+import { copyFile, mkdir, rm } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { build } from 'tsdown';
+import {
+  appTargets,
+  cloudflareWasmAssets,
+  fixtureTargets,
+} from './build-targets.ts';
+import { workerdFixtureOptions } from './bundler-options.ts';
+import { markdownPolicyUpgradePlugin } from '../tests/fixtures/markdown-policy-upgrade-plugin.ts';
+
+// Single build entry point for the workspace. `pnpm build` runs it, and the
+// Node/workerd test lanes re-run it for the artifacts they need, so no test
+// bundles its own fixture with a hand-copied configuration.
+//
+// Usage: node tooling/build.ts [--target=all|node|cloudflare|cloudflare-ingress|fixtures]
+const targets = new Set([
+  'all',
+  'node',
+  'cloudflare',
+  'cloudflare-minimum',
+  'cloudflare-ingress',
+  'fixtures',
+]);
+const requested = process.argv
+  .filter((argument) => argument.startsWith('--target='))
+  .map((argument) => argument.slice('--target='.length));
+for (const name of requested)
+  if (!targets.has(name)) throw new Error(`Unknown build target: ${name}`);
+const selected = requested.length ? requested : ['all'];
+const wants = (name: string) =>
+  selected.includes('all') || selected.includes(name);
+
+const dist = 'dist';
+// `clean` is off in every target, so ownership of `dist/` stays here: one
+// removal, then whichever artifacts this invocation was asked for.
+if (selected.includes('all')) await rm(dist, { recursive: true, force: true });
+
+// tsdown's programmatic `build()` takes one inline config, so each target is
+// built by its own call. `config: false` keeps it from also loading
+// `tsdown.config.ts`, which re-exports these same targets.
+for (const target of appTargets)
+  if (wants(target.name)) {
+    // A targeted rebuild owns its directory too; remove obsolete SDK chunks.
+    if (!selected.includes('all'))
+      await rm(target.options.outDir, { recursive: true, force: true });
+    await build({ ...target.options, config: false });
+  }
+
+if (wants('cloudflare'))
+  for (const asset of cloudflareWasmAssets) {
+    await mkdir(dirname(asset.output), { recursive: true });
+    await copyFile(asset.source, asset.output);
+  }
+
+for (const fixture of fixtureTargets)
+  if (wants('fixtures'))
+    await build({
+      ...workerdFixtureOptions,
+      config: false,
+      entry: [fixture.entry],
+      outDir: fixture.outDir,
+      ...(fixture.name === 'policy-upgrade-worker'
+        ? { plugins: [markdownPolicyUpgradePlugin()] }
+        : {}),
+    });
+
+if (wants('fixtures'))
+  await build({
+    ...appTargets[0]!.options,
+    config: false,
+    minify: false,
+    sourcemap: false,
+    entry: ['tests/fixtures/policy-upgrade-server.ts'],
+    outDir: 'dist/policy-upgrade-server',
+    plugins: [markdownPolicyUpgradePlugin()],
+    outputOptions: { codeSplitting: false },
+  });
+
+console.log(`Built targets: ${selected.join(', ')}`);

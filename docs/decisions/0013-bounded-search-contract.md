@@ -1,0 +1,32 @@
+# ADR 0013: Bounded search contract and derived index
+
+Status: Accepted direction; user approved SEARCH-SPEC and B2 on 2026-10-09. Runtime acceptance remains required.
+Date: 2026-10-09.
+
+## Context
+
+Module 08 must provide shared search semantics on D1 and PostgreSQL while preserving current authorization, the existing plain-text projection, keyset pagination and strict resource bounds. PERFORMANCE §§16–19 and 76 require an explicit decision for search/pagination/denormalization. Native FTS5 and PostgreSQL query languages and ranking are not interchangeable public contracts.
+
+## Decision
+
+Adopt [SEARCH-SPEC](../SEARCH-SPEC.md): independently versioned AST v1 with at most four OR branches and sixteen predicates, project-scoped search and filter-suggestion routes with stricter page/window budgets, and immutable creation-time/ID ordering. Reuse the existing cursor envelope rules with a resolved-query fingerprint and traversal budget; preserve ordinary list cursors. Expose only the seven MVP filters. Do not publish raw FTS syntax or native relevance scores.
+
+Index the existing title/plain-text projection as derived data. SQLite unicode61 with diacritics retained and PostgreSQL simple configuration avoid stemming; documented native punctuation/Unicode differences require runtime corpus evidence. Current canonical authorization/moderation/revision always fences index membership, including suggestions and any internal counts. Unfinished or unavailable search produces a bounded explicit error; direct Issue access remains canonical.
+
+## Consequences and verification
+
+Search can lag canonical writes but cannot grant authorization or leak edited/moderated content through old text. UUID filter values are stable across renames but require a suggestion/selection flow. Creation ordering supports stable bounded traversal; native relevance ordering is deferred. Complexity/window values are design ceilings and do not prove execution/CPU/row budgets.
+
+B2 must verify parameterized compilers, parser fixtures and keyset hydration on both stores. B3 must verify stale-index authorization, bounded lifecycle and representative query plans/counts/rows/latency. B4 must verify out-of-order revisions and local tier/reindex bounds. Module 09 owns dispatch/queue/retry acceptance; 13.G6 owns actual Free-plan evidence. No existing normative baseline or gate is relaxed.
+
+## B3 lifecycle refinement
+
+Space-delimited shared tokens and separate-field PostgreSQL phrase rechecks avoid native tsvector positional truncation for valid long/repeated bodies. GIN remains candidate acceleration; canonical text remains Module 07's representation. Initial/reconciliation tasks are bounded resumable pages and never run on reads. Current missing/stale documents fail explicitly; candidate/project ceilings and a one-second store deadline preserve direct Issue availability. The operational 60-second delay target requires Module 09 scheduling; local handler readiness does not claim dispatch latency.
+
+## B4 budget and event refinement
+
+The main statement independently materializes a bounded authorized ID set and rejects overflow, preserving the candidate ceiling across readiness races. Cursor policy1 fingerprints this ceiling and the shared tokenizer; pre-release policy-less cursors retire safely. Index events use existing immutable timeline revision witnesses, with no content-bearing event payload or new producer contract. Duplicate/stale events cannot overwrite newer derived state. One-page operator reindex requires the existing sensitive administrator guard.
+
+The PostgreSQL optimizer chose a global canonical scan for an ordinary candidate LIMIT, then multiplied canonical probes by text hits after the first recursive refinement. Final compilation uses ordered recursive index probes, materializes canonical summaries once per candidate, and independently materializes each scoped GIN hit set. Representative EXPLAIN ANALYZE confirms bounded canonical loops and no canonical sequential scan; a private-project probe executes neither canonical nor derived scans. The tradeoff is bounded per-candidate database work and temporary materialization rather than the earlier faster but insufficiently fenced plan. No planner-wide setting or widened ceiling is used.
+
+Minimum uses a singleton atomic daily conservative reservation, smaller than the provider's shared allowance, with invocation-local D1 statement/row accounting. Unused reservations are not refunded. Authentication/admission and non-search work retain their separate allocation; provider-global quotas and real CPU/billing evidence remain Module09/13 integration work. Conservative limits can reduce availability but never permit a fallback scan or weaken authorization. All quota/CPU claims retain their recorded local scope.

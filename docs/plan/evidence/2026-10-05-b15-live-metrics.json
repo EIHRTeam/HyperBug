@@ -1,0 +1,1426 @@
+{
+  "date": "2026-10-05",
+  "profile": "cloudflare-minimum",
+  "billingPlan": "unverified: subscription API denied; standard usage model is not plan evidence",
+  "instrumented": true,
+  "fixture": {
+    "users": 10,
+    "staff": 10,
+    "issues": 101,
+    "labels": 20,
+    "relationsPerIssue": {
+      "labels": 20,
+      "assignees": 10
+    },
+    "comments": 3
+  },
+  "versions": {
+    "node": "24.21.0",
+    "wrangler": "4.144.0",
+    "postgresLocal": "18.6"
+  },
+  "measurement": {
+    "cpu": "wrangler tail cpuTime in ms; includes ignored measurement wrapper",
+    "handler": "Worker wrapper wall-clock around application handler; includes I/O; client latency separate",
+    "statements": "D1 result metadata counts every statement including batch members",
+    "rows": "D1 metadata; rows_written includes index/trigger writes",
+    "sampleLimits": "Small bounded samples across deployments/locations, not a sustained p99/SLO or cold-isolate experiment"
+  },
+  "cases": [
+    {
+      "name": "Public registration",
+      "label": "registration-cold",
+      "samples": 1,
+      "statuses": {
+        "202": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 45,
+        "median": 45,
+        "max": 45
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 637,
+        "median": 637,
+        "max": 637
+      },
+      "clientLatencyMs": {
+        "n": 1,
+        "min": 1028.038,
+        "median": 1028.038,
+        "max": 1028.038
+      },
+      "statements": {
+        "n": 1,
+        "min": 8,
+        "median": 8,
+        "max": 8
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 16,
+        "median": 16,
+        "max": 16
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 3.082,
+        "median": 3.082,
+        "max": 3.082
+      },
+      "samplesData": [
+        {
+          "cpuMs": 45,
+          "handlerMs": 637,
+          "statements": 8,
+          "rowsRead": 16,
+          "rowsWritten": 15,
+          "databaseSqlMs": 3.0821,
+          "status": 202,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "First password login",
+      "label": "password-login-cold",
+      "samples": 1,
+      "statuses": {
+        "200": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 40,
+        "median": 40,
+        "max": 40
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 1215,
+        "median": 1215,
+        "max": 1215
+      },
+      "clientLatencyMs": {
+        "n": 1,
+        "min": 1509.66,
+        "median": 1509.66,
+        "max": 1509.66
+      },
+      "statements": {
+        "n": 1,
+        "min": 11,
+        "median": 11,
+        "max": 11
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 33,
+        "median": 33,
+        "max": 33
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 12,
+        "median": 12,
+        "max": 12
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 3.979,
+        "median": 3.979,
+        "max": 3.979
+      },
+      "samplesData": [
+        {
+          "cpuMs": 40,
+          "handlerMs": 1215,
+          "statements": 11,
+          "rowsRead": 33,
+          "rowsWritten": 12,
+          "databaseSqlMs": 3.9794,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Warm password login",
+      "label": "password-login-warm",
+      "samples": 1,
+      "statuses": {
+        "200": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 32,
+        "median": 32,
+        "max": 32
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 1184,
+        "median": 1184,
+        "max": 1184
+      },
+      "clientLatencyMs": null,
+      "statements": {
+        "n": 1,
+        "min": 11,
+        "median": 11,
+        "max": 11
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 35,
+        "median": 35,
+        "max": 35
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 11,
+        "median": 11,
+        "max": 11
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 3.645,
+        "median": 3.645,
+        "max": 3.645
+      },
+      "samplesData": [
+        {
+          "cpuMs": 32,
+          "handlerMs": 1184,
+          "statements": 11,
+          "rowsRead": 35,
+          "rowsWritten": 11,
+          "databaseSqlMs": 3.6452,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Ten simultaneous password logins",
+      "label": "parallel-login-final",
+      "samples": 10,
+      "statuses": {
+        "200": 10
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 10,
+        "min": 20,
+        "median": 29,
+        "max": 47
+      },
+      "handlerMs": {
+        "n": 10,
+        "min": 322,
+        "median": 430.5,
+        "max": 493
+      },
+      "clientLatencyMs": {
+        "n": 10,
+        "min": 945.564,
+        "median": 1170.369,
+        "max": 1242.579
+      },
+      "statements": {
+        "n": 10,
+        "min": 9,
+        "median": 9,
+        "max": 11
+      },
+      "rowsRead": {
+        "n": 10,
+        "min": 30,
+        "median": 31,
+        "max": 35
+      },
+      "rowsWritten": {
+        "n": 10,
+        "min": 11,
+        "median": 11,
+        "max": 12
+      },
+      "databaseSqlMs": {
+        "n": 10,
+        "min": 3.177,
+        "median": 3.675,
+        "max": 6.508
+      },
+      "samplesData": [
+        {
+          "cpuMs": 24,
+          "handlerMs": 432,
+          "statements": 9,
+          "rowsRead": 31,
+          "rowsWritten": 11,
+          "databaseSqlMs": 3.9086,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 38,
+          "handlerMs": 419,
+          "statements": 11,
+          "rowsRead": 35,
+          "rowsWritten": 11,
+          "databaseSqlMs": 3.704,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 27,
+          "handlerMs": 429,
+          "statements": 9,
+          "rowsRead": 31,
+          "rowsWritten": 11,
+          "databaseSqlMs": 3.6457,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 47,
+          "handlerMs": 444,
+          "statements": 11,
+          "rowsRead": 35,
+          "rowsWritten": 11,
+          "databaseSqlMs": 3.9942,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 28,
+          "handlerMs": 467,
+          "statements": 9,
+          "rowsRead": 31,
+          "rowsWritten": 11,
+          "databaseSqlMs": 3.2539,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 34,
+          "handlerMs": 462,
+          "statements": 9,
+          "rowsRead": 31,
+          "rowsWritten": 11,
+          "databaseSqlMs": 3.1769,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 30,
+          "handlerMs": 493,
+          "statements": 9,
+          "rowsRead": 31,
+          "rowsWritten": 11,
+          "databaseSqlMs": 3.2706,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 43,
+          "handlerMs": 322,
+          "statements": 11,
+          "rowsRead": 34,
+          "rowsWritten": 11,
+          "databaseSqlMs": 4.3025,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 25,
+          "handlerMs": 337,
+          "statements": 11,
+          "rowsRead": 35,
+          "rowsWritten": 11,
+          "databaseSqlMs": 6.5083,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 20,
+          "handlerMs": 350,
+          "statements": 9,
+          "rowsRead": 30,
+          "rowsWritten": 12,
+          "databaseSqlMs": 3.3445,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Worst create (20 labels, 10 assignees)",
+      "label": "worst-create",
+      "samples": 1,
+      "statuses": {
+        "201": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 33,
+        "median": 33,
+        "max": 33
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 1555,
+        "median": 1555,
+        "max": 1555
+      },
+      "clientLatencyMs": null,
+      "statements": {
+        "n": 1,
+        "min": 19,
+        "median": 19,
+        "max": 19
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 176,
+        "median": 176,
+        "max": 176
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 110,
+        "median": 110,
+        "max": 110
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 7.881,
+        "median": 7.881,
+        "max": 7.881
+      },
+      "samplesData": [
+        {
+          "cpuMs": 33,
+          "handlerMs": 1555,
+          "statements": 19,
+          "rowsRead": 176,
+          "rowsWritten": 110,
+          "databaseSqlMs": 7.8811,
+          "status": 201,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Comment burst",
+      "label": "comment-burst",
+      "samples": 3,
+      "statuses": {
+        "201": 3
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 3,
+        "min": 11,
+        "median": 14,
+        "max": 16
+      },
+      "handlerMs": {
+        "n": 3,
+        "min": 1033,
+        "median": 1060,
+        "max": 1171
+      },
+      "clientLatencyMs": null,
+      "statements": {
+        "n": 3,
+        "min": 12,
+        "median": 12,
+        "max": 12
+      },
+      "rowsRead": {
+        "n": 3,
+        "min": 18,
+        "median": 19,
+        "max": 19
+      },
+      "rowsWritten": {
+        "n": 3,
+        "min": 15,
+        "median": 15,
+        "max": 16
+      },
+      "databaseSqlMs": {
+        "n": 3,
+        "min": 3.252,
+        "median": 3.429,
+        "max": 3.946
+      },
+      "samplesData": [
+        {
+          "cpuMs": 16,
+          "handlerMs": 1171,
+          "statements": 12,
+          "rowsRead": 18,
+          "rowsWritten": 16,
+          "databaseSqlMs": 3.946,
+          "status": 201,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 14,
+          "handlerMs": 1033,
+          "statements": 12,
+          "rowsRead": 19,
+          "rowsWritten": 15,
+          "databaseSqlMs": 3.2522,
+          "status": 201,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 11,
+          "handlerMs": 1060,
+          "statements": 12,
+          "rowsRead": 19,
+          "rowsWritten": 15,
+          "databaseSqlMs": 3.4293,
+          "status": 201,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Full page (100 items, all relations)",
+      "label": "anonymous-list-100-full",
+      "samples": 3,
+      "statuses": {
+        "200": 3
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 3,
+        "min": 8,
+        "median": 10,
+        "max": 19
+      },
+      "handlerMs": {
+        "n": 3,
+        "min": 592,
+        "median": 657,
+        "max": 682
+      },
+      "clientLatencyMs": {
+        "n": 3,
+        "min": 789.534,
+        "median": 880.109,
+        "max": 1647.762
+      },
+      "statements": {
+        "n": 3,
+        "min": 4,
+        "median": 4,
+        "max": 4
+      },
+      "rowsRead": {
+        "n": 3,
+        "min": 3700,
+        "median": 3700,
+        "max": 3700
+      },
+      "rowsWritten": {
+        "n": 3,
+        "min": 0,
+        "median": 0,
+        "max": 0
+      },
+      "databaseSqlMs": {
+        "n": 3,
+        "min": 6.127,
+        "median": 6.191,
+        "max": 8.48
+      },
+      "samplesData": [
+        {
+          "cpuMs": 19,
+          "handlerMs": 657,
+          "statements": 4,
+          "rowsRead": 3700,
+          "rowsWritten": 0,
+          "databaseSqlMs": 8.4799,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 8,
+          "handlerMs": 592,
+          "statements": 4,
+          "rowsRead": 3700,
+          "rowsWritten": 0,
+          "databaseSqlMs": 6.1274,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 10,
+          "handlerMs": 682,
+          "statements": 4,
+          "rowsRead": 3700,
+          "rowsWritten": 0,
+          "databaseSqlMs": 6.1906,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Session polling",
+      "label": "session-poll",
+      "samples": 5,
+      "statuses": {
+        "200": 5
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 5,
+        "min": 5,
+        "median": 7,
+        "max": 8
+      },
+      "handlerMs": {
+        "n": 5,
+        "min": 237,
+        "median": 238,
+        "max": 248
+      },
+      "clientLatencyMs": {
+        "n": 5,
+        "min": 430.925,
+        "median": 445.355,
+        "max": 663.28
+      },
+      "statements": {
+        "n": 5,
+        "min": 2,
+        "median": 2,
+        "max": 2
+      },
+      "rowsRead": {
+        "n": 5,
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "rowsWritten": {
+        "n": 5,
+        "min": 0,
+        "median": 0,
+        "max": 0
+      },
+      "databaseSqlMs": {
+        "n": 5,
+        "min": 0.782,
+        "median": 0.844,
+        "max": 1.077
+      },
+      "samplesData": [
+        {
+          "cpuMs": 7,
+          "handlerMs": 238,
+          "statements": 2,
+          "rowsRead": 6,
+          "rowsWritten": 0,
+          "databaseSqlMs": 0.914,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 8,
+          "handlerMs": 237,
+          "statements": 2,
+          "rowsRead": 6,
+          "rowsWritten": 0,
+          "databaseSqlMs": 0.8227,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 5,
+          "handlerMs": 239,
+          "statements": 2,
+          "rowsRead": 6,
+          "rowsWritten": 0,
+          "databaseSqlMs": 0.8442,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 6,
+          "handlerMs": 237,
+          "statements": 2,
+          "rowsRead": 6,
+          "rowsWritten": 0,
+          "databaseSqlMs": 0.7824,
+          "status": 200,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 7,
+          "handlerMs": 248,
+          "statements": 2,
+          "rowsRead": 6,
+          "rowsWritten": 0,
+          "databaseSqlMs": 1.077,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Invalid password/lockout delay",
+      "label": "failed-login",
+      "samples": 5,
+      "statuses": {
+        "401": 3,
+        "429": 2
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 5,
+        "min": 4,
+        "median": 25,
+        "max": 49
+      },
+      "handlerMs": {
+        "n": 5,
+        "min": 251,
+        "median": 595,
+        "max": 860
+      },
+      "clientLatencyMs": null,
+      "statements": {
+        "n": 5,
+        "min": 3,
+        "median": 6,
+        "max": 8
+      },
+      "rowsRead": {
+        "n": 5,
+        "min": 9,
+        "median": 14,
+        "max": 15
+      },
+      "rowsWritten": {
+        "n": 5,
+        "min": 4,
+        "median": 6,
+        "max": 8
+      },
+      "databaseSqlMs": {
+        "n": 5,
+        "min": 1.074,
+        "median": 2.071,
+        "max": 4.175
+      },
+      "samplesData": [
+        {
+          "cpuMs": 49,
+          "handlerMs": 860,
+          "statements": 8,
+          "rowsRead": 15,
+          "rowsWritten": 8,
+          "databaseSqlMs": 4.1751,
+          "status": 401,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 4,
+          "handlerMs": 256,
+          "statements": 3,
+          "rowsRead": 9,
+          "rowsWritten": 4,
+          "databaseSqlMs": 1.4957,
+          "status": 429,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 25,
+          "handlerMs": 604,
+          "statements": 6,
+          "rowsRead": 14,
+          "rowsWritten": 6,
+          "databaseSqlMs": 2.0708,
+          "status": 401,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 4,
+          "handlerMs": 251,
+          "statements": 3,
+          "rowsRead": 9,
+          "rowsWritten": 4,
+          "databaseSqlMs": 1.074,
+          "status": 429,
+          "errorCode": null
+        },
+        {
+          "cpuMs": 26,
+          "handlerMs": 595,
+          "statements": 6,
+          "rowsRead": 14,
+          "rowsWritten": 6,
+          "databaseSqlMs": 2.0886,
+          "status": 401,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Locked login",
+      "label": "locked-login",
+      "samples": 1,
+      "statuses": {
+        "429": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 2,
+        "median": 2,
+        "max": 2
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 127,
+        "median": 127,
+        "max": 127
+      },
+      "clientLatencyMs": null,
+      "statements": {
+        "n": 1,
+        "min": 2,
+        "median": 2,
+        "max": 2
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 8,
+        "median": 8,
+        "max": 8
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 4,
+        "median": 4,
+        "max": 4
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 0.902,
+        "median": 0.902,
+        "max": 0.902
+      },
+      "samplesData": [
+        {
+          "cpuMs": 2,
+          "handlerMs": 127,
+          "statements": 2,
+          "rowsRead": 8,
+          "rowsWritten": 4,
+          "databaseSqlMs": 0.902,
+          "status": 429,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Stale recovery generation",
+      "label": "recovery-generation",
+      "samples": 1,
+      "statuses": {
+        "403": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 7,
+        "median": 7,
+        "max": 7
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 226,
+        "median": 226,
+        "max": 226
+      },
+      "clientLatencyMs": null,
+      "statements": {
+        "n": 1,
+        "min": 2,
+        "median": 2,
+        "max": 2
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 0,
+        "median": 0,
+        "max": 0
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 0.639,
+        "median": 0.639,
+        "max": 0.639
+      },
+      "samplesData": [
+        {
+          "cpuMs": 7,
+          "handlerMs": 226,
+          "statements": 2,
+          "rowsRead": 6,
+          "rowsWritten": 0,
+          "databaseSqlMs": 0.6387,
+          "status": 403,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Fresh recovery generation",
+      "label": "recovery-generation",
+      "samples": 1,
+      "statuses": {
+        "200": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 9,
+        "median": 9,
+        "max": 9
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 474,
+        "median": 474,
+        "max": 474
+      },
+      "clientLatencyMs": null,
+      "statements": {
+        "n": 1,
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 19,
+        "median": 19,
+        "max": 19
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 33,
+        "median": 33,
+        "max": 33
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 2.368,
+        "median": 2.368,
+        "max": 2.368
+      },
+      "samplesData": [
+        {
+          "cpuMs": 9,
+          "handlerMs": 474,
+          "statements": 15,
+          "rowsRead": 19,
+          "rowsWritten": 33,
+          "databaseSqlMs": 2.3681,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Recovery redemption",
+      "label": "recovery-redemption",
+      "samples": 1,
+      "statuses": {
+        "200": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 48,
+        "median": 48,
+        "max": 48
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 1340,
+        "median": 1340,
+        "max": 1340
+      },
+      "clientLatencyMs": {
+        "n": 1,
+        "min": 2233.233,
+        "median": 2233.233,
+        "max": 2233.233
+      },
+      "statements": {
+        "n": 1,
+        "min": 12,
+        "median": 12,
+        "max": 12
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 56,
+        "median": 56,
+        "max": 56
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 19,
+        "median": 19,
+        "max": 19
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 4.594,
+        "median": 4.594,
+        "max": 4.594
+      },
+      "samplesData": [
+        {
+          "cpuMs": 48,
+          "handlerMs": 1340,
+          "statements": 12,
+          "rowsRead": 56,
+          "rowsWritten": 19,
+          "databaseSqlMs": 4.5942,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Old session after recovery",
+      "label": "session-after-recovery",
+      "samples": 1,
+      "statuses": {
+        "401": 1
+      },
+      "errorCodes": [
+        "LOGIN_DENIED"
+      ],
+      "cpuMs": {
+        "n": 1,
+        "min": 16,
+        "median": 16,
+        "max": 16
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 334,
+        "median": 334,
+        "max": 334
+      },
+      "clientLatencyMs": {
+        "n": 1,
+        "min": 1010.497,
+        "median": 1010.497,
+        "max": 1010.497
+      },
+      "statements": {
+        "n": 1,
+        "min": 3,
+        "median": 3,
+        "max": 3
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 4,
+        "median": 4,
+        "max": 4
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 0,
+        "median": 0,
+        "max": 0
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 3.437,
+        "median": 3.437,
+        "max": 3.437
+      },
+      "samplesData": [
+        {
+          "cpuMs": 16,
+          "handlerMs": 334,
+          "statements": 3,
+          "rowsRead": 4,
+          "rowsWritten": 0,
+          "databaseSqlMs": 3.4368,
+          "status": 401,
+          "errorCode": "LOGIN_DENIED"
+        }
+      ]
+    },
+    {
+      "name": "Native passkey registration",
+      "label": "passkey-register",
+      "samples": 1,
+      "statuses": {
+        "200": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 12,
+        "median": 12,
+        "max": 12
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 601,
+        "median": 601,
+        "max": 601
+      },
+      "clientLatencyMs": {
+        "n": 1,
+        "min": 804.077,
+        "median": 804.077,
+        "max": 804.077
+      },
+      "statements": {
+        "n": 1,
+        "min": 5,
+        "median": 5,
+        "max": 5
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 10,
+        "median": 10,
+        "max": 10
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 7,
+        "median": 7,
+        "max": 7
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 1.85,
+        "median": 1.85,
+        "max": 1.85
+      },
+      "samplesData": [
+        {
+          "cpuMs": 12,
+          "handlerMs": 601,
+          "statements": 5,
+          "rowsRead": 10,
+          "rowsWritten": 7,
+          "databaseSqlMs": 1.8505,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Passkey login without configured CAPTCHA",
+      "label": "passkey-login-no-captcha",
+      "samples": 1,
+      "statuses": {
+        "200": 1
+      },
+      "errorCodes": [],
+      "cpuMs": {
+        "n": 1,
+        "min": 16,
+        "median": 16,
+        "max": 16
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 874,
+        "median": 874,
+        "max": 874
+      },
+      "clientLatencyMs": {
+        "n": 1,
+        "min": 1087.804,
+        "median": 1087.804,
+        "max": 1087.804
+      },
+      "statements": {
+        "n": 1,
+        "min": 8,
+        "median": 8,
+        "max": 8
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 29,
+        "median": 29,
+        "max": 29
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 13,
+        "median": 13,
+        "max": 13
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 3.224,
+        "median": 3.224,
+        "max": 3.224
+      },
+      "samplesData": [
+        {
+          "cpuMs": 16,
+          "handlerMs": 874,
+          "statements": 8,
+          "rowsRead": 29,
+          "rowsWritten": 13,
+          "databaseSqlMs": 3.2236,
+          "status": 200,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "name": "Configured CAPTCHA: missing token",
+      "label": "captcha-missing-token",
+      "samples": 1,
+      "statuses": {
+        "403": 1
+      },
+      "errorCodes": [
+        "CAPTCHA_DENIED"
+      ],
+      "cpuMs": {
+        "n": 1,
+        "min": 7,
+        "median": 7,
+        "max": 7
+      },
+      "handlerMs": {
+        "n": 1,
+        "min": 136,
+        "median": 136,
+        "max": 136
+      },
+      "clientLatencyMs": {
+        "n": 1,
+        "min": 437.839,
+        "median": 437.839,
+        "max": 437.839
+      },
+      "statements": {
+        "n": 1,
+        "min": 2,
+        "median": 2,
+        "max": 2
+      },
+      "rowsRead": {
+        "n": 1,
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "rowsWritten": {
+        "n": 1,
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "databaseSqlMs": {
+        "n": 1,
+        "min": 1.101,
+        "median": 1.101,
+        "max": 1.101
+      },
+      "samplesData": [
+        {
+          "cpuMs": 7,
+          "handlerMs": 136,
+          "statements": 2,
+          "rowsRead": 6,
+          "rowsWritten": 6,
+          "databaseSqlMs": 1.1007,
+          "status": 403,
+          "errorCode": "CAPTCHA_DENIED"
+        }
+      ]
+    }
+  ],
+  "roundTripsMs": {
+    "n": 537,
+    "min": 14,
+    "median": 109,
+    "max": 284
+  },
+  "serverSqlStatementMs": {
+    "n": 627,
+    "min": 0.057,
+    "median": 0.354,
+    "max": 5.107
+  },
+  "deployment": {
+    "instrumentedApi": {
+      "uploadKiB": 3293.47,
+      "gzipKiB": 624.42,
+      "startupMs": 122
+    },
+    "apiStartupRangeMs": {
+      "min": 115,
+      "max": 142,
+      "samples": 6
+    },
+    "ingress": {
+      "uploadKiB": 11.78,
+      "gzipKiB": 3.73,
+      "startupMs": 2
+    }
+  },
+  "observability": {
+    "apiTailInvocations": 118,
+    "ingressTailInvocations": 118,
+    "runtimeErrors": 0,
+    "apiObservedLogMessages": 512,
+    "knownMeasurementMessages": 118,
+    "remainingObservedMessages": 394,
+    "ingressObservedLogMessages": 0,
+    "productionHeadSamplingRate": 0.1,
+    "localAndStagingHeadSamplingRate": 1,
+    "logBytesAndBilling": "unmeasured; tail counts are not persisted-log bytes or billed requests"
+  },
+  "analytics": {
+    "apiInitial": [
+      {
+        "dimensions": {
+          "scriptName": "hbr-bfdbd5be-api",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 11010,
+          "cpuTimeP99": 50076
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 78,
+          "subrequests": 0
+        }
+      }
+    ],
+    "postCleanupApi": "empty result after script deletion",
+    "ingressFinal": [
+      {
+        "dimensions": {
+          "scriptName": "hbr-bfdbd5be-ingress",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 1076,
+          "cpuTimeP99": 2520
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 126
+        }
+      }
+    ],
+    "cpuQuantileUnit": "microseconds",
+    "billingInterpretation": "Both scripts have invocations; no daily quota or double-billing conclusion"
+  },
+  "priorConcurrency": {
+    "defaultPythonUserAgent": "10 WAF HTTP 403, before Core",
+    "oneSlot": {
+      "success": 7,
+      "unavailable": 3
+    },
+    "oneSlotRecheck": {
+      "success": 3,
+      "unavailable": 6,
+      "rateLimited": 1
+    },
+    "finalTenSlot": {
+      "success": 10,
+      "unavailable": 0,
+      "rateLimited": 0
+    },
+    "counters": "No counter reset; final run after natural hourly window reset",
+    "passwordIterations": 50000
+  },
+  "browser": {
+    "nativeVirtualAuthenticator": true,
+    "passkeyUserVerificationRequired": true,
+    "authorizeLoginRedirect": true,
+    "existingSessionConsentRedirect": true,
+    "thirdPartyCookies": "unmeasured same-origin run",
+    "configuredCaptchaMissingTokenDenied": true,
+    "successfulLiveCaptchaPasskeyLogin": "unverified; automatic token not obtained, visible attempt timed out, no human challenge completed",
+    "captchaFormResponseFields": 1
+  },
+  "backup": {
+    "bytes": 115185,
+    "sha256": "cb889ecc98da0fbf5e88dce815acf31fa547c3ac73d1d92afcf80221de85486e",
+    "mode": "600"
+  },
+  "cleanup": {
+    "preExistingRowsVerified": 57,
+    "baselineRegistryGeneration": 1,
+    "finalRegistryGeneration": 5,
+    "historyUnchanged": true,
+    "schemaAndTriggersUnchanged": true,
+    "foreignKeysValid": true,
+    "ownedMutableRowsAbsent": true,
+    "retained": {
+      "principals": 1,
+      "projects": 1,
+      "issues": 1,
+      "comments": 3,
+      "commentHistory": 3,
+      "timeline": 1
+    },
+    "permanentRemovedKeyIdentities": 2,
+    "ownedScriptsAbsent": true,
+    "ownedDomainAbsent": true,
+    "preExistingScriptsPresent": true,
+    "preExistingDomainsPresent": true,
+    "tailStopRequested": true,
+    "corsPreserved": true,
+    "turnstileWidgetPreserved": true
+  },
+  "acceptance": {
+    "G1": "closed",
+    "G2": "closed",
+    "13.G6": "open: billing attribution, CPU fit, quota/recovery and remaining scope unverified",
+    "cloudflareStandardDeployment": "unmeasured"
+  }
+}

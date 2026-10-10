@@ -1,0 +1,2 @@
+CREATE INDEX "outbox_pending_age" ON "outbox" USING btree ("delivered_at","created_at","id");--> statement-breakpoint
+CREATE INDEX "plugin_event_pending_age" ON "plugin_event_outbox" USING btree ("delivered_at","created_at","event_id");
