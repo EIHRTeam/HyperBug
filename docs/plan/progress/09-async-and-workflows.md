@@ -6,12 +6,12 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (maximum-content title-only native Cron meets 10 ms; quota recovery/cleanup verified; native job recovery pending)
+- Status: In progress (maximum-content title-only native Cron meets 10 ms; quota recovery/cleanup verified; R11 composed native job recovery pending)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
-- Active/next checklist group: B5 — 09.1f and 09.V6 (r9 maximum-content native10 ms and quota refusal2 ms observed; quota recovery4 ms/cleanup verified; native job recovery pending).
+- Active/next checklist group: B5 — 09.1f and 09.V6 (r9 maximum-content native10 ms and quota refusal2 ms observed; quota recovery4 ms/cleanup verified; R11 composed native job recovery pending).
 - Last updated: 2026-10-11.
 - Blocking issues discovered: R9 maximum title/body native Cron indexed and acknowledged revision1 at10 ms, at the Free ceiling without measured margin. Quota refusal at2 ms preserves revision2 pending with a visible backlog; recovery at4 ms is verified; native checkpoint/redeployment evidence remains open. Prior native14 ms remains historical evidence. Standing authorization permits bounded performance refactoring/retries and conditional capacity/target revisions; the target stays10 ms.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
@@ -28,7 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. R9 maximum native dispatch10 ms, quota refusal2 ms/recovery4 ms and cleanup are verified. R10 stopped unobserved and is independently cleaned. Prepare a fresh bounded native checkpoint interruption/clean redeployment and pending-event survival case; require exact witnesses and cleanup. Registration/local timing do not close 09.1f/09.V6.
+1. R9 maximum native dispatch10 ms, quota refusal2 ms/recovery4 ms and cleanup are verified. R10 stopped unobserved and is independently cleaned. R11 is live under its existing guarded native checkpoint interruption/clean redeployment and pending-event survival case; require exact witnesses and cleanup. Registration/local timing do not close 09.1f/09.V6.
 2. Preserve source/capability/rebuild guards and all quota/security limits. User authorization permits capacity reduction and a project-target revision after repeated failures, while the provider ceiling and release acceptance remain separate. Keep G1/G2 closed and 13.G6 open.
 
 ## Next-session cautions
@@ -629,3 +629,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions:09.1f/09.V6 still require native interruption/redeployment and full composed scheduled CPU evidence.
 - Next actions: Use a fresh backup/inventory and new owned trial; profile a measured hotspot before another refactor.
 - Next-session cautions: R10 is closed; never restart its observers/guardian or reuse its captured baseline for new mutations. Keep09.3e suspended,G1/G2 closed,13.G6 open; no protected/private staging,push/PR edit,paid feature or production action.
+
+
+### 2026-10-11 — Composed CPU profile and fresh R11 native trial
+
+- Scope and checklist IDs:09.1f/09.V6 performance continuation; data/search/operational evidence dependencies.
+- Progress: Full local Minimum scheduled entry passes sixteen maximum200/32768 dispatches; cold sampled non-idle median6150.5us,warm2305.5us. These are diagnostics, not hosted acceptance. Fresh R11 is deployed with one declarative Cron.
+- Change summary: Profile actual scheduled composition and replace selective fault instrumentation with the actual Minimum entry for all native stages. Guarded supervisor requires witnessed checkpoint1/exact[0] and pending source before clean redeployment; checkpoint2/exact[0,1] before max dispatch. No application edit or further capacity/target revision.
+- Files/artifacts: [Local composed profile](../evidence/09-composed-local-profile.json), [R11 procedure](../evidence/09-async-validation.md#r11-composed-native-trial); ignored private backup/harness/artifacts.
+- Verification: Fresh logical backup locally restores157 records/59 tables/FKs. Preflight Free user-attested adaptive headroom4997481 reads,99941 writes,99906 requests at03:38:56 UTC; not billing. Local composed fault commits only step0, raises intentional invocation exception and pauses for redeployment. Build/Wrangler dry-run pass; actual fault deploymenta814c618 at03:40 with one Cron. Native execution/CPU pending.
+- Decisions and deviations: D1 call/result handling and title tokenization remain sampled costs; no evidence supports shortening canonical bodies further. Full startup is outside local invocation sampling. Refreshed expired OAuth with Wrangler; read-only backup retry after transient socket error succeeded before mutation. Context7 confirms Cron propagation/omitted-trigger preservation; returned CPU docs distinguish startup/paid limits but lack full tail accounting detail.
+- Blockers/open questions: Native interruption/full composition CPU and clean resume remain unobserved;09.1f/09.V6 open.
+- Next actions: Observe existing guarded stages; on any failed bound or original deadline remove owned resources/work and independently verify157 baseline records/singletons/original resources.
+- Next-session cautions: R11 tail51403(PID71010),supervisor14232(PID71014),guardian9520(PID70920); native04:14:25.423 UTC,cleanup04:19:25.423 UTC. No inventory rerun,new simultaneous trial,protected/private staging,push/PR edit,paid override,audit/gate closure.

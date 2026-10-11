@@ -475,3 +475,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions:09.1f/09.V6 still require native interruption/redeployment and full composed scheduled CPU evidence.
 - Next actions: Use a fresh backup/inventory and new owned trial; profile a measured hotspot before another refactor.
 - Next-session cautions: R10 is closed; never restart its observers/guardian or reuse its captured baseline for new mutations. Keep09.3e suspended,G1/G2 closed,13.G6 open; no protected/private staging,push/PR edit,paid feature or production action.
+
+
+### 2026-10-11 — Composed CPU profile and fresh R11 native trial
+
+- Scope and checklist IDs:09.1f/09.V6 performance continuation; data/search/operational evidence dependencies.
+- Progress: Full local Minimum scheduled entry passes sixteen maximum200/32768 dispatches; cold sampled non-idle median6150.5us,warm2305.5us. These are diagnostics, not hosted acceptance. Fresh R11 is deployed with one declarative Cron.
+- Change summary: Profile actual scheduled composition and replace selective fault instrumentation with the actual Minimum entry for all native stages. Guarded supervisor requires witnessed checkpoint1/exact[0] and pending source before clean redeployment; checkpoint2/exact[0,1] before max dispatch. No application edit or further capacity/target revision.
+- Files/artifacts: [Local composed profile](../evidence/09-composed-local-profile.json), [R11 procedure](../evidence/09-async-validation.md#r11-composed-native-trial); ignored private backup/harness/artifacts.
+- Verification: Fresh logical backup locally restores157 records/59 tables/FKs. Preflight Free user-attested adaptive headroom4997481 reads,99941 writes,99906 requests at03:38:56 UTC; not billing. Local composed fault commits only step0, raises intentional invocation exception and pauses for redeployment. Build/Wrangler dry-run pass; actual fault deploymenta814c618 at03:40 with one Cron. Native execution/CPU pending.
+- Decisions and deviations: D1 call/result handling and title tokenization remain sampled costs; no evidence supports shortening canonical bodies further. Full startup is outside local invocation sampling. Refreshed expired OAuth with Wrangler; read-only backup retry after transient socket error succeeded before mutation. Context7 confirms Cron propagation/omitted-trigger preservation; returned CPU docs distinguish startup/paid limits but lack full tail accounting detail.
+- Blockers/open questions: Native interruption/full composition CPU and clean resume remain unobserved;09.1f/09.V6 open.
+- Next actions: Observe existing guarded stages; on any failed bound or original deadline remove owned resources/work and independently verify157 baseline records/singletons/original resources.
+- Next-session cautions: R11 tail51403(PID71010),supervisor14232(PID71014),guardian9520(PID70920); native04:14:25.423 UTC,cleanup04:19:25.423 UTC. No inventory rerun,new simultaneous trial,protected/private staging,push/PR edit,paid override,audit/gate closure.

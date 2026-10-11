@@ -1,0 +1,156 @@
+{
+  "method": "Local workerd V8 100us sampled non-idle frames; eight fresh isolates, actual minimum.ts scheduled handler; diagnostic not provider CPU",
+  "fixture": {
+    "titleCodePoints": 200,
+    "canonicalBodyCodePoints": 32768,
+    "indexedBodyBytes": 0
+  },
+  "results": {
+    "cold": {
+      "isolates": 8,
+      "sampledNonIdleUs": {
+        "min": 4732,
+        "median": 6150.5,
+        "max": 7985,
+        "values": [
+          6936,
+          5512,
+          6101,
+          7985,
+          4732,
+          6200,
+          5964,
+          7735
+        ]
+      },
+      "topSampledFunctions": [
+        [
+          "scheduled",
+          8024
+        ],
+        [
+          "(anonymous)",
+          5798
+        ],
+        [
+          "addAggregatedD1MetaToSpan",
+          4699
+        ],
+        [
+          "Ov",
+          3480
+        ],
+        [
+          "(garbage collector)",
+          3103
+        ],
+        [
+          "ES",
+          2939
+        ],
+        [
+          "toJson",
+          2335
+        ],
+        [
+          "mapD1Result",
+          2228
+        ],
+        [
+          "_send",
+          2214
+        ],
+        [
+          "backfill",
+          2182
+        ],
+        [
+          "fetch",
+          1160
+        ],
+        [
+          "addD1MetaToSpan",
+          1019
+        ]
+      ]
+    },
+    "warm": {
+      "isolates": 8,
+      "sampledNonIdleUs": {
+        "min": 1723,
+        "median": 2305.5,
+        "max": 2629,
+        "values": [
+          1723,
+          2252,
+          2629,
+          2486,
+          2359,
+          2478,
+          2134,
+          1982
+        ]
+      },
+      "topSampledFunctions": [
+        [
+          "(anonymous)",
+          5300
+        ],
+        [
+          "_send",
+          3410
+        ],
+        [
+          "scheduled",
+          1660
+        ],
+        [
+          "hS",
+          1654
+        ],
+        [
+          "addD1MetaToSpan",
+          1027
+        ],
+        [
+          "qv",
+          888
+        ],
+        [
+          "fetch",
+          788
+        ],
+        [
+          "setAttributes",
+          768
+        ],
+        [
+          "toJson",
+          765
+        ],
+        [
+          "addAggregatedD1MetaToSpan",
+          763
+        ],
+        [
+          "validateObject",
+          384
+        ],
+        [
+          "snapshot",
+          381
+        ]
+      ]
+    }
+  },
+  "sourceCommit": "16d6500",
+  "productionGraph": true,
+  "invocation": "actual Minimum scheduled entry; private local fixed phase0 wrapper",
+  "verification": "All sixteen maximum-title/body dispatches indexed empty derived bodies and acknowledged their owned source",
+  "limitations": [
+    "Eight local isolates; sampled V8 frames include runtime/provider glue and exclude idle/program frames",
+    "No provider CPU distribution or billing acceptance",
+    "Cold/warm lane has different retained fixture/index state; not a controlled causal speedup comparison",
+    "Initialization precedes invocation profiler; native tail remains authoritative"
+  ]
+}
