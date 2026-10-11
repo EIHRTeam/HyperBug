@@ -1005,3 +1005,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Full-profile/performance/capacity proof incomplete; global G1 Not passed and13.G6 open.
 - Next actions: Module10 fills authorized integration/browser gaps; no new owning-module implementation.
 - Next-session cautions: Never promote earlier-source CPU or model arithmetic into paid/current-profile acceptance; protected drafts remain untouched.
+
+### 2026-10-11 — Module 10 separate-domain browser finding
+
+- Scope and checklist IDs:10.2d; follow-up to historical04.V1 browser limitation, no04 implementation authorized yet.
+- Progress: Chrome155 confirms the login form's cross-site302 is blocked by form-action self, using a securitypolicyviolation witness. Owning module's historical completion scope is preserved, but full cross-site acceptance fails.
+- Change summary: Record product CSP defect and prepare narrow callback-origin allowance patch for explicit scope approval; no product/source policy changed.
+- Files/artifacts: [Browser blocker](../evidence/10-browser-auth-blocker.md), opt-in shared browser fixture; review patch in/tmp.
+- Verification: Actual Node/PostgreSQL/HTTPS/Chrome run; blocked-third-party cookie canary passes, login redirect fails. Initial runner/diagnostic failures in Module10 log; owned cleanup completes.
+- Decisions and deviations: No relaxation, new auth flow, persistent credential or production action. Applying the proposal requires explicit HANDOFF-10 scope extension and focused security ADR/review.
+- Blockers/open questions:10.2d and10.G4 remain incomplete; Standard unmeasured; G1/SPA closed.
+- Next actions: User scope decision on prepared fix, then both-profile browser verification if authorized.
+- Next-session cautions: Historical ERR_ABORTED was not merely an automation failure; do not bypass browser CSP or relabel failed run as acceptance.

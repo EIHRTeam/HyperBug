@@ -1,3 +1,5 @@
+import { writeFile } from 'node:fs/promises';
+import { createAcceptanceBrowserFixture } from '../fixtures/acceptance-browser.ts';
 import { measureAcceptance } from '../fixtures/acceptance-benchmark.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 import { createD1SearchIndexStore } from '@hyperbug/database-d1';
@@ -26,6 +28,9 @@ const enrollmentCode =
   'hbbs1_' +
   Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url');
 let mf: Miniflare;
+let browser:
+  | Awaited<ReturnType<typeof createAcceptanceBrowserFixture>>
+  | undefined;
 
 const post = (
   path: string,
@@ -128,8 +133,19 @@ async function tokenFromCookie(cookie: string, state: string): Promise<string> {
 
 beforeAll(async () => {
   execFileSync(process.execPath, ['tooling/build.ts', '--target=fixtures']);
+  if (process.env.HYPERBUG_ACCEPTANCE_BROWSER === '1')
+    browser = await createAcceptanceBrowserFixture();
   mf = new Miniflare(
     convertV4MiniflareOptions({
+      ...(browser
+        ? {
+            host: '127.0.0.1',
+            port: browser.apiPort,
+            https: true,
+            httpsCert: browser.tls.cert,
+            httpsKey: browser.tls.key,
+          }
+        : {}),
       modules: workerModules('dist/account-worker', [wasmPath]),
       compatibilityDate: '2026-09-16',
       compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
@@ -157,10 +173,22 @@ beforeAll(async () => {
             secretAccessKey: 'fixture-secret',
           },
         }),
-        ALLOWED_ORIGINS: authOrigin,
+        ALLOWED_ORIGINS: [
+          authOrigin,
+          ...(browser ? [browser.origin, browser.authOrigin] : []),
+        ].join(','),
         HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
         HYPERBUG_KEY_RING: await cryptoFixture().source.read(),
         HYPERBUG_TEST_OAUTH_CLIENTS: JSON.stringify([
+          ...(browser
+            ? [
+                {
+                  clientId: 'acceptance-browser',
+                  redirectUris: [browser.redirectUri],
+                  scopes: ['public-api'],
+                },
+              ]
+            : []),
           {
             clientId: 'acceptance-cli',
             redirectUris: [redirectUri],
@@ -193,6 +221,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mf?.dispose();
+  await browser?.close();
 });
 
 it(`delivers the V1 HTTP workflow on workerd/D1 ${tier}`, async () => {
@@ -581,6 +610,13 @@ it(`delivers the V1 HTTP workflow on workerd/D1 ${tier}`, async () => {
         .bind(issue.id)
         .first(),
     ).toMatchObject({ body: '' });
+  }
+  if (browser) {
+    const receipt = await browser.run(`workerd-d1-local-${tier}`);
+    await writeFile(
+      `docs/plan/evidence/10-workerd-${tier}-browser.json`,
+      JSON.stringify(receipt, null, 2) + '\n',
+    );
   }
   if (!minimum && process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1') {
     const db = (await mf.getD1Database('DB')) as unknown as D1Database;

@@ -6,14 +6,14 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress
+- Status: Blocked
 - Delivery scope: MVP backend gate
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
 - Completed implementation checklist IDs: 10.1a–e, 10.2b/c/e, 10.3a/c/d/e/f.
-- Active/next checklist group: B6 model/gate assessment written; finish validation, then authorized Minimum integration/browser evidence gaps. B4/B5 partial items remain explicit.
+- Active/next checklist group: B1–B6 reported; local Minimum integration passes.10.2d awaits explicit Module04 CSP repair scope decision;10.2a/f and10.3b/g remain partial.
 - Last updated: 2026-10-11.
-- Blocking issues discovered: 01.V4 accepted by user equivalence decision; Standard is not measured by user decision. G1 remains Not passed.
+- Blocking issues discovered: Confirmed cross-site auth-page CSP blocker; concrete repair awaits user scope decision. Standard is not measured by user decision; actual Minimum full-profile/headroom/capacity evidence remains incomplete. G1 remains Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
 
 ## Step tracking
@@ -28,7 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-Validate B6 reports, then integrated Minimum and separate-domain blocked-cookie auth fixtures. Keep10.2a/f and10.3b/g missing results explicit; Standard remains excluded and no SPA authorization is inferred.
+Resolve the pending scope decision for the prepared Module04 CSP fix; if authorized, apply the reviewed patch with security ADR and verify the existing both-profile browser fixtures. Then complete bounded actual Minimum/headroom/capacity evidence where access permits. Actual Standard remains excluded; no SPA authorization is inferred.
 
 ## Next-session cautions
 
@@ -546,3 +546,19 @@ B6 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=tru
 - Blockers/open questions: Actual Standard excluded; browser/headroom/full-profile metrics/capacity still incomplete.
 - Next actions: Verify affected normal fixture and implement separate-domain blocked-cookie browser proof.
 - Next-session cautions: Keep opt-in Minimum distinct from local Standard benchmark receipts; no paid/SPA/main/merge action.
+
+### 2026-10-11 — Separate-domain browser checkpoint
+
+- Scope and checklist IDs:10.2d; existing both-store journeys only.
+- Progress: Independent HTTPS/static callback and explicit cookie-blocking driver implemented; validation ongoing.
+- Change summary: Distinct registrable .test sites on loopback, exact allowlists, first-party versus cross-site SameSite=None canary, CDP cookie restriction, top-level PKCE login/recovery and bearer-only business fetch; no frontend proxy or product SPA.
+- Files/artifacts: tests/fixtures/acceptance-browser.ts/.mjs and both existing journeys; scalar receipts pending.
+- Verification: Setup edit failed to match a single-line guard, corrected before wiring; initial ordinary Node run did not execute browser and is not browser evidence. Lint shadow warning repaired. First wired browser attempt timed out because synchronous child execution blocked local HTTPS listeners; replaced with asynchronous execFile. Final affected lanes pending.
+- Decisions and deviations: Context7 Playwright and Miniflare resolve/query2026-10-11; modern-web-guidance search/retrieve security guide; CDP cookie controls coverage gap verified by focused runtime experiment rather than invented docs. Bundled Playwright/Chrome reused, no dependency addition.
+- Blockers/open questions: Browser proof not yet accepted; existing Standard/full-profile/quota gaps unchanged.
+- Next actions: Final Node/workerd browser runs, record scalar receipts and cleanup, update10.2d only if all claims pass.
+- Next-session cautions: Test certificate exception is local only; never write auth cookies/code/token to receipts; no SPA/gate/main/paid action.
+
+Browser checkpoint: actual Chrome securitypolicyviolation confirms form-action on the registered cross-site login redirect. [Blocker and prepared repair](../evidence/10-browser-auth-blocker.md); product policy unchanged. Scope approval required under HANDOFF-10 before Module04 repair;10.2d remains unchecked. Cookie canary passed. Failed browser run is not acceptance and no successful receipt exists yet.
+
+Browser checkpoint final static verification: types/lint, docs build, secrets, scoped formatter, evidence links/JSON and diff pass after runner/redaction repairs. Browser acceptance remains failed at confirmed CSP redirect; no success receipt fabricated. Product policy/source untouched; prepared patch remains unapplied in/tmp. Goal is not complete.

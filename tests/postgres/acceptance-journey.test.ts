@@ -1,3 +1,4 @@
+import { createAcceptanceBrowserFixture } from '../fixtures/acceptance-browser.ts';
 import { verifyAcceptanceRestore } from '../fixtures/acceptance-restore.ts';
 import { measureAcceptance } from '../fixtures/acceptance-benchmark.ts';
 import { configureNodeUploads } from '../../apps/api-node/src/uploads.ts';
@@ -47,6 +48,10 @@ let configured: ReturnType<typeof configureNodeAbuseAdmission>;
 let listener: Awaited<ReturnType<typeof listenNode>>;
 let directory: string;
 let base: string;
+let browser:
+  | Awaited<ReturnType<typeof createAcceptanceBrowserFixture>>
+  | undefined;
+let browserListener: Awaited<ReturnType<typeof listenNode>> | undefined;
 let storage: Awaited<ReturnType<typeof startLocalS3>>;
 let uploadStorage: Awaited<ReturnType<typeof configureNodeUploads>>;
 const sessionKeys = cryptoFixture();
@@ -211,7 +216,16 @@ beforeAll(async () => {
     storageFile,
     'local',
   );
-  listener = await listenNode(
+  if (process.env.HYPERBUG_ACCEPTANCE_BROWSER === '1') {
+    browser = await createAcceptanceBrowserFixture();
+    config.allowedOrigins.push(browser.origin, browser.authOrigin);
+    clients.push({
+      clientId: 'acceptance-browser',
+      redirectUris: [browser.redirectUri],
+      scopes: ['public-api'],
+    });
+  }
+  const makeApp = () =>
     createApp({
       adapter: node(),
       config,
@@ -245,14 +259,22 @@ beforeAll(async () => {
       auditAppend: configured.auditAppend,
       bootstrapCode: enrollmentCode,
       staffEnrollmentStore: configured.staffEnrollmentStore,
-    }),
-    0,
-  );
+    });
+  listener = await listenNode(makeApp(), 0);
+  if (browser)
+    browserListener = await listenNode(
+      makeApp(),
+      browser.apiPort,
+      '127.0.0.1',
+      browser.tls,
+    );
   base = listener.url;
   config.allowedOrigins.push(base);
 });
 
 afterAll(async () => {
+  await browserListener?.close();
+  await browser?.close();
   await listener?.close().catch(() => {});
   uploadStorage?.close();
   await storage?.close();
@@ -519,6 +541,13 @@ it('delivers the V1 HTTP workflow on Node/PostgreSQL', async () => {
     'Confirmed on my machine',
   ]);
   expect(merged.nextCursor).toBeNull();
+  if (browser) {
+    const receipt = await browser.run('node-postgres-local');
+    await writeFile(
+      'docs/plan/evidence/10-node-postgres-browser.json',
+      JSON.stringify(receipt, null, 2) + '\n',
+    );
+  }
   if (process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1')
     await measureAcceptance({
       profile: 'node-postgres-local',
