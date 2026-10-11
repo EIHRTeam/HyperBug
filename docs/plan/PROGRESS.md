@@ -1251,3 +1251,8 @@ Latest native canonical dispatch is 12 ms versus the unchanged 10 ms limit. r5 c
 ### 2026-10-11 — Minimum search capacity reduction prepared
 
 Under standing user authorization after repeated native CPU failures, [ADR 0014](../decisions/0014-minimum-title-search.md) reduces Minimum text search to titles, with mode-specific readiness/cursors, bounded rebuild and capability/paired reader disclosure. Focused workerd/PostgreSQL/unit checks pass; current-production local profiling remains diagnostic. Native r7 still runs full-text f0c9a1d and awaits outcome/cleanup. Project target remains 10 ms; provider/release acceptance unchanged. 09.1f/09.V6 remain open; 09.3e suspended, G1/G2 closed and 13.G6 open. [Evidence](evidence/09-async-validation.md#coherent-minimum-title-only-implementation--2026-10-11). No push/PR edit.
+
+
+### 2026-10-11 — R10 closed; explicit performance continuation
+
+R10 stopped on the goal service's paused state with no native execution or CPU result. [Unaccepted receipt](evidence/09-hosted-native-job-trial-receipt.json) verifies152 original records/exact singletons/FKs, preserved original resources/schedules and zero owned work/resources; all process handles are terminal. The latest human instruction resumes performance optimization and conditionally permits target/capacity revision after repeated failures.10 ms remains unchanged;09.1f/09.V6 remain open,09.3e suspended,G1/G2 closed and13.G6 open. New trials need a fresh backup/inventory.

@@ -415,3 +415,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions:09.1f/09.V6 await native job interruption/clean redeployment and preserved pending-event recovery.
 - Next actions: Observe the existing R10 handles; after actual checkpoint1/exception verify exact witness, clean redeploy/resume and dispatch; finish independent cleanup and requirement audit.
 - Next-session cautions: Respect R10 original deadlines in private live-handles; never rerun seeded inventory. No push/PR edit, protected/private staging, paid feature, audit/gate closure; G1/G2 closed,13.G6 open.
+
+
+### 2026-10-11 — R10 stopped and cleaned; user resumes performance work
+
+- Scope and checklist IDs: Authorized09.1f/09.V6 continuation; affected data/search/operational evidence dependencies.
+- Progress: R10 ended when the goal service reported paused; latest human instruction explicitly continues optimization. No native scheduled frame or CPU result exists for R10.
+- Change summary: Publish unaccepted trial and finish process housekeeping; replace active-wait status with verified cleanup. Target remains10 ms and title-only capacity reduction remains in force.
+- Files/artifacts: [Stopped trial receipt](../evidence/09-hosted-native-job-trial-receipt.json), requirement audit and current evidence/progress; private terminal receipts.
+- Verification:152 original records/exact singleton sets/FKs and original two Workers/domains/schedules/Queues/Workflows preserved; owned resources/work zero. Tail exit0; exact observer/guardian commands revalidated then SIGTERM, both handles exit143, PIDs absent. No native success inferred.
+- Decisions and deviations: Explicit human continuation supersedes earlier pause for task work; goal service still shows paused and cannot be resumed through update_goal. Do not recreate the goal or mark it complete. No target increase or further reduction justified by unobserved execution.
+- Blockers/open questions:09.1f/09.V6 still require native interruption/redeployment and full composed scheduled CPU evidence.
+- Next actions: Use a fresh backup/inventory and new owned trial; profile a measured hotspot before another refactor.
+- Next-session cautions: R10 is closed; never restart its observers/guardian or reuse its captured baseline for new mutations. Keep09.3e suspended,G1/G2 closed,13.G6 open; no protected/private staging,push/PR edit,paid feature or production action.

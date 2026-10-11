@@ -1,0 +1,117 @@
+{
+  "recordedAt": "2026-10-11T03:35:51.597489+00:00",
+  "trial": "R10",
+  "acceptance": "Unaccepted: stopped after goal service reported paused; no native scheduled execution observed",
+  "plan": "Workers Free (user-attested)",
+  "cpuLimitMs": 10,
+  "nativeScheduledFrames": 0,
+  "nativeCpuResult": null,
+  "resources": {
+    "worker": "hyperbug-09-native-7a619db1b1c9",
+    "hostname": "async-native-7a619db1b1c9.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cron": "*/5 * * * *",
+    "queues": "not created",
+    "workflows": "not created",
+    "r2": "unused"
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-11T02:39:37.892Z",
+      "kind": "Delayed adaptive analytics; not billing",
+      "remainingD1Reads": 4999049,
+      "remainingD1Writes": 100000,
+      "remainingWorkerRequests": 99997
+    },
+    "after": {
+      "at": "2026-10-11T03:29:53.133Z",
+      "kind": "Delayed adaptive analytics; not billing",
+      "remainingD1Reads": 4998391,
+      "remainingD1Writes": 99941,
+      "remainingWorkerRequests": 99906
+    }
+  },
+  "preCleanupJob": {
+    "checkpoint": 0,
+    "witnesses": [],
+    "pendingEventPreserved": true,
+    "capturedAt": "2026-10-11T03:28:11.134Z"
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 152,
+      "foreignKeysValid": true,
+      "singletonStateRestored": true,
+      "singletonCounts": {
+        "async_minimum_budget": 1,
+        "async_minimum_cursors": 2,
+        "search_budget": 0
+      },
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "original": {
+      "at": "2026-10-11T03:31:24.795Z",
+      "originalWorkerCount": 2,
+      "remainingWorkerCount": 2,
+      "originalWorkersPreserved": true,
+      "originalDomainsPreserved": true,
+      "ownedWorkerAbsent": true,
+      "ownedDomainAbsent": true,
+      "originalSchedulesPreserved": true,
+      "originalQueuesPreserved": true,
+      "originalWorkflowsPreserved": true
+    },
+    "processes": {
+      "tail": {
+        "handle": 63124,
+        "terminal": true,
+        "exitCode": 0
+      },
+      "observer": {
+        "handle": 25215,
+        "pid": 66108,
+        "terminal": true,
+        "exitCode": 143
+      },
+      "guardian": {
+        "handle": 58691,
+        "pid": 65882,
+        "terminal": true,
+        "exitCode": 143
+      }
+    }
+  },
+  "limitations": [
+    "No native interruption, restart, full composed CPU or maximum dispatch result exists for this trial",
+    "Unobserved scheduling is not CPU failure",
+    "Read-only verification after ambiguous socket errors independently confirmed prior cleanup mutation",
+    "Append-only history and inactive fixtures retained; raw DNS inventory unavailable",
+    "09.1f/09.V6 remain incomplete;09.3e suspended;G1/G2 closed;13.G6 open"
+  ]
+}
