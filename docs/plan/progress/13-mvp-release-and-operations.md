@@ -449,3 +449,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native intentional fault, composed restart/dispatch and cleanup await actual outcomes.
 - Next actions: Same bounded R10 observer; after exact checkpoint1/exception, actual clean redeployment and remaining witnesses/CPU.
 - Next-session cautions: Tail63124/observer25215/watchdog58691, deadlines03:44:40.222/03:49:40.222 UTC. No inventory rerun, alternate trial while live, protected/private staging, push/PR edit, audit or gate closure.
+
+
+### 2026-10-11 — Composed maximum fixture and verified native wait
+
+- Scope and checklist IDs:09.1f/09.V6;13.G6 evidence dependency.
+- Progress: Actual local composed maximum dispatch passes; native R10 still unobserved.
+- Change summary: Finish prepared composed-handler evidence and self-validating private receipt checks; preserve live trial and original bounds.
+- Files/artifacts: [Maximum/wait evidence](../evidence/09-async-validation.md#r10-composed-maximum-fixture-and-verified-native-wait), ignored native helpers/logs; no application edit.
+- Verification: Local composed workerd max200/32768 canonical fixture acknowledged/indexed with empty derived body,10 statements/combined calls and52/24 rows. Composed two-step witnesses[0,1]/checkpoint2 also pass. Live401 at03:05; registered handlers/one Cron and matching fault job ID verified; provider history empty03:16, D1 still checkpoint0/no witnesses/pending source. Observer25215/watchdog58691 confirmed live.
+- Decisions and deviations: Unobserved scheduling is not performance failure; no target/capacity change, inferred native execution or restarted live process.
+- Blockers/open questions: Native job interruption/composed redeployment/CPU and cleanup remain pending; requirement audit remains incomplete.
+- Next actions: Same bounded observer; after native witnessed checkpoint1 perform actual clean redeployment; otherwise collect original watchdog cleanup and compare152 baseline records/original resources.
+- Next-session cautions: Tail63124/observer25215/watchdog58691; original03:44:40.222/03:49:40.222 UTC deadlines. Never rerun inventory after seeding or deploy another trial while these resources remain. No protected/private staging, push/PR edit, paid feature, audit/gate closure.
