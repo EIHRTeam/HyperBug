@@ -873,3 +873,15 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: Actual Standard unmeasured; current Minimum full distributions, isolated memory/CPU/lag/object-operation and complete endpoint query metrics absent. Separate-domain browser/integrated Minimum/headroom gaps remain.
 - Next actions: B6 separately attributed Minimum quota evidence, Standard expectation model and10.G1–G5 assessment.
 - Next-session cautions: Opt-in benchmark rewrites only its own measurement receipts; use reviewed baseline/candidate separation. No main push/merge/SPA/paid/staging/production action.
+
+### 2026-10-11 — Module 10 B6 evidence attribution
+
+- Scope and checklist IDs: Existing owning-module evidence consolidated for10.3g and10.G1–G5; no new owning-module outcome claimed.
+- Progress: Existing completion state preserved; Minimum native/degraded/password results remain at their exact earlier-source scopes.
+- Change summary: Separate paid expectation analysis from measured/local/Minimum acceptance; record current title-only semantics, delayed headroom and CPU/attribution limitations.
+- Files/artifacts: [Minimum assessment](../evidence/10-minimum-quota-assessment.md), [Standard model](../evidence/10-standard-expectation-model.md), [gate assessment](../evidence/10-g1-assessment.md).
+- Verification: Existing receipts/policies inspected and unchanged evidence reused; B6 documentation validation recorded in Module10. No runtime/provider rerun or cloud resource.
+- Decisions and deviations: Standard not measured by user decision; no source baseline, crypto, search or dispatch bound changed.
+- Blockers/open questions: Full-profile/performance/capacity proof incomplete; global G1 Not passed and13.G6 open.
+- Next actions: Module10 fills authorized integration/browser gaps; no new owning-module implementation.
+- Next-session cautions: Never promote earlier-source CPU or model arithmetic into paid/current-profile acceptance; protected drafts remain untouched.

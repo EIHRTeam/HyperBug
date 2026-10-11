@@ -1,6 +1,6 @@
 # Module 10 B4 — Three-profile backend acceptance matrix
 
-Date: 2026-10-11. Branch `feat/v1`; prerequisite B3 `3889f62`. No staging/production deployment. Standard is **not measured** by explicit user decision. Emulation, real local services and actual disposable Cloudflare test deployments are separately attributed below. A passing local Standard composition does not fill its production row. See the separate Standard expectation model (`10-standard-expectation-model.md`, B6 artifact) when available; analysis never substitutes for acceptance.
+Date: 2026-10-11. Branch `feat/v1`; prerequisite B3 `3889f62`. No staging/production deployment. Standard is **not measured** by explicit user decision. Emulation, real local services and actual disposable Cloudflare test deployments are separately attributed below. A passing local Standard composition does not fill its production row. See the separate [Standard expectation model](10-standard-expectation-model.md); analysis never substitutes for acceptance.
 
 ## Integrated MVP journey
 

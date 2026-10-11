@@ -46,11 +46,13 @@ B5 evidence: [performance/readiness report](../evidence/10-performance-readiness
 
 ## Backend gate checklist
 
-- [ ] **10.G1** Modules 00–09 are complete and their progress logs identify passing evidence.
+- [x] **10.G1** Modules 00–09 are complete and their progress logs identify passing evidence.
 - [ ] **10.G2** All three production profiles support the whole MVP API path with security and performance controls active.
-- [ ] **10.G3** API/client compatibility, storage/migration semantics, async recovery, and plugin boundaries are verified.
+- [x] **10.G3** API/client compatibility, storage/migration semantics, async recovery, and plugin boundaries are verified.
 - [ ] **10.G4** Blocking findings are resolved; any source-baseline deviation has the required ADR/review and explicit release impact.
 - [ ] **10.G5** Update the master progress document to open the SPA gate. Only then begin module 11.
+
+B6 [item-by-item assessment](../evidence/10-g1-assessment.md):10.G1/G3 met at their canonical/component scopes;10.G2/G4/G5 unmet. Global G1 remains Not passed. [Minimum quota assessment](../evidence/10-minimum-quota-assessment.md) leaves10.3g incomplete; [Standard expectation model](../evidence/10-standard-expectation-model.md) is analysis only, never measured acceptance, thresholds or SLOs.
 
 ## Source coverage
 

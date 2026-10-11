@@ -11,7 +11,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
 - Completed implementation checklist IDs: 10.1a–e, 10.2b/c/e, 10.3a/c/d/e/f.
-- Active/next checklist group: Authorized B1–B6; next B6 10.3g/model/gate assessment; B4/B5 partial items remain explicit.
+- Active/next checklist group: B6 model/gate assessment written; finish validation, then authorized Minimum integration/browser evidence gaps. B4/B5 partial items remain explicit.
 - Last updated: 2026-10-11.
 - Blocking issues discovered: 01.V4 accepted by user equivalence decision; Standard is not measured by user decision. G1 remains Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
@@ -28,7 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-Continue B5 measurements/operational report, then B6 separate Minimum/model/gate assessment. Keep 10.2a/d/f missing results explicit; no production Standard/SPA authorization is inferred.
+Validate B6 reports, then integrated Minimum and separate-domain blocked-cookie auth fixtures. Keep10.2a/f and10.3b/g missing results explicit; Standard remains excluded and no SPA authorization is inferred.
 
 ## Next-session cautions
 
@@ -520,3 +520,17 @@ B4 final verification: types/lint, two focused journeys, scoped oxfmt, docs buil
 - Next-session cautions: Opt-in benchmark rewrites only its own measurement receipts; use reviewed baseline/candidate separation. No main push/merge/SPA/paid/staging/production action.
 
 B5 final verification: types/lint, benchmark/restore and focused operational checks, scoped formatter (5matched code files; docs/receipts follow existing exclusions), docs build, secrets, JSON/relative links and diff pass. All owned test listeners/services/cluster stopped through successful fixture teardown; no hosted resource.
+
+### 2026-10-11 — Module 10 B6 assessment checkpoint
+
+- Scope and checklist IDs: 10.3g; Standard model;10.G1–G5; partial10.2a/d/f and10.3b.
+- Progress: Separate Minimum assessment and Standard expectation model written;10.G1/G3 met at component/canonical scopes,10.G2/G4/G5 unmet. Global G1 stays Not passed.
+- Change summary: Attribute reused native quota/degraded/auth/recovery observations and exact delayed headroom; identify historical pre-title-only receipt; model official paid CPU/billing/Queue/Workflow envelopes with explicit assumptions and unresolved documentation conflict.
+- Files/artifacts: [Minimum](../evidence/10-minimum-quota-assessment.md), [model](../evidence/10-standard-expectation-model.md), [gate assessment](../evidence/10-g1-assessment.md).
+- Verification: Source receipts/current tier policy inspected; Context7 official limits/pricing lookup2026-10-11 reused from this session. Final docs/link/secret/diff validation pending; no application behavior changed.
+- Decisions and deviations: Standard not measured by explicit user decision; every extrapolation stays outside acceptance/threshold/SLO rows. No normative change. Workflow concurrency table50,000/prose10,000 conflict retained, conservative10,000 model only.
+- Blockers/open questions: Complete Minimum/browser/current performance/headroom/capacity evidence missing; no truthful module10 completion or gate opening yet.
+- Next actions: Validate/commit B6, then fill authorized integration and browser gaps.
+- Next-session cautions: Do not relabel historical native CPU as current full-profile measurement; no main/merge/paid/SPA/staging action; protected root drafts stay untracked.
+
+B6 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=true corepack pnpm scan:secrets`, evidence relative links and `git diff --check` pass. Application tests not repeated for documentation-only assessment; no hosted resource.
