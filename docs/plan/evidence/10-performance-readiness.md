@@ -92,3 +92,9 @@ B6 supplements: [Standard expectation model](10-standard-expectation-model.md), 
 
 
 Current-source supplement: [local Minimum distributions](10-minimum-local-performance.md) add eight security-active paths on a smaller11-Issue title-only fixture, with separate measured investigation margins. The earlier two baselines/thresholds are unchanged. Actual uninstrumented production-root pilot uploads failed before any request due the [Module04 auth composition blocker](10-native-startup-blocker.md); no native CPU, headroom delta attribution or sustainable capacity is fabricated from them. Separate-domain/browser10.2d now passes under authorized ADR0015.10.3b/g remain incomplete.
+
+
+The explicitly authorized composition repair now passes4 focused production-entry workerd cases and native upload ([review](10-native-startup-blocker.md), [scalar receipt](10-native-composition-upload.json)). Trial3 first HTTPS fetch yields no response; no native performance sample. Delayed before14:45:27UTC/after14:47:49UTC account headroom is unchanged in those samples:99,369 requests/4,987,882 reads/99,520 writes remaining, not exact per-trial/billing attribution.
+
+
+Final native continuation: [fresh TLS-gated trial4](10-native-tls-guarded-pilot.json) uploads repaired production entries; no acceptance-harness HTTP request runs.13 verified-TLS attempts fail.12 unlabelled native API events have CPU6–21ms/all outcomes ok; independent guard stops on first delivered14ms. They cannot establish a functional path, measured baseline or sustainable ceiling.189 original rows/FKs/0 owned Workers/domains/active data verified; generated secrets removed. Signed-in dashboard verifies no certificates matching either owned trial3/4 hostname. No further native load under the existing10ms stop rule; Standard not measured,10.2a/f,10.3b/g incomplete and G1 Not passed.

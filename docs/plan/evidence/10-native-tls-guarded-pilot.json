@@ -1,0 +1,281 @@
+{
+  "dateUtc": "2026-10-11",
+  "baseCommit": "22008fe1efed82a8e969c10e341a42f7ece36f5f",
+  "workingTreeRepair": "apps/api-cloudflare/src/composition.ts: deferred prerequisite guards and unavailable-resource registry isolation",
+  "source": {
+    "at": "2026-10-11T14:52:50.012Z",
+    "commit": "22008fe1efed82a8e969c10e341a42f7ece36f5f",
+    "hashes": {
+      "dist/cloudflare-minimum/minimum.mjs": "69b96d6d1a61bebb96660d42328e820b7cf8c4a7767a85bc60b33d0c699812d4",
+      "dist/cloudflare-minimum/rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+      "dist/cloudflare-minimum/source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777",
+      "dist/cloudflare-ingress/ingress.mjs": "43b52986f4b93abdc33b4fe98653d9cba1f36d85930e606a3148a8e1fe58bf69"
+    },
+    "instrumentation": "Production entry with authorized composition repair; no DB/CPU wrapper",
+    "sampling": 1
+  },
+  "deployment": {
+    "api": true,
+    "ingress": true,
+    "productionBundle": true,
+    "dbCpuInstrumentation": false
+  },
+  "tls": {
+    "tlsVerification": true,
+    "acceptanceHttpRequests": 0,
+    "checks": [
+      {
+        "at": "2026-10-11T14:53:21.279Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:53:36.510Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:53:51.725Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:54:06.961Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:54:22.178Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:54:37.407Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:54:52.629Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:55:07.848Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:55:23.067Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:55:38.288Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:55:53.520Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:56:11.040Z",
+        "authorized": false,
+        "code": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+      },
+      {
+        "at": "2026-10-11T14:56:34.045Z",
+        "authorized": false,
+        "code": "TIMEOUT"
+      }
+    ],
+    "ready": false
+  },
+  "acceptance": {
+    "httpRequestsSentByHarness": 0,
+    "httpResponses": 0,
+    "benchmarkAccepted": false,
+    "sustainableCapacityMeasured": false
+  },
+  "unattributedNativeInvocations": [
+    {
+      "eventTimestamp": 1791730602224,
+      "outcome": "ok",
+      "cpuTime": 14,
+      "wallTime": 293,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730602136,
+      "outcome": "ok",
+      "cpuTime": 8,
+      "wallTime": 538,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730601710,
+      "outcome": "ok",
+      "cpuTime": 21,
+      "wallTime": 622,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730602333,
+      "outcome": "ok",
+      "cpuTime": 10,
+      "wallTime": 151,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730603267,
+      "outcome": "ok",
+      "cpuTime": 8,
+      "wallTime": 500,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730603550,
+      "outcome": "ok",
+      "cpuTime": 6,
+      "wallTime": 322,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730603178,
+      "outcome": "ok",
+      "cpuTime": 6,
+      "wallTime": 481,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730603114,
+      "outcome": "ok",
+      "cpuTime": 8,
+      "wallTime": 523,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730604408,
+      "outcome": "ok",
+      "cpuTime": 11,
+      "wallTime": 566,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730604403,
+      "outcome": "ok",
+      "cpuTime": 8,
+      "wallTime": 568,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730604604,
+      "outcome": "ok",
+      "cpuTime": 8,
+      "wallTime": 370,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    },
+    {
+      "eventTimestamp": 1791730604343,
+      "outcome": "ok",
+      "cpuTime": 9,
+      "wallTime": 602,
+      "label": null,
+      "exceptions": [],
+      "logsDiscarded": 4
+    }
+  ],
+  "guardStop": {
+    "eventTimestamp": 1791730602224,
+    "outcome": "ok",
+    "cpuTime": 14,
+    "wallTime": 293,
+    "label": null,
+    "exceptions": [],
+    "logsDiscarded": 4
+  },
+  "guardReasonInterpretation": "CPU threshold exceeded; all observed outcomes ok and exception lists empty. Labels absent; these calls are not attributable to the acceptance harness and do not prove any functional path or quantile baseline.",
+  "cleanup": {
+    "at": "2026-10-11T14:57:58.194Z",
+    "resources": {
+      "workers": 0,
+      "domains": 0
+    },
+    "preExistingRowsVerified": 189,
+    "foreignKeysValid": true,
+    "ownedActiveDataRemaining": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "retainedInactivePrincipals": 0,
+    "retainedRemovedKeyIdentities": 4,
+    "appendOnlyAuditPreserved": true,
+    "r2ObjectsCreated": 0,
+    "queuesCreated": 0,
+    "workflowsCreated": 0
+  },
+  "headroomBefore": {
+    "at": "2026-10-11T14:52:32.491Z",
+    "estimated": true,
+    "billing": false,
+    "d1": {
+      "remainingReads": 4986344,
+      "remainingWrites": 99480
+    },
+    "workers": {
+      "remainingRequests": 99369
+    }
+  },
+  "headroomAfter": {
+    "at": "2026-10-11T15:00:16.251Z",
+    "estimated": true,
+    "billing": false,
+    "d1": {
+      "remainingReads": 4985799,
+      "remainingWrites": 99440
+    },
+    "workers": {
+      "remainingRequests": 99343
+    }
+  },
+  "certificateInventory": {
+    "verifiedBy": "Signed-in authorized-account Cloudflare dashboard Edge Certificates table",
+    "dateLocal": "2026-10-12",
+    "zone": "eihrteam.org",
+    "completeCertificateGroupsShown": 4,
+    "ownedHostnames": [
+      "acceptance-5dbbb98ae0b9.test.eihrteam.org",
+      "acceptance-594828b31148.test.eihrteam.org"
+    ],
+    "ownedMatchingCertificateGroups": 0,
+    "certificateMutation": false,
+    "apiListing": "403/code9109",
+    "unrelatedCertificatesUnchanged": true
+  },
+  "ephemeralSecretCopiesRemoved": true
+}

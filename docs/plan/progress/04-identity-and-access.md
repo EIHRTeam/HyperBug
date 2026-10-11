@@ -1069,3 +1069,29 @@ Native pilot final headroom: corrected read-only GraphQL at14:35:25UTC estimates
 - Blockers/open questions: Actual/native distributions/sustainable capacity still unmeasured; Standard excluded, G1 Not passed and13.G6 open.
 - Next actions: Commit completed independent Minimum metrics, then apply authorized patch, focused regression/review and fresh production-root trial.
 - Next-session cautions: Static malformed configuration must still reject; no synthetic DB wrapper or provider relabeling. Auth/resource failures remain fail closed.
+
+### 2026-10-11 — Authorized auth-composition repair checkpoint
+
+- Scope and checklist IDs: Explicit narrow Module04 authorization supporting10.2a/f,10.3b/g; no other product work.
+- Progress: Final composition-only repair passes4 production-bundle regressions and native API/ingress upload; first native HTTP fetch returns no response.
+- Change summary: Defer native-resource guards; keep parsed registry in root when resources unavailable, retaining shared-server constructor invariant and all-route runtime refusal.
+- Files/artifacts: apps/api-cloudflare/src/composition.ts, tests/workerd/auth-composition.test.ts; [focused review](../evidence/10-native-startup-blocker.md), [upload/cleanup receipt](../evidence/10-native-composition-upload.json).
+- Verification:4workerd cases/types/lint pass; initial converter/listener/constructor/response/disposal setup failures repaired. Native upload succeeds; fetch fails before response, TLS-only ECONNRESET; certificate inspection403/9109.185 original rows unchanged, FKs valid,0 owned resources/active data; four removed keys retained. Generated secret copies removed; guards/tail terminal.
+- Decisions and deviations: User-authorized root-only repair; no Core validation weakening, fake DB, crypto/dependency/contract change or new auth flow. Primary-agent focused security review, not independent audit.
+- Blockers/open questions: Native transport cause unresolved; full actual metrics/capacity/billing and Standard measurement remain missing. G1 Not passed;13.G6 open.
+- Next actions: Fresh isolated trial with verified TLS readiness before HTTP load; final evidence and coherent repair commit.
+- Next-session cautions: Never reuse cleaned trials, lower security parameters or disable certificate verification. No main/merge/paid/SPA/staging/production action.
+
+### 2026-10-12 — Auth composition repair verified; native continuation safely stopped
+
+- Scope and checklist IDs: Explicit narrow Module04 repair;10.2a/f,10.3b/g and10.G2/G4/G5 reporting.
+- Progress: Repair verified locally/native upload; remaining profile/capacity outcomes stay incomplete. No further load under current CPU stop rule.
+- Change summary: Fresh trial4 adds verified-TLS gate and independent finite cleanup; exact native/transport/cleanup findings consolidated.
+- Files/artifacts: [Focused review and exact commands](../evidence/10-native-startup-blocker.md), [trial4 scalar receipt](../evidence/10-native-tls-guarded-pilot.json), matrix/readiness/quota/gate/master records.
+- Verification:4 focused production-entry workerd regressions/types/lint/build/docs/secrets/scoped formatting pass; no unchanged green application lanes rerun.13 TLS handshakes fail; harness HTTP0.12 unlabelled native events/all outcome ok/CPU6–21ms; guard stops on first delivered14ms (not an exception).189 original records unchanged/FKs valid/0 owned Workers/domains/active data; four removed permanent keys retained. Guard/tail terminal, generated secret copies removed. User's signed-in dashboard proves no owned certificates, no SSL mutation. Final links/JSON/diff recorded below.
+- Decisions and deviations: Standard remains excluded; unlabelled traffic is not benchmark acceptance, provider limits are not measured capacity. No Core/auth/crypto/DTO/schema/baseline weakening, new paid feature, main push/PR merge/SPA/staging/production action.
+- Blockers/open questions:10.2a/f,10.3b/g and10.G2/G4/G5 remain incomplete; actual Standard absent, native TLS cause and21ms CPU-path attribution unresolved, sustainable instance ceiling unmeasured. G1 Not passed/13.G6 open.
+- Next actions: Commit coherent repair/evidence; leave remaining acceptance gates blocked until external/profile constraints change. Any future trial must first address observed stop conditions within separately authorized scope.
+- Next-session cautions: Trials1–4 cleaned; never reuse names/state/backups/tokens. No extra load or crypto tuning to force a pass. Existing unrelated certificates unchanged; private backups retained ignored; protected root files unstaged.
+
+Final repair/evidence verification: documentation build, known credential-signature scan,918 changed-file relative links, both new scalar JSON receipts and git diff --check pass. Source scoped formatter/types/lint and4 focused production-entry regressions already pass; unchanged green lanes not repeated.

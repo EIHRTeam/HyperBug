@@ -36,7 +36,7 @@ Module09 completion (2026-10-11): all23 non-suspended checks are verified;09.3e 
 | 07 | [Markdown policy, issue forms, templates, and attachments](modules/07-content-and-attachments.md) | Complete at canonical scope ([B3 closure and operational limits](evidence/10-upload-closure.md)) | [Session record](progress/07-content-and-attachments.md) |
 | 08 | [Structured search, filters, and query performance](modules/08-search-and-query.md) | Complete (local scope; Module 09 dispatch/retry verified) | [B1–B4 local implementation and acceptance](progress/08-search-and-query.md); real tier performance/release acceptance remains open |
 | 09 | [Outbox delivery, queues, durable workflows, and cleanup](modules/09-async-and-workflows.md) | Complete (09.3e audit verified; native recovery/dispatch retained at recorded scope) | [Session record](progress/09-async-and-workflows.md) |
-| 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | Blocked (cross-site CSP repair scope pending; Standard unmeasured) | [Session record](progress/10-backend-acceptance.md) |
+| 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | Blocked (Standard unmeasured; actual Minimum metrics/capacity incomplete) | [Session record](progress/10-backend-acceptance.md) |
 | 11 | [Static web application, authentication client, and UI foundation](modules/11-static-web-foundation.md) | Not started | [Session record](progress/11-static-web-foundation.md) |
 | 12 | [Public feedback, discussion, and staff web workflows](modules/12-web-product-workflows.md) | Not started | [Session record](progress/12-web-product-workflows.md) |
 | 13 | [MVP release, deployment, and maintenance readiness](modules/13-mvp-release-and-operations.md) | Not started | [Session record](progress/13-mvp-release-and-operations.md) |
@@ -1291,3 +1291,11 @@ The user resumed exactly these four portions without boundary expansion. Atomic 
 ### 2026-10-11 — Module 10 starts; SAST equivalence accepted
 
 Module 01 closes 01.3f with hosted PR CodeQL/Security evidence and 01.V4 under the explicit user equivalence decision for the main-push half. No main push or PR #2 merge; the default-branch trigger remains unexercised and that residual risk is accepted. [Evidence](evidence/10-sast-validation.md). Module 10 B1–B6 is authorized; Standard will remain not measured with a separate expectation model. G1 Not passed; no SPA or 13.G6 closure.
+
+
+### 2026-10-11 — Module 10 metrics and authorized composition repair
+
+Module10 B1–B6 reports, contract/client and prerequisite closures are committed. Separate local Minimum journey/browser/eight-path metrics pass; Standard remains not measured. Both user-authorized Module04 repairs are implemented: cross-site CSP verified underADR0015, native-resource composition passes4 focused workerd regressions and actual unchanged production-bundle upload. [Current review](evidence/10-native-startup-blocker.md) records native HTTPS transport uncertainty and [scalar trial3 cleanup](evidence/10-native-composition-upload.json).10.2a/f,10.3b/g and10.G2/G4/G5 remain unchecked; global G1 Not passed, SPA blocked and13.G6 open. No main push, PR merge, paid capability or staging/production deployment.
+
+
+2026-10-12 continuation: [trial4](evidence/10-native-tls-guarded-pilot.json) has0 acceptance-harness HTTP requests and unlabelled native CPU6–21ms, causing guarded safe stop. TLS readiness fails;189 original records/FKs/zero owned Workers/domains/active data and no matching test certificates verified. Module10 remains Blocked at10.2a/f,10.3b/g and10.G2/G4/G5; no further load under current10ms stop rule. Goal is not complete; no gate/policy relaxation.

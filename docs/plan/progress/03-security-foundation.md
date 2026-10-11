@@ -1946,3 +1946,17 @@ CSP repair final verification: docs build, known credential-signature scan, scop
 - Next-session cautions: Never reuse a cleaned trial/baseline/token. Cloudflare upload validation lacks native bindings; earlier instrumented wrapper masks this check. Do not delete permanent key/audit identities or weaken guards. Pending approval is not inferred from elapsed time.
 
 Native pilot final headroom: corrected read-only GraphQL at14:35:25UTC estimates99,369 requests/4,987,961 D1 reads/99,520 writes remaining. Initial post-cleanup malformed queries returned200 GraphQL syntax errors; missing closing brace repaired. This is sampled account-wide headroom, not billing/per-trial attribution;0 native acceptance requests. Cleanup guard processes terminal.
+
+### 2026-10-12 — Auth composition repair verified; native continuation safely stopped
+
+- Scope and checklist IDs: Explicit narrow Module04 repair;10.2a/f,10.3b/g and10.G2/G4/G5 reporting.
+- Progress: Repair verified locally/native upload; remaining profile/capacity outcomes stay incomplete. No further load under current CPU stop rule.
+- Change summary: Fresh trial4 adds verified-TLS gate and independent finite cleanup; exact native/transport/cleanup findings consolidated.
+- Files/artifacts: [Focused review and exact commands](../evidence/10-native-startup-blocker.md), [trial4 scalar receipt](../evidence/10-native-tls-guarded-pilot.json), matrix/readiness/quota/gate/master records.
+- Verification:4 focused production-entry workerd regressions/types/lint/build/docs/secrets/scoped formatting pass; no unchanged green application lanes rerun.13 TLS handshakes fail; harness HTTP0.12 unlabelled native events/all outcome ok/CPU6–21ms; guard stops on first delivered14ms (not an exception).189 original records unchanged/FKs valid/0 owned Workers/domains/active data; four removed permanent keys retained. Guard/tail terminal, generated secret copies removed. User's signed-in dashboard proves no owned certificates, no SSL mutation. Final links/JSON/diff recorded below.
+- Decisions and deviations: Standard remains excluded; unlabelled traffic is not benchmark acceptance, provider limits are not measured capacity. No Core/auth/crypto/DTO/schema/baseline weakening, new paid feature, main push/PR merge/SPA/staging/production action.
+- Blockers/open questions:10.2a/f,10.3b/g and10.G2/G4/G5 remain incomplete; actual Standard absent, native TLS cause and21ms CPU-path attribution unresolved, sustainable instance ceiling unmeasured. G1 Not passed/13.G6 open.
+- Next actions: Commit coherent repair/evidence; leave remaining acceptance gates blocked until external/profile constraints change. Any future trial must first address observed stop conditions within separately authorized scope.
+- Next-session cautions: Trials1–4 cleaned; never reuse names/state/backups/tokens. No extra load or crypto tuning to force a pass. Existing unrelated certificates unchanged; private backups retained ignored; protected root files unstaged.
+
+Final repair/evidence verification: documentation build, known credential-signature scan,918 changed-file relative links, both new scalar JSON receipts and git diff --check pass. Source scoped formatter/types/lint and4 focused production-entry regressions already pass; unchanged green lanes not repeated.

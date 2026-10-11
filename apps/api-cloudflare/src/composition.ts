@@ -126,8 +126,6 @@ export function createCloudflareApi(
     }
   ).HYPERBUG_OAUTH_CLIENTS;
   const oauthClients = parseOAuthClients(oauthSecret);
-  if (oauthClients.length > 0 && (!env.DB || !keyProvider))
-    throw new Error('Invalid OAuth client configuration');
   const oauthCodeStore = env.DB ? createD1OAuthStores(env.DB) : null;
   const projectRoleStore = env.DB ? createD1ProjectRoleStore(env.DB) : null;
   const projectStore = env.DB ? createD1ProjectStore(env.DB) : null;
@@ -170,8 +168,6 @@ export function createCloudflareApi(
     rpName: passkeyVars.PASSKEY_RP_NAME,
     origin: passkeyVars.PASSKEY_ORIGIN,
   });
-  if (passkeyConfig && (!env.DB || !keyProvider))
-    throw new Error('Invalid passkey configuration');
   const passkey =
     passkeyConfig && env.DB && keyProvider
       ? {
@@ -343,7 +339,10 @@ export function createCloudflareApi(
     sessionStore: env.DB ? createD1AccountSessionStore(env.DB) : null,
     recoveryStore: env.DB ? createD1AccountRecoveryStore(env.DB) : null,
     passkey,
-    oauthClients,
+    // The shared server requires a complete OAuth dependency set. During
+    // upload validation the parsed registry stays in this root, whose fetch
+    // guard refuses all requests until native resources are present.
+    oauthClients: env.DB && keyProvider ? oauthClients : [],
     oauthCodeStore,
     projectRoleStore,
     projectStore,
@@ -388,6 +387,13 @@ export function createCloudflareApi(
 
   return {
     async fetch(request: Request) {
+      // Cloudflare validates modules at upload without live native bindings.
+      // Validate configuration above; require binding-dependent auth resources
+      // before the first runtime request can reach any route.
+      if (oauthClients.length > 0 && (!env.DB || !keyProvider))
+        throw new Error('Invalid OAuth client configuration');
+      if (passkeyConfig && (!env.DB || !keyProvider))
+        throw new Error('Invalid passkey configuration');
       void uploads?.intents;
       if (minimumTierEnabled) {
         const path = new URL(request.url).pathname;
