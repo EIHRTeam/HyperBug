@@ -500,8 +500,8 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
   const rejected = await fetch(badClient);
   expect(rejected.status).toBe(400);
   expect(rejected.headers.get('content-type')).toBe('text/html; charset=utf-8');
-  expect(rejected.headers.get('content-security-policy')).toContain(
-    "form-action 'self'",
+  expect(rejected.headers.get('content-security-policy')).toBe(
+    "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
   );
   expect(await rejected.text()).toContain('not permitted');
 
@@ -541,6 +541,8 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
   expect(loginPage.headers.get('content-type')).toBe(
     'text/html; charset=utf-8',
   );
+  const callbackPolicy = `default-src 'none'; form-action 'self' ${new URL(redirectUri).origin}; base-uri 'none'; frame-ancestors 'none'`;
+  expect(loginPage.headers.get('content-security-policy')).toBe(callbackPolicy);
   const loginHtml = await loginPage.text();
   expect(loginHtml).toContain('lang="en"');
   expect(loginHtml).toContain('<label for="handle">Handle</label>');
@@ -561,6 +563,7 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
   });
   expect(wrong.status).toBe(401);
   expect(wrong.headers.get('content-type')).toBe('text/html; charset=utf-8');
+  expect(wrong.headers.get('content-security-policy')).toBe(callbackPolicy);
   expect(await wrong.text()).toContain('role="alert"');
 
   // A protocol-shape rejection redirects before any credential work: no
@@ -593,12 +596,6 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
     body: form({ handle: 'pageuser', password: 'first-password-123' }),
     redirect: 'manual',
   });
-  console.log(
-    'page login:',
-    login.status,
-    (await login.text()).slice(0, 300),
-    login.headers.get('set-cookie'),
-  );
   expect(login.status).toBe(302);
   const location = login.headers.get('location') ?? '';
   expect(location).toContain(
@@ -627,6 +624,9 @@ it('drives the browser flow through the backend-owned authorize pages', async ()
 
   const consentPage = await fetch(authorizeUrl, { headers: { cookie } });
   expect(consentPage.status).toBe(200);
+  expect(consentPage.headers.get('content-security-policy')).toBe(
+    callbackPolicy,
+  );
   const consentHtml = await consentPage.text();
   expect(consentHtml).toContain('Authorize access');
   expect(consentHtml).toContain('<code>public-api</code>');

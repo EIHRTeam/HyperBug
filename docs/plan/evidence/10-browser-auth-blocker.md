@@ -1,6 +1,6 @@
 # Module 10 — Separate-domain browser auth blocker
 
-Date: 2026-10-11. Owning implementation: Module04, `packages/server/src/authorize-pages.ts`. Acceptance owner:10.2d. **Not resolved; no product CSP changed.**
+Date: 2026-10-11. Owning implementation: Module04, `packages/server/src/authorize-pages.ts`. Acceptance owner:10.2d. **Resolved under explicit user authorization.** The original failure below remains historical; [ADR0015](../../decisions/0015-authorize-callback-form-action.md) and [review/verification](10-auth-csp-review.md) record the narrow repair and successful both-profile browser evidence.
 
 ## Reproduction and observed result
 

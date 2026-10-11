@@ -385,10 +385,20 @@ it('renders the backend-owned authorize pages and completes the browser flow', a
   expect(loginPage.headers.get('content-security-policy')).toContain(
     "form-action 'self'",
   );
+  const callbackPolicy = `default-src 'none'; form-action 'self' ${new URL(redirectUri).origin}; base-uri 'none'; frame-ancestors 'none'`;
+  expect(loginPage.headers.get('content-security-policy')).toBe(callbackPolicy);
   const html = await loginPage.text();
   expect(html).toContain('lang="en"');
   expect(html).toContain('<label for="handle">Handle</label>');
   expect(html).toContain('aria-live');
+
+  const unregistered = await mf.dispatchFetch(
+    `${authOrigin}/auth/authorize?${new URLSearchParams({ ...oauthQuery, redirect_uri: 'https://evil.example/callback?x=;form-action *' })}`,
+  );
+  expect(unregistered.status).toBe(400);
+  expect(unregistered.headers.get('content-security-policy')).toBe(
+    "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+  );
 
   // Protocol-shape rejections of an already-verified client/redirect are
   // redirected back to the registered redirect URI with the RFC 6749
@@ -468,6 +478,9 @@ it('renders the backend-owned authorize pages and completes the browser flow', a
     headers: { cookie: pair },
   });
   expect(consentPage.status).toBe(200);
+  expect(consentPage.headers.get('content-security-policy')).toBe(
+    callbackPolicy,
+  );
   expect(await consentPage.text()).toContain('Authorize access');
 
   const consent = await mf.dispatchFetch(

@@ -10,10 +10,10 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend gate
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
-- Completed implementation checklist IDs: 10.1a–e, 10.2b/c/e, 10.3a/c/d/e/f.
-- Active/next checklist group: B1–B6 reported; local Minimum integration passes.10.2d awaits explicit Module04 CSP repair scope decision;10.2a/f and10.3b/g remain partial.
+- Completed implementation checklist IDs: 10.1a–e, 10.2b/c/d/e, 10.3a/c/d/e/f.
+- Active/next checklist group: B1–B6 reported; local Minimum integration passes.10.2d is verified;10.2a/f and10.3b/g remain partial.
 - Last updated: 2026-10-11.
-- Blocking issues discovered: Confirmed cross-site auth-page CSP blocker; concrete repair awaits user scope decision. Standard is not measured by user decision; actual Minimum full-profile/headroom/capacity evidence remains incomplete. G1 remains Not passed.
+- Blocking issues discovered: Cross-site CSP blocker resolved under authorized ADR0015. Standard is not measured by user decision; actual Minimum full-profile/headroom/capacity evidence remains incomplete. G1 remains Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
 
 ## Step tracking
@@ -21,14 +21,14 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 10.1 | Complete public contracts and client | Complete | [B2](../evidence/10-contract-client-validation.md) |
-| 10.2 | Execute the backend MVP acceptance matrix | 10.2b/c/e verified; a/d/f partial | [B4 matrix](../evidence/10-backend-matrix.md) |
+| 10.2 | Execute the backend MVP acceptance matrix | 10.2b/c/d/e verified; a/f partial | [B4 matrix](../evidence/10-backend-matrix.md) |
 | 10.3 | Establish measurable performance and operational readiness | Local baselines/basic readiness verified; b/g partial | [B5 report](../evidence/10-performance-readiness.md) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-Resolve the pending scope decision for the prepared Module04 CSP fix; if authorized, apply the reviewed patch with security ADR and verify the existing both-profile browser fixtures. Then complete bounded actual Minimum/headroom/capacity evidence where access permits. Actual Standard remains excluded; no SPA authorization is inferred.
+Complete bounded actual Minimum/headroom/capacity evidence where access permits. Actual Standard remains excluded; no SPA authorization is inferred.
 
 ## Next-session cautions
 
@@ -562,3 +562,29 @@ B6 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=tru
 Browser checkpoint: actual Chrome securitypolicyviolation confirms form-action on the registered cross-site login redirect. [Blocker and prepared repair](../evidence/10-browser-auth-blocker.md); product policy unchanged. Scope approval required under HANDOFF-10 before Module04 repair;10.2d remains unchecked. Cookie canary passed. Failed browser run is not acceptance and no successful receipt exists yet.
 
 Browser checkpoint final static verification: types/lint, docs build, secrets, scoped formatter, evidence links/JSON and diff pass after runner/redaction repairs. Browser acceptance remains failed at confirmed CSP redirect; no success receipt fabricated. Product policy/source untouched; prepared patch remains unapplied in/tmp. Goal is not complete.
+
+### 2026-10-11 — Authorized cross-site CSP repair and hosted preflight
+
+- Scope and checklist IDs: User-authorized narrow Module04 CSP repair supporting10.2d; hosted read-only preflight supporting10.2f/10.3g.
+- Progress: User explicitly authorized the prepared callback-origin CSP repair; implementation and both-profile browser verification now in scope. Fresh read-only authorized-account preflight succeeds.
+- Change summary: Record scope decision before implementation; sample current test inventory and delayed headroom without cloud mutations.
+- Files/artifacts: [Browser blocker](../evidence/10-browser-auth-blocker.md); private ignored .local/module10-hosted-preflight scripts/results.
+- Verification: Wrangler4.144.0 whoami succeeds; billing subscriptions403/code10000. At13:56:52Z sampled remaining D1 reads4,990,390/writes99,600 and Worker requests99,370. At13:58:05Z DB read-only check: active Staff1,pending outbox0,active jobs0,tables66,migrations36,current keys0; rows_written0. Initial outbox status SQL failed400/7500, corrected to delivered_at.
+- Decisions and deviations: Latest user instruction: “Authorize the narrow CSP repair.” No main push/PR merge/paid capability/SPA. Adaptive analytics headroom is approximate, not billing attribution.
+- Blockers/open questions: Standard remains not measured; full Minimum metrics/capacity and billing attribution incomplete. CSP browser proof pending repair.
+- Next actions: Apply exact validated callback-origin allowance, security ADR/review, Node and workerd browser verification; then remaining authorized Minimum evidence.
+- Next-session cautions: Never expose credentials or rerun cleaned hosted trials. Fresh backup/inventory/finite independent cleanup guard required before hosted mutation; no hosted resource created by preflight.
+
+### 2026-10-11 — Authorized CSP repair verified
+
+- Scope and checklist IDs: Explicitly authorized narrow Module04 repair;10.2d and affected OAuth/security regressions.
+- Progress: Callback-origin allowance and both-profile actual Chrome blocked-cookie proof pass;10.2d closes. Global G1 stays Not passed.
+- Change summary: Only login/consent form-action gains one previously validated callback origin; error pages stay self-only. Add exact page-policy/hostile redirect assertions and remove existing cookie-printing diagnostic.
+- Files/artifacts: packages/server/src/authorize-pages.ts; both OAuth tests; [ADR0015](../../decisions/0015-authorize-callback-form-action.md), [focused review/commands/receipts](../evidence/10-auth-csp-review.md); matrix/checklist/gate state.
+- Verification: Node real PostgreSQL/browser1pass; workerd Standard/browser1pass; local Minimum/browser1pass; affected OAuth Node3/workerd2pass; types/lint pass. Sandbox initdb shared memory denial repaired by running the authorized fixture outside restriction; no product bypass. Final docs/secrets/scoped formatting/links/diff recorded below.
+- Decisions and deviations: User explicitly authorized the prepared narrow CSP repair. Primary-agent focused review, not independent audit; registered-origin/path residual risk and browser enforcement differences recorded in ADR0015. No dependency/public DTO/schema/crypto change.
+- Blockers/open questions: Actual Standard not measured; actual Minimum integration/full metrics/headroom/sustainable capacity and billing attribution incomplete;13.G6 open.
+- Next actions: Fresh bounded current Minimum evidence under owned test resources/backup/independent finite cleanup guard; do not re-run unchanged green lanes.
+- Next-session cautions: Existing cookie diagnostic removed; disposable test session teardown complete. No main push/PR merge/paid/SPA/staging/production action; protected root drafts untouched.
+
+CSP repair final verification: docs build, known credential-signature scan, scoped formatter, changed evidence links/JSON and git diff --check pass. No hosted resources created; owned local teardown completed.

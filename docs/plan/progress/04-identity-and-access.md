@@ -1017,3 +1017,29 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions:10.2d and10.G4 remain incomplete; Standard unmeasured; G1/SPA closed.
 - Next actions: User scope decision on prepared fix, then both-profile browser verification if authorized.
 - Next-session cautions: Historical ERR_ABORTED was not merely an automation failure; do not bypass browser CSP or relabel failed run as acceptance.
+
+### 2026-10-11 — Authorized cross-site CSP repair and hosted preflight
+
+- Scope and checklist IDs: User-authorized narrow Module04 CSP repair supporting10.2d; hosted read-only preflight supporting10.2f/10.3g.
+- Progress: User explicitly authorized the prepared callback-origin CSP repair; implementation and both-profile browser verification now in scope. Fresh read-only authorized-account preflight succeeds.
+- Change summary: Record scope decision before implementation; sample current test inventory and delayed headroom without cloud mutations.
+- Files/artifacts: [Browser blocker](../evidence/10-browser-auth-blocker.md); private ignored .local/module10-hosted-preflight scripts/results.
+- Verification: Wrangler4.144.0 whoami succeeds; billing subscriptions403/code10000. At13:56:52Z sampled remaining D1 reads4,990,390/writes99,600 and Worker requests99,370. At13:58:05Z DB read-only check: active Staff1,pending outbox0,active jobs0,tables66,migrations36,current keys0; rows_written0. Initial outbox status SQL failed400/7500, corrected to delivered_at.
+- Decisions and deviations: Latest user instruction: “Authorize the narrow CSP repair.” No main push/PR merge/paid capability/SPA. Adaptive analytics headroom is approximate, not billing attribution.
+- Blockers/open questions: Standard remains not measured; full Minimum metrics/capacity and billing attribution incomplete. CSP browser proof pending repair.
+- Next actions: Apply exact validated callback-origin allowance, security ADR/review, Node and workerd browser verification; then remaining authorized Minimum evidence.
+- Next-session cautions: Never expose credentials or rerun cleaned hosted trials. Fresh backup/inventory/finite independent cleanup guard required before hosted mutation; no hosted resource created by preflight.
+
+### 2026-10-11 — Authorized CSP repair verified
+
+- Scope and checklist IDs: Explicitly authorized narrow Module04 repair;10.2d and affected OAuth/security regressions.
+- Progress: Callback-origin allowance and both-profile actual Chrome blocked-cookie proof pass;10.2d closes. Global G1 stays Not passed.
+- Change summary: Only login/consent form-action gains one previously validated callback origin; error pages stay self-only. Add exact page-policy/hostile redirect assertions and remove existing cookie-printing diagnostic.
+- Files/artifacts: packages/server/src/authorize-pages.ts; both OAuth tests; [ADR0015](../../decisions/0015-authorize-callback-form-action.md), [focused review/commands/receipts](../evidence/10-auth-csp-review.md); matrix/checklist/gate state.
+- Verification: Node real PostgreSQL/browser1pass; workerd Standard/browser1pass; local Minimum/browser1pass; affected OAuth Node3/workerd2pass; types/lint pass. Sandbox initdb shared memory denial repaired by running the authorized fixture outside restriction; no product bypass. Final docs/secrets/scoped formatting/links/diff recorded below.
+- Decisions and deviations: User explicitly authorized the prepared narrow CSP repair. Primary-agent focused review, not independent audit; registered-origin/path residual risk and browser enforcement differences recorded in ADR0015. No dependency/public DTO/schema/crypto change.
+- Blockers/open questions: Actual Standard not measured; actual Minimum integration/full metrics/headroom/sustainable capacity and billing attribution incomplete;13.G6 open.
+- Next actions: Fresh bounded current Minimum evidence under owned test resources/backup/independent finite cleanup guard; do not re-run unchanged green lanes.
+- Next-session cautions: Existing cookie diagnostic removed; disposable test session teardown complete. No main push/PR merge/paid/SPA/staging/production action; protected root drafts untouched.
+
+CSP repair final verification: docs build, known credential-signature scan, scoped formatter, changed evidence links/JSON and git diff --check pass. No hosted resources created; owned local teardown completed.

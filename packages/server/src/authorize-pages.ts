@@ -45,14 +45,35 @@ function hiddenFields(query: AuthorizeQuery): string {
     .join('');
 }
 
-export function contentSecurityPolicy(captcha: boolean): string {
+export function contentSecurityPolicy(
+  captcha: boolean,
+  validatedRedirectUri?: string,
+): string {
+  // Callers must validate the exact registered URI before rendering. Serialize
+  // only its web origin: paths/query text must never become CSP source tokens.
+  const callback =
+    validatedRedirectUri === undefined
+      ? undefined
+      : new URL(validatedRedirectUri);
+  if (
+    callback &&
+    callback.protocol !== 'https:' &&
+    callback.protocol !== 'http:'
+  )
+    throw new Error('Expected a validated web callback');
+  const callbackOrigin = callback === undefined ? '' : ` ${callback.origin}`;
   const provider = captcha
     ? '; script-src https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src https://challenges.cloudflare.com'
     : '';
-  return `default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'${provider}`;
+  return `default-src 'none'; form-action 'self'${callbackOrigin}; base-uri 'none'; frame-ancestors 'none'${provider}`;
 }
 
-function document(title: string, body: string, captcha: boolean): Response {
+function document(
+  title: string,
+  body: string,
+  captcha: boolean,
+  validatedRedirectUri?: string,
+): Response {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,7 +91,10 @@ ${body}
     status: 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'content-security-policy': contentSecurityPolicy(captcha),
+      'content-security-policy': contentSecurityPolicy(
+        captcha,
+        validatedRedirectUri,
+      ),
     },
   });
 }
@@ -147,6 +171,7 @@ ${noticeRegion(notice)}
 ${errorRegion(error)}
 ${credentials}`,
     captchaRequired && passwordSigninAvailable,
+    query.redirect_uri,
   );
 }
 
@@ -175,6 +200,7 @@ ${hiddenFields(query)}
 <button type="submit">Authorize</button>
 </form>`,
     false,
+    query.redirect_uri,
   );
 }
 

@@ -1918,3 +1918,17 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Full-profile/performance/capacity proof incomplete; global G1 Not passed and13.G6 open.
 - Next actions: Module10 fills authorized integration/browser gaps; no new owning-module implementation.
 - Next-session cautions: Never promote earlier-source CPU or model arithmetic into paid/current-profile acceptance; protected drafts remain untouched.
+
+### 2026-10-11 — Authorized CSP repair verified
+
+- Scope and checklist IDs: Explicitly authorized narrow Module04 repair;10.2d and affected OAuth/security regressions.
+- Progress: Callback-origin allowance and both-profile actual Chrome blocked-cookie proof pass;10.2d closes. Global G1 stays Not passed.
+- Change summary: Only login/consent form-action gains one previously validated callback origin; error pages stay self-only. Add exact page-policy/hostile redirect assertions and remove existing cookie-printing diagnostic.
+- Files/artifacts: packages/server/src/authorize-pages.ts; both OAuth tests; [ADR0015](../../decisions/0015-authorize-callback-form-action.md), [focused review/commands/receipts](../evidence/10-auth-csp-review.md); matrix/checklist/gate state.
+- Verification: Node real PostgreSQL/browser1pass; workerd Standard/browser1pass; local Minimum/browser1pass; affected OAuth Node3/workerd2pass; types/lint pass. Sandbox initdb shared memory denial repaired by running the authorized fixture outside restriction; no product bypass. Final docs/secrets/scoped formatting/links/diff recorded below.
+- Decisions and deviations: User explicitly authorized the prepared narrow CSP repair. Primary-agent focused review, not independent audit; registered-origin/path residual risk and browser enforcement differences recorded in ADR0015. No dependency/public DTO/schema/crypto change.
+- Blockers/open questions: Actual Standard not measured; actual Minimum integration/full metrics/headroom/sustainable capacity and billing attribution incomplete;13.G6 open.
+- Next actions: Fresh bounded current Minimum evidence under owned test resources/backup/independent finite cleanup guard; do not re-run unchanged green lanes.
+- Next-session cautions: Existing cookie diagnostic removed; disposable test session teardown complete. No main push/PR merge/paid/SPA/staging/production action; protected root drafts untouched.
+
+CSP repair final verification: docs build, known credential-signature scan, scoped formatter, changed evidence links/JSON and git diff --check pass. No hosted resources created; owned local teardown completed.

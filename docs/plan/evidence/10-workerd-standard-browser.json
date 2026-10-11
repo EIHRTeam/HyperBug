@@ -1,0 +1,39 @@
+{
+  "profile": "workerd-d1-local-standard",
+  "environment": "local-real-Chrome-and-HTTPS; backend store classification supplied by owning journey",
+  "browser": "155.0.8059.40",
+  "sites": [
+    "hyperbug-auth.test",
+    "hyperbug-browser.test"
+  ],
+  "thirdPartyCookies": {
+    "explicitlyBlocked": true,
+    "firstPartyCanary": true,
+    "crossSiteCanary": false,
+    "blockedReasons": [
+      "UserPreferences"
+    ]
+  },
+  "login": {
+    "exchange": 200,
+    "account": 200,
+    "replay": 400,
+    "localStorageKeys": 0,
+    "sessionStorageKeys": 0
+  },
+  "recovery": {
+    "exchange": 200,
+    "account": 200,
+    "replay": 400,
+    "localStorageKeys": 0,
+    "sessionStorageKeys": 0
+  },
+  "exactOriginSiblingBlocked": true,
+  "unregisteredRedirectStatus": 400,
+  "cookieFreeTokenAndBusinessRequests": 6,
+  "frontendApiStatus": 404,
+  "tokenPersistence": "memory-only",
+  "selfSignedTestTLS": true,
+  "callbacks": 2,
+  "frontendProxy": false
+}
