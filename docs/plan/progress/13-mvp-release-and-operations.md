@@ -436,3 +436,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions:09.1f/09.V6 await native job interruption/clean redeployment and preserved pending-event recovery.
 - Next actions: Observe the existing R10 handles; after actual checkpoint1/exception verify exact witness, clean redeploy/resume and dispatch; finish independent cleanup and requirement audit.
 - Next-session cautions: Respect R10 original deadlines in private live-handles; never rerun seeded inventory. No push/PR edit, protected/private staging, paid feature, audit/gate closure; G1/G2 closed,13.G6 open.
+
+
+### 2026-10-11 — Composed scheduled-handler acceptance preparation
+
+- Scope and checklist IDs:09.1f/09.V6 completion audit and authorized R10 verification;13.G6 dependency.
+- Progress: Close a proof-scope gap in the prepared native clean variants: use the actual Minimum entry's scheduled handler, including ordinary config checks. Initial deployed fault remains unchanged and native execution is pending.
+- Change summary: Add requirement-by-requirement audit; prepare actual composed resume/dispatch and stronger original-resource/schedule comparison.
+- Files/artifacts: [Requirement audit](../evidence/09-completion-audit.md), [prepared composition evidence](../evidence/09-async-validation.md#composed-handler-evidence-preparation); ignored helpers/logs.
+- Verification: Composed local workerd starts, denies fetch401, commits exactly[0,1] and checkpoint2. Final D1 leases/consumers/maintenance batch7 passes/184 deselected. Context7 exception serialization coverage unavailable; native classifier stays strict. Existing observer handle25215 is still live at02:52 UTC.
+- Decisions and deviations: Selective-function timing alone cannot prove complete scheduled CPU; keep09.1f/09.V6 incomplete. No OS-kill claim, security/config/budget weakening or unchanged PostgreSQL rerun.
+- Blockers/open questions: Native intentional fault, composed restart/dispatch and cleanup await actual outcomes.
+- Next actions: Same bounded R10 observer; after exact checkpoint1/exception, actual clean redeployment and remaining witnesses/CPU.
+- Next-session cautions: Tail63124/observer25215/watchdog58691, deadlines03:44:40.222/03:49:40.222 UTC. No inventory rerun, alternate trial while live, protected/private staging, push/PR edit, audit or gate closure.
