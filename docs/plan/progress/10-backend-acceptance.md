@@ -11,9 +11,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
 - Completed implementation checklist IDs: 10.1a–e, 10.2b/c/d/e, 10.3a/c/d/e/f.
-- Active/next checklist group: B1–B6 reported; local Minimum integration passes.10.2d is verified;10.2a/f and10.3b/g remain partial.
+- Active/next checklist group: B1–B6 reported; local Minimum integration passes.10.2d and local Minimum metrics are verified;10.2a/f and10.3b/g remain partial. Current production auth-composition repair awaits separate scope authorization.
 - Last updated: 2026-10-11.
-- Blocking issues discovered: Cross-site CSP blocker resolved under authorized ADR0015. Standard is not measured by user decision; actual Minimum full-profile/headroom/capacity evidence remains incomplete. G1 remains Not passed.
+- Blocking issues discovered: Cross-site CSP blocker resolved under authorized ADR0015; current production auth composition fails upload-time OAuth prerequisites and its narrow repair awaits separate authorization. Standard is not measured by user decision; actual Minimum full-profile/headroom/capacity evidence remains incomplete. G1 remains Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
 
 ## Step tracking
@@ -28,7 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-Complete bounded actual Minimum/headroom/capacity evidence where access permits. Actual Standard remains excluded; no SPA authorization is inferred.
+Resolve the separate production auth-composition scope decision, then complete bounded actual Minimum/headroom/capacity evidence where access permits. Actual Standard remains excluded; no SPA authorization is inferred.
 
 ## Next-session cautions
 
@@ -588,3 +588,43 @@ Browser checkpoint final static verification: types/lint, docs build, secrets, s
 - Next-session cautions: Existing cookie diagnostic removed; disposable test session teardown complete. No main push/PR merge/paid/SPA/staging/production action; protected root drafts untouched.
 
 CSP repair final verification: docs build, known credential-signature scan, scoped formatter, changed evidence links/JSON and git diff --check pass. No hosted resources created; owned local teardown completed.
+
+### 2026-10-11 — Current-source uninstrumented Minimum pilot preparation
+
+- Scope and checklist IDs:10.2f/10.3b/g; bounded actual Minimum diagnostic only.
+- Progress: Current production Minimum/ingress bundles built from eb5c7f5 without metric wrappers. Fresh test-D1 logical backup imports locally with valid FKs:59 canonical tables/177 baseline records.
+- Change summary: Prepare fresh random test Workers/custom domain, real test R2 signing binding, fresh random private keys and unused abuse-key version; finite independent20-minute cleanup supervisor and standard Wrangler auth refresh. No new product path, crypto tuning or paid broker.
+- Files/artifacts: Ignored private .local/module10-native-pilot tooling/backup/config; public scalar receipt pending.
+- Verification: Existing exact bundle targets pass; installed Wrangler4.144.0 deploy help confirms no-bundle/secrets-file. Context7 workers-sdk query2026-10-11 covers secret safety/service binding; native tail field coverage remains a focused runtime question. Read-only preflight/backup pass; before-mutation isolation check requires zero current keys/pending events/active jobs and unused rate version.
+- Decisions and deviations: Stop before any further load on first measured native CPU above existing10ms target, invocation/server failure, missing attributable tail event or absolute deadline. Maximum9 HTTP requests, concurrency1; no external notification.
+- Blockers/open questions: Billing remains403, Standard unmeasured. Pilot alone cannot establish sustainable ceiling or full integrated acceptance.
+- Next actions: Start independently authenticated finite cleanup guard before any mutation; deploy only owned test resources, attach scalar-only tail, run pilot and verify exact baseline preservation/zero owned active state.
+- Next-session cautions: No rerun of old cleaned trials. Protect private backup/secrets/logs; no production/staging/main/merge/SPA action. Stop on guard cleanup marker, do not race its teardown.
+
+Native pilot checkpoint: first deploy attempt was refused before guard-ready existed (no mutation). After guard ready, API upload failed10021 because no-bundle omitted a relative ESM chunk; no acceptance HTTP request ran. Resource cleanup verified0 owned Workers/domains. Data cleanup initially failed7500 because key identities are permanent; corrected to current→revoked→removed under existing lifecycle guards, with177 original rows unchanged and0 owned active state. Four removed test-key identities are retained, no trigger relaxed. A fresh pilot2 starts from a new backup/inventory/names/secrets, with explicit no_bundle/find_additional_modules/base_dir/ESModule rules informed by Context7 and installed schema. Prior failed/cleaned trial is not reused as a measurement.
+
+### 2026-10-11 — Local Minimum metrics and actual production-root upload blocker
+
+- Scope and checklist IDs:10.2a/f,10.3b/d/g and10.G2/G4; owning Module04 composition finding. No unauthorized product patch applied.
+- Progress: Local Minimum eight-path metrics pass; fresh unchanged production-root native pilot fails upload validation before any HTTP request. All owned attempts cleaned.
+- Change summary: Extend existing opt-in benchmark with a distinct11-Issue/10-result title-only Minimum fixture and separate observed thresholds. Prepare/report narrow composition repair; no second journey, dependencies, policy/crypto/contract change.
+- Files/artifacts: [Local metrics/commands/failures](../evidence/10-minimum-local-performance.md), [native blocker/prepared patch](../evidence/10-native-startup-blocker.md), [scalar attempts/cleanup](../evidence/10-native-upload-attempts.json); matrix/readiness/quota/gate records.
+- Verification: Corrected local Minimum benchmark1pass/4.18s; types/lint pass. Initial21-Issue conservative reservation exhausted, then search20 denied400; fixture corrected to existing limits11/10 without policy relaxation. First actual upload omitted ESM chunk10021; fresh corrected upload failed OAuth prerequisite10021. No native CPU/HTTP acceptance. First cleanup attempted permanent-key delete7500, repaired through allowed revoke/remove.177/181 baseline rows unchanged, FKs valid,0 owned active resources/data; four permanent removed-key identities retained per trial. Ephemeral secret copies removed, donor storage credentials untouched.
+- Decisions and deviations: Standard not measured; no paid feature/main/merge/SPA/staging/production action. HANDOFF-10's explicit out-of-list rule requires a separate user scope decision for the new Module04 repair; question pending, patch unapplied. Comparator self-check is consistency only; no benchmark/lane rerun to bolster green evidence.
+- Blockers/open questions: Production-root OAuth/passkey prerequisite layering (only OAuth native failure measured); actual profile metrics/billing/headroom/sustainable capacity still incomplete. G1 Not passed,13.G6 open.
+- Next actions: User decision on /tmp/hyperbug-10-auth-startup-proposal.diff; if authorized, focused source/runtime fail-closed review and a fresh guarded production-root trial. Complete unaffected evidence/documentation first.
+- Next-session cautions: Never reuse a cleaned trial/baseline/token. Cloudflare upload validation lacks native bindings; earlier instrumented wrapper masks this check. Do not delete permanent key/audit identities or weaken guards. Pending approval is not inferred from elapsed time.
+
+Native pilot final headroom: corrected read-only GraphQL at14:35:25UTC estimates99,369 requests/4,987,961 D1 reads/99,520 writes remaining. Initial post-cleanup malformed queries returned200 GraphQL syntax errors; missing closing brace repaired. This is sampled account-wide headroom, not billing/per-trial attribution;0 native acceptance requests. Cleanup guard processes terminal.
+
+### 2026-10-11 — Auth composition repair authorized
+
+- Scope and checklist IDs: Explicit user-authorized narrow Module04 auth-composition repair supporting10.2a/f and10.3b/g.
+- Progress: User replied “Authorize the narrow auth-composition repair”; prepared patch is now in scope before implementation.
+- Change summary: Move only OAuth/passkey live DB/key-provider prerequisite checks from upload evaluation to before every runtime fetch, retaining static parsing and fail-closed behavior.
+- Files/artifacts: [Finding/proposal](../evidence/10-native-startup-blocker.md), /tmp/hyperbug-10-auth-startup-proposal.diff; focused review and verification to follow.
+- Verification: Actual10021 OAuth upload witness; neighboring passkey check is source pattern, not separately measured failure. Prior failed attempts fully cleaned; new trial requires new backup/guard/names/secrets.
+- Decisions and deviations: Latest explicit scope extension applies only to this composition prerequisite repair; no unrelated work, paid capability, main push, PR merge, SPA or staging/production deployment.
+- Blockers/open questions: Actual/native distributions/sustainable capacity still unmeasured; Standard excluded, G1 Not passed and13.G6 open.
+- Next actions: Commit completed independent Minimum metrics, then apply authorized patch, focused regression/review and fresh production-root trial.
+- Next-session cautions: Static malformed configuration must still reject; no synthetic DB wrapper or provider relabeling. Auth/resource failures remain fail closed.

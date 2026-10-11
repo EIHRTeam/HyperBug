@@ -10,7 +10,7 @@ Follow the user's current instructions, applicable repository guidance, and the 
 
 ## Current user-directed suspension
 
-On 2026-10-11, the user explicitly authorized the narrow Module04 callback-origin CSP repair prepared during10.2d browser acceptance, with security ADR/review and both-profile browser verification. This extends HANDOFF-10 only for that repair; main push, PR #2 merge, paid Standard measurement and SPA remain excluded.
+On 2026-10-11, the user explicitly authorized the narrow Module04 callback-origin CSP repair prepared during10.2d browser acceptance, with security ADR/review and both-profile browser verification. The user subsequently authorized the narrow OAuth/passkey Cloudflare auth-composition prerequisite repair after its10021 upload witness. These extensions apply only to those two repairs; main push, PR #2 merge, paid Standard measurement and SPA remain excluded.
 
 On 2026-10-11, the user explicitly resumed only **06.1c, 06.2c, 07.2e and 09.3e**, with no boundary expansion or unauthorized design/defense. Their [selected audit evidence](evidence/2026-10-11-selected-audit.md) closes those portions. This overrides earlier suspension/hold text only for these IDs; other audit, SPA, Argon2id and acceptance-gate boundaries remain unchanged.
 

@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-11T14:35:25.273Z",
+  "attribution": "delayed adaptive analytics; not billing counters; no request acceptance ran",
+  "d1": {
+    "remainingReads": 4987961,
+    "remainingWrites": 99520
+  },
+  "workers": {
+    "remainingRequests": 99369
+  }
+}

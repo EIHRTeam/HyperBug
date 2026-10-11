@@ -618,10 +618,10 @@ it(`delivers the V1 HTTP workflow on workerd/D1 ${tier}`, async () => {
       JSON.stringify(receipt, null, 2) + '\n',
     );
   }
-  if (!minimum && process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1') {
+  if (process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1') {
     const db = (await mf.getD1Database('DB')) as unknown as D1Database;
     await measureAcceptance({
-      profile: 'workerd-d1-local',
+      profile: minimum ? 'workerd-d1-minimum-local' : 'workerd-d1-local',
       projectId: project.id,
       issueId: issue.id,
       token: authorToken,

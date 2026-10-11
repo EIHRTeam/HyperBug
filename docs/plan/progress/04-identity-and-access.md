@@ -1043,3 +1043,29 @@ Every session affecting this module MUST append an entry following the [required
 - Next-session cautions: Existing cookie diagnostic removed; disposable test session teardown complete. No main push/PR merge/paid/SPA/staging/production action; protected root drafts untouched.
 
 CSP repair final verification: docs build, known credential-signature scan, scoped formatter, changed evidence links/JSON and git diff --check pass. No hosted resources created; owned local teardown completed.
+
+### 2026-10-11 — Local Minimum metrics and actual production-root upload blocker
+
+- Scope and checklist IDs:10.2a/f,10.3b/d/g and10.G2/G4; owning Module04 composition finding. No unauthorized product patch applied.
+- Progress: Local Minimum eight-path metrics pass; fresh unchanged production-root native pilot fails upload validation before any HTTP request. All owned attempts cleaned.
+- Change summary: Extend existing opt-in benchmark with a distinct11-Issue/10-result title-only Minimum fixture and separate observed thresholds. Prepare/report narrow composition repair; no second journey, dependencies, policy/crypto/contract change.
+- Files/artifacts: [Local metrics/commands/failures](../evidence/10-minimum-local-performance.md), [native blocker/prepared patch](../evidence/10-native-startup-blocker.md), [scalar attempts/cleanup](../evidence/10-native-upload-attempts.json); matrix/readiness/quota/gate records.
+- Verification: Corrected local Minimum benchmark1pass/4.18s; types/lint pass. Initial21-Issue conservative reservation exhausted, then search20 denied400; fixture corrected to existing limits11/10 without policy relaxation. First actual upload omitted ESM chunk10021; fresh corrected upload failed OAuth prerequisite10021. No native CPU/HTTP acceptance. First cleanup attempted permanent-key delete7500, repaired through allowed revoke/remove.177/181 baseline rows unchanged, FKs valid,0 owned active resources/data; four permanent removed-key identities retained per trial. Ephemeral secret copies removed, donor storage credentials untouched.
+- Decisions and deviations: Standard not measured; no paid feature/main/merge/SPA/staging/production action. HANDOFF-10's explicit out-of-list rule requires a separate user scope decision for the new Module04 repair; question pending, patch unapplied. Comparator self-check is consistency only; no benchmark/lane rerun to bolster green evidence.
+- Blockers/open questions: Production-root OAuth/passkey prerequisite layering (only OAuth native failure measured); actual profile metrics/billing/headroom/sustainable capacity still incomplete. G1 Not passed,13.G6 open.
+- Next actions: User decision on /tmp/hyperbug-10-auth-startup-proposal.diff; if authorized, focused source/runtime fail-closed review and a fresh guarded production-root trial. Complete unaffected evidence/documentation first.
+- Next-session cautions: Never reuse a cleaned trial/baseline/token. Cloudflare upload validation lacks native bindings; earlier instrumented wrapper masks this check. Do not delete permanent key/audit identities or weaken guards. Pending approval is not inferred from elapsed time.
+
+Native pilot final headroom: corrected read-only GraphQL at14:35:25UTC estimates99,369 requests/4,987,961 D1 reads/99,520 writes remaining. Initial post-cleanup malformed queries returned200 GraphQL syntax errors; missing closing brace repaired. This is sampled account-wide headroom, not billing/per-trial attribution;0 native acceptance requests. Cleanup guard processes terminal.
+
+### 2026-10-11 — Auth composition repair authorized
+
+- Scope and checklist IDs: Explicit user-authorized narrow Module04 auth-composition repair supporting10.2a/f and10.3b/g.
+- Progress: User replied “Authorize the narrow auth-composition repair”; prepared patch is now in scope before implementation.
+- Change summary: Move only OAuth/passkey live DB/key-provider prerequisite checks from upload evaluation to before every runtime fetch, retaining static parsing and fail-closed behavior.
+- Files/artifacts: [Finding/proposal](../evidence/10-native-startup-blocker.md), /tmp/hyperbug-10-auth-startup-proposal.diff; focused review and verification to follow.
+- Verification: Actual10021 OAuth upload witness; neighboring passkey check is source pattern, not separately measured failure. Prior failed attempts fully cleaned; new trial requires new backup/guard/names/secrets.
+- Decisions and deviations: Latest explicit scope extension applies only to this composition prerequisite repair; no unrelated work, paid capability, main push, PR merge, SPA or staging/production deployment.
+- Blockers/open questions: Actual/native distributions/sustainable capacity still unmeasured; Standard excluded, G1 Not passed and13.G6 open.
+- Next actions: Commit completed independent Minimum metrics, then apply authorized patch, focused regression/review and fresh production-root trial.
+- Next-session cautions: Static malformed configuration must still reject; no synthetic DB wrapper or provider relabeling. Auth/resource failures remain fail closed.

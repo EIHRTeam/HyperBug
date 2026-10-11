@@ -138,6 +138,77 @@
           "serverErrorRate": 0
         }
       }
+    },
+    "workerd-d1-minimum-local": {
+      "baseline": "10-workerd-d1-minimum-local-http-baseline.json",
+      "node": "v24.21.0",
+      "fixture": {
+        "seededIssues": 11,
+        "seededFrom": "one genuinely authorized form issue; synthetic read-scale copies",
+        "listLimit": 100,
+        "searchLimit": 10,
+        "indexLimit": 10,
+        "textScope": "title",
+        "concurrency": 1,
+        "passwordSamples": 3,
+        "security": "real HTTP bearer/current permissions/admission/validation/audit/Markdown; unchanged hash parameters"
+      },
+      "paths": {
+        "list": {
+          "minimumSamples": 20,
+          "p95Ms": 8.948,
+          "p99Ms": 9.161,
+          "serverErrorRate": 0
+        },
+        "detail": {
+          "minimumSamples": 20,
+          "p95Ms": 11.502,
+          "p99Ms": 13.592,
+          "serverErrorRate": 0
+        },
+        "search": {
+          "minimumSamples": 20,
+          "p95Ms": 16.53,
+          "p99Ms": 16.549,
+          "serverErrorRate": 0
+        },
+        "auth-bearer": {
+          "minimumSamples": 20,
+          "p95Ms": 6.223,
+          "p99Ms": 6.266,
+          "serverErrorRate": 0
+        },
+        "password-login-including-hash": {
+          "minimumSamples": 3,
+          "p95Ms": 16.835,
+          "p99Ms": 16.835,
+          "serverErrorRate": 0
+        },
+        "create": {
+          "minimumSamples": 20,
+          "p95Ms": 18.502,
+          "p99Ms": 20.113,
+          "serverErrorRate": 0
+        },
+        "comment": {
+          "minimumSamples": 20,
+          "p95Ms": 14.921,
+          "p99Ms": 17.573,
+          "serverErrorRate": 0
+        },
+        "upload-intent": {
+          "minimumSamples": 16,
+          "p95Ms": 17.328,
+          "p99Ms": 17.328,
+          "serverErrorRate": 0
+        },
+        "upload-intent-quota-refusal": {
+          "minimumSamples": 4,
+          "p95Ms": 17.726,
+          "p99Ms": 17.726,
+          "serverErrorRate": 0
+        }
+      }
     }
   }
 }

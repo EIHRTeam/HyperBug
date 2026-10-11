@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-11",
+  "profile": "cloudflare-minimum",
+  "plan": "Free user-attested; subscription/billing API403",
+  "targetCpuMs": 10,
+  "acceptedNativeRequests": 0,
+  "nativeCpu": "not measured",
+  "attempts": [
+    {
+      "trial": 1,
+      "classification": "actual authorized Cloudflare test upload; no HTTP acceptance ran",
+      "source": {
+        "at": "2026-10-11T14:21:25.530Z",
+        "commit": "eb5c7f5d031fed53f9454e9b6f2c75f060bcf5a8",
+        "hashes": {
+          "dist/cloudflare-minimum/minimum.mjs": "79b2f1df1f6828ce3dc537dab946f43913f0fccd221ab100605bc7a667423f33",
+          "dist/cloudflare-minimum/rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+          "dist/cloudflare-minimum/source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777",
+          "dist/cloudflare-ingress/ingress.mjs": "43b52986f4b93abdc33b4fe98653d9cba1f36d85930e606a3148a8e1fe58bf69"
+        },
+        "instrumentation": "unchanged production source, no DB/CPU wrapper",
+        "sampling": 1
+      },
+      "backup": {
+        "canonicalTables": 59,
+        "canonicalRows": 177,
+        "foreignKeysValid": true,
+        "sha256": "4849ee3eaa81c5c47cf4add4c6407cea7b26601a7dd8786e56300af3dccec9bc"
+      },
+      "failure": {
+        "code": 10021,
+        "cause": "missing collected ESM chunk"
+      },
+      "cleanup": {
+        "at": "2026-10-11T14:23:17.286Z",
+        "resources": {
+          "workers": 0,
+          "domains": 0
+        },
+        "preExistingRowsVerified": 177,
+        "foreignKeysValid": true,
+        "ownedActiveDataRemaining": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "retainedInactivePrincipals": 0,
+        "retainedRemovedKeyIdentities": 4,
+        "appendOnlyAuditPreserved": true,
+        "r2ObjectsCreated": 0,
+        "queuesCreated": 0,
+        "workflowsCreated": 0
+      },
+      "guard": {
+        "finiteDeadlineMinutes": 20,
+        "independentProcess": true,
+        "terminal": true,
+        "firstCleanupNeededManualLifecycleCorrection": true
+      },
+      "ephemeralSecretCopiesRemoved": true
+    },
+    {
+      "trial": 2,
+      "classification": "actual authorized Cloudflare test upload; no HTTP acceptance ran",
+      "source": {
+        "at": "2026-10-11T14:26:50.770Z",
+        "commit": "eb5c7f5d031fed53f9454e9b6f2c75f060bcf5a8",
+        "hashes": {
+          "dist/cloudflare-minimum/minimum.mjs": "79b2f1df1f6828ce3dc537dab946f43913f0fccd221ab100605bc7a667423f33",
+          "dist/cloudflare-minimum/rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+          "dist/cloudflare-minimum/source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777",
+          "dist/cloudflare-ingress/ingress.mjs": "43b52986f4b93abdc33b4fe98653d9cba1f36d85930e606a3148a8e1fe58bf69"
+        },
+        "instrumentation": "unchanged production source, no DB/CPU wrapper",
+        "sampling": 1
+      },
+      "backup": {
+        "canonicalTables": 59,
+        "canonicalRows": 181,
+        "foreignKeysValid": true,
+        "sha256": "6fdc13d98fb93b90af0c432ab461ca8b246f6df33040f79c7dc97275dd8ea683"
+      },
+      "failure": {
+        "code": 10021,
+        "cause": "binding-dependent OAuth prerequisite at upload-time module evaluation"
+      },
+      "cleanup": {
+        "at": "2026-10-11T14:27:18.097Z",
+        "resources": {
+          "workers": 0,
+          "domains": 0
+        },
+        "preExistingRowsVerified": 181,
+        "foreignKeysValid": true,
+        "ownedActiveDataRemaining": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "retainedInactivePrincipals": 0,
+        "retainedRemovedKeyIdentities": 4,
+        "appendOnlyAuditPreserved": true,
+        "r2ObjectsCreated": 0,
+        "queuesCreated": 0,
+        "workflowsCreated": 0
+      },
+      "guard": {
+        "finiteDeadlineMinutes": 20,
+        "independentProcess": true,
+        "terminal": true,
+        "firstCleanupNeededManualLifecycleCorrection": false
+      },
+      "ephemeralSecretCopiesRemoved": true
+    }
+  ]
+}

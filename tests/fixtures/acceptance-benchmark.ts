@@ -5,7 +5,10 @@ import type { SearchIndexStore } from '@hyperbug/application';
 /* eslint-disable no-await-in-loop -- Explicitly bounded sequential samples and isolated fixture setup preserve sample attribution. */
 /** Opt-in bounded HTTP benchmark, sharing the already authenticated MVP journey. */
 export async function measureAcceptance(options: {
-  profile: 'node-postgres-local' | 'workerd-d1-local';
+  profile:
+    | 'node-postgres-local'
+    | 'workerd-d1-local'
+    | 'workerd-d1-minimum-local';
   projectId: string;
   issueId: string;
   token: string;
@@ -22,19 +25,27 @@ export async function measureAcceptance(options: {
   index: SearchIndexStore;
 }) {
   const { projectId, issueId, token, call, query, index, profile } = options;
-  for (let n = 2; n <= 1001; n++)
+  const minimum = profile === 'workerd-d1-minimum-local';
+  // Minimum's explicit index write reservation remains active. A smaller
+  // read fixture fits its daily budget; fixture size is not a capacity claim.
+  const seededIssues = minimum ? 11 : 1001;
+  const indexLimit = minimum ? 10 : 25;
+  const searchLimit = minimum ? 10 : 20;
+  for (let n = 2; n <= seededIssues; n++)
     await query(
       'INSERT INTO issues (id,project_id,number,title,body,body_text,body_text_version,author_id,created_at,updated_at,last_mutation_id) SELECT ?,project_id,?,title,body,body_text,body_text_version,author_id,created_at,updated_at,? FROM issues WHERE id=? AND project_id=?',
       [crypto.randomUUID(), n, crypto.randomUUID(), issueId, projectId],
     );
-  await query('UPDATE projects SET next_issue_number=1002 WHERE id=?', [
+  await query('UPDATE projects SET next_issue_number=? WHERE id=?', [
+    seededIssues + 1,
     projectId,
   ]);
   let cursor: string | null = null;
-  for (let page = 0; page < 41; page++) {
+  for (let page = 0; page < Math.ceil(seededIssues / indexLimit); page++) {
     const r = await index.backfill({
       projectId,
-      limit: 25,
+      limit: indexLimit,
+      ...(minimum ? { tier: 'cloudflare-minimum' } : {}),
       ...(cursor ? { after: cursor } : {}),
     });
     cursor = r.nextCursor;
@@ -71,7 +82,7 @@ export async function measureAcceptance(options: {
     call(`${base}/issues/${issueId}`, { token }),
   );
   await measure('search', 20, 200, () =>
-    call(`${base}/search?q=Crash&limit=20`, { token }),
+    call(`${base}/search?q=Crash&limit=${searchLimit}`, { token }),
   );
   await measure('auth-bearer', 20, 200, () =>
     call('/api/v1/account', { token }),
@@ -146,12 +157,15 @@ export async function measureAcceptance(options: {
     classification:
       profile === 'node-postgres-local'
         ? 'real local PostgreSQL18.6/Node; S3 emulated'
-        : 'local workerd/D1/R2 emulation; no paid CPU enforcement',
+        : minimum
+          ? 'local Minimum workerd/D1/R2 emulation; no Free CPU enforcement'
+          : 'local workerd/D1/R2 emulation; no paid CPU enforcement',
     fixture: {
-      seededIssues: 1001,
+      seededIssues,
       seededFrom:
         'one genuinely authorized form issue; synthetic read-scale copies',
       listLimit: 100,
+      ...(minimum ? { searchLimit, indexLimit, textScope: 'title' } : {}),
       concurrency: 1,
       passwordSamples: 3,
       security:
