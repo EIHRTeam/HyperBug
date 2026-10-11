@@ -402,3 +402,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native scheduling delay, maximum CPU and recovery remain unproven; project/provider10 ms unchanged.
 - Next actions: Collect existing native outcome or deadline cleanup; only after fit perform guarded quota/job recovery. Compare140 baseline rows and original resources after cleanup.
 - Next-session cautions: R8 deployedf6a1e9e; tail10791/monitor11882/watchdog4672, deadlines20:55:15.161/21:00:15.161 UTC2026-10-10. Source/job preparation differs from actual native proof. No inventory rerun, protected/private staging, push/PR edit, audit/gate closure.
+
+
+### 2026-10-11 — Native maximum dispatch and quota recovery verified
+
+- Scope and checklist IDs: Authorized 09.1f/09.V6 performance continuation; search/data/operational dependencies, no audit resume.
+- Progress: Maximum title-only native dispatch10 ms, quota refusal2 ms and restored-quota recovery4 ms observed. Native checkpoint interruption/redeployment remains pending.
+- Change summary: Publish actual R9 outcomes and independently verified cleanup; prepare a fresh bounded R10 invocation-abort/redeployment case with current16d6500 production job batching. No target revision.
+- Files/artifacts: [Native results and procedure](../evidence/09-async-validation.md#declarative-native-dispatch-and-quota-recovery), [final R9 receipt](../evidence/09-hosted-native-declarative-retry-receipt.json), internal async runbook, ADR0014 and paired reader guides; ignored R10 helpers.
+- Verification:145 original records/exact singleton sets/FKs preserved, owned resources/work zero, both original Workers/domain mappings preserved, all R9 handles terminal/absent. R10 fresh logical backup restores152 rows/59 tables; private classifier and post-commit fault checks pass, build/types/Wrangler dry-run pass. R10 deployed version8f47a018 has one Cron, CPU/outcome pending. Docs build,497 relative-file links,JSON,secret scan and diff hygiene pass. Formatter excludes docs by existing configuration, so no documentation formatter pass is claimed. No unchanged green application lane repeated.
+- Decisions and deviations: Target/provider ceiling10 ms unchanged; maximum sample has no margin. Intentional uncaught native scheduled error after actual checkpoint commit proves invocation interruption if observed, not an OS kill. Full composition/billing/release acceptance remains separate.
+- Blockers/open questions:09.1f/09.V6 await native job interruption/clean redeployment and preserved pending-event recovery.
+- Next actions: Observe the existing R10 handles; after actual checkpoint1/exception verify exact witness, clean redeploy/resume and dispatch; finish independent cleanup and requirement audit.
+- Next-session cautions: Respect R10 original deadlines in private live-handles; never rerun seeded inventory. No push/PR edit, protected/private staging, paid feature, audit/gate closure; G1/G2 closed,13.G6 open.

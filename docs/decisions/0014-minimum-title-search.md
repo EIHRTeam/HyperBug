@@ -2,7 +2,7 @@
 
 Date: 2026-10-11.
 
-Status: User-authorized direction after repeated optimization and native CPU failures; runtime acceptance pending.
+Status: User-authorized direction after repeated optimization and native CPU failures; limited native dispatch fit observed; full profile acceptance remains pending.
 
 Owners: 08, 09; acceptance dependencies 10, 13.
 
@@ -12,7 +12,7 @@ Refines: [ADR 0013](0013-bounded-search-contract.md), [FREE-TIER-PROFILE](../FRE
 
 Reduce `cloudflare-minimum` text search to Issue titles. Cloudflare Standard and Node/PostgreSQL retain title and canonical plain-text body search. Structured filters, normalization, phrases, exclusions, ordering, authorization, revision fences, quotas and content storage remain unchanged. Comments were never indexed. Canonical Issue/comment length limits remain unchanged: shortening raw content would not address the tiny-body cold invocation failure, and the canonical body projection is already bounded at 4,096 code points.
 
-Native retries repeatedly exceeded the documented 10 ms Free CPU ceiling after initialization, metering, provider batching and cursor optimizations. Local maximum-content title-only profiles reduce transferred/tokenized content and sampled cold costs; they are diagnostic evidence, not a native speedup or Free acceptance claim. See [Module 09 evidence](../plan/evidence/09-async-validation.md#maximum-content-title-only-prototype--2026-10-11). The user permits this capacity reduction and a higher project target after repeated failures. This decision applies the search reduction; the project target remains 10 ms pending a fresh native measurement. A future higher internal target cannot change Cloudflare's physical limit or establish 13.G6 acceptance.
+Native retries repeatedly exceeded the documented 10 ms Free CPU ceiling after initialization, metering, provider batching and cursor optimizations. Local maximum-content title-only profiles reduce transferred/tokenized content and sampled cold costs; they are diagnostic evidence, not a native speedup or Free acceptance claim. See [Module 09 evidence](../plan/evidence/09-async-validation.md#maximum-content-title-only-prototype--2026-10-11). The user permits this capacity reduction and a higher project target after repeated failures. This decision applies the search reduction; the project target remains 10 ms. A fresh maximum-content native phase-0 sample meets 10 ms without measured margin; quota refusal/recovery take 2/4 ms. The [cleaned observation receipt](../plan/evidence/09-hosted-native-declarative-retry-receipt.json) proves this limited scope, not complete composition or release acceptance. A future higher internal target cannot change Cloudflare's physical limit or establish 13.G6 acceptance.
 
 ## Index and cursor transition
 

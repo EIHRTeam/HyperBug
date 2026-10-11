@@ -6,14 +6,14 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (authorized CPU investigation; latest native canonical Cron remains 14 ms versus 10 ms)
+- Status: In progress (maximum-content title-only native Cron meets 10 ms; quota recovery/cleanup verified; native job recovery pending)
 - Delivery scope: MVP backend
 - Prerequisites: 08 complete; handlers from 05, 07, and 08.
 - Implementation started: B1–B4 implemented and verified at documented local scope.
 - Completed implementation checklist IDs: 09.1a–e, 09.2a–e, 09.3a–d/f/g, 09.V1–V5.
-- Active/next checklist group: B5 — 09.1f and 09.V6 (fresh r9 declarative-Cron title-only maximum-content result, then recovery evidence).
+- Active/next checklist group: B5 — 09.1f and 09.V6 (r9 maximum-content native10 ms and quota refusal2 ms observed; quota recovery4 ms/cleanup verified; native job recovery pending).
 - Last updated: 2026-10-11.
-- Blocking issues discovered: Explicit function probes passed at 1–10 ms, but the fresh native Cron with canonical Issue work most recently measured 14 ms in r6 on 2026-10-10. Native delivery, indexing and acknowledgement are now observed; the required Free CPU fit is contradicted. Human authorization on 2026-10-11 overrides the stop-after-failure rule for bounded profiling/refactoring and native retries with cleanup. Cleanup and preservation results are recorded in the latest session.
+- Blocking issues discovered: R9 maximum title/body native Cron indexed and acknowledged revision1 at10 ms, at the Free ceiling without measured margin. Quota refusal at2 ms preserves revision2 pending with a visible backlog; recovery at4 ms is verified; native checkpoint/redeployment evidence remains open. Prior native14 ms remains historical evidence. Standing authorization permits bounded performance refactoring/retries and conditional capacity/target revisions; the target stays10 ms.
 - Evidence: [Async validation](../evidence/09-async-validation.md); audit 09.3e remains suspended.
 
 ## Step tracking
@@ -28,7 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. R8 timeout cleanup is verified. Prepare one fresh declarative-Cron trial with the maximum source committed before deployment; recover quotas/jobs only after native fit. Registration/local timing do not close 09.1f/09.V6.
+1. R9 maximum native dispatch10 ms, quota refusal2 ms/recovery4 ms and cleanup are verified. Run the fresh bounded R10 native checkpoint interruption/clean redeployment and pending-event survival case; require exact witnesses and cleanup. Registration/local timing do not close 09.1f/09.V6.
 2. Preserve source/capability/rebuild guards and all quota/security limits. User authorization permits capacity reduction and a project-target revision after repeated failures, while the provider ceiling and release acceptance remain separate. Keep G1/G2 closed and 13.G6 open.
 
 ## Next-session cautions
@@ -577,3 +577,16 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native history empty at21:39:13 UTC and live tail has no scheduled frame at21:40:05 UTC; latest productive native14 ms versus unchanged10 ms. Native title-only fit and recovery remain unproven.
 - Next actions: Commit verified batch; observe existing R9 handles. Only after native fit preserve maximum evidence, run guarded quota refusal/recovery, then native checkpoint fault/clean redeployment. Otherwise finish cleanup and independently compare145 baseline rows/resources.
 - Next-session cautions: R9 tail85877/monitor76068/watchdog73306 live; observation22:28:10.027/cleanup22:33:10.027 UTC2026-10-10. Source divergence is deliberate; record any future phase-4 build/deployment commit. Never rerun inventory, restart on observation timeout, or infer hosted recovery from private preparation. Keep protected/private files untracked; no push/PR edit, paid feature, audit or gate closure.
+
+
+### 2026-10-11 — Native maximum dispatch and quota recovery verified
+
+- Scope and checklist IDs: Authorized 09.1f/09.V6 performance continuation; search/data/operational dependencies, no audit resume.
+- Progress: Maximum title-only native dispatch10 ms, quota refusal2 ms and restored-quota recovery4 ms observed. Native checkpoint interruption/redeployment remains pending.
+- Change summary: Publish actual R9 outcomes and independently verified cleanup; prepare a fresh bounded R10 invocation-abort/redeployment case with current16d6500 production job batching. No target revision.
+- Files/artifacts: [Native results and procedure](../evidence/09-async-validation.md#declarative-native-dispatch-and-quota-recovery), [final R9 receipt](../evidence/09-hosted-native-declarative-retry-receipt.json), internal async runbook, ADR0014 and paired reader guides; ignored R10 helpers.
+- Verification:145 original records/exact singleton sets/FKs preserved, owned resources/work zero, both original Workers/domain mappings preserved, all R9 handles terminal/absent. R10 fresh logical backup restores152 rows/59 tables; private classifier and post-commit fault checks pass, build/types/Wrangler dry-run pass. R10 deployed version8f47a018 has one Cron, CPU/outcome pending. Docs build,497 relative-file links,JSON,secret scan and diff hygiene pass. Formatter excludes docs by existing configuration, so no documentation formatter pass is claimed. No unchanged green application lane repeated.
+- Decisions and deviations: Target/provider ceiling10 ms unchanged; maximum sample has no margin. Intentional uncaught native scheduled error after actual checkpoint commit proves invocation interruption if observed, not an OS kill. Full composition/billing/release acceptance remains separate.
+- Blockers/open questions:09.1f/09.V6 await native job interruption/clean redeployment and preserved pending-event recovery.
+- Next actions: Observe the existing R10 handles; after actual checkpoint1/exception verify exact witness, clean redeploy/resume and dispatch; finish independent cleanup and requirement audit.
+- Next-session cautions: Respect R10 original deadlines in private live-handles; never rerun seeded inventory. No push/PR edit, protected/private staging, paid feature, audit/gate closure; G1/G2 closed,13.G6 open.
