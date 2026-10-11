@@ -1,3 +1,4 @@
+import { measureAcceptance } from '../fixtures/acceptance-benchmark.ts';
 import type { D1Database } from '@cloudflare/workers-types';
 import { createD1SearchIndexStore } from '@hyperbug/database-d1';
 import {
@@ -538,4 +539,20 @@ it('delivers the V1 HTTP workflow on workerd/D1', async () => {
       (item) => item.moderation === 'visible' && item.deleted === false,
     ),
   ).toBe(true);
-});
+  if (process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1') {
+    const db = (await mf.getD1Database('DB')) as unknown as D1Database;
+    await measureAcceptance({
+      profile: 'workerd-d1-local',
+      projectId: project.id,
+      issueId: issue.id,
+      token: authorToken,
+      call,
+      index: createD1SearchIndexStore(db),
+      query: async (sql, values) =>
+        db
+          .prepare(sql)
+          .bind(...values)
+          .run(),
+    });
+  }
+}, 60000);

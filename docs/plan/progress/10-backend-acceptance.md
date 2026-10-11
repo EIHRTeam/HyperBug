@@ -10,8 +10,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend gate
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
-- Completed implementation checklist IDs: 10.1a–e, 10.2b/c/e.
-- Active/next checklist group: Authorized B1–B6; next B5 10.3a–f; B4 partial items remain explicit.
+- Completed implementation checklist IDs: 10.1a–e, 10.2b/c/e, 10.3a/c/d/e/f.
+- Active/next checklist group: Authorized B1–B6; next B6 10.3g/model/gate assessment; B4/B5 partial items remain explicit.
 - Last updated: 2026-10-11.
 - Blocking issues discovered: 01.V4 accepted by user equivalence decision; Standard is not measured by user decision. G1 remains Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
@@ -22,7 +22,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | --- | --- | --- | --- |
 | 10.1 | Complete public contracts and client | Complete | [B2](../evidence/10-contract-client-validation.md) |
 | 10.2 | Execute the backend MVP acceptance matrix | 10.2b/c/e verified; a/d/f partial | [B4 matrix](../evidence/10-backend-matrix.md) |
-| 10.3 | Establish measurable performance and operational readiness | Not started | None yet |
+| 10.3 | Establish measurable performance and operational readiness | Local baselines/basic readiness verified; b/g partial | [B5 report](../evidence/10-performance-readiness.md) |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
@@ -506,3 +506,17 @@ B3 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=tru
 - Next-session cautions: Never treat emulator tiers as paid measurements or inherited native receipts as current-source CPU; preserve all protected root drafts.
 
 B4 final verification: types/lint, two focused journeys, scoped oxfmt, docs build, secrets, relative links and `git diff --check` pass. No hosted resource created or new dependency.
+
+### 2026-10-11 — Module 10 B5 local performance and basic readiness
+
+- Scope and checklist IDs: 10.3a–f; relevant shared query/security/migration/upload/async evidence.
+- Progress: Eight security-active local HTTP paths measured on1,001 Issues; current PostgreSQL basic dump/restore passes. Close10.3a/c/d/e/f; b retains missing full-profile metrics.
+- Change summary: Opt-in bounded benchmark in existing journeys, scalar receipts, explicit local measured regression margins/comparator, basic restore helper and exact acceptance report. Production/schema/dependencies/hash policies unchanged.
+- Files/artifacts: [B5 report](../evidence/10-performance-readiness.md), two local HTTP baseline JSONs, local threshold JSON/comparator and PostgreSQL restore receipt; shared fixture helpers/existing journeys.
+- Verification: Corrected final benchmark journeys1pass each; operational unit6/node1; types/lint pass; comparator receipt consistency and intentional over-threshold refusal pass. Setup/continuation/quota failures and repairs recorded in B5; no failed attempt counts as a baseline.
+- Decisions and deviations: Process aggregate CPU/RSS excludes child runtime/database metrics; password hash timing stays inside login; n3/16/20 quantiles are observations, not sustained tails/SLO. Source bounds/cryptography unchanged; no broad green lane repeated.
+- Blockers/open questions: Actual Standard unmeasured; current Minimum full distributions, isolated memory/CPU/lag/object-operation and complete endpoint query metrics absent. Separate-domain browser/integrated Minimum/headroom gaps remain.
+- Next actions: B6 separately attributed Minimum quota evidence, Standard expectation model and10.G1–G5 assessment.
+- Next-session cautions: Opt-in benchmark rewrites only its own measurement receipts; use reviewed baseline/candidate separation. No main push/merge/SPA/paid/staging/production action.
+
+B5 final verification: types/lint, benchmark/restore and focused operational checks, scoped formatter (5matched code files; docs/receipts follow existing exclusions), docs build, secrets, JSON/relative links and diff pass. All owned test listeners/services/cluster stopped through successful fixture teardown; no hosted resource.

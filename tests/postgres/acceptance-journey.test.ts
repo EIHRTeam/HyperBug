@@ -1,3 +1,5 @@
+import { verifyAcceptanceRestore } from '../fixtures/acceptance-restore.ts';
+import { measureAcceptance } from '../fixtures/acceptance-benchmark.ts';
 import { configureNodeUploads } from '../../apps/api-node/src/uploads.ts';
 import { startLocalS3 } from '../../tooling/local-s3.ts';
 import { uploadProof } from '../fixtures/upload-proof.ts';
@@ -517,4 +519,22 @@ it('delivers the V1 HTTP workflow on Node/PostgreSQL', async () => {
     'Confirmed on my machine',
   ]);
   expect(merged.nextCursor).toBeNull();
-});
+  if (process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1')
+    await measureAcceptance({
+      profile: 'node-postgres-local',
+      projectId: project.id,
+      issueId: issue.id,
+      token: authorToken,
+      call,
+      index: configured.searchIndexStore!,
+      query: async (sql, values) => {
+        let n = 0;
+        return pool.query(
+          sql.replaceAll('?', () => `$${++n}`),
+          values,
+        );
+      },
+    });
+  if (process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1')
+    await verifyAcceptanceRestore(pool, databaseName, directory);
+}, 60000);

@@ -945,3 +945,15 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: Actual Standard not measured; integrated Minimum and separate-registrable-domain/explicitly blocked-cookie browser proof absent; some quota attribution/headroom unavailable. G1/SPA closed,13.G6 open.
 - Next actions: B5 10.3a–f, then B6 model and gate assessment.
 - Next-session cautions: Never treat emulator tiers as paid measurements or inherited native receipts as current-source CPU; preserve all protected root drafts.
+
+### 2026-10-11 — Module 10 B5 local performance and basic readiness
+
+- Scope and checklist IDs: 10.3a–f; relevant shared query/security/migration/upload/async evidence.
+- Progress: Eight security-active local HTTP paths measured on1,001 Issues; current PostgreSQL basic dump/restore passes. Close10.3a/c/d/e/f; b retains missing full-profile metrics.
+- Change summary: Opt-in bounded benchmark in existing journeys, scalar receipts, explicit local measured regression margins/comparator, basic restore helper and exact acceptance report. Production/schema/dependencies/hash policies unchanged.
+- Files/artifacts: [B5 report](../evidence/10-performance-readiness.md), two local HTTP baseline JSONs, local threshold JSON/comparator and PostgreSQL restore receipt; shared fixture helpers/existing journeys.
+- Verification: Corrected final benchmark journeys1pass each; operational unit6/node1; types/lint pass; comparator receipt consistency and intentional over-threshold refusal pass. Setup/continuation/quota failures and repairs recorded in B5; no failed attempt counts as a baseline.
+- Decisions and deviations: Process aggregate CPU/RSS excludes child runtime/database metrics; password hash timing stays inside login; n3/16/20 quantiles are observations, not sustained tails/SLO. Source bounds/cryptography unchanged; no broad green lane repeated.
+- Blockers/open questions: Actual Standard unmeasured; current Minimum full distributions, isolated memory/CPU/lag/object-operation and complete endpoint query metrics absent. Separate-domain browser/integrated Minimum/headroom gaps remain.
+- Next actions: B6 separately attributed Minimum quota evidence, Standard expectation model and10.G1–G5 assessment.
+- Next-session cautions: Opt-in benchmark rewrites only its own measurement receipts; use reviewed baseline/candidate separation. No main push/merge/SPA/paid/staging/production action.

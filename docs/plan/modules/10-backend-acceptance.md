@@ -34,13 +34,15 @@ B4 evidence: [three-profile matrix](../evidence/10-backend-matrix.md). 10.2a/d/f
 
 ### Step 10.3 — Establish measurable performance and operational readiness
 
-- [ ] **10.3a** Benchmark list/detail/create/comment/search/auth/password-hash/upload-intent paths using representative data and real security checks.
+- [x] **10.3a** Benchmark list/detail/create/comment/search/auth/password-hash/upload-intent paths using representative data and real security checks.
 - [ ] **10.3b** Record p50/p95/p99 latency, error rate, query count/plan/rows, runtime CPU/memory where available, queue lag, and object operations for all three profiles.
-- [ ] **10.3c** Test large valid payloads, abusive search, failed-login bursts, abandoned uploads, retry storms, and slow providers within an authorized test environment.
-- [ ] **10.3d** Set initial regression thresholds and measured environment-specific budgets; do not invent SLA/SLO promises from unmeasured assumptions.
-- [ ] **10.3e** Verify readiness, structured telemetry/redaction, basic backup/restore, migration failure recovery, and isolated staging configuration.
-- [ ] **10.3f** Write a backend acceptance report with exact commands, versions, fixtures, results, unresolved issues, and links to evidence.
+- [x] **10.3c** Test large valid payloads, abusive search, failed-login bursts, abandoned uploads, retry storms, and slow providers within an authorized test environment.
+- [x] **10.3d** Set initial regression thresholds and measured environment-specific budgets; do not invent SLA/SLO promises from unmeasured assumptions.
+- [x] **10.3e** Verify readiness, structured telemetry/redaction, basic backup/restore, migration failure recovery, and isolated staging configuration.
+- [x] **10.3f** Write a backend acceptance report with exact commands, versions, fixtures, results, unresolved issues, and links to evidence.
 - [ ] **10.3g** Measure the minimum tier's quota-aware behavior separately: quota exhaustion, degraded search and auth paths, dispatch backpressure and instance capacity ceiling, recorded as its own evidence set with the tier and quota headroom, never merged into the standard-profile performance baselines.
+
+B5 evidence: [performance/readiness report](../evidence/10-performance-readiness.md). Local measured eight-path baselines and basic database/configuration recovery are verified; 10.3b is incomplete for paid/full-profile metric coverage. No source bound/hash setting changed; sparse samples are explicitly labelled.
 
 ## Backend gate checklist
 
