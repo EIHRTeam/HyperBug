@@ -11,3 +11,7 @@ Lookup/verification: 2026-10-11. Source: actual GitHub REST API, not local emula
 Exact read-only checks: `gh api repos/EIHRTeam/HyperBug/actions/runs/37266055745`, `gh api repos/EIHRTeam/HyperBug/code-scanning/analyses?per_page=3`, `gh api repos/EIHRTeam/HyperBug/code-scanning/alerts?state=open&per_page=100`; connector fetch_workflow_run_jobs independently confirms the job. Plain sandbox gh could not reach the API; the approved network read succeeded. No secret-bearing payload recorded.
 
 `01.V4` remains unmet: PR evidence does not prove a main-push run. PR #2 is open, feat/v1 → main; no merge or main push performed. The user's decision is pending. No gate opens.
+
+## User equivalence decision (2026-10-11)
+
+The user explicitly closes 01.V4 by treating hosted PR execution of the same committed workflow, source, default queries, job-local permissions and Security uploads as equivalent to its main-push half. This is an acceptance re-scope, not main execution evidence. No main push or PR #2 merge occurs. Residual risk: a default-branch/GitHub-side trigger problem remains untested until the first real main push.

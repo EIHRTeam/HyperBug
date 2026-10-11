@@ -25,7 +25,7 @@ Module09 completion (2026-10-11): all23 non-suspended checks are verified;09.3e 
 | ID | Module | Status | Evidence and handoff |
 | --- | --- | --- | --- |
 | 00 | [Project maintenance and development guidance skills](modules/00-project-guidance-skills.md) | Complete | [Session record](progress/00-project-guidance-skills.md) |
-| 01 | [Backend workspace and runtime foundation](modules/01-backend-foundation.md) | In progress | [Session record](progress/01-backend-foundation.md) |
+| 01 | [Backend workspace and runtime foundation](modules/01-backend-foundation.md) | Complete (01.V4 user equivalence decision, 2026-10-11) | [Session record](progress/01-backend-foundation.md) |
 | 02 | [Public contracts, domain model, and database foundations](modules/02-contracts-and-data.md) | Complete | [Session record](progress/02-contracts-and-data.md) |
 | 03 | [Core security, cryptography, audit, and abuse controls](modules/03-security-foundation.md) | Complete (2026-09-30 re-scope; 03.V5 suspended non-gating, remainders owned by 04/05/06 + staging budget milestone) | [Session record](progress/03-security-foundation.md) |
 | 04 | [Authentication, identity, and project authorization](modules/04-identity-and-access.md) | Complete (2026-10-01; audit portions resumed and closed, tier journey accepted on the activation path, 13.G6 separate) | [Session record](progress/04-identity-and-access.md) |
@@ -34,7 +34,7 @@ Module09 completion (2026-10-11): all23 non-suspended checks are verified;09.3e 
 | 07 | [Markdown policy, issue forms, templates, and attachments](modules/07-content-and-attachments.md) | In progress (07.1/07.2a–d/V2/07.3a/b/d/e/g/i/V3/V5/V7 verified at recorded scopes; complete cleanup/scanner/CORS remain; 07.2e audit verified) | [Session record](progress/07-content-and-attachments.md) |
 | 08 | [Structured search, filters, and query performance](modules/08-search-and-query.md) | Complete (local scope; Module 09 dispatch/retry verified) | [B1–B4 local implementation and acceptance](progress/08-search-and-query.md); real tier performance/release acceptance remains open |
 | 09 | [Outbox delivery, queues, durable workflows, and cleanup](modules/09-async-and-workflows.md) | Complete (09.3e audit verified; native recovery/dispatch retained at recorded scope) | [Session record](progress/09-async-and-workflows.md) |
-| 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | Not started | [Session record](progress/10-backend-acceptance.md) |
+| 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | In progress | [Session record](progress/10-backend-acceptance.md) |
 | 11 | [Static web application, authentication client, and UI foundation](modules/11-static-web-foundation.md) | Not started | [Session record](progress/11-static-web-foundation.md) |
 | 12 | [Public feedback, discussion, and staff web workflows](modules/12-web-product-workflows.md) | Not started | [Session record](progress/12-web-product-workflows.md) |
 | 13 | [MVP release, deployment, and maintenance readiness](modules/13-mvp-release-and-operations.md) | Not started | [Session record](progress/13-mvp-release-and-operations.md) |
@@ -1285,3 +1285,7 @@ The small D1 single-write refactor preserves multi-document transactions/SQL/fen
 ### 2026-10-11 — Close 06.1c/06.2c/07.2e/09.3e audit
 
 The user resumed exactly these four portions without boundary expansion. Atomic required events, authorized replay and bounded terminal-retention summaries are verified: 399 distinct checks passed / 4 optional-provider skips, refreshed current-source HTTP/unit checks and final types/lint/build/docs/format/secrets/1038 links/diff checks pass. [Selected evidence](evidence/2026-10-11-selected-audit.md) and owning 06/07/09 logs record implementation, review, lookup and limits. Modules06/09 have no suspended remainder; Module07 retains its existing attachment work. Other audit holds, G1/G2 closed and13.G6 open are preserved. No new migration/API/policy, deployment, commit/push/PR edit or current hosted CPU claim; protected drafts remain untouched.
+
+### 2026-10-11 — Module 10 starts; SAST equivalence accepted
+
+Module 01 closes 01.3f with hosted PR CodeQL/Security evidence and 01.V4 under the explicit user equivalence decision for the main-push half. No main push or PR #2 merge; the default-branch trigger remains unexercised and that residual risk is accepted. [Evidence](evidence/10-sast-validation.md). Module 10 B1–B6 is authorized; Standard will remain not measured with a separate expectation model. G1 Not passed; no SPA or 13.G6 closure.

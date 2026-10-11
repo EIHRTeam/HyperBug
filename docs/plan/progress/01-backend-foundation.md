@@ -6,12 +6,12 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress
+- Status: Complete
 - Delivery scope: MVP backend
 - Prerequisites: 00 complete; G0 passed.
 - Implementation started: Yes.
 - Completed implementation checklist IDs: 01.1a–01.1e, 01.2a–01.2f, 01.3a–01.3e, 01.V1–01.V3.
-- Active/next checklist group: 01.V4 (main-push evidence), the post-completion SAST increment added on 2026-09-18. The original foundation acceptance remains met; 01.3f is now verified; 01.V4 remains open, so the module is no longer Complete.
+- Active/next checklist group: None; 01.3f verified and 01.V4 accepted under the explicit 2026-10-11 user equivalence decision.
 - Last updated: 2026-10-05 (PR 2 CI repair).
 - Blocking issues discovered: None remaining for the original phase acceptance. An earlier intermittent Node reset remains recorded; later local, clean-checkout and hosted runs pass.
 - Evidence: [Local foundation validation](../evidence/01-foundation-validation.md); [PR 2 CI repair](../evidence/2026-10-05-pr2-ci-repair.md). Hosted PR CodeQL analysis and Security API alerts are confirmed; the full 01.V4 main-push/open/update requirement remains incomplete.
@@ -680,3 +680,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: 01.V4 main-push half requires the user's publication decision. Asked asynchronously; independent module 10 work may continue.
 - Next actions: B2 10.1a–e contract/client; leave 01.V4 open until actual main evidence exists.
 - Next-session cautions: Preserve protected drafts; PR analysis is not main-push evidence; G1 and the SPA remain closed.
+
+### 2026-10-11 — User equivalence decision for SAST verification
+
+- Scope and checklist IDs: 01.V4; module 10 prerequisite 10.G1.
+- Progress: Close 01.V4 under the user's explicit equivalence decision. Module 01 Complete.
+- Change summary: Same committed workflow, source, default query suite and job-local permissions ran on hosted PR #2 and uploaded Security results; the user accepts that evidence for the unexecuted main-push half.
+- Files/artifacts: Module 01 checklist/progress; master/plan user-directed state; [SAST evidence](../evidence/10-sast-validation.md). HANDOFF-10 remains protected and untracked.
+- Verification: Reuse the actual API results in B1; no new run, main push or PR merge.
+- Decisions and deviations: Explicit human instruction on 2026-10-11 replaces the main-push requirement for this acceptance item; it does not assert that a main run occurred.
+- Blockers/open questions: No Module 01 blocker. Residual risk: default-branch trigger execution remains unobserved; GitHub-side trigger failure would surface on the first real main push. PR #2 merge is a separate user decision outside this mission.
+- Next actions: Continue B2 10.1a–e and B3 upload closure.
+- Next-session cautions: Do not push main or merge PR #2. Standard remains unmeasured and G1 closed.

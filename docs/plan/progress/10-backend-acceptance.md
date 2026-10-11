@@ -13,7 +13,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Completed implementation checklist IDs: None.
 - Active/next checklist group: Authorized B1–B6; next B2 10.1a–e.
 - Last updated: 2026-10-11.
-- Blocking issues discovered: 01.V4 main-push evidence; Standard is not measured by user decision. G1 remains Not passed.
+- Blocking issues discovered: 01.V4 accepted by user equivalence decision; Standard is not measured by user decision. G1 remains Not passed.
 - Evidence: Planning documents only; no implementation or runtime validation yet.
 
 ## Step tracking
@@ -456,3 +456,15 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: 01.V4 main-push half requires the user's publication decision. Asked asynchronously; independent module 10 work may continue.
 - Next actions: B2 10.1a–e contract/client; leave 01.V4 open until actual main evidence exists.
 - Next-session cautions: Preserve protected drafts; PR analysis is not main-push evidence; G1 and the SPA remain closed.
+
+### 2026-10-11 — User equivalence decision for SAST verification
+
+- Scope and checklist IDs: 01.V4; module 10 prerequisite 10.G1.
+- Progress: Close 01.V4 under the user's explicit equivalence decision. Module 01 Complete.
+- Change summary: Same committed workflow, source, default query suite and job-local permissions ran on hosted PR #2 and uploaded Security results; the user accepts that evidence for the unexecuted main-push half.
+- Files/artifacts: Module 01 checklist/progress; master/plan user-directed state; [SAST evidence](../evidence/10-sast-validation.md). HANDOFF-10 remains protected and untracked.
+- Verification: Reuse the actual API results in B1; no new run, main push or PR merge.
+- Decisions and deviations: Explicit human instruction on 2026-10-11 replaces the main-push requirement for this acceptance item; it does not assert that a main run occurred.
+- Blockers/open questions: No Module 01 blocker. Residual risk: default-branch trigger execution remains unobserved; GitHub-side trigger failure would surface on the first real main push. PR #2 merge is a separate user decision outside this mission.
+- Next actions: Continue B2 10.1a–e and B3 upload closure.
+- Next-session cautions: Do not push main or merge PR #2. Standard remains unmeasured and G1 closed.

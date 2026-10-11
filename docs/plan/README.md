@@ -12,6 +12,10 @@ Module 00 has now created and validated the [development](../../.agents/skills/h
 
 **Earlier user-directed state (2026-09-30):** Module 04 is released from the 2026-09-28 hold and advances across its full checklist. The hold's other parts remain in force: do not start the SPA, enable or partially enable the Free tier, resume later-module audit portions or Argon2id performance work, or expand Module 09 beyond its existing narrow 03 dependency. The untracked root `SECURITY.md` is a user draft — keep it in the working tree and never commit it. See the [consolidation record](evidence/2026-09-28-worktree-consolidation.md) for the original hold inventory and [master progress](PROGRESS.md) for the full current state.
 
+## Module 10 user-directed state (2026-10-11)
+
+Execute the bounded B1–B6 mission in the supplied HANDOFF-10. Close 01.3f using hosted PR CodeQL evidence. The user explicitly accepts that same committed workflow/source/default queries/job-local permissions and Security upload as equivalent to 01.V4’s main-push half; the default-branch trigger remains unobserved and a trigger failure would surface on the first real main push. No main push or PR #2 merge is authorized. Standard is not measured; model output is analysis only, never acceptance, a regression threshold or an SLO. G1 and the SPA remain closed while its Standard requirement is unmet.
+
 ## Start here
 
 1. Read [Master progress](PROGRESS.md), [Execution protocol](EXECUTION.md), and the latest progress entry for the next eligible module.

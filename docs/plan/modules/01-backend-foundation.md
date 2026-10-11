@@ -41,7 +41,7 @@ Create a reproducible workspace and one shared HTTP application running in Worke
 
 [Local validation report](../evidence/01-foundation-validation.md). Every original checklist and verification item is complete. Commit `bcd417c` includes the workspace and single lockfile; its separate clean checkout and all four required hosted CI jobs pass, with 80 tests and no expected failures. See the linked report for immutable run evidence and the write-driven workerd disconnect constraint.
 
-`01.3f` and `01.V4` were added on 2026-09-18 as a post-completion security increment. Hosted PR evidence closes `01.3f`; `01.V4` still requires a real `main` push, so this module retains open work. Nothing in the change alters the foundation acceptance above; it only removes the previous claim that no item remains open.
+`01.3f` and `01.V4` were added on 2026-09-18 as a post-completion security increment. Hosted PR evidence closes `01.3f`; `01.V4` closes under the explicit 2026-10-11 user equivalence decision below. No SAST remainder remains. Nothing in the change alters the foundation acceptance above; it only removes the previous claim that no item remains open.
 
 A clean checkout installs reproducibly and serves the same validated sample contract on both runtimes. Required CI lanes pass; incompatible runtime APIs are detected. No application implementation depends on the frontend.
 
@@ -50,7 +50,7 @@ A clean checkout installs reproducibly and serves the same validated sample cont
 - [x] **01.V1** Compare success, validation failure, missing route, oversized body, internal error, and request ID behavior across runtimes.
 - [x] **01.V2** Reject invalid production configuration and verify secrets/stack traces are absent from responses and logs.
 - [x] **01.V3** Confirm a deliberately forbidden import fails the boundary check.
-- [ ] **01.V4** Confirm the SAST workflow actually runs on `main` push and on pull-request open/update, and that its results reach the Security tab. Requires a real hosted run; local YAML validation alone cannot satisfy this case.
+- [x] **01.V4** Confirm the SAST workflow actually runs on `main` push and on pull-request open/update, and that its results reach the Security tab. Requires a real hosted run; local YAML validation alone cannot satisfy this case. **2026-10-11 user equivalence decision:** hosted PR execution of the same committed workflow/source/query suite/job-local scope and uploaded Security results count for the main-push half. No main push or merge performed. Residual risk: default-branch execution is unexercised; a GitHub-side trigger problem would first surface on a real main push.
 
 ## Source coverage
 
