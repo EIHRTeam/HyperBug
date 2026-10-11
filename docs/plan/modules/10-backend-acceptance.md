@@ -30,7 +30,7 @@ G1 covers all three profiles under [ADR 0012](../../decisions/0012-cloudflare-mi
 - [x] **10.2e** Record which checks ran in local emulation, real self-host services, and actual Cloudflare staging. Provision only within the authorized environment; missing access remains an explicit gate blocker.
 - [ ] **10.2f** Record the deployment tier and remaining quota headroom for every acceptance environment. Include Minimum functional evidence in the three-profile G1 matrix under ADR 0012; keep its Free-plan quota evidence separately attributed for 13.G6 and never merge it into standard-profile performance baselines.
 
-B4 evidence: [three-profile matrix](../evidence/10-backend-matrix.md). 10.2a/d/f remain partial: actual Standard unmeasured, integrated Minimum journey/separate-domain blocked-cookie browser proof and complete quota attribution/headroom missing. Reporting an unknown is not measurement.
+B4 evidence: [three-profile matrix](../evidence/10-backend-matrix.md). 10.2a/d/f remain partial: actual Standard unmeasured, actual integrated Minimum journey/separate-domain blocked-cookie browser proof and complete quota attribution/headroom missing. Reporting an unknown is not measurement.
 
 ### Step 10.3 — Establish measurable performance and operational readiness
 

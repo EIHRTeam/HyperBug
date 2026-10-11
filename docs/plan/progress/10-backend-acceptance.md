@@ -534,3 +534,15 @@ B5 final verification: types/lint, benchmark/restore and focused operational che
 - Next-session cautions: Do not relabel historical native CPU as current full-profile measurement; no main/merge/paid/SPA/staging action; protected root drafts stay untracked.
 
 B6 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=true corepack pnpm scan:secrets`, evidence relative links and `git diff --check` pass. Application tests not repeated for documentation-only assessment; no hosted resource.
+
+### 2026-10-11 — Integrated local Minimum supplement
+
+- Scope and checklist IDs:10.2a/e/f,10.G2; local Minimum gap within B4.
+- Progress: Complete existing MVP journey passes on explicit Minimum composition;10.2a remains partial for unmeasured actual Standard/full actual Minimum.
+- Change summary: Parameterize existing workerd journey; fixture composes real peppered PBKDF2/ten-slot bound, durable lockout and audited lazy activation; verify exact capability/hash/title-only state after the entire workflow.
+- Files/artifacts: tests/fixtures/account-worker.ts, tests/workerd/acceptance-journey.test.ts; [matrix supplement](../evidence/10-backend-matrix.md).
+- Verification: Corrected final Minimum journey1pass (local workerd/D1/R2); first run failed wrong capability assertion deploymentTier, repaired to public tier. Types/lint and normal-profile fixture regression1pass. No hosted resource.
+- Decisions and deviations: No product/security/bound/contract change; explicit synthetic scan/manual backfill stays labelled; emulator does not enforce Free CPU. B6 formatter matched zero documentation files under existing ignores (exit2); docs/link/secrets/diff checks passed.
+- Blockers/open questions: Actual Standard excluded; browser/headroom/full-profile metrics/capacity still incomplete.
+- Next actions: Verify affected normal fixture and implement separate-domain blocked-cookie browser proof.
+- Next-session cautions: Keep opt-in Minimum distinct from local Standard benchmark receipts; no paid/SPA/main/merge action.

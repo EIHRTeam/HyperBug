@@ -18,6 +18,8 @@ import { cryptoFixture } from '../fixtures/crypto-scenarios.ts';
 // close → reopen → merged timeline — through the real API surface, asserting
 // every step's status and the full ordered timeline sequence.
 const wasmPath = 'apps/api-cloudflare/src/vendor/libsodium-sumo-0.8.4.wasm';
+const minimum = process.env.HYPERBUG_ACCEPTANCE_TIER === 'minimum';
+const tier = minimum ? 'cloudflare-minimum' : 'standard';
 const authOrigin = 'https://auth.poc.example';
 const redirectUri = 'https://app.poc.example/oauth/callback';
 const enrollmentCode =
@@ -141,6 +143,12 @@ beforeAll(async () => {
       },
       bindings: {
         HYPERBUG_ENV: 'local',
+        ...(minimum
+          ? {
+              HYPERBUG_DEPLOYMENT_TIER: tier,
+              HYPERBUG_DEGRADATION_ACK: 'minimum-v2',
+            }
+          : {}),
         HYPERBUG_UPLOAD_STORAGE: JSON.stringify({
           accountId: 'a'.repeat(32),
           bucket: 'hyperbug-test',
@@ -174,13 +182,20 @@ beforeAll(async () => {
     )
     .bind(Date.now())
     .run();
+  if (minimum)
+    await db
+      .prepare(
+        "INSERT INTO key_versions (purpose, key_id, version, state, created_at) VALUES ('password-pepper', 'password-pepper-test', 1, 'current', ?)",
+      )
+      .bind(Date.now())
+      .run();
 });
 
 afterAll(async () => {
   await mf?.dispose();
 });
 
-it('delivers the V1 HTTP workflow on workerd/D1', async () => {
+it(`delivers the V1 HTTP workflow on workerd/D1 ${tier}`, async () => {
   const enrolled = await post('/auth/bootstrap/enroll', {
     enrollmentCode,
     handle: 'rootadmin',
@@ -286,7 +301,7 @@ it('delivers the V1 HTTP workflow on workerd/D1', async () => {
   await searchAcceptanceIssue(call, project.id, issue.id, async () => {
     return createD1SearchIndexStore(
       (await mf.getD1Database('DB')) as unknown as D1Database,
-    ).backfill({ projectId: project.id });
+    ).backfill({ projectId: project.id, tier });
   });
   expect(issue.number).toBe(1);
   expect(issue.revision).toBe(1);
@@ -539,7 +554,35 @@ it('delivers the V1 HTTP workflow on workerd/D1', async () => {
       (item) => item.moderation === 'visible' && item.deleted === false,
     ),
   ).toBe(true);
-  if (process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1') {
+  if (minimum) {
+    const db = await mf.getD1Database('DB');
+    const instance = await call('/api/v1/instance');
+    expect(await instance.json()).toMatchObject({
+      tier,
+      search: { textScope: 'title' },
+    });
+    const hashes = await db
+      .prepare("SELECT record->>'alg' AS alg FROM password_credentials")
+      .all();
+    expect(hashes.results).toHaveLength(3);
+    expect(
+      hashes.results.every((row) => row.alg === 'PBKDF2-HMAC-SHA256'),
+    ).toBe(true);
+    expect(
+      await db
+        .prepare(
+          "SELECT count(*) AS count FROM audit_events WHERE action = 'deployment.enablement'",
+        )
+        .first(),
+    ).toMatchObject({ count: 1 });
+    expect(
+      await db
+        .prepare('SELECT body FROM search_documents WHERE issue_id = ?')
+        .bind(issue.id)
+        .first(),
+    ).toMatchObject({ body: '' });
+  }
+  if (!minimum && process.env.HYPERBUG_ACCEPTANCE_BENCHMARK === '1') {
     const db = (await mf.getD1Database('DB')) as unknown as D1Database;
     await measureAcceptance({
       profile: 'workerd-d1-local',
