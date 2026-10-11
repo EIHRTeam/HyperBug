@@ -11,6 +11,8 @@ Complete safe public content submission and direct uploads across R2 and S3, wit
 
 **Execution override (2026-09-21): [All audit work is suspended — no audit for now](../AUDIT-SUSPENSION.md). Continue the non-audit portions of this module; suspended work remains unchecked.**
 
+Current closure (2026-10-11): **07.3c/f/h/V4 are verified at their canonical implementation/negative-test scopes** in [module 10 B3 evidence](../evidence/10-upload-closure.md). This supersedes older checkpoints that required production rollout/historical operational repair for these boxes. Production scanner bridge/isolation/update, operational historical provenance/quiescence/compaction and other unclaimed deployment evidence remain release limitations. 07.2e is independently accepted by the selected audit. Module 07 Complete; G1 remains closed.
+
 ## Ordered checklist
 
 ### Step 07.1 — Implement the canonical Markdown pipeline
@@ -41,12 +43,12 @@ Deployed capability checkpoint (2026-10-04): the current Workers/ingress/actual 
 
 - [x] **07.3a** Implement BlobStore with R2-binding and S3-compatible adapters: put/get/head/delete, streaming, multipart create/upload/complete/abort, and temporary upload/download authorization.
 - [x] **07.3b** Implement upload intents bound to principal, project, opaque object key, expiry, quota reservation, maximum size, content type, and intended content association.
-- [ ] **07.3c** Issue short-lived direct upload capabilities and configure exact storage CORS origins/headers. Keep S3 signing credentials on the backend and ordinary API requests free of file buffering.
+- [x] **07.3c** Issue short-lived direct upload capabilities and configure exact storage CORS origins/headers. Keep S3 signing credentials on the backend and ordinary API requests free of file buffering.
 - [x] **07.3d** Finalize by reauthorizing, verifying actual size/type/magic bytes where practical, quota, object identity, and intent state; handle duplicate finalize and concurrent quota use.
 - [x] **07.3e** Resolve overwrite/TOCTOU risk explicitly: use an immutable verified object/version or a verified staging-to-final promotion strategy compatible with both adapters. Do not assume a signed PUT is single-use or enforces every declared constraint.
-- [ ] **07.3f** Implement quarantine/release/reject states and scanning hooks. Clearly distinguish unscanned from scanned files.
+- [x] **07.3f** Implement quarantine/release/reject states and scanning hooks. Clearly distinguish unscanned from scanned files.
 - [x] **07.3g** Serve user media from an isolated origin, authorize non-public downloads, and force dangerous HTML/SVG/XML/script types to download with nosniff and safe Content-Disposition.
-- [ ] **07.3h** Implement bounded orphan/expired-intent/multipart cleanup handlers and quota release; wire scheduling in 09. Keep filesystem storage limited to development/recovery.
+- [x] **07.3h** Implement bounded orphan/expired-intent/multipart cleanup handlers and quota release; wire scheduling in 09. Keep filesystem storage limited to development/recovery.
 - [x] **07.3i** Make multipart thresholds adapter configuration, define resume/abort behavior, and publish provider compatibility results only after tests.
 
 Checkpoint evidence: [upload lifecycle validation](../evidence/07-upload-lifecycle-validation.md). 07.3b/07.3d/07.3e are verified for persisted direct/multipart intents and manual immutable finalization. 07.3c/07.3f/07.3h and V4 remain partial: production exact CORS, actual scanner/result acceptance, general issue/comment attachment linking and complete cleanup/discovery remain open. 07.3g/V5 are accepted at the separately recorded backend/local HTTPS/workerd checkpoint; deployed media/browser evidence remains unperformed. Guarded form attachment consumption is now verified on both database/API profiles (07.2b–d/V2), using synthetic scan results without actual-scanner acceptance. Core scanner/result/release hooks are locally verified with synthetic verdicts; 07.3f stays unchecked and no actual scanning is claimed. Module 09 dispatch remains explicitly unimplemented under its hold. The 2026-10-04 checkpoint adds post-sign direct capability checks, exact-CORS preparation/snapshot validation, project-local 20-candidate cleanup pages and a fenced trusted reconciliation port. Core callback evidence is synthetic; the subsequent actual Node S3 discovery adapter passes real SeaweedFS 4.48 and actual R2 S3 21-session pagination/abort/absence. The subsequent native Workers/R2 adapter passes the actual remote-storage 21-session proof under shared policy; verified-unlinked/legacy/retention cleanup and deployment/browser CORS remain incomplete.
@@ -62,7 +64,7 @@ Trusted transport/actual durable checkpoint (2026-10-04): fixed private authenti
 - [x] **07.V1** Run a malicious Markdown corpus including encodings, malformed nesting, event attributes, unsafe URLs, SVG/MathML, and clobbering on both runtimes.
 - [x] **07.V2** Exercise every supported GitHub Issue Forms YAML element and documented attribute, YAML parsing and canonical-schema validation, malformed/adversarial YAML, stale schemas, unauthorized template edits, invalid attachments, and deterministic Markdown generation. Verify documented deviations fail clearly; do not claim GitHub API or repository-sync compatibility.
 - [x] **07.V3** Run PUT/GET/HEAD/DELETE, presigned PUT/GET, metadata, multipart/abort, content type, checksums where used, and large streaming tests against R2 and the selected S3 test service.
-- [ ] **07.V4** Reject expired/replayed intents, wrong-project uploads, quota races, misleading MIME/size, and post-finalize overwrite attempts; verify cleanup can safely resume.
+- [x] **07.V4** Reject expired/replayed intents, wrong-project uploads, quota races, misleading MIME/size, and post-finalize overwrite attempts; verify cleanup can safely resume.
 - [x] **07.V5** Confirm API responses/logs expose neither signing credentials nor reusable private download capabilities unnecessarily.
 - [x] **07.V6** Verify the representation contract end to end: stored rows, outbox payloads and logs contain no rendered HTML, element tree or other derived artifact; identical Markdown and policy version produce byte-identical output across repeated requests, both profiles and concurrent derivation; and each response carries the representation the ADR assigns to that consumer.
 - [x] **07.V7** Record derivation-cost and pagination evidence: maximum accepted body and full-page derivation cost on both runtimes with fixture size, versions, method and thresholds; no unbounded list derivation; and cursor traversal across a policy version change that produces no stale representation after revalidation.

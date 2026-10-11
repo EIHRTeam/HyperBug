@@ -6,12 +6,12 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (07.1, 07.2a–d/V2 and 07.3a/b/d/e/i/V3 verified at their recorded scopes; 07.3g/V5 locally accepted; complete cleanup/scanner/CORS remain; 07.2e audit accepted 2026-10-11)
+- Status: Complete at canonical checklist scopes; production scanner and operational historical-recovery limits remain explicit.
 - Delivery scope: MVP backend
 - Prerequisites: 06 complete; cleanup job contracts from 02/05, execution completed in 09.
 - Implementation started: Yes (2026-10-03).
-- Completed implementation checklist IDs: 07.1a–07.1i, 07.2a–07.2e, 07.3a, 07.3b, 07.3d, 07.3e, 07.3g, 07.3i, 07.V1, 07.V2, 07.V3, 07.V5, 07.V6, 07.V7.
-- Active/next checklist group: 07.3h reviewed operational historical manifests and tombstone quiescence/compaction after verified fresh actual-R2/dual-store ledger composition; 07.3f actual local ClamAV/trusted native transport/both-profile durable journeys pass, with production bridge/resource/egress/admission/signature-update isolation still unverified. 07.3g/V5 and 07.2b–d/V2 are accepted; 07.3c now has a verified actual Workers/ingress/D1/R2/Chrome upload slice; corresponding Node/S3 installed-policy/browser composition remains incomplete.
+- Completed implementation checklist IDs: 07.1a–07.1i, 07.2a–07.2e, 07.3a, 07.3b, 07.3c, 07.3f, 07.3h, 07.V4, 07.3d, 07.3e, 07.3g, 07.3i, 07.V1, 07.V2, 07.V3, 07.V5, 07.V6, 07.V7.
+- Active/next checklist group: No Module 07 implementation remainder. Module 10 owns broader acceptance; see [B3 closure and operational limits](../evidence/10-upload-closure.md).
 - Last updated: 2026-10-11.
 - Blocking issues discovered: Module 06 prerequisites verified against the current tree. Actual R2 binding/S3/signing/CORS and real local SeaweedFS storage/promotion proofs pass; persisted quota/intent/direct-multipart immutable finalization now passes both local profiles; scanner/result hooks and latest-result persistence pass synthetic default checks and actual local signed ClamAV durable journeys on both stores; production scanner bridge/isolation/update, corresponding Node/S3 installed-policy/browser CORS, general issue/comment linking and full cleanup acceptance remain open. Form consumption and isolated authorized media are locally accepted; deployed media DNS/proxy/browser evidence remains absent; the separate actual Workers upload/CORS slice is verified. Actual Node/S3 exact-key discovery now passes real SeaweedFS and R2 S3 acceptance; native Workers/R2 now supplies the same bounded policy and passes actual remote-storage discovery; failed/incomplete discovery still retains quota. The 2026-09-18 Issue Form format question was resolved on 2026-10-03: support GitHub Issue Forms YAML as a bounded definition/authoring format, with user-supplied `.yml` definitions normalized into the canonical JSON schema. The format layer is now implemented; [ISSUE-FORMS](../../ISSUE-FORMS.md) records supported attributes and deviations. This does not add GitHub API/repository synchronization or issue-template chooser configuration.
 - Selected audit evidence: [Selected audit evidence](../evidence/2026-10-11-selected-audit.md).
@@ -29,11 +29,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. 07.3g/V5 and form attachment consumption 07.2b–d/V2 are accepted at their documented backend/local transport scopes; preserve the **897 passed / 18 optional-provider skips** composed default checkpoint and separate **33 actual scanner checks** (18 durable rerun under the final new migrations; unchanged 15 adapter checks reused). Previous actual R2/SeaweedFS/native discovery evidence remains applicable.
-2. Continue 07.3h reviewed operational historical ownership/accounting and tombstone quiescence/compaction. Fresh actual-R2 absence now composes with both disposable D1 and PostgreSQL ledgers (four explicit checks), alongside verified ledger guards, real SeaweedFS S3 and direct R2 Node/local workerd approved-key recovery. The generic S3 capability refuses known R2 endpoints; current R2 returns an undocumented empty versioning result, while its published contract marks the operation unsupported. Ordinary BlobStore accepts only Core staging/objects keys; arbitrary historical keys need a separate trusted recovery port with exact snapshot/provider ownership/accounting provenance and explicit retention, preserving linked parents and key hazards. Bounded read-only inventory, verified-unlinked cleanup, shared wait bounds and native discovery pass. Inventory never grants deletion/ownership; physical CRUD cancellation/provider-wide coordination remains distinct from caller bounds. Keep Module 09 scheduling held.
-3. 07.3c: the current actual Workers/ingress/D1/R2/Chrome composition now passes the planned upload, authorization, exact-CORS and expiry slice, with all owned resources cleaned and captured bucket policy restored. Verify the corresponding selected Node/S3 installed-policy/browser composition within the existing authorized boundary; no new tunnel, host or service is inferred. Raw DNS inventory remains unverified (prior 403). See [deployed evidence](../evidence/07-upload-lifecycle-validation.md#deployed-workers-upload-and-cors-2026-10-04).
-4. 07.3f: select and verify a production trusted Worker-to-isolated-engine bridge, resource/egress/admission isolation and immutable signature update/rotation. Actual signed local ClamAV and native transport/durable D1/PostgreSQL journeys pass; neither runtime startup nor scheduling selects a scanner. A local resource measurement reports over 1 GiB max RSS. Do not treat native Miniflare callbacks as a deployed bridge, caller cancellation as physical production cancellation, or synthetic verdicts as real scanning.
-5. Keep 07.V4 incomplete until all cleanup/recovery outcomes pass; keep 07.2e audit unchecked and G1/SPA closed. Preserve all uncommitted changes and protected SECURITY.md.
+Continue Module 10 B4–B6. Preserve the verified upload/scanner/cleanup behavior and separately recorded deployment/historical-provenance limits; do not select a production scanner or compact retained historical keys without the owning authorized operational work.
 
 ## Next-session cautions
 
@@ -1138,3 +1134,17 @@ Final bounded read-only actual named test-D1 inventory: **0 upload intents, 0 at
 - Blockers/open questions: None at preparation.
 - Next actions: Commit the prepared patch, push origin/feat/v1 and verify its remote SHA matches local HEAD; report the resulting commit in the publication response.
 - Next-session cautions: Preserve other suspended audit portions, Module07 remainders and G1/G2/13.G6 state. This publication supplies no new hosted CI, CPU, provider, deployment or release acceptance evidence.
+
+### 2026-10-11 — Module 10 B3 upload closure
+
+- Scope and checklist IDs: 07.3c/f/h/V4; 10.G1 prerequisite.
+- Progress: Four canonical outcomes verified; Module 07 Complete at its stated scope.
+- Change summary: Fill real Node/S3 exact installed-CORS/browser gap; map every negative and existing actual scanner/provider/store proof; verify all three scheduling roots. No application change.
+- Files/artifacts: [B3 evidence](../evidence/10-upload-closure.md); Module 07 checklist/progress, master and Module 10 record.
+- Verification: Actual isolated SeaweedFS 4.48 + Node + Chrome155 positive/denied-origin/header/method/expiry proof; HEAD positive7 bytes/negative targets absent. Existing real ClamAV 15+18, actual providers and dual-store maintenance evidence reused. Static schedule wiring verified; documentation checks below.
+- Decisions and deviations: Close implementation/negative-test outcomes at canonical scope under HANDOFF-10; broader production scanner and historical recovery requirements remain explicit acceptance/release limits. SIGINT interrupted graceful service deletion; independent process/listener absence and exact isolated-data removal verified.
+- Blockers/open questions: Standard unmeasured; production scanner bridge/isolation/update and historical quiescence unclaimed. No gate opens.
+- Next actions: B4 10.2a–f acceptance matrix and integrated form/upload/search journey.
+- Next-session cautions: No main push/merge/SPA/paid capability; retained-key tombstones must not be erased from inferred provenance; no synthetic scan relabeling.
+
+B3 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=true corepack pnpm scan:secrets`, relative-link/checklist consistency and `git diff --check` pass. No unchanged application lane repeated.

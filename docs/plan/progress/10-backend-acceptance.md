@@ -480,3 +480,17 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: Standard not measured; overall G1 remains closed.
 - Next actions: B3 evidence-backed 07.3c/f/h/V4 closure, then B4 acceptance matrix.
 - Next-session cautions: No main push/PR merge/SPA; preserve protected drafts and pinned resolutions; estimates never fill Standard acceptance rows.
+
+### 2026-10-11 — Module 10 B3 upload closure
+
+- Scope and checklist IDs: 07.3c/f/h/V4; 10.G1 prerequisite.
+- Progress: Four canonical outcomes verified; Module 07 Complete at its stated scope.
+- Change summary: Fill real Node/S3 exact installed-CORS/browser gap; map every negative and existing actual scanner/provider/store proof; verify all three scheduling roots. No application change.
+- Files/artifacts: [B3 evidence](../evidence/10-upload-closure.md); Module 07 checklist/progress, master and Module 10 record.
+- Verification: Actual isolated SeaweedFS 4.48 + Node + Chrome155 positive/denied-origin/header/method/expiry proof; HEAD positive7 bytes/negative targets absent. Existing real ClamAV 15+18, actual providers and dual-store maintenance evidence reused. Static schedule wiring verified; documentation checks below.
+- Decisions and deviations: Close implementation/negative-test outcomes at canonical scope under HANDOFF-10; broader production scanner and historical recovery requirements remain explicit acceptance/release limits. SIGINT interrupted graceful service deletion; independent process/listener absence and exact isolated-data removal verified.
+- Blockers/open questions: Standard unmeasured; production scanner bridge/isolation/update and historical quiescence unclaimed. No gate opens.
+- Next actions: B4 10.2a–f acceptance matrix and integrated form/upload/search journey.
+- Next-session cautions: No main push/merge/SPA/paid capability; retained-key tombstones must not be erased from inferred provenance; no synthetic scan relabeling.
+
+B3 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=true corepack pnpm scan:secrets`, relative-link/checklist consistency and `git diff --check` pass. No unchanged application lane repeated.
