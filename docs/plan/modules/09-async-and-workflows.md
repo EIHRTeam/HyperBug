@@ -22,7 +22,7 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 - [x] **09.1c** Demonstrate that committed business data cannot permanently lose its event when queue publication fails. Do not claim cross-service atomicity between a database and queue.
 - [x] **09.1d** Validate every message at consumption; store references instead of plaintext credentials or large bodies, and recheck relevant current permissions/configuration before delayed sensitive actions.
 - [x] **09.1e** Implement application-level idempotency records and downstream idempotency identities; define the unavoidable duplicate-risk policy for external providers without idempotent APIs.
-- [ ] **09.1f** Implement the minimum tier's dispatch path: a D1 outbox claimed by a bounded Cron-driven dispatcher that stays SQL-heavy and JavaScript-light within the free per-invocation CPU, query-count and subrequest budgets, consolidates schedules into the available Cron Trigger count, and reports backlog age without relying on platform message retention.
+- [x] **09.1f** Implement the minimum tier's dispatch path: a D1 outbox claimed by a bounded Cron-driven dispatcher that stays SQL-heavy and JavaScript-light within the free per-invocation CPU, query-count and subrequest budgets, consolidates schedules into the available Cron Trigger count, and reports backlog age without relying on platform message retention.
 
 ### Step 09.2 — Bound failure and fan-out
 
@@ -49,7 +49,9 @@ The optional Cloudflare Free minimum tier adds a reduced-durability dispatch pat
 - [x] **09.V3** Run both workflow adapters through restart/resume/cancel and bounded-output checks.
 - [x] **09.V4** Verify final search consistency, plugin dispatch, quota recovery, and abandoned upload cleanup on both profiles.
 - [x] **09.V5** Demonstrate that ordinary Issue creation succeeds while a non-critical provider is unavailable, without losing eventual work or bypassing security.
-- [ ] **09.V6** Verify the minimum tier's async path: crash and restart resume without duplicating committed work or losing queued events, quota exhaustion produces bounded errors and a visible backlog, the Cron budget consolidation holds, and dispatch and job state remain observable within the free logging limits.
+- [x] **09.V6** Verify the minimum tier's async path: crash and restart resume without duplicating committed work or losing queued events, quota exhaustion produces bounded errors and a visible backlog, the Cron budget consolidation holds, and dispatch and job state remain observable within the free logging limits.
+
+The non-suspended checklist is complete at the recorded Module09 scope. [R14 native composition](../evidence/09-hosted-composed-native-recovery-receipt.json) proves invocation interruption/redeployment, exact checkpoints and maximum dispatch within10ms, with independent cleanup. [R9](../evidence/09-hosted-native-declarative-retry-receipt.json) supplies native quota refusal/recovery; actual-store local lanes cover all phases.09.3e remains suspended; paid Standard/full-profile/release acceptance and G1/G2/13.G6 remain separate.
 
 ## Source coverage
 

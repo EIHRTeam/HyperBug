@@ -1,0 +1,296 @@
+{
+  "recordedAt": "2026-10-11T05:53:17.526Z",
+  "trial": "R14 fresh committed-source native composed Cron",
+  "acceptance": "Native invocation interruption/redeployment/resume and maximum dispatch meet10ms; independently verified cleanup",
+  "plan": {
+    "name": "Workers Free",
+    "attribution": "User-attested; subscription/billing permission unavailable"
+  },
+  "cpuTargetMs": 10,
+  "invocationKind": "Actual native declarative Cron; private fixed phase4 fault/resume and phase0 dispatch wrappers call complete minimum.ts scheduled method/configuration",
+  "productionCommit": "b756222e38794c03c7e1cdbd89379ea921bb8fb5",
+  "resources": {
+    "worker": "hyperbug-09-native-921ca4211d1f",
+    "domain": "async-native-921ca4211d1f.test.eihrteam.org",
+    "d1": "5081af9c-7740-42b7-bc91-10010a0b8323",
+    "cron": "*/5 * * * *",
+    "queue": null,
+    "workflow": null,
+    "r2Used": false,
+    "schemaChanged": false
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-11T05:34:06.631Z",
+      "kind": "Delayed adaptive analytics, not billing or exact quota counters",
+      "remainingD1Reads": 4992005,
+      "remainingD1Writes": 99705,
+      "remainingWorkerRequests": 99715
+    },
+    "after": {
+      "at": "2026-10-11T05:51:42.743Z",
+      "kind": "Delayed adaptive analytics, not billing or exact quota counters",
+      "remainingD1Reads": 4991118,
+      "remainingD1Writes": 99621,
+      "remainingWorkerRequests": 99641
+    }
+  },
+  "deployments": {
+    "fault": {
+      "at": "2026-10-11T05:35:41.588Z",
+      "version": "36634181-445c-4e67-b501-aa0442e4454f",
+      "cronCount": 1
+    },
+    "resume": {
+      "at": "2026-10-11T05:40:57.119Z",
+      "version": "9352cab0-f9df-4571-b27e-0d49ef6b9963",
+      "cronCount": 1
+    },
+    "dispatch": {
+      "at": "2026-10-11T05:45:58.611Z",
+      "version": "787ec819-7663-46a9-b3b3-94423f2b3324",
+      "cronCount": 1
+    }
+  },
+  "measurements": {
+    "fault": {
+      "scriptName": "hyperbug-09-native-921ca4211d1f",
+      "outcome": "exception",
+      "eventTimestamp": 1791697237771,
+      "cpuTime": 9,
+      "wallTime": 1271,
+      "path": null,
+      "eventKind": "scheduled",
+      "metrics": [
+        {
+          "component": "native-scheduler-witness",
+          "phase": 4,
+          "outcome": "preflight",
+          "queries": 1,
+          "subrequests": 1
+        },
+        {
+          "component": "native-scheduler-witness",
+          "phase": 4,
+          "outcome": "checkpoint-response-lost",
+          "job": {
+            "checkpoint": 1,
+            "terminal": false
+          }
+        },
+        {
+          "component": "async-minimum",
+          "phase": 4,
+          "outcome": "bounded-error",
+          "job": null,
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 14,
+          "writes": 4,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791696871448
+          },
+          "ageMs": 367833
+        }
+      ],
+      "logCount": 3,
+      "exceptions": [
+        "Module09OwnedCheckpointAbort"
+      ]
+    },
+    "resume": {
+      "scriptName": "hyperbug-09-native-921ca4211d1f",
+      "outcome": "ok",
+      "eventTimestamp": 1791697537773,
+      "cpuTime": 6,
+      "wallTime": 1091,
+      "path": null,
+      "eventKind": "scheduled",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 4,
+          "outcome": "done",
+          "job": {
+            "checkpoint": 2,
+            "terminal": true
+          },
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 18,
+          "writes": 9,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791696871448
+          },
+          "ageMs": 667658
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    "dispatch": {
+      "scriptName": "hyperbug-09-native-921ca4211d1f",
+      "outcome": "ok",
+      "eventTimestamp": 1791697837772,
+      "cpuTime": 9,
+      "wallTime": 805,
+      "path": null,
+      "eventKind": "scheduled",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 10,
+          "subrequests": 10,
+          "reads": 63,
+          "writes": 22,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    }
+  },
+  "recovery": {
+    "initialCheckpoint": 0,
+    "initialWitnesses": [],
+    "interruptedCheckpoint": 1,
+    "interruptedWitnesses": [
+      0
+    ],
+    "resumedCheckpoint": 2,
+    "resumedWitnesses": [
+      0,
+      1
+    ],
+    "pendingEventPreservedAcrossBoth": true,
+    "cancelledSiblingUnchanged": true,
+    "oversizedProducerRefused": true
+  },
+  "canonical": {
+    "delivered_at": 1791697838554,
+    "canonical_revision": 1,
+    "search_revision": 1,
+    "canonical_title_points": 200,
+    "canonical_body_points": 32768,
+    "indexed_title_bytes": 371,
+    "indexed_body_bytes": 0,
+    "projection_version": "title-v1:hyperbug-text-1",
+    "body_text_version": "hyperbug-text-1",
+    "state": "done",
+    "attempts": 1
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 172,
+      "foreignKeysValid": true,
+      "singletonStateRestored": true,
+      "singletonCounts": {
+        "async_minimum_budget": 1,
+        "async_minimum_cursors": 2,
+        "search_budget": 0
+      },
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "original": {
+      "at": "2026-10-11T05:52:21.336Z",
+      "originalWorkerCount": 2,
+      "remainingWorkerCount": 2,
+      "originalWorkersPreserved": true,
+      "originalDomainsPreserved": true,
+      "ownedWorkerAbsent": true,
+      "ownedDomainAbsent": true,
+      "originalSchedulesPreserved": true,
+      "originalQueuesPreserved": true,
+      "originalWorkflowsPreserved": true
+    },
+    "processes": {
+      "tail": {
+        "handle": 58992,
+        "pid": 81119,
+        "terminal": true,
+        "exitCode": 0,
+        "pidAbsent": true
+      },
+      "guardian": {
+        "handle": 11126,
+        "pid": 81021,
+        "terminal": true,
+        "exitCode": 0,
+        "pidAbsent": true
+      },
+      "supervisor": {
+        "handle": 67280,
+        "pid": 81122,
+        "terminal": true,
+        "exitCode": 0,
+        "pidAbsent": true
+      },
+      "auth": {
+        "handle": 78249,
+        "pid": 81024,
+        "terminal": true,
+        "exitCode": 0,
+        "pidAbsent": true
+      }
+    },
+    "guardian": {
+      "at": "2026-10-11T05:51:42.758Z",
+      "reason": "native trial completed",
+      "cleaned": true
+    },
+    "inactive": {
+      "principalDeleted": true,
+      "projectArchived": true,
+      "issueDeletedRedacted": true
+    }
+  },
+  "limitations": [
+    "One observation per fresh deployment, not a sustained CPU distribution or profile-wide cold/p99 proof",
+    "Fault-only extra preflight outside application meter is included in CPU; lost-result metadata excludes committed-step read/write counters",
+    "Native invocation interruption/redeployment is not an OS process kill",
+    "Fixed phase selection protects original records; local actual-store tests exercise all five production phases",
+    "R9 separately supplies native quota refusal/recovery; no real provider-global quota exhaustion claimed",
+    "Raw DNS inventory permission unavailable; owned Worker/custom-domain mappings verified absent",
+    "Workers Free is user-attested; paid Standard/billing/full-profile/release acceptance stays separate",
+    "10ms target and existing numeric/canonical limits preserved; Minimum title-only mode retained",
+    "09.3e remains suspended; G1/G2 closed and13.G6 open"
+  ]
+}

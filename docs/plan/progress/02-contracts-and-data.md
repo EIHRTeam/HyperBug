@@ -868,3 +868,31 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Actual native Cron recovery/CPU and cleanup remain open.
 - Next actions: Continue observing supervisor67280, tail58992, guardian11126 and auth78249; retain original06:14:21 observation/06:19:21 cleanup deadlines.
 - Next-session cautions: All four processes confirmed live; poll existing handles/state, never restart or extend this trial or create a simultaneous trial. Keep09.3e suspended,G1/G2 closed,13.G6 open and protected drafts untracked.
+
+
+### 2026-10-11 — R14 native interruption9ms and clean redeployment
+
+- Scope and checklist IDs:09.1f/09.V6 native proof continuation; data/search/operational dependencies.
+- Progress: Actual native scheduled invocation hits intended uncaught checkpoint abort at9ms; D1 pending checkpoint1/exact[0] with source pending. Clean version9352cab0 redeployed,awaiting actual resume.
+- Change summary: Record authoritative native interruption and deployment; no source/target/capacity change.
+- Files/artifacts: [Native interruption evidence](../evidence/09-async-validation.md#r14-native-interruption-observed--0540-utc), requirement audit; private fault-state/deployment/hash receipts.
+- Verification: Native tail9ms/1271ms/three safe test logs. Core9 statements/subrequests plus one fault preflight; lost-result row counters incomplete. Cancelled sibling0/no witnesses,oversized refusal and max canonical source preserved. Common production artifacts identical; one original Cron remains.
+- Decisions and deviations: This is native invocation interruption/redeployment,not OS process kill. Delayed scheduled analytics empty cannot negate actual tail nor prove a missing distribution.
+- Blockers/open questions: Native resume/maximum dispatch/172-record cleanup pending;09.1f/09.V6 remain open.
+- Next actions: Poll existing supervisor67280/tail58992; inspect eventual resume/dispatch/state and independently verify cleanup/terminal handles.
+- Next-session cautions: Guardian11126/PID81021,auth78249/PID81024,tail58992/PID81119,supervisor67280/PID81122 remain live; native deadline06:14:21/cleanup06:19:21 UTC. No restart/extension/new simultaneous trial; preserve protected files/audit/gates.
+
+
+### 2026-10-11 — Complete non-suspended Module 09 and native handoff
+
+- Scope and checklist IDs: Close 09.1f/09.V6 and the full authorized non-suspended Module 09 handoff; preserve Module 08 integration closure and separate acceptance gates.
+- Progress: Native composed interruption 9 ms, clean redeployment/resume 6 ms, maximum dispatch 9 ms. Exact checkpoint/witness and pending-event preservation verified. All 23 non-suspended checks complete; 09.3e remains suspended.
+- Change summary: Keep committed single fenced all/RETURNING optimization, title-only Minimum search, 10 ms target, canonical content limits and every security/quota/fence check. Update canonical checklist, master/current handoff, requirement audit, runbook/ADR and synchronized EN/ZH reader guides from actual evidence.
+- Files/artifacts: [Native receipt](../evidence/09-hosted-composed-native-recovery-receipt.json), [completion audit](../evidence/09-completion-audit.md), [R14 final evidence](../evidence/09-async-validation.md#r14-native-maximum-dispatch-and-independent-cleanup--final); ignored baseline/deploy/cleanup/terminal receipts.
+- Verification: Actual one declarative Cron across three fresh deployments; normal phases emit one safe summary and stay at nine/ten statements/conservative subrequests. R9 supplies native quota refusal/recovery; prior current-source focused D1 checks have 17 unique passes and source is unchanged. Guardian plus independent read-only data/resource checks preserve 172 original records/exact singleton sets/FKs/history and original resources; owned work/resources zero, inactive fixtures independently confirmed; all four handles terminal exit 0/PIDs absent. Final docs/links/JSON/checklist/secrets/diff checks recorded below; no unchanged application lane repeated.
+- Decisions and deviations: Native invocation interruption/redeployment is not an OS process kill. One sample per deployment, 1 ms dispatch margin and delayed adaptive headroom do not establish sustained/profile-wide/billing/paid Standard/release performance. Free remains user-attested; raw DNS inventory permission unavailable, mapping absence verified.
+- Blockers/open questions: None for authorized non-suspended Module 09 scope. 09.3e suspended; G1/G2 closed, 13.G6 open. Other modules' acceptance prerequisites remain outside this work.
+- Next actions: No further Module 09 implementation/trial; preserve the closed handoff. Future backend/profile/release acceptance requires its owning scope.
+- Next-session cautions: R14 closed; never restart or reuse its baseline. New authorized hosted work needs fresh backup/inventory. Keep protected/private files unstaged; no push/PR edit, paid capability, production action, crypto tuning, SPA or audit resume.
+
+Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secrets`,675 relative file links/new R14 anchors, receipt JSON, all24 stable Module09 IDs (23 complete/09.3e suspended), Module08 integration boxes, common production bundle hashes and `git diff --check` pass. Production source/tests/tooling/dependencies are unchanged since b756222; no unchanged application lane rerun. Reader EN/ZH content and gate/status/handoff consistency checked; documentation formatting is not claimed because the formatter excludes docs.

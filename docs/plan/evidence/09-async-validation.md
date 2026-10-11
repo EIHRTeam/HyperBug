@@ -544,3 +544,26 @@ The private fixed phase4 fault wrapper loses the owned step0 commit response and
 Independent cleanup guardian11126(PID81021), authentication guard78249(PID81024), tail58992(PID81119), supervisor67280(PID81122) are live at this checkpoint. Absolute native observation deadline06:14:21 UTC; cleanup deadline06:19:21 UTC. Standard Wrangler refresh is attempted when credentials actually expire; private helpers read current credentials without printing them. Refresh failure requests controlled stop; guardian still attempts independently authenticated owned cleanup. No resource/data/process cleanup success is claimed while running. Helpers, backups and safe logs remain ignored under `.local/module09-native-r14/`. Do not restart this trial, extend its original deadline, reuse its baseline or create a simultaneous trial.
 
 Native Cron/composed CPU acceptance remains incomplete (`09.1f/09.V6`); R13's HTTP9ms sample is not a native Cron result. Target10ms/title-only capacity, suspended09.3e, closed G1/G2 and open13.G6 remain unchanged.
+
+
+### R14 native interruption observed — 05:40 UTC
+
+Actual native scheduled tail frame: CPU9ms/wall1271ms, intended uncaught `Module09OwnedCheckpointAbort`, with three safe test logs. Core phase4 reports bounded-error/9 statements and conservative subrequests/14 reads/4 writes plus visible pending backlog1. The extra fault preflight adds one unmetered statement/subrequest; whole native CPU includes it. Lost-result row counters omit the actual committed step's metadata and are not asserted as full invocation read/write totals.
+
+Actual D1 proves pending checkpoint1/progress50 with exactly witness[0], cancelled sibling unchanged at0/no witnesses, no oversized job and unchanged pending max-content source. The supervisor deployed clean resume version `9352cab0-f9df-4571-b27e-0d49ef6b9963` at05:40:53 UTC; the same original one Cron remains. Common production bundle artifacts are identical between fault/resume; only the private wrapper differs. Resume has no extra preflight. The source commit differs only by preceding documentation; application behavior is committed b756222.
+
+This is native invocation interruption and actual redeployment, not an OS process kill. Resume, maximum dispatch and cleanup are still pending; original deadlines remain. Delayed provider scheduled analytics has not yet caught up with the tail; no result is inferred from its empty response.
+
+
+### R14 native resume observed — 05:45 UTC
+
+Actual native clean phase4 resume: CPU6ms/wall1091ms, one safe summary, nine statements/conservative subrequests,18 reads/9 writes and visible pending backlog1. Actual D1 completes checkpoint2/progress100 with exact witnesses[0,1], preserving cancelled sibling and pending max-content source. The supervisor redeployed clean dispatch version `787ec819-7663-46a9-b3b3-94423f2b3324` at05:45:54 UTC and independently captures the unchanged original one Cron. Native maximum dispatch and cleanup remain pending. Standard Wrangler refresh succeeded at05:47:43 UTC,valid through06:47:31 UTC,without manual credential edits.
+
+
+### R14 native maximum dispatch and independent cleanup — final
+
+The clean dispatch deployment executes native phase0 at05:50 UTC: **9ms CPU/805ms wall**, one safe summary,10 statements/conservative subrequests,63 reads/22 writes and no exception. Canonical title200/body32768,revision1 and projection witness are preserved; title index371 bytes/body0/revision1 converges and source is done at attempt1. The exact job[0,1] witnesses remain until owned terminal cleanup.
+
+Guardian cleanup and a separate read-only `cleanup.mjs verify`/resource comparison preserve **172 original records**, exact singleton sets/FKs, additive migrations/append-only history and original two Workers/domains/schedules/Queues/Workflows. Owned work/resources are zero; one deleted/redacted issue,deleted principal,archived project and one timeline/one audit entry are retained. Independent tombstone reads confirm inactivity. Supervisor67280,tail58992,guardian11126 and auth78249 all return terminal exit0; all four PIDs are absent. The [strict native receipt](09-hosted-composed-native-recovery-receipt.json) is published only after these checks. No trial or process remains live.
+
+This proves the complete Minimum scheduled-method invocation at fixed owned phases,including native interruption/redeployment/resume and maximum dispatch. Local actual-store tests cover all five rotating phases; R9 separately proves native quota refusal/recovery. One sample per fresh deployment does not establish sustained/full-profile/billing/paid Standard/release acceptance. Fault-only preflight and lost-result metadata limitations remain explicit. The10ms target,title-only mode,canonical content/security/quota limits and all gate/audit boundaries are preserved.09.1f/09.V6 now pass; all23 non-suspended Module09 checks are complete,09.3e remains suspended.

@@ -16,6 +16,8 @@ Previous milestone: 2026-10-04 (Module 07 form attachment consumption 07.2b–d/
 
 **Module 07 scope decision (2026-10-03):** GitHub Issue Forms YAML is an accepted definition/authoring format for 07.2, including user-supplied `.yml` definitions normalized into the canonical bounded JSON schema. The scope does not include GitHub API/repository synchronization, chooser `config.yml` behavior, Markdown issue-template front matter, or byte-for-byte YAML round-tripping. The exact supported schema subset remains to be documented before implementation; see [Module 07 progress](progress/07-content-and-attachments.md).
 
+Module09 completion (2026-10-11): all23 non-suspended checks are verified;09.3e remains suspended. Fresh complete Minimum scheduled-method native Cron samples use9ms for interruption,6ms for clean redeployment/resume and9ms for maximum dispatch. Exact[0,1] witnesses/event preservation and172-record/original-resource cleanup are independently verified. Module08 dispatch/retry closure remains. These focused measurements do not establish sustained/full-profile/billing/paid Standard/release acceptance; G1/G2 stay closed and13.G6 open. See the [requirement audit](evidence/09-completion-audit.md).
+
 ## Module status
 
 | ID | Module | Status | Evidence and handoff |
@@ -29,7 +31,7 @@ Previous milestone: 2026-10-04 (Module 07 form attachment consumption 07.2b–d/
 | 06 | [Projects, issues, discussion, and triage backend](modules/06-issue-core.md) | Complete (2026-10-01; 06.1c/06.2c audit portions suspended as explicit deferred remainders) | [Session record](progress/06-issue-core.md) |
 | 07 | [Markdown policy, issue forms, templates, and attachments](modules/07-content-and-attachments.md) | In progress (07.1/07.2a–d/V2/07.3a/b/d/e/g/i/V3/V5/V7 verified at recorded scopes; complete cleanup/scanner/CORS and suspended audit remain) | [Session record](progress/07-content-and-attachments.md) |
 | 08 | [Structured search, filters, and query performance](modules/08-search-and-query.md) | Complete (local scope; Module 09 dispatch/retry verified) | [B1–B4 local implementation and acceptance](progress/08-search-and-query.md); real tier performance/release acceptance remains open |
-| 09 | [Outbox delivery, queues, durable workflows, and cleanup](modules/09-async-and-workflows.md) | In progress (title-only native10 ms and quota refusal2 ms observed; quota recovery4 ms/cleanup verified; native job recovery pending) | [Session record](progress/09-async-and-workflows.md) |
+| 09 | [Outbox delivery, queues, durable workflows, and cleanup](modules/09-async-and-workflows.md) | Complete (non-suspended scope;09.3e suspended; native composed recovery/dispatch and cleanup verified) | [Session record](progress/09-async-and-workflows.md) |
 | 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | Not started | [Session record](progress/10-backend-acceptance.md) |
 | 11 | [Static web application, authentication client, and UI foundation](modules/11-static-web-foundation.md) | Not started | [Session record](progress/11-static-web-foundation.md) |
 | 12 | [Public feedback, discussion, and staff web workflows](modules/12-web-product-workflows.md) | Not started | [Session record](progress/12-web-product-workflows.md) |
