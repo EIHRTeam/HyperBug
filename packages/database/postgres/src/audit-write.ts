@@ -55,3 +55,32 @@ export async function postgresAuditedMutation<T>(
     db.release(broken);
   }
 }
+
+export function scopedAudit(
+  input: PreparedAuditEvent,
+  projectId: string,
+  targetId: string,
+  action: string,
+): PreparedAuditEvent {
+  if (
+    input.projectId !== projectId ||
+    input.targetId !== targetId ||
+    input.action !== action
+  )
+    throw new AuditFailure('AUDIT_INVALID');
+  return auditEvent(input);
+}
+
+export function postgresAuditedQuery<
+  T extends import('pg').QueryResultRow = import('pg').QueryResultRow,
+>(
+  pool: Pool,
+  audit: PreparedAuditEvent,
+  sql: string,
+  values: unknown[],
+): Promise<import('pg').QueryResult<T>> {
+  return postgresAuditedMutation(pool, audit, async (db) => {
+    const result = await db.query<T>(sql, values);
+    return { value: result, changed: (result.rowCount ?? 0) > 0 };
+  });
+}

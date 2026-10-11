@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import { assertId, assertInstant } from '@hyperbug/domain';
 
 /**
@@ -198,9 +199,13 @@ export interface LabelUpdateInput {
  * are not selectable for new assignments.
  */
 export interface TaxonomyStore {
-  createLabel(input: LabelCreateInput): Promise<'created' | 'name-conflict'>;
+  createLabel(
+    input: LabelCreateInput,
+    audit: PreparedAuditEvent,
+  ): Promise<'created' | 'name-conflict'>;
   updateLabel(
     input: LabelUpdateInput,
+    audit: PreparedAuditEvent,
   ): Promise<
     | TaxonomyWritten<LabelRecord>
     | TaxonomyNotFound
@@ -212,6 +217,7 @@ export interface TaxonomyStore {
   deleteLabel(
     projectId: string,
     id: string,
+    audit: PreparedAuditEvent,
   ): Promise<'deleted' | 'not-found' | 'referenced'>;
 
   createIssueType(
@@ -222,6 +228,7 @@ export interface TaxonomyStore {
       readonly position: number;
       readonly enabled: boolean;
     },
+    audit: PreparedAuditEvent,
   ): Promise<'created' | 'name-conflict'>;
   updateIssueType(
     input: Omit<LabelUpdateInput, 'description' | 'color'> & {
@@ -231,6 +238,7 @@ export interface TaxonomyStore {
       readonly enabled: boolean | null;
       readonly position: number | null;
     },
+    audit: PreparedAuditEvent,
   ): Promise<
     | TaxonomyWritten<IssueTypeRecord>
     | TaxonomyNotFound
@@ -241,26 +249,33 @@ export interface TaxonomyStore {
   deleteIssueType(
     projectId: string,
     id: string,
+    audit: PreparedAuditEvent,
   ): Promise<'deleted' | 'not-found' | 'referenced'>;
 
-  createMilestone(input: {
-    readonly id: string;
-    readonly projectId: string;
-    readonly title: string;
-    readonly description: string;
-    readonly dueDate: string | null;
-    readonly nowMs: number;
-  }): Promise<'created'>;
-  updateMilestone(input: {
-    readonly id: string;
-    readonly projectId: string;
-    readonly expectedRevision: number;
-    readonly title: string | null;
-    readonly description: string | null;
-    readonly dueDate: string | null | undefined;
-    readonly state: 'open' | 'closed' | null;
-    readonly nowMs: number;
-  }): Promise<
+  createMilestone(
+    input: {
+      readonly id: string;
+      readonly projectId: string;
+      readonly title: string;
+      readonly description: string;
+      readonly dueDate: string | null;
+      readonly nowMs: number;
+    },
+    audit: PreparedAuditEvent,
+  ): Promise<'created'>;
+  updateMilestone(
+    input: {
+      readonly id: string;
+      readonly projectId: string;
+      readonly expectedRevision: number;
+      readonly title: string | null;
+      readonly description: string | null;
+      readonly dueDate: string | null | undefined;
+      readonly state: 'open' | 'closed' | null;
+      readonly nowMs: number;
+    },
+    audit: PreparedAuditEvent,
+  ): Promise<
     TaxonomyWritten<MilestoneView> | TaxonomyNotFound | TaxonomyConflict
   >;
   /** Bounded listing with derived progress counts from one grouped query. */
@@ -268,6 +283,7 @@ export interface TaxonomyStore {
   deleteMilestone(
     projectId: string,
     id: string,
+    audit: PreparedAuditEvent,
   ): Promise<'deleted' | 'not-found' | 'referenced'>;
 }
 

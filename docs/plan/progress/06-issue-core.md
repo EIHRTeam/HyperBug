@@ -6,22 +6,22 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Complete (2026-10-01; 06.1c/06.2c audit portions suspended as explicit deferred remainders)
+- Status: Complete (06.1c/06.2c audit portions resumed and verified 2026-10-11)
 - Delivery scope: MVP backend
 - Prerequisites: 05 complete.
 - Implementation started: Yes (2026-10-01).
-- Completed implementation checklist IDs: 06.1a, 06.1b, 06.2a, 06.2b, 06.2d, 06.2e, 06.3a, 06.3b, 06.3c, 06.3d, 06.3e, 06.V1, 06.V2, 06.V3, 06.V4.
-- Active/next checklist group: None — module complete except the suspended audit portions.
-- Last updated: 2026-10-03 (Module 07 scanner-hook integration follow-up).
-- Blocking issues discovered: None for Module 06 completion; suspended audit remainders remain deferred.
+- Completed implementation checklist IDs: 06.1a, 06.1b, 06.1c, 06.2a, 06.2b, 06.2c, 06.2d, 06.2e, 06.3a, 06.3b, 06.3c, 06.3d, 06.3e, 06.V1, 06.V2, 06.V3, 06.V4.
+- Active/next checklist group: None — all Module 06 checks complete.
+- Last updated: 2026-10-11.
+- Blocking issues discovered: None for Module 06 completion.
 - Evidence: [Issue Core validation](../evidence/06-issue-core-validation.md); later Module 07 integration evidence is appended below.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 06.1 | Implement project and taxonomy services | 06.1a/06.1b accepted 2026-10-01; 06.1c non-audit scope delivered, audit portion suspended | [06 batch entry](#2026-10-01--batch-061a--061b-accepted-project-and-taxonomy-services) |
-| 06.2 | Implement the Issue lifecycle | 06.2a/b/d/e accepted 2026-10-01; 06.2c non-audit scope delivered, audit portion suspended | [06.2 batch entry](#2026-10-01--batch-062-accepted-issue-lifecycle-triage-projections-cache-spec) |
+| 06.1 | Implement project and taxonomy services | 06.1a/06.1b accepted 2026-10-01; 06.1c audit accepted 2026-10-11 | [06 batch entry](#2026-10-01--batch-061a--061b-accepted-project-and-taxonomy-services) |
+| 06.2 | Implement the Issue lifecycle | 06.2a/b/d/e accepted 2026-10-01; 06.2c audit accepted 2026-10-11 | [06.2 batch entry](#2026-10-01--batch-062-accepted-issue-lifecycle-triage-projections-cache-spec) |
 | 06.3 | Implement discussion and timeline | 06.3a–06.3e accepted 2026-10-01 | [06.3 batch entry](#2026-10-01--batch-063-accepted-comments-reactions-merged-timeline) |
 | Acceptance | 06.V1–06.V4 | Accepted 2026-10-01 on both profiles | [Acceptance entry](#2026-10-01--acceptance-batch-06v106v4-accepted-module-06-complete) and [validation evidence](../evidence/06-issue-core-validation.md) |
 
@@ -29,15 +29,13 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-1. Read the latest master and dependency progress records and verify prerequisites.
-2. Start the first unfinished item in 06.1.
-3. Record the actual files changed, checks run, decisions, and next-session cautions here.
+No remaining Module 06 work. Preserve the completed handoff and the separate G1/G2/13.G6 boundaries.
 
 ## Next-session cautions
 
 Keep Open/Closed as the core state model and project-local numbers distinct from internal IDs. Do not expand MVP into a workflow designer.
 
-Do not infer completed implementation from this initialized record. Inspect the current repository and prior session entries before continuing.
+See [Selected audit evidence](../evidence/2026-10-11-selected-audit.md) for the resumed portions and current verification. Other audit portions remain suspended; protected root drafts remain untracked.
 
 ## Session log
 
@@ -447,3 +445,41 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None for B3; B4 workflow/scheduling and B5 Minimum/hosted quota proofs remain. Standard paid-profile performance stays unverified.
 - Next actions: B4 durable adapters/conformance and consolidated cleanup/operator documentation.
 - Next-session cautions: Preserve idempotency and current permissions/configuration; no official provider/features or public API expansion. G1/G2 closed, 13.G6 open; protect untracked drafts/handoffs.
+
+
+### 2026-10-11 — Resume selected audit portions (implementation checkpoint)
+
+- Scope and checklist IDs: User-authorized 06.1c, 06.2c, 07.2e and 09.3e only; this record owns the corresponding module's portions.
+- Progress/change summary: Read current plans, accepted evidence, source policies and development security/testing references. Integrate required success audit records into existing conditional writes and transactions; preserve current authorization, content, retention and delivery behavior.
+- Files/artifacts: Existing application ports, shared server handlers, D1/PostgreSQL adapters and focused fixtures; final evidence will be linked at closure.
+- Verification: In progress. Initial typecheck identifies required fixture adaptation, no production type errors. Context7 resolve/query on 2026-10-11 selected /llmstxt/developers_cloudflare_d1_llms-full_txt; official D1 batch rollback documentation confirms transaction behavior. changes() semantics will be verified through actual local workerd failure tests.
+- Decisions/deviations: No new endpoint, retention policy, migration, provider, dependency, deployment, SPA or roadmap work. Existing audit history and protected untracked drafts are preserved. Other suspended portions remain suspended.
+- Blockers/open questions: None so far; selected boxes stay unchecked until verification.
+- Next actions: Complete atomic audit/replay integration, verify both stores and HTTP journeys, then update canonical checklists and handoff.
+- Next-session cautions: Uncommitted audit implementation is in progress; do not claim gate/native/provider acceptance from local checks.
+
+
+### 2026-10-11 — Complete selected audit portions
+
+- Scope and checklist IDs: Explicitly resumed 06.1c, 06.2c, 07.2e and 09.3e; this module owns its corresponding portions. No boundary expansion.
+- Progress: Selected canonical checkboxes complete. Required management/issue/form success events, atomic authorized replay and nonempty terminal-retention summaries implemented and verified on both stores; existing cleanup/reference/permission/schema/idempotency behavior preserved.
+- Change summary: Use mandatory prepared audit inputs and existing D1 batch/PostgreSQL transactions; close the event catalog, correlate management events with server request IDs, and exclude content/configuration values. Preserve all historical rows and receipt compatibility; no backfill or new API/schema/retention policy.
+- Files/artifacts: [Selected evidence and review](../evidence/2026-10-11-selected-audit.md); application/server/security and both adapters; shared failure/HTTP/catalog fixtures; corresponding specifications, paired EN/ZH security guides, plans/suspension/master progress. Protected untracked drafts untouched.
+- Verification: 399 distinct focused checks passed / 4 optional-provider skips (unit19, workerd199/2, real disposable PostgreSQL18.6 181/2). Final error-boundary placement refreshed unit19 and both-store HTTP2+2; these overlap the matrix and are not extra checks. Final typecheck, lint/import boundaries, all-target build, docs:build, scoped oxfmt38 files, scan:secrets, 1038 relative file links/four selected checkboxes and git diff --check pass. Initial fixture/type/loopback failures and corrected outcomes are detailed in the evidence. D1 is local emulation; provider skips are unclaimed.
+- Decisions/deviations: Primary focused security/consistency review; no baseline deviation, independent-review/delegation claim, provider/migration/deployment, per-credential/blob audit expansion, new controlled legal/privacy deletion surface or acceptance-gate change. R14 CPU observations precede this patch; new current-profile acceptance belongs to owning gates.
+- Blockers/open questions: None for the four selected portions. Module07 attachment/scanner/CORS/historical cleanup remainders remain; G1/G2 closed and13.G6 open.
+- Next actions: Selected audit goal complete; no further implementation or hosted trial in this scope. Preserve owning-module remainders and other audit suspension.
+- Next-session cautions: Patch is uncommitted; no push/PR edit. No remote resources/data changed. Keep protected/private files excluded, old migrations/history retained and CPU/provider/release claims within their original evidence boundaries.
+
+
+### 2026-10-11 — User-authorized selected audit publication
+
+- Scope and checklist IDs: Commit and push the verified 06.1c, 06.2c, 07.2e and 09.3e patch on feat/v1; shared persistence/security dependencies retain their existing scope.
+- Progress: Prepared the completed audit patch for publication under the user's explicit instruction.
+- Change summary: Publish the existing atomic audit implementation, focused fixtures, evidence and synchronized reader guidance; no additional application behavior or gate changes.
+- Files/artifacts: [Selected audit evidence](../evidence/2026-10-11-selected-audit.md), the corresponding implementation/specifications and this publication handoff.
+- Verification: Reuse the recorded 399 focused passes / 4 optional-provider skips and completed static/build/document checks. Application tests are not repeated for unchanged code. Staged diff hygiene, secret scan and remote-ref verification are the publication checks.
+- Decisions and deviations: Normal push of the current branch; exclude all six pre-existing untracked root drafts and private ignored artifacts.
+- Blockers/open questions: None at preparation.
+- Next actions: Commit the prepared patch, push origin/feat/v1 and verify its remote SHA matches local HEAD; report the resulting commit in the publication response.
+- Next-session cautions: Preserve other suspended audit portions, Module07 remainders and G1/G2/13.G6 state. This publication supplies no new hosted CI, CPU, provider, deployment or release acceptance evidence.

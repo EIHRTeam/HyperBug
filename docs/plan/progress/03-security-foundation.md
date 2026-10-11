@@ -1857,3 +1857,28 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
 - Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
 - Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.
+
+
+### 2026-10-11 — Closed catalog dependency for selected Module 06/07/09 audits
+
+- Scope and checklist IDs: Dependency support for the explicitly resumed 06.1c/06.2c/07.2e/09.3e; no Module 03 checklist or gate change.
+- Progress/change summary: Extend the existing closed audit catalog with content-free project/taxonomy/issue/definition/replay actions and terminal-retention summaries attributed to core.maintenance. Existing audit read/append-only policy and history remain unchanged.
+- Files/artifacts: packages/security/src/audit.ts and unit catalog regressions; [selected evidence](../evidence/2026-10-11-selected-audit.md), owning 06/07/09 implementation/handoff records and paired security reader guides.
+- Verification: Focused final matrix 399 passed / 4 optional-provider skips, including catalog/adversarial fixtures and actual-store atomic rollback. Unrelated generated D1/PostgreSQL Module 03 query timing receipts were restored. Closing type/lint/build/docs/format/secrets/links/diff checks are recorded in the selected owning entries.
+- Decisions/deviations: No new trust boundary, policy weakening, crypto tuning, per-credential/blob audit expansion, audit-history deletion or deployment.
+- Blockers/open questions: None for this catalog dependency; existing profile/backend/release gates remain separate.
+- Next actions: Preserve Module 03 closure and the selected audit handoff; other suspended scope needs its own authorization.
+- Next-session cautions: R14 native CPU observations precede this patch; protected drafts remain untracked and untouched. No commit/push/PR edit in this session.
+
+
+### 2026-10-11 — User-authorized selected audit publication
+
+- Scope and checklist IDs: Commit and push the verified 06.1c, 06.2c, 07.2e and 09.3e patch on feat/v1; shared persistence/security dependencies retain their existing scope.
+- Progress: Prepared the completed audit patch for publication under the user's explicit instruction.
+- Change summary: Publish the existing atomic audit implementation, focused fixtures, evidence and synchronized reader guidance; no additional application behavior or gate changes.
+- Files/artifacts: [Selected audit evidence](../evidence/2026-10-11-selected-audit.md), the corresponding implementation/specifications and this publication handoff.
+- Verification: Reuse the recorded 399 focused passes / 4 optional-provider skips and completed static/build/document checks. Application tests are not repeated for unchanged code. Staged diff hygiene, secret scan and remote-ref verification are the publication checks.
+- Decisions and deviations: Normal push of the current branch; exclude all six pre-existing untracked root drafts and private ignored artifacts.
+- Blockers/open questions: None at preparation.
+- Next actions: Commit the prepared patch, push origin/feat/v1 and verify its remote SHA matches local HEAD; report the resulting commit in the publication response.
+- Next-session cautions: Preserve other suspended audit portions, Module07 remainders and G1/G2/13.G6 state. This publication supplies no new hosted CI, CPU, provider, deployment or release acceptance evidence.

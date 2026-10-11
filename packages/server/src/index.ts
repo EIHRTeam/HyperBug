@@ -930,6 +930,7 @@ export function createApp({
     auditAppend,
   };
   const projectContext: ProjectContext = {
+    auditRequestId: (request) => boundaryFor(request).requestId,
     keyProvider: keyProvider ?? null,
     tokenStore: oauthCodeStore,
     authorizationResolver,

@@ -896,3 +896,28 @@ Every session affecting this module MUST append an entry following the [required
 - Next-session cautions: R14 closed; never restart or reuse its baseline. New authorized hosted work needs fresh backup/inventory. Keep protected/private files unstaged; no push/PR edit, paid capability, production action, crypto tuning, SPA or audit resume.
 
 Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secrets`,675 relative file links/new R14 anchors, receipt JSON, all24 stable Module09 IDs (23 complete/09.3e suspended), Module08 integration boxes, common production bundle hashes and `git diff --check` pass. Production source/tests/tooling/dependencies are unchanged since b756222; no unchanged application lane rerun. Reader EN/ZH content and gate/status/handoff consistency checked; documentation formatting is not claimed because the formatter excludes docs.
+
+
+### 2026-10-11 — Shared data-model documentation for selected audit completion
+
+- Scope and checklist IDs: Documentation dependency of explicitly resumed 06.1c/06.2c/07.2e/09.3e; no Module02 checklist, schema, migration or public contract change.
+- Progress/change summary: DATA-MODEL describes required issue audit records and atomic existing project/taxonomy/form management transactions. Historical rows/receipts remain unchanged; no backfill.
+- Files/artifacts: docs/DATA-MODEL.md; [selected evidence](../evidence/2026-10-11-selected-audit.md) and owning06/07/09 records.
+- Verification: Both-store focused matrix399 passes/4 optional-provider skips, final types/lint/build/docs/format/secrets/relative-file-links/diff checks pass; generated unrelated timing receipts restored.
+- Decisions/deviations: No new persistent format, migration, public DTO, retention policy or gate; no provider/deployment or independent-review claim.
+- Blockers/open questions: None for this documentation dependency.
+- Next actions: Preserve Module02 completion and selected audit handoff; unrelated remainders stay with their owning scopes.
+- Next-session cautions: Patch uncommitted; protected drafts/history untouched. Existing G1/G2/13.G6 boundaries remain.
+
+
+### 2026-10-11 — User-authorized selected audit publication
+
+- Scope and checklist IDs: Commit and push the verified 06.1c, 06.2c, 07.2e and 09.3e patch on feat/v1; shared persistence/security dependencies retain their existing scope.
+- Progress: Prepared the completed audit patch for publication under the user's explicit instruction.
+- Change summary: Publish the existing atomic audit implementation, focused fixtures, evidence and synchronized reader guidance; no additional application behavior or gate changes.
+- Files/artifacts: [Selected audit evidence](../evidence/2026-10-11-selected-audit.md), the corresponding implementation/specifications and this publication handoff.
+- Verification: Reuse the recorded 399 focused passes / 4 optional-provider skips and completed static/build/document checks. Application tests are not repeated for unchanged code. Staged diff hygiene, secret scan and remote-ref verification are the publication checks.
+- Decisions and deviations: Normal push of the current branch; exclude all six pre-existing untracked root drafts and private ignored artifacts.
+- Blockers/open questions: None at preparation.
+- Next actions: Commit the prepared patch, push origin/feat/v1 and verify its remote SHA matches local HEAD; report the resulting commit in the publication response.
+- Next-session cautions: Preserve other suspended audit portions, Module07 remainders and G1/G2/13.G6 state. This publication supplies no new hosted CI, CPU, provider, deployment or release acceptance evidence.

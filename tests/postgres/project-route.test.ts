@@ -20,7 +20,7 @@ import { postgresNodeBindings } from '../fixtures/postgres-node-bindings.ts';
 // shared project and taxonomy surface against the PostgreSQL adapters, with
 // the staff-only creation gate, revision-conditional configuration, private
 // invisibility, the taxonomy permission ladder and the archived read-only
-// rule; no project/taxonomy audit event while 06.1c stays suspended.
+// rule and required project/taxonomy audit records.
 const databaseName = 'hyperbug_project_route_test';
 const redirectUri = 'http://localhost:5173/oauth/callback';
 const clients = [
@@ -393,9 +393,17 @@ it('delivers the project and taxonomy journey on Node/PostgreSQL', async () => {
   );
   expect(labelReferenced.status).toBe(409);
 
-  // 06.1c's audit portion stays suspended: no project/taxonomy audit events.
+  // Required management records correlate with the server request and exclude content.
   const { rows: audited } = await pool.query(
-    "SELECT COUNT(*)::int AS count FROM audit_events WHERE action LIKE 'project.%' OR action LIKE 'taxonomy.%'",
+    "SELECT COUNT(*)::int AS count FROM audit_events WHERE action LIKE 'project.%' OR action LIKE 'label.%' OR action LIKE 'issue-type.%' OR action LIKE 'milestone.%'",
   );
-  expect(audited[0]!.count).toBe(0);
+  expect(audited[0]!.count).toBeGreaterThan(0);
+  const { rows: creationAudit } = await pool.query(
+    "SELECT request_id, metadata FROM audit_events WHERE action='project.created' AND target_id=$1",
+    [project.id],
+  );
+  expect(creationAudit[0]!.request_id).toBe(
+    created.headers.get('x-request-id'),
+  );
+  expect(creationAudit[0]!.metadata).toEqual({});
 });

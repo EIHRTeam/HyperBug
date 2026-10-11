@@ -64,7 +64,29 @@ function record(
   return value as Record<string, unknown>;
 }
 
-const projectActions = ['issue.created', 'issue.edited'] as const;
+const projectActions = [
+  'issue.created',
+  'issue.edited',
+  'issue.closed',
+  'issue.reopened',
+  'issue.labels',
+  'issue.assignees',
+  'issue.type',
+  'issue.milestone',
+  'project.created',
+  'project.configured',
+  'project.archived',
+  'label.created',
+  'label.updated',
+  'label.deleted',
+  'issue-type.created',
+  'issue-type.updated',
+  'issue-type.deleted',
+  'milestone.created',
+  'milestone.updated',
+  'milestone.deleted',
+] as const;
+const definitionActions = ['form.saved', 'template.saved'] as const;
 const registryActions = [
   'activate',
   'revoke',
@@ -100,6 +122,7 @@ const pluginActions = [
 const staffRoles = ['triage', 'maintainer', 'administrator'] as const;
 export type AuditAction =
   | (typeof projectActions)[number]
+  | (typeof definitionActions)[number]
   | `key-registry.${(typeof registryActions)[number]}`
   | (typeof accountActions)[number]
   | (typeof administrationActions)[number]
@@ -107,7 +130,9 @@ export type AuditAction =
   | 'authorization.checked'
   | 'provider.outage'
   | 'deployment.enablement'
-  | 'instance-role.backfilled';
+  | 'instance-role.backfilled'
+  | 'async.replayed'
+  | 'retention.purged';
 export interface AuditEvent {
   readonly id: string;
   readonly projectId: string | null;
@@ -118,6 +143,7 @@ export interface AuditEvent {
     | 'core.admission'
     | 'core.deployment'
     | 'core.identity'
+    | 'core.maintenance'
     | null;
   readonly action: AuditAction;
   readonly targetId: string;
@@ -160,6 +186,50 @@ export function auditEvent(input: unknown): AuditEvent {
       id(r.targetId);
       record(r.metadata, []);
       metadata = Object.freeze({});
+    } else if ((definitionActions as readonly unknown[]).includes(r.action)) {
+      if (
+        r.projectId === null ||
+        r.actorId === null ||
+        r.systemActor !== null ||
+        r.result !== 'success'
+      )
+        throw invalid();
+      id(r.targetId);
+      const m = record(r.metadata, ['v', 'version', 'enabled']);
+      if (m.v !== 1) throw invalid();
+      integer(m.version, 1, 2147483647);
+      integer(m.enabled, 0, 1);
+      metadata = Object.freeze({
+        v: 1,
+        version: m.version,
+        enabled: m.enabled,
+      });
+    } else if (r.action === 'async.replayed') {
+      if (
+        r.actorId === null ||
+        r.systemActor !== null ||
+        r.result !== 'success'
+      )
+        throw invalid();
+      id(r.targetId);
+      const m = record(r.metadata, ['v', 'source']);
+      if (m.v !== 1 || (m.source !== 'core' && m.source !== 'plugin'))
+        throw invalid();
+      metadata = Object.freeze({ v: 1, source: m.source });
+    } else if (r.action === 'retention.purged') {
+      if (
+        r.projectId !== null ||
+        r.actorId !== null ||
+        r.systemActor !== 'core.maintenance' ||
+        r.result !== 'success' ||
+        !['async-deliveries', 'async-jobs'].includes(r.targetId as string)
+      )
+        throw invalid();
+      const m = record(r.metadata, ['v', 'cutoff', 'count']);
+      if (m.v !== 1) throw invalid();
+      integer(m.cutoff, 0, 8640000000000000);
+      integer(m.count, 1, 100);
+      metadata = Object.freeze({ v: 1, cutoff: m.cutoff, count: m.count });
     } else if (r.action === 'authorization.checked') {
       if (
         r.projectId === null ||

@@ -21,7 +21,7 @@ import { cryptoFixture } from '../fixtures/crypto-scenarios.ts';
 // 06.2 lifecycle journey on workerd/D1: number allocation, taxonomy-bearing
 // creation, idempotent retries, ownership editing, the triage mutation set
 // with timeline/outbox atomicity, moderation-aware reads and the audit
-// suspension (no issue.* audit events).
+// resumed required issue audit records.
 const wasmPath = 'apps/api-cloudflare/src/vendor/libsodium-sumo-0.8.4.wasm';
 const authOrigin = 'https://auth.poc.example';
 const redirectUri = 'https://app.poc.example/oauth/callback';
@@ -688,13 +688,19 @@ it('delivers the issue lifecycle on workerd/D1', async () => {
   );
   expect(authorHiddenEdit.status).toBe(403);
 
-  // 06.2c's audit portion stays suspended: no issue.* audit events exist.
+  // Every committed issue mutation has exactly one matching audit row; retries/noops do not add rows.
   const audited = await db
     .prepare(
       "SELECT COUNT(*) AS count FROM audit_events WHERE action LIKE 'issue.%'",
     )
     .first<{ count: number }>();
-  expect(audited?.count).toBe(0);
+  const timelines = await db
+    .prepare(
+      "SELECT COUNT(*) AS count FROM timeline_events WHERE action LIKE 'issue.%'",
+    )
+    .first<{ count: number }>();
+  expect(audited?.count).toBe(timelines?.count);
+  expect(audited?.count).toBeGreaterThan(0);
   await contentHttpContract({
     asyncStore: createD1AsyncStore(db as unknown as D1Database),
     projectId: project.id,

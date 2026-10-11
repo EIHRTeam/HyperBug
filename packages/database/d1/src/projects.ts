@@ -1,3 +1,10 @@
+import { AuditFailure } from '@hyperbug/security';
+import {
+  d1AuditedMutation,
+  d1AuditInsert,
+  scopedAudit,
+} from './audit-write.ts';
+import type { PreparedAuditEvent } from '@hyperbug/application';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   validateProjectRecord,
@@ -50,7 +57,11 @@ const columns =
  */
 export function createD1ProjectStore(db: D1Database): ProjectStore {
   return {
-    async create(input: ProjectCreateInput): Promise<ProjectCreateOutcome> {
+    async create(
+      input: ProjectCreateInput,
+      audit: PreparedAuditEvent,
+    ): Promise<ProjectCreateOutcome> {
+      scopedAudit(audit, input.id, input.id, 'project.created');
       try {
         await db.batch([
           db
@@ -70,16 +81,18 @@ export function createD1ProjectStore(db: D1Database): ProjectStore {
               "INSERT INTO project_roles (project_id, principal_id, principal_kind, role, granted_at) VALUES (?, ?, 'staff', 'administrator', ?)",
             )
             .bind(input.id, input.administratorPrincipalId, input.nowMs),
+          d1AuditInsert(db, audit, false),
         ]);
         return 'created';
-      } catch (error) {
+      } catch {
         // A slug conflict rolls the batch back with the slug left present;
         // any other failure must surface, never masquerade as success.
         const existing = await db
           .prepare('SELECT id FROM projects WHERE slug = ? LIMIT 1')
           .bind(input.slug)
           .first<{ id: string }>();
-        if (existing === null) throw error;
+        if (existing === null || existing.id === input.id)
+          throw new AuditFailure();
         return 'slug-conflict';
       }
     },
@@ -99,48 +112,64 @@ export function createD1ProjectStore(db: D1Database): ProjectStore {
     },
     async configure(
       input: ProjectConfigureInput,
+      audit: PreparedAuditEvent,
     ): Promise<ProjectConfigureOutcome> {
+      scopedAudit(audit, input.id, input.id, 'project.configured');
       const current = await db
         .prepare(`SELECT ${columns} FROM projects WHERE id = ? LIMIT 1`)
         .bind(input.id)
         .first<ProjectRow>();
       if (current === null) return { outcome: 'not-found' };
-      const row = await db
-        .prepare(
-          'UPDATE projects SET name = ?, visibility = ?, revision = revision + 1, updated_at = ? WHERE id = ? AND revision = ? RETURNING ' +
-            columns,
-        )
-        .bind(
-          input.name ?? current.name,
-          input.visibility ?? current.visibility,
-          Math.max(input.nowMs, current.updated_at),
-          input.id,
-          input.expectedRevision,
-        )
-        .first<ProjectRow>();
+      const row =
+        (
+          await d1AuditedMutation<ProjectRow>(
+            db,
+            db
+              .prepare(
+                'UPDATE projects SET name = ?, visibility = ?, revision = revision + 1, updated_at = ? WHERE id = ? AND revision = ? RETURNING ' +
+                  columns,
+              )
+              .bind(
+                input.name ?? current.name,
+                input.visibility ?? current.visibility,
+                Math.max(input.nowMs, current.updated_at),
+                input.id,
+                input.expectedRevision,
+              ),
+            audit,
+          )
+        ).results[0] ?? null;
       return row === null
         ? { outcome: 'conflict' }
         : { outcome: 'configured', record: toRecord(row) };
     },
     async archive(
       input: Omit<ProjectConfigureInput, 'name' | 'visibility'>,
+      audit: PreparedAuditEvent,
     ): Promise<ProjectArchiveOutcome> {
+      scopedAudit(audit, input.id, input.id, 'project.archived');
       const current = await db
         .prepare(`SELECT ${columns} FROM projects WHERE id = ? LIMIT 1`)
         .bind(input.id)
         .first<ProjectRow>();
       if (current === null) return { outcome: 'not-found' };
-      const row = await db
-        .prepare(
-          "UPDATE projects SET status = 'archived', revision = revision + 1, updated_at = ? WHERE id = ? AND revision = ? AND status = 'active' RETURNING " +
-            columns,
-        )
-        .bind(
-          Math.max(input.nowMs, current.updated_at),
-          input.id,
-          input.expectedRevision,
-        )
-        .first<ProjectRow>();
+      const row =
+        (
+          await d1AuditedMutation<ProjectRow>(
+            db,
+            db
+              .prepare(
+                "UPDATE projects SET status = 'archived', revision = revision + 1, updated_at = ? WHERE id = ? AND revision = ? AND status = 'active' RETURNING " +
+                  columns,
+              )
+              .bind(
+                Math.max(input.nowMs, current.updated_at),
+                input.id,
+                input.expectedRevision,
+              ),
+            audit,
+          )
+        ).results[0] ?? null;
       return row === null
         ? { outcome: 'conflict' }
         : { outcome: 'archived', record: toRecord(row) };

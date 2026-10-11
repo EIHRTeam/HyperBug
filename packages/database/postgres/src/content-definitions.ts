@@ -1,3 +1,5 @@
+import { postgresAuditInsert, scopedAudit } from './audit-write.ts';
+import type { PreparedAuditEvent } from '@hyperbug/application';
 import type { Pool, PoolClient } from 'pg';
 import { assertId, assertRevision, DomainError } from '@hyperbug/domain';
 import {
@@ -102,8 +104,15 @@ export function createPostgresContentDefinitionStore(
   async function save(
     kind: ContentDefinitionKind,
     input: SaveIssueForm | SaveIssueTemplate,
+    audit: PreparedAuditEvent,
   ): Promise<IssueFormRecord | IssueTemplateRecord> {
     const db = await pool.connect();
+    scopedAudit(
+      audit,
+      input.projectId,
+      input.id,
+      kind === 'form' ? 'form.saved' : 'template.saved',
+    );
     const version = (input.expectedRevision ?? 0) + 1;
     assertRevision(version);
     const name = 'definition' in input ? input.definition.name : input.name;
@@ -208,6 +217,7 @@ export function createPostgresContentDefinitionStore(
           ? await readForm(db, input.projectId, input.id)
           : await readTemplate(db, input.projectId, input.id);
       if (!record) throw new Error('Committed definition missing');
+      await postgresAuditInsert(db, audit);
       await db.query('COMMIT');
       return record;
     } catch (error) {
@@ -233,11 +243,11 @@ export function createPostgresContentDefinitionStore(
     getForm: (projectId, id, version) => readForm(pool, projectId, id, version),
     getTemplate: (projectId, id, version) =>
       readTemplate(pool, projectId, id, version),
-    saveForm: async (raw) =>
-      save('form', normalizeSavedForm(raw)) as Promise<IssueFormRecord>,
-    saveTemplate: async (input) => {
+    saveForm: async (raw, audit) =>
+      save('form', normalizeSavedForm(raw), audit) as Promise<IssueFormRecord>,
+    saveTemplate: async (input, audit) => {
       validateSavedTemplate(input);
-      return save('template', input) as Promise<IssueTemplateRecord>;
+      return save('template', input, audit) as Promise<IssueTemplateRecord>;
     },
   };
 }

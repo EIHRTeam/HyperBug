@@ -1,3 +1,4 @@
+import { issueAuditAction } from '@hyperbug/application';
 import { createPostgresSearchBudgetStore } from './search-budget.ts';
 import {
   SearchError,
@@ -534,19 +535,18 @@ export function createPostgresRepository(pool: Pool): IssueRepository {
           JSON.stringify(metadata),
         ],
       );
-      if (intent.auditAction)
-        await db.query(
-          "INSERT INTO audit_events (id, project_id, actor_id, action, target_id, result, request_id, created_at, metadata) VALUES ($1, $2, $3, $4, $5, 'success', $6, $7, '{}'::jsonb)",
-          [
-            intent.mutationId,
-            intent.projectId,
-            intent.principalId,
-            intent.auditAction,
-            intent.id,
-            intent.requestId,
-            intent.now,
-          ],
-        );
+      await db.query(
+        "INSERT INTO audit_events (id, project_id, actor_id, action, target_id, result, request_id, created_at, metadata) VALUES ($1, $2, $3, $4, $5, 'success', $6, $7, '{}'::jsonb)",
+        [
+          intent.mutationId,
+          intent.projectId,
+          intent.principalId,
+          issueAuditAction(operation),
+          intent.id,
+          intent.requestId,
+          intent.now,
+        ],
+      );
       await db.query(
         'INSERT INTO outbox (id, project_id, aggregate_id, event_type, payload, created_at, available_at) VALUES ($1, $2, $3, $4, $5, $6, $6)',
         [

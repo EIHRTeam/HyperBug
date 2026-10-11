@@ -1,7 +1,13 @@
+import { selectedAuditContract } from '../fixtures/selected-audit-contract.ts';
 import { auditEvent } from '../../packages/security/src/index.ts';
 import { expect, it } from 'vitest';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import {
+  createD1ProjectStore,
+  createD1TaxonomyStore,
+  createD1ContentDefinitionStore,
+  createD1Repository,
+  createD1AsyncStore,
   createD1AccountAdministration,
   createD1AccountRecoveryStore,
   createD1StaffEnrollmentStore,
@@ -50,6 +56,28 @@ it('rolls back every audited administration mutation on D1', async () => {
             new AbortController().signal,
           ),
       },
+    );
+    await selectedAuditContract(
+      async (sql, values = []) =>
+        (
+          await db
+            .prepare(sql)
+            .bind(...values)
+            .all<Record<string, unknown>>()
+        ).results,
+      {
+        projects: createD1ProjectStore(db),
+        taxonomy: createD1TaxonomyStore(db),
+        definitions: createD1ContentDefinitionStore(db),
+        issues: createD1Repository(db),
+        async: createD1AsyncStore(db),
+        append: (event) =>
+          createD1AuditRepository(db).append(
+            auditEvent(event),
+            new AbortController().signal,
+          ),
+      },
+      'd1',
     );
     expect(
       (await db.prepare('PRAGMA foreign_key_check').all()).results,

@@ -1,3 +1,4 @@
+import { projectMutationAudit, withAtomicAudit } from './audit-emit.ts';
 import {
   seedAuthorizationProject,
   requestAuthorizationDependencies,
@@ -32,6 +33,7 @@ import { RequestFailure } from './errors.ts';
 
 /** Everything the project handlers need, supplied by the app. */
 export interface ProjectContext {
+  readonly auditRequestId?: (request: Request) => string;
   readonly keyProvider: KeyProvider | null;
   readonly tokenStore: (OAuthCodeStore & OAuthAccessTokenStore) | null;
   readonly authorizationResolver: AuthorizationResolver | null;
@@ -91,18 +93,27 @@ export async function createProject(
   if (visibility !== 'public' && visibility !== 'private')
     throw new RequestFailure('PROJECT_INVALID');
   const id = crypto.randomUUID();
-  const outcome = await withDeadline(
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).create({
-        id,
-        slug: input.slug as string,
-        name: input.name as string,
-        visibility,
-        administratorPrincipalId: principal.principalId,
-        nowMs: Date.now(),
-      }),
+      store(context).create(
+        {
+          id,
+          slug: input.slug as string,
+          name: input.name as string,
+          visibility,
+          administratorPrincipalId: principal.principalId,
+          nowMs: Date.now(),
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          principal.principalId,
+          id,
+          id,
+          'project.created',
+        ),
+      ),
   );
   if (outcome === 'slug-conflict') throw new RequestFailure('PROJECT_CONFLICT');
   const record = await withDeadline(
@@ -236,20 +247,29 @@ export async function configureProject(
     input.visibility !== 'private'
   )
     throw new RequestFailure('PROJECT_INVALID');
-  const outcome = await withDeadline(
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).configure({
-        id: projectId,
-        expectedRevision: input.expectedRevision as number,
-        name: input.name === undefined ? null : (input.name as string),
-        visibility:
-          input.visibility === undefined
-            ? null
-            : (input.visibility as 'public' | 'private'),
-        nowMs: Date.now(),
-      }),
+      store(context).configure(
+        {
+          id: projectId,
+          expectedRevision: input.expectedRevision as number,
+          name: input.name === undefined ? null : (input.name as string),
+          visibility:
+            input.visibility === undefined
+              ? null
+              : (input.visibility as 'public' | 'private'),
+          nowMs: Date.now(),
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          principal.principalId,
+          projectId,
+          projectId,
+          'project.configured',
+        ),
+      ),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'conflict')
@@ -286,15 +306,24 @@ export async function archiveProject(
     (expectedRevision as number) < 1
   )
     throw new RequestFailure('PROJECT_INVALID');
-  const outcome = await withDeadline(
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).archive({
-        id: projectId,
-        expectedRevision: expectedRevision as number,
-        nowMs: Date.now(),
-      }),
+      store(context).archive(
+        {
+          id: projectId,
+          expectedRevision: expectedRevision as number,
+          nowMs: Date.now(),
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          principal.principalId,
+          projectId,
+          projectId,
+          'project.archived',
+        ),
+      ),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'conflict')

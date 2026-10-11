@@ -384,3 +384,86 @@ it('preserves historical Minimum v1 enablement rows alongside canonical v2 event
     }).targetId,
   ).toBe('cloudflare-free-minimum');
 });
+
+it('keeps resumed project, definition, replay and retention events in a closed content-free catalog', () => {
+  const base = auditFixture();
+  const scoped = {
+    ...base,
+    projectId: auditProject,
+    actorId: auditActor,
+    systemActor: null,
+    targetId: auditActor,
+    result: 'success' as const,
+  };
+  for (const action of [
+    'project.created',
+    'project.configured',
+    'project.archived',
+    'label.created',
+    'label.updated',
+    'label.deleted',
+    'issue-type.created',
+    'issue-type.updated',
+    'issue-type.deleted',
+    'milestone.created',
+    'milestone.updated',
+    'milestone.deleted',
+    'issue.closed',
+    'issue.reopened',
+    'issue.labels',
+    'issue.assignees',
+    'issue.type',
+    'issue.milestone',
+  ]) {
+    expect(auditEvent({ ...scoped, action, metadata: {} }).action).toBe(action);
+    expect(() =>
+      auditEvent({ ...scoped, action, metadata: { body: 'private' } }),
+    ).toThrow('AUDIT_INVALID');
+    expect(() =>
+      auditEvent({ ...scoped, action, actorId: null, metadata: {} }),
+    ).toThrow('AUDIT_INVALID');
+  }
+  for (const action of ['form.saved', 'template.saved']) {
+    const input = {
+      ...scoped,
+      action,
+      metadata: { v: 1, version: 2, enabled: 0 },
+    };
+    expect(auditEvent(input).metadata).toEqual(input.metadata);
+    for (const changes of [
+      { version: 0 },
+      { enabled: 2 },
+      { definition: 'private' },
+    ])
+      expect(() =>
+        auditEvent({ ...input, metadata: { ...input.metadata, ...changes } }),
+      ).toThrow('AUDIT_INVALID');
+  }
+  expect(
+    auditEvent({
+      ...scoped,
+      action: 'async.replayed',
+      metadata: { v: 1, source: 'core' },
+    }).action,
+  ).toBe('async.replayed');
+  const retention = {
+    ...base,
+    projectId: null,
+    actorId: null,
+    systemActor: 'core.maintenance',
+    action: 'retention.purged',
+    targetId: 'async-jobs',
+    result: 'success',
+    metadata: { v: 1, cutoff: auditNow, count: 1 },
+  };
+  expect(auditEvent(retention).metadata.count).toBe(1);
+  for (const change of [
+    { targetId: 'audit_events' },
+    { actorId: auditActor },
+    { metadata: { v: 1, cutoff: auditNow, count: 0 } },
+    { metadata: { v: 1, cutoff: auditNow, count: 101 } },
+  ])
+    expect(() => auditEvent({ ...retention, ...change })).toThrow(
+      'AUDIT_INVALID',
+    );
+});

@@ -1,3 +1,4 @@
+import { saveAuditedForm, saveAuditedTemplate } from './definition-audit.ts';
 import { expect, it } from 'vitest';
 import {
   normalizeIssueFormDefinition,
@@ -39,7 +40,7 @@ export function contentDefinitionContract(
       nearLimitIssueFormDefinition(),
       'canonical',
     );
-    await store.saveForm({
+    await saveAuditedForm(store, harness, {
       id,
       projectId,
       expectedRevision: null,
@@ -62,7 +63,7 @@ export function contentDefinitionContract(
     );
     const rejected = nextId();
     await expect(
-      store.saveForm({
+      saveAuditedForm(store, harness, {
         id: rejected,
         projectId,
         expectedRevision: null,
@@ -82,7 +83,7 @@ export function contentDefinitionContract(
     const projectId = await project();
     const other = await project();
     const id = nextId();
-    const first = await store.saveForm({
+    const first = await saveAuditedForm(store, harness, {
       id,
       projectId,
       expectedRevision: null,
@@ -97,7 +98,7 @@ export function contentDefinitionContract(
       version: 1,
       enabled: true,
     });
-    const second = await store.saveForm({
+    const second = await saveAuditedForm(store, harness, {
       id,
       projectId,
       expectedRevision: 1,
@@ -116,7 +117,7 @@ export function contentDefinitionContract(
       JSON.stringify(await store.list('form', projectId, true)),
     ).not.toMatch(/definition|body/);
     await expect(
-      store.saveTemplate({
+      saveAuditedTemplate(store, harness, {
         id: nextId(),
         projectId,
         expectedRevision: null,
@@ -127,7 +128,7 @@ export function contentDefinitionContract(
       }),
     ).rejects.toMatchObject({ code: 'CONTENT_NAME_CONFLICT' });
     const templateId = nextId();
-    const original = await store.saveTemplate({
+    const original = await saveAuditedTemplate(store, harness, {
       id: templateId,
       projectId,
       expectedRevision: null,
@@ -136,7 +137,7 @@ export function contentDefinitionContract(
       name: 'Plain',
       body: '**canonical** <script>source</script>',
     });
-    await store.saveTemplate({
+    await saveAuditedTemplate(store, harness, {
       id: templateId,
       projectId,
       expectedRevision: 1,
@@ -196,7 +197,7 @@ export function contentDefinitionContract(
       [projectId],
     );
     await expect(
-      store.saveForm({
+      saveAuditedForm(store, harness, {
         id,
         projectId,
         expectedRevision: 2,
@@ -210,7 +211,7 @@ export function contentDefinitionContract(
     const { harness, store } = get();
     const projectId = await project();
     const id = nextId();
-    await store.saveForm({
+    await saveAuditedForm(store, harness, {
       id,
       projectId,
       expectedRevision: null,
@@ -220,7 +221,7 @@ export function contentDefinitionContract(
     });
     const outcomes = await Promise.allSettled(
       Array.from({ length: 8 }, (_, index) =>
-        store.saveForm({
+        saveAuditedForm(store, harness, {
           id,
           projectId,
           expectedRevision: 1,
@@ -252,7 +253,7 @@ export function contentDefinitionContract(
       [legacy, projectId],
     );
     await expect(
-      store.saveForm({
+      saveAuditedForm(store, harness, {
         id: legacy,
         projectId,
         expectedRevision: 1,
@@ -280,7 +281,7 @@ export function contentDefinitionContract(
     const { harness, store } = get();
     const projectId = await project();
     const shared = await Promise.allSettled([
-      store.saveForm({
+      saveAuditedForm(store, harness, {
         id: nextId(),
         projectId,
         expectedRevision: null,
@@ -288,7 +289,7 @@ export function contentDefinitionContract(
         now,
         definition: formDefinition('Same name'),
       }),
-      store.saveTemplate({
+      saveAuditedTemplate(store, harness, {
         id: nextId(),
         projectId,
         expectedRevision: null,
@@ -310,7 +311,7 @@ export function contentDefinitionContract(
         [nextId(), projectId, `Legacy ${index}`, ''],
       );
     const race = await Promise.allSettled([
-      store.saveForm({
+      saveAuditedForm(store, harness, {
         id: nextId(),
         projectId,
         expectedRevision: null,
@@ -318,7 +319,7 @@ export function contentDefinitionContract(
         now,
         definition: formDefinition('Final form'),
       }),
-      store.saveTemplate({
+      saveAuditedTemplate(store, harness, {
         id: nextId(),
         projectId,
         expectedRevision: null,
@@ -340,7 +341,7 @@ export function contentDefinitionContract(
     );
     expect(Number(count[0]!.count)).toBe(64);
     await expect(
-      store.saveForm({
+      saveAuditedForm(store, harness, {
         id: nextId(),
         projectId: nextId(),
         expectedRevision: null,

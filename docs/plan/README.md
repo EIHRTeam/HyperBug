@@ -6,7 +6,7 @@ This directory turns the [initial architecture](../initial-architecture/) into a
 
 Module 00 has now created and validated the [development](../../.agents/skills/hyperbug-development/SKILL.md) and [maintenance](../../.agents/skills/hyperbug-maintenance/SKILL.md) skills. Consult master progress for current implementation status; the remaining checklists describe future work.
 
-**Audit instruction (2026-09-21): [All audit work is suspended — no audit for now](AUDIT-SUSPENSION.md).** Skip suspended audit work when selecting a future batch.
+**Audit instruction (2026-10-11):** The user resumed only 06.1c, 06.2c, 07.2e and 09.3e; all four are verified at their recorded scope ([evidence](evidence/2026-10-11-selected-audit.md)). The [suspension](AUDIT-SUSPENSION.md) still applies to other portions. No boundary expansion is authorized.
 
 **Review remediation update (2026-10-05):** The approved B1–B15 scope supersedes the older Minimum hold: ADR 0012 formalizes the third profile; B11 permits bounded expired cleanup on existing schedulers. Implementation and owned-resource cleanup are recorded in the [remediation evidence](evidence/2026-10-05-review-remediation.md) and [live measurements](evidence/2026-10-05-b15-live-measurements.md). Actual Free billing/CPU acceptance remains open. No SPA, queue/workflow expansion, later-module audit or Argon2id performance work is authorized.
 
@@ -26,7 +26,7 @@ Cross-module specifications and accepted direction records live in these English
 | Specification | Scope | Owner |
 | --- | --- | --- |
 | [MARKDOWN-POLICY](../MARKDOWN-POLICY.md) | Canonical Markdown storage, representation/transport kinds, determinism, derivation and pagination contract | 07.1 |
-| [ISSUE-FORMS](../ISSUE-FORMS.md) | Bounded GitHub YAML subset, canonical JSON schema, deterministic answers and atomic released-attachment consumption verified; audit suspended | 07.2 |
+| [ISSUE-FORMS](../ISSUE-FORMS.md) | Bounded GitHub YAML subset, canonical JSON schema, deterministic answers and atomic released-attachment consumption and management audit verified | 07.2 |
 | [ATTACHMENT-LIFECYCLE](../ATTACHMENT-LIFECYCLE.md), [BLOB-STORAGE](../BLOB-STORAGE.md), [ADR 0011](../decisions/0011-immutable-attachment-processing.md) | Direct/multipart upload intents, immutable processing, locally authorized media and actual local scanner journeys; production CORS/scanner and complete legacy/retention cleanup remain incomplete | 07.3 |
 | [ADR 0003](../decisions/0003-markdown-representation-and-pagination.md) | Accepted direction for Markdown representation, transport and pagination | 07 |
 | [DATA-MODEL](../DATA-MODEL.md), [API-CONVENTIONS](../API-CONVENTIONS.md), [API-OPERATIONS](../API-OPERATIONS.md) | Records, public contract, cursor rules and permission matrix | 02, 06–10 |

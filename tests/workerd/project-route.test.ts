@@ -11,8 +11,7 @@ import { createFakeAuthenticator } from '../fixtures/fake-authenticator.ts';
 // auto-granted its first administrator role; configuration requires recent
 // authentication; private projects are invisible to anonymous callers and
 // non-members; taxonomy writes follow the maintainer-or-higher rule and the
-// archived read-only rule; no project/taxonomy audit event is emitted while
-// 06.1c's audit portion stays suspended.
+// archived read-only rule and required project/taxonomy audit records.
 const wasmPath = 'apps/api-cloudflare/src/vendor/libsodium-sumo-0.8.4.wasm';
 const authOrigin = 'https://auth.poc.example';
 const redirectUri = 'https://app.poc.example/oauth/callback';
@@ -534,11 +533,19 @@ it('delivers the project and taxonomy journey on workerd/D1', async () => {
   });
   expect(archivedLabel.status).toBe(403);
 
-  // 06.1c's audit portion stays suspended: no project/taxonomy audit events.
+  // Required management records correlate with the server request and exclude content.
   const audited = await db
     .prepare(
-      "SELECT COUNT(*) AS count FROM audit_events WHERE action LIKE 'project.%' OR action LIKE 'taxonomy.%'",
+      "SELECT COUNT(*) AS count FROM audit_events WHERE action LIKE 'project.%' OR action LIKE 'label.%' OR action LIKE 'issue-type.%' OR action LIKE 'milestone.%'",
     )
     .first<{ count: number }>();
-  expect(audited?.count).toBe(0);
+  expect(audited?.count).toBeGreaterThan(0);
+  const creationAudit = await db
+    .prepare(
+      "SELECT request_id, metadata FROM audit_events WHERE action='project.created' AND target_id=?",
+    )
+    .bind(project.id)
+    .first<{ request_id: string; metadata: string }>();
+  expect(creationAudit?.request_id).toBe(created.headers.get('x-request-id'));
+  expect(creationAudit?.metadata).toBe('{}');
 });

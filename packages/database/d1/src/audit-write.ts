@@ -46,3 +46,18 @@ export async function d1AuditedMutation<T>(
     throw new AuditFailure();
   }
 }
+
+export function scopedAudit(
+  input: PreparedAuditEvent,
+  projectId: string,
+  targetId: string,
+  action: string,
+): PreparedAuditEvent {
+  if (
+    input.projectId !== projectId ||
+    input.targetId !== targetId ||
+    input.action !== action
+  )
+    throw new AuditFailure('AUDIT_INVALID');
+  return auditEvent(input);
+}

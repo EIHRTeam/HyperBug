@@ -1,3 +1,4 @@
+import { projectMutationAudit, withAtomicAudit } from './audit-emit.ts';
 import { storeWriteTimeoutMs } from './bounds.ts';
 import { storeReadTimeoutMs } from './bounds.ts';
 import {
@@ -59,6 +60,7 @@ async function permit(
     signal: request.signal,
     credential: credentialFactsOf(principal),
   });
+  return principal;
 }
 /** Derive only after visibility checks. Canonical definitions remain editor data. */
 export function issueFormView(record: IssueFormRecord) {
@@ -198,7 +200,20 @@ export async function saveContentDefinition(
     body?: string;
   },
 ) {
-  await permit(request, context, projectId, 'content:manage');
+  const principal = await permit(request, context, projectId, 'content:manage');
+  const audit = () =>
+    projectMutationAudit(
+      context.auditRequestId?.(request),
+      principal!.principalId,
+      projectId,
+      id,
+      kind === 'form' ? 'form.saved' : 'template.saved',
+      {
+        v: 1,
+        version: (expectedRevision ?? 0) + 1,
+        enabled: Number(input.enabled),
+      },
+    );
   const identity = {
     id,
     projectId,
@@ -230,10 +245,10 @@ export async function saveContentDefinition(
     }
     try {
       return issueFormView(
-        await withDeadline(
+        await withAtomicAudit(
           request.signal,
           storeWriteTimeoutMs(request.signal),
-          () => store(context).saveForm({ ...identity, definition }),
+          () => store(context).saveForm({ ...identity, definition }, audit()),
         ),
       );
     } catch (error) {
@@ -249,10 +264,10 @@ export async function saveContentDefinition(
   }
   try {
     return templateView(
-      await withDeadline(
+      await withAtomicAudit(
         request.signal,
         storeWriteTimeoutMs(request.signal),
-        () => store(context).saveTemplate(template),
+        () => store(context).saveTemplate(template, audit()),
       ),
     );
   } catch (error) {

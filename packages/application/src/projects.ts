@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import { assertId, assertInstant } from '@hyperbug/domain';
 
 /**
@@ -101,14 +102,21 @@ export type ProjectArchiveOutcome =
  */
 export interface ProjectStore {
   /** Insert the project and its first administrator grant atomically. */
-  create(input: ProjectCreateInput): Promise<ProjectCreateOutcome>;
+  create(
+    input: ProjectCreateInput,
+    audit: PreparedAuditEvent,
+  ): Promise<ProjectCreateOutcome>;
   load(id: string): Promise<ProjectRecord | null>;
   loadBySlug(slug: string): Promise<ProjectRecord | null>;
   /** Conditionally update name/visibility at the observed revision. */
-  configure(input: ProjectConfigureInput): Promise<ProjectConfigureOutcome>;
+  configure(
+    input: ProjectConfigureInput,
+    audit: PreparedAuditEvent,
+  ): Promise<ProjectConfigureOutcome>;
   /** Archive from the active state only; archived stays read-only. */
   archive(
     input: Omit<ProjectConfigureInput, 'name' | 'visibility'>,
+    audit: PreparedAuditEvent,
   ): Promise<ProjectArchiveOutcome>;
 }
 

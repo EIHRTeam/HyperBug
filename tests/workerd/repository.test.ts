@@ -1,3 +1,4 @@
+import { saveAuditedForm } from '../fixtures/definition-audit.ts';
 import { createD1SearchBudgetStore } from '@hyperbug/database-d1';
 import { measureSearchQueries } from '../fixtures/search-contract.ts';
 import { compileD1Search } from '../../packages/database/d1/src/search.ts';
@@ -711,7 +712,7 @@ it.each(['form', 'principal', 'default'] as const)(
         [crypto.randomUUID(), fixture.projectId],
       );
       definition = { ...definition, labels: ['bug'] };
-      await store.saveForm({
+      await saveAuditedForm(store, harness, {
         id: fixture.formId,
         projectId: fixture.projectId,
         expectedRevision: 1,
@@ -729,7 +730,7 @@ it.each(['form', 'principal', 'default'] as const)(
             if (!changed) {
               changed = true;
               if (mode === 'form')
-                await store.saveForm({
+                await saveAuditedForm(store, harness, {
                   id: fixture.formId,
                   projectId: fixture.projectId,
                   expectedRevision: 1,

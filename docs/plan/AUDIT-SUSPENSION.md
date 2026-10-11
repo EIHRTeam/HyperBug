@@ -1,10 +1,14 @@
 # Audit work suspension
 
-Effective: 2026-09-21. Status: **Module 03 audit work resumed 2026-09-29; Module 04 audit portions resumed 2026-10-01; Module 05 audit portions resumed 2026-10-01; audit work in later modules remains suspended.**
+Effective: 2026-09-21. Status: **Module 03 audit work resumed 2026-09-29; Module 04 audit portions resumed 2026-10-01; Module 05 audit portions resumed 2026-10-01; 06.1c/06.2c/07.2e/09.3e resumed and locally verified 2026-10-11; other audit work remains suspended.**
 
 The user explicitly directed: “stop all audit plans and mark them as suspended” and “no audit for now, development continue.” This current execution instruction supersedes earlier next-action entries that would start or continue audit work. Resume only on an explicit later user instruction.
 
 On 2026-09-25, the user further directed that audit may be deferred or run in parallel and must never block development. By [ADR 0009](../decisions/0009-standard-password-login.md), independent password-provider audit is not a prerequisite for standard-profile password-login enablement after its functional implementation and account flow are complete. Suspended audit checklist items remain unchecked and do not imply failed development work.
+
+## Resume (2026-10-11) — Selected Module 06/07/09 audit portions
+
+The user explicitly requested completing **06.1c, 06.2c, 07.2e and 09.3e**, without boundary expansion or unauthorized design/defense. All four are verified at their recorded local scopes; see [selected evidence](evidence/2026-10-11-selected-audit.md). No other audit, new endpoint/retention policy, historical cleanup authority, SPA, crypto tuning or gate opens. The earlier entries below are historical instructions with this narrow override.
 
 ## Resume (2026-10-01) — Module 05 audit portions
 
@@ -30,7 +34,7 @@ Previously implemented audit tables, immutable migrations, append-only protectio
 
 - Resumed 2026-09-29: `03.3a` in full, and audit-related portions of `03.3d`, `03.3g`, `03.V4`, `03.V6` and `03.V7`. The audit-related portion of `03.2e` is already resolved non-blockingly by [ADR 0009](../decisions/0009-standard-password-login.md) with its 2026-09-29 acceptance.
 - Resumed 2026-10-01: the audited account-linking portion of `04.3a`, the audit portions of `04.3c`, and `04.V5`. Also resumed 2026-10-01: the audited-endpoint portion of `05.2a` and the configuration-audit portion of `05.3d`.
-- Later audit portions are suspended in `06.1c`, `06.2c`, `07.2e`, `09.3e`, `12.3b`, `15.1d`, `16.1c` and `16.2c`.
+- Resumed and verified 2026-10-11: `06.1c`, `06.2c`, `07.2e`, `09.3e`. Still suspended: `12.3b`, `15.1d`, `16.1c` and `16.2c`, plus any other unresumed audit follow-up.
 - The same rule applies to audit follow-ups in release/capability/retention documentation and future plan items, even when the word “audit” is not in an item's title.
 - Work still suspended stays unchecked; it is neither complete nor failed. Skip it when selecting the next executable development batch.
 - The main Phase 03 goal stays active. Continue transport, rate/abuse controls, outbound policy, cache/failure handling and other authorized non-audit work.

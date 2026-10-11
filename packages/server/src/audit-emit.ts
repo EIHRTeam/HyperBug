@@ -1,5 +1,10 @@
 import { storeWriteTimeoutMs } from './bounds.ts';
-import { AuditFailure, type AuditEvent } from '@hyperbug/security';
+import {
+  auditEvent,
+  AuditFailure,
+  type AuditEvent,
+  type AuditAction,
+} from '@hyperbug/security';
 import type { AuditAppend } from './sensitive-admission.ts';
 import { withDeadline } from './bounds.ts';
 import { RequestFailure } from './errors.ts';
@@ -45,4 +50,27 @@ export async function withAtomicAudit<T>(
       throw new RequestFailure('AUDIT_UNAVAILABLE');
     throw error;
   }
+}
+
+/** Prepared success record for an existing authorized project mutation. */
+export function projectMutationAudit(
+  requestId: string | undefined,
+  actorId: string,
+  projectId: string,
+  targetId: string,
+  action: AuditAction,
+  metadata: Readonly<Record<string, string | number>> = {},
+): AuditEvent {
+  return auditEvent({
+    id: crypto.randomUUID(),
+    projectId,
+    actorId,
+    systemActor: null,
+    action,
+    targetId,
+    result: 'success',
+    requestId: auditRequestId(requestId),
+    createdAt: Date.now(),
+    metadata,
+  });
 }

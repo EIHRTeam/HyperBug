@@ -1,7 +1,13 @@
+import { selectedAuditContract } from '../fixtures/selected-audit-contract.ts';
 import { auditEvent } from '../../packages/security/src/index.ts';
 import { it } from 'vitest';
 import { Pool } from 'pg';
 import {
+  createPostgresProjectStore,
+  createPostgresTaxonomyStore,
+  createPostgresContentDefinitionStore,
+  createPostgresRepository,
+  createPostgresAsyncStore,
   createPostgresAccountAdministration,
   createPostgresAccountRecoveryStore,
   createPostgresStaffEnrollmentStore,
@@ -61,6 +67,30 @@ it('rolls back every audited administration mutation on PostgreSQL', async () =>
             new AbortController().signal,
           ),
       },
+    );
+    await selectedAuditContract(
+      async (sql, values = []) => {
+        let index = 0;
+        return (
+          await readyPool.query(
+            sql.replace(/\?/g, () => `$${++index}`),
+            values,
+          )
+        ).rows;
+      },
+      {
+        projects: createPostgresProjectStore(readyPool),
+        taxonomy: createPostgresTaxonomyStore(readyPool),
+        definitions: createPostgresContentDefinitionStore(readyPool),
+        issues: createPostgresRepository(readyPool),
+        async: createPostgresAsyncStore(readyPool),
+        append: (event) =>
+          createPostgresAuditRepository(readyPool).append(
+            auditEvent(event),
+            new AbortController().signal,
+          ),
+      },
+      'postgres',
     );
   } finally {
     await pool?.end();

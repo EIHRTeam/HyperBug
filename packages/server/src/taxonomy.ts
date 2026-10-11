@@ -1,3 +1,4 @@
+import { projectMutationAudit, withAtomicAudit } from './audit-emit.ts';
 import type {
   IssueTypeRecord,
   LabelRecord,
@@ -37,7 +38,7 @@ async function requireTaxonomyManager(
   request: Request,
   context: ProjectContext,
   projectId: string,
-): Promise<void> {
+): Promise<string> {
   await requireVisibleProject(request, context, projectId);
   const principal = await projectBearer(request, context);
   if (!principal) throw new RequestFailure('AUTHENTICATION_REQUIRED');
@@ -57,6 +58,7 @@ async function requireTaxonomyManager(
     signal: request.signal,
     credential: credentialFactsOf(principal),
   });
+  return principal.principalId;
 }
 
 async function requireProjectReader(
@@ -121,22 +123,31 @@ export async function createLabel(
   projectId: string,
   input: { name: unknown; description: unknown; color: unknown },
 ): Promise<ReturnType<typeof labelView>> {
-  await requireTaxonomyManager(request, context, projectId);
+  const actorId = await requireTaxonomyManager(request, context, projectId);
   const name = checkedName(input.name);
   const description = checkedText(input.description, 'description') ?? '';
   const color = checkedColor(input.color) ?? '';
   const id = crypto.randomUUID();
-  const outcome = await withDeadline(
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).createLabel({
-        id,
-        projectId,
-        name,
-        description,
-        color,
-      }),
+      store(context).createLabel(
+        {
+          id,
+          projectId,
+          name,
+          description,
+          color,
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          id,
+          'label.created',
+        ),
+      ),
   );
   if (outcome === 'name-conflict')
     throw new RequestFailure('TAXONOMY_CONFLICT');
@@ -178,19 +189,28 @@ export async function updateLabel(
     color: unknown;
   },
 ): Promise<ReturnType<typeof labelView>> {
-  await requireTaxonomyManager(request, context, projectId);
-  const outcome = await withDeadline(
+  const actorId = await requireTaxonomyManager(request, context, projectId);
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).updateLabel({
-        id: labelId,
-        projectId,
-        expectedRevision: requiredRevision(input.expectedRevision),
-        name: input.name === undefined ? null : checkedName(input.name),
-        description: checkedText(input.description, 'description'),
-        color: checkedColor(input.color),
-      }),
+      store(context).updateLabel(
+        {
+          id: labelId,
+          projectId,
+          expectedRevision: requiredRevision(input.expectedRevision),
+          name: input.name === undefined ? null : checkedName(input.name),
+          description: checkedText(input.description, 'description'),
+          color: checkedColor(input.color),
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          labelId,
+          'label.updated',
+        ),
+      ),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'name-conflict')
@@ -207,11 +227,22 @@ export async function deleteLabel(
   projectId: string,
   labelId: string,
 ): Promise<void> {
-  await requireTaxonomyManager(request, context, projectId);
-  const outcome = await withDeadline(
+  const actorId = await requireTaxonomyManager(request, context, projectId);
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
-    () => store(context).deleteLabel(projectId, labelId),
+    () =>
+      store(context).deleteLabel(
+        projectId,
+        labelId,
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          labelId,
+          'label.deleted',
+        ),
+      ),
   );
   if (outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome === 'referenced') throw new RequestFailure('TAXONOMY_CONFLICT');
@@ -231,7 +262,7 @@ export async function createIssueType(
     enabled: unknown;
   },
 ): Promise<ReturnType<typeof issueTypeView>> {
-  await requireTaxonomyManager(request, context, projectId);
+  const actorId = await requireTaxonomyManager(request, context, projectId);
   const name = checkedName(input.name);
   if (
     input.position !== undefined &&
@@ -241,21 +272,31 @@ export async function createIssueType(
   if (input.enabled !== undefined && typeof input.enabled !== 'boolean')
     throw new RequestFailure('TAXONOMY_INVALID');
   const id = crypto.randomUUID();
-  const outcome = await withDeadline(
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).createIssueType({
-        id,
-        projectId,
-        name,
-        description: checkedText(input.description, 'description') ?? '',
-        icon: checkedText(input.icon, 'icon') ?? '',
-        color: checkedColor(input.color) ?? '',
-        position: input.position === undefined ? 0 : (input.position as number),
-        enabled:
-          input.enabled === undefined ? true : (input.enabled as boolean),
-      }),
+      store(context).createIssueType(
+        {
+          id,
+          projectId,
+          name,
+          description: checkedText(input.description, 'description') ?? '',
+          icon: checkedText(input.icon, 'icon') ?? '',
+          color: checkedColor(input.color) ?? '',
+          position:
+            input.position === undefined ? 0 : (input.position as number),
+          enabled:
+            input.enabled === undefined ? true : (input.enabled as boolean),
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          id,
+          'issue-type.created',
+        ),
+      ),
   );
   if (outcome === 'name-conflict')
     throw new RequestFailure('TAXONOMY_CONFLICT');
@@ -300,7 +341,7 @@ export async function updateIssueType(
     enabled: unknown;
   },
 ): Promise<ReturnType<typeof issueTypeView>> {
-  await requireTaxonomyManager(request, context, projectId);
+  const actorId = await requireTaxonomyManager(request, context, projectId);
   if (
     input.position !== undefined &&
     (!Number.isSafeInteger(input.position) || (input.position as number) < 0)
@@ -308,23 +349,32 @@ export async function updateIssueType(
     throw new RequestFailure('TAXONOMY_INVALID');
   if (input.enabled !== undefined && typeof input.enabled !== 'boolean')
     throw new RequestFailure('TAXONOMY_INVALID');
-  const outcome = await withDeadline(
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).updateIssueType({
-        id: typeId,
-        projectId,
-        expectedRevision: requiredRevision(input.expectedRevision),
-        name: input.name === undefined ? null : checkedName(input.name),
-        description: checkedText(input.description, 'description'),
-        icon: checkedText(input.icon, 'icon'),
-        color: checkedColor(input.color),
-        position:
-          input.position === undefined ? null : (input.position as number),
-        enabled:
-          input.enabled === undefined ? null : (input.enabled as boolean),
-      }),
+      store(context).updateIssueType(
+        {
+          id: typeId,
+          projectId,
+          expectedRevision: requiredRevision(input.expectedRevision),
+          name: input.name === undefined ? null : checkedName(input.name),
+          description: checkedText(input.description, 'description'),
+          icon: checkedText(input.icon, 'icon'),
+          color: checkedColor(input.color),
+          position:
+            input.position === undefined ? null : (input.position as number),
+          enabled:
+            input.enabled === undefined ? null : (input.enabled as boolean),
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          typeId,
+          'issue-type.updated',
+        ),
+      ),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'name-conflict')
@@ -341,11 +391,22 @@ export async function deleteIssueType(
   projectId: string,
   typeId: string,
 ): Promise<void> {
-  await requireTaxonomyManager(request, context, projectId);
-  const outcome = await withDeadline(
+  const actorId = await requireTaxonomyManager(request, context, projectId);
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
-    () => store(context).deleteIssueType(projectId, typeId),
+    () =>
+      store(context).deleteIssueType(
+        projectId,
+        typeId,
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          typeId,
+          'issue-type.deleted',
+        ),
+      ),
   );
   if (outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome === 'referenced') throw new RequestFailure('TAXONOMY_CONFLICT');
@@ -362,7 +423,7 @@ export async function createMilestone(
     dueDate: unknown;
   },
 ): Promise<ReturnType<typeof milestoneView>> {
-  await requireTaxonomyManager(request, context, projectId);
+  const actorId = await requireTaxonomyManager(request, context, projectId);
   if (typeof input.title !== 'string' || !isValidTitle(input.title))
     throw new RequestFailure('TAXONOMY_INVALID');
   const description = checkedText(input.description, 'description') ?? '';
@@ -371,18 +432,27 @@ export async function createMilestone(
     throw new RequestFailure('TAXONOMY_INVALID');
   if (!isValidDueDate(dueDate)) throw new RequestFailure('TAXONOMY_INVALID');
   const id = crypto.randomUUID();
-  const outcome = await withDeadline(
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).createMilestone({
-        id,
-        projectId,
-        title: input.title as string,
-        description,
-        dueDate,
-        nowMs: Date.now(),
-      }),
+      store(context).createMilestone(
+        {
+          id,
+          projectId,
+          title: input.title as string,
+          description,
+          dueDate,
+          nowMs: Date.now(),
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          id,
+          'milestone.created',
+        ),
+      ),
   );
   if (outcome !== 'created') throw new RequestFailure('TAXONOMY_UNAVAILABLE');
   const milestones = await withDeadline(
@@ -426,7 +496,7 @@ export async function updateMilestone(
     state: unknown;
   },
 ): Promise<ReturnType<typeof milestoneView>> {
-  await requireTaxonomyManager(request, context, projectId);
+  const actorId = await requireTaxonomyManager(request, context, projectId);
   if (
     input.title !== undefined &&
     (typeof input.title !== 'string' || !isValidTitle(input.title))
@@ -449,21 +519,32 @@ export async function updateMilestone(
     (typeof dueDate !== 'string' || !isValidDueDate(dueDate))
   )
     throw new RequestFailure('TAXONOMY_INVALID');
-  const outcome = await withDeadline(
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
     () =>
-      store(context).updateMilestone({
-        id: milestoneId,
-        projectId,
-        expectedRevision: requiredRevision(input.expectedRevision),
-        title: input.title === undefined ? null : (input.title as string),
-        description: checkedText(input.description, 'description'),
-        dueDate,
-        state:
-          input.state === undefined ? null : (input.state as 'open' | 'closed'),
-        nowMs: Date.now(),
-      }),
+      store(context).updateMilestone(
+        {
+          id: milestoneId,
+          projectId,
+          expectedRevision: requiredRevision(input.expectedRevision),
+          title: input.title === undefined ? null : (input.title as string),
+          description: checkedText(input.description, 'description'),
+          dueDate,
+          state:
+            input.state === undefined
+              ? null
+              : (input.state as 'open' | 'closed'),
+          nowMs: Date.now(),
+        },
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          milestoneId,
+          'milestone.updated',
+        ),
+      ),
   );
   if (outcome.outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome.outcome === 'conflict')
@@ -478,11 +559,22 @@ export async function deleteMilestone(
   projectId: string,
   milestoneId: string,
 ): Promise<void> {
-  await requireTaxonomyManager(request, context, projectId);
-  const outcome = await withDeadline(
+  const actorId = await requireTaxonomyManager(request, context, projectId);
+  const outcome = await withAtomicAudit(
     request.signal,
     storeWriteTimeoutMs(request.signal),
-    () => store(context).deleteMilestone(projectId, milestoneId),
+    () =>
+      store(context).deleteMilestone(
+        projectId,
+        milestoneId,
+        projectMutationAudit(
+          context.auditRequestId?.(request),
+          actorId,
+          projectId,
+          milestoneId,
+          'milestone.deleted',
+        ),
+      ),
   );
   if (outcome === 'not-found') throw new RequestFailure('NOT_FOUND');
   if (outcome === 'referenced') throw new RequestFailure('TAXONOMY_CONFLICT');

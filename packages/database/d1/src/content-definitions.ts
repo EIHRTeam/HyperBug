@@ -1,3 +1,6 @@
+import { d1AuditInsert, scopedAudit } from './audit-write.ts';
+import { AuditFailure } from '@hyperbug/security';
+import type { PreparedAuditEvent } from '@hyperbug/application';
 import type { D1Database } from '@cloudflare/workers-types';
 import { assertId, assertRevision, DomainError } from '@hyperbug/domain';
 import {
@@ -100,13 +103,20 @@ export function createD1ContentDefinitionStore(
       (await count(input.projectId)) >= maxProjectContentDefinitions
     )
       throw new ContentDefinitionError('CONTENT_CATALOG_LIMIT');
-    throw new Error('Content definition write failed');
+    throw new AuditFailure();
   }
   async function save(
     kind: ContentDefinitionKind,
     input: SaveIssueForm | SaveIssueTemplate,
+    audit: PreparedAuditEvent,
   ): Promise<void> {
     const name = 'definition' in input ? input.definition.name : input.name;
+    scopedAudit(
+      audit,
+      input.projectId,
+      input.id,
+      kind === 'form' ? 'form.saved' : 'template.saved',
+    );
     const version = (input.expectedRevision ?? 0) + 1;
     assertRevision(version);
     const guards = [
@@ -214,6 +224,7 @@ export function createD1ContentDefinitionStore(
               input.now,
             ),
     );
+    statements.push(d1AuditInsert(db, audit));
     let written: boolean;
     try {
       written = (await db.batch(statements))[0]!.results.length === 1;
@@ -316,9 +327,9 @@ export function createD1ContentDefinitionStore(
           } satisfies IssueTemplateRecord)
         : null;
     },
-    async saveForm(raw) {
+    async saveForm(raw, audit) {
       const input = normalizeSavedForm(raw);
-      await save('form', input);
+      await save('form', input, audit);
       const record = await store.getForm(
         input.projectId,
         input.id,
@@ -331,9 +342,9 @@ export function createD1ContentDefinitionStore(
         enabled: input.enabled,
       };
     },
-    async saveTemplate(input) {
+    async saveTemplate(input, audit) {
       validateSavedTemplate(input);
-      await save('template', input);
+      await save('template', input, audit);
       const record = await store.getTemplate(
         input.projectId,
         input.id,

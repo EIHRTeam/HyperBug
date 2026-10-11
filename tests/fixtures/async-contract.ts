@@ -21,7 +21,8 @@ export function asyncStoreContract(
       const { harness, store } = get();
       const projectId = nextId(),
         eventId = nextId(),
-        issueId = nextId();
+        issueId = nextId(),
+        actorId = nextId();
       await harness.query(
         'INSERT INTO projects (id,slug,name,created_at,updated_at) VALUES (?,?,?,?,?)',
         [projectId, projectId, 'Async fixture', now, now],
@@ -40,8 +41,12 @@ export function asyncStoreContract(
           0,
         ],
       );
+      await harness.query(
+        "INSERT INTO principals (id,kind,display_name,created_at) VALUES (?,'staff','Operator',?)",
+        [actorId, now],
+      );
       const ref = taskReference('core', eventId);
-      return { harness, store, ref };
+      return { harness, store, ref, actorId };
     }
     it('claims concurrently, reconciles publication loss, fences expired workers and atomically acknowledges the source', async () => {
       const { store, ref, harness } = await seed();
@@ -75,7 +80,7 @@ export function asyncStoreContract(
       ).toBe(now + 80_002);
     });
     it('retains poison failures, denies unauthorized replay, and bounds retries across crashes', async () => {
-      const { store, ref } = await seed();
+      const { store, ref, actorId } = await seed();
       await store.claim(now, 'publisher', 10);
       await store.begin(ref, 'worker', now);
       await store.fail(ref, 'worker', now + 1, 'unsupported');
@@ -85,6 +90,8 @@ export function asyncStoreContract(
           store,
           reference: ref,
           now,
+          actorId,
+          requestId: nextId(),
           authorize: async () => false,
         }),
       ).rejects.toThrow();
@@ -93,6 +100,8 @@ export function asyncStoreContract(
           store,
           reference: ref,
           now: now + 60_000,
+          actorId,
+          requestId: nextId(),
           authorize: async () => true,
         }),
       ).toBe(true);
@@ -106,7 +115,16 @@ export function asyncStoreContract(
         await store.purgeTerminal(now + 400_000, 10),
       ).toBeGreaterThanOrEqual(0);
       expect(await store.begin(ref, 'retired', now + 400_001)).toBe('done');
-      expect(await store.replay(ref, now + 400_001)).toBe(false);
+      expect(
+        await replayFailedTask({
+          store,
+          reference: ref,
+          now: now + 400_001,
+          actorId,
+          requestId: nextId(),
+          authorize: async () => true,
+        }),
+      ).toBe(false);
       expect(
         (await store.claim(now + 400_002, 'no-resurrection', 10)).some(
           (r) => r.eventId === ref.eventId,

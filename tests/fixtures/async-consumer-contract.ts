@@ -220,6 +220,8 @@ export function asyncConsumerContract(
           store: f.store,
           reference: ref,
           now,
+          actorId: f.intent.principalId,
+          requestId: nextId(),
           authorize: async () => true,
         }),
       ).toBe(true);

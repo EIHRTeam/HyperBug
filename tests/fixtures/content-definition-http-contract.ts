@@ -374,6 +374,22 @@ export async function contentDefinitionHttpContract(options: {
     id: string;
     bodyTree: unknown;
   };
+  const formAudit = await query(
+    "SELECT request_id,metadata FROM audit_events WHERE action='form.saved' AND target_id=? ORDER BY created_at,id",
+    [form.id],
+  );
+  expect(formAudit[0]!.request_id).toBe(
+    formResponse.headers.get('x-request-id'),
+  );
+  expect(JSON.stringify(formAudit)).not.toContain('details');
+  const templateAudit = await query(
+    "SELECT request_id FROM audit_events WHERE action='template.saved' AND target_id=?",
+    [template.id],
+  );
+  expect(templateAudit).toHaveLength(1);
+  expect(templateAudit[0]!.request_id).toBe(
+    templateResponse.headers.get('x-request-id'),
+  );
   expect(JSON.stringify(template.bodyTree)).not.toContain('private-script');
   expect(JSON.stringify(template.bodyTree)).toContain('external');
   expect(

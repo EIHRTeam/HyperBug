@@ -1,3 +1,5 @@
+import { postgresAuditedQuery, scopedAudit } from './audit-write.ts';
+import type { PreparedAuditEvent } from '@hyperbug/application';
 import type { Pool } from 'pg';
 import {
   nameKeyOf,
@@ -172,8 +174,11 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
   };
 
   return {
-    async createLabel(input: LabelCreateInput) {
-      const { rows } = await pool.query(
+    async createLabel(input: LabelCreateInput, audit: PreparedAuditEvent) {
+      scopedAudit(audit, input.projectId, input.id, 'label.created');
+      const { rows } = await postgresAuditedQuery(
+        pool,
+        audit,
         'INSERT INTO labels (id, project_id, name, name_key, description, color) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (project_id, name_key) DO NOTHING RETURNING id',
         [
           input.id,
@@ -186,7 +191,8 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
       );
       return rows.length === 0 ? 'name-conflict' : 'created';
     },
-    async updateLabel(input: LabelUpdateInput) {
+    async updateLabel(input: LabelUpdateInput, audit: PreparedAuditEvent) {
+      scopedAudit(audit, input.projectId, input.id, 'label.updated');
       const current = await loadLabel(input.projectId, input.id);
       if (current === null) return { outcome: 'not-found' };
       const name = input.name ?? current.name;
@@ -196,7 +202,9 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
         (await nameKeyTaken('labels', input.projectId, nameKey, input.id))
       )
         return { outcome: 'name-conflict' };
-      const { rows } = await pool.query<LabelRow>(
+      const { rows } = await postgresAuditedQuery<LabelRow>(
+        pool,
+        audit,
         'UPDATE labels SET name = $1, name_key = $2, description = $3, color = $4, revision = revision + 1 WHERE project_id = $5 AND id = $6 AND revision = $7 RETURNING ' +
           labelColumns,
         [
@@ -220,18 +228,24 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
       );
       return rows.map(toLabel);
     },
-    async deleteLabel(projectId, id) {
+    async deleteLabel(projectId, id, audit) {
+      scopedAudit(audit, projectId, id, 'label.deleted');
       if (await referenced('issue_labels', 'label_id', projectId, id))
         return 'referenced';
-      const result = await pool.query(
+      const result = await postgresAuditedQuery(
+        pool,
+        audit,
         'DELETE FROM labels WHERE project_id = $1 AND id = $2',
         [projectId, id],
       );
       return result.rowCount === 1 ? 'deleted' : 'not-found';
     },
 
-    async createIssueType(input) {
-      const { rows } = await pool.query(
+    async createIssueType(input, audit) {
+      scopedAudit(audit, input.projectId, input.id, 'issue-type.created');
+      const { rows } = await postgresAuditedQuery(
+        pool,
+        audit,
         'INSERT INTO issue_types (id, project_id, name, name_key, description, icon, color, position, enabled) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (project_id, name_key) DO NOTHING RETURNING id',
         [
           input.id,
@@ -247,7 +261,8 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
       );
       return rows.length === 0 ? 'name-conflict' : 'created';
     },
-    async updateIssueType(input) {
+    async updateIssueType(input, audit) {
+      scopedAudit(audit, input.projectId, input.id, 'issue-type.updated');
       const current = await loadType(input.projectId, input.id);
       if (current === null) return { outcome: 'not-found' };
       const name = input.name ?? current.name;
@@ -257,7 +272,9 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
         (await nameKeyTaken('issue_types', input.projectId, nameKey, input.id))
       )
         return { outcome: 'name-conflict' };
-      const { rows } = await pool.query<IssueTypeRow>(
+      const { rows } = await postgresAuditedQuery<IssueTypeRow>(
+        pool,
+        audit,
         'UPDATE issue_types SET name = $1, name_key = $2, description = $3, icon = $4, color = $5, position = $6, enabled = $7, revision = revision + 1 WHERE project_id = $8 AND id = $9 AND revision = $10 RETURNING ' +
           typeColumns,
         [
@@ -284,18 +301,24 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
       );
       return rows.map(toIssueType);
     },
-    async deleteIssueType(projectId, id) {
+    async deleteIssueType(projectId, id, audit) {
+      scopedAudit(audit, projectId, id, 'issue-type.deleted');
       if (await referenced('issues', 'type_id', projectId, id))
         return 'referenced';
-      const result = await pool.query(
+      const result = await postgresAuditedQuery(
+        pool,
+        audit,
         'DELETE FROM issue_types WHERE project_id = $1 AND id = $2',
         [projectId, id],
       );
       return result.rowCount === 1 ? 'deleted' : 'not-found';
     },
 
-    async createMilestone(input) {
-      await pool.query(
+    async createMilestone(input, audit) {
+      scopedAudit(audit, input.projectId, input.id, 'milestone.created');
+      await postgresAuditedQuery(
+        pool,
+        audit,
         "INSERT INTO milestones (id, project_id, title, description, state, due_date, revision, created_at, updated_at) VALUES ($1, $2, $3, $4, 'open', $5, 1, $6, $7)",
         [
           input.id,
@@ -309,10 +332,13 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
       );
       return 'created';
     },
-    async updateMilestone(input) {
+    async updateMilestone(input, audit) {
+      scopedAudit(audit, input.projectId, input.id, 'milestone.updated');
       const current = await loadMilestone(input.projectId, input.id);
       if (current === null) return { outcome: 'not-found' };
-      const { rows } = await pool.query<MilestoneRow>(
+      const { rows } = await postgresAuditedQuery<MilestoneRow>(
+        pool,
+        audit,
         'UPDATE milestones SET title = $1, description = $2, state = $3, due_date = $4, revision = revision + 1, updated_at = GREATEST(updated_at, $5) WHERE project_id = $6 AND id = $7 AND revision = $8 RETURNING ' +
           milestoneColumns,
         [
@@ -361,10 +387,13 @@ export function createPostgresTaxonomyStore(pool: Pool): TaxonomyStore {
         return view;
       });
     },
-    async deleteMilestone(projectId, id) {
+    async deleteMilestone(projectId, id, audit) {
+      scopedAudit(audit, projectId, id, 'milestone.deleted');
       if (await referenced('issues', 'milestone_id', projectId, id))
         return 'referenced';
-      const result = await pool.query(
+      const result = await postgresAuditedQuery(
+        pool,
+        audit,
         'DELETE FROM milestones WHERE project_id = $1 AND id = $2',
         [projectId, id],
       );

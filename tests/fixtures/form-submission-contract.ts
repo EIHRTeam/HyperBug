@@ -1,3 +1,4 @@
+import { saveAuditedForm } from './definition-audit.ts';
 import { expect, it } from 'vitest';
 import {
   normalizeIssueFormDefinition,
@@ -150,7 +151,7 @@ export function formSubmissionContract(
       ),
     );
     expect(new Set(results.map((result) => result.result.id)).size).toBe(1);
-    await f.store.saveForm({
+    await saveAuditedForm(f.store, f.harness, {
       id: f.formId,
       projectId: f.projectId,
       expectedRevision: 1,
@@ -205,7 +206,7 @@ export function formSubmissionContract(
           },
           'canonical',
         );
-        await f.store.saveForm({
+        await saveAuditedForm(f.store, f.harness, {
           id: f.formId,
           projectId: f.projectId,
           expectedRevision: 1,
@@ -297,7 +298,7 @@ export function formSubmissionContract(
       },
       'canonical',
     );
-    await f.store.saveForm({
+    await saveAuditedForm(f.store, f.harness, {
       id: f.formId,
       projectId: f.projectId,
       expectedRevision: 1,
@@ -395,7 +396,7 @@ export function formSubmissionContract(
         body: validateIssueFormAnswers(definition, upload.values).markdown,
       }),
     ).rejects.toMatchObject({ code: 'FORM_ATTACHMENTS_INVALID' });
-    await store.saveForm({
+    await saveAuditedForm(store, harness, {
       id: formId,
       projectId,
       expectedRevision: 1,
@@ -434,7 +435,7 @@ export function formSubmissionContract(
       ...Array.from({ length: 8 }, () =>
         harness.repository.createIssue(intent()),
       ),
-      store.saveForm({
+      saveAuditedForm(store, harness, {
         id: formId,
         projectId,
         expectedRevision: 1,
@@ -600,7 +601,7 @@ export async function seedFormSubmissionFixture(
       { type: 'upload', id: 'files', attributes: { label: 'Files' } },
     ],
   });
-  await store.saveForm({
+  await saveAuditedForm(store, harness, {
     id: formId,
     projectId,
     expectedRevision: null,

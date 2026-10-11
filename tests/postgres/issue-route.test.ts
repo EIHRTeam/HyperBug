@@ -37,7 +37,7 @@ import { postgresNodeBindings } from '../fixtures/postgres-node-bindings.ts';
 // 06.2 lifecycle journey on the Node/PostgreSQL profile: the identical issue
 // surface against the PostgreSQL repository — number allocation, taxonomy
 // references, idempotent replay, revision conflicts, the triage mutation set
-// with atomic timeline/outbox writes, moderation-aware reads and the audit
+// with atomic timeline/audit/outbox writes and moderation-aware reads; the audit
 // suspension.
 const databaseName = 'hyperbug_issue_route_test';
 const redirectUri = 'http://localhost:5173/oauth/callback';
@@ -587,11 +587,15 @@ it('delivers the issue lifecycle on Node/PostgreSQL', async () => {
     2,
   );
 
-  // 06.2c's audit portion stays suspended: no issue.* audit events.
+  // Every committed issue mutation has exactly one matching audit row.
   const { rows: audited } = await pool.query(
     "SELECT COUNT(*)::int AS count FROM audit_events WHERE action LIKE 'issue.%'",
   );
-  expect(audited[0]!.count).toBe(0);
+  const { rows: timelines } = await pool.query(
+    "SELECT COUNT(*)::int AS count FROM timeline_events WHERE action LIKE 'issue.%'",
+  );
+  expect(audited[0]!.count).toBe(timelines[0]!.count);
+  expect(audited[0]!.count).toBeGreaterThan(0);
   await contentHttpContract({
     asyncStore: createPostgresAsyncStore(pool),
     projectId: project.id,

@@ -1,3 +1,5 @@
+import { postgresAuditedQuery } from './audit-write.ts';
+import { auditEvent, AuditFailure } from '@hyperbug/security';
 import type { Pool } from 'pg';
 import {
   ASYNC_LIMITS,
@@ -13,6 +15,20 @@ import {
   type CleanupCheckpoint,
 } from '@hyperbug/application';
 
+function retentionEvent(target: string, cutoff: number, count: number) {
+  return auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: null,
+    systemActor: 'core.maintenance',
+    action: 'retention.purged',
+    targetId: target,
+    result: 'success',
+    requestId: crypto.randomUUID(),
+    createdAt: Date.now(),
+    metadata: { v: 1, cutoff, count },
+  });
+}
 type Row = Record<string, unknown>;
 type Statement = [string, unknown[]];
 const number = (row: Row, key: string) => Number(row[key]);
@@ -44,7 +60,10 @@ export function createPostgresAsyncStore(pool: Pool): AsyncStore &
   };
   const query = async (sql: string, values: unknown[]): Promise<Row[]> =>
     (await pool.query<Row>(pgSql(sql), values)).rows;
-  const mutate = async (statements: Statement[]) => {
+  const mutate = async (
+    statements: Statement[],
+    retention?: { target: string; cutoff: number },
+  ) => {
     const client = await pool.connect();
     try {
       const results: { results: Row[] }[] = [];
@@ -55,6 +74,30 @@ export function createPostgresAsyncStore(pool: Pool): AsyncStore &
           results: (await client.query<Row>(pgSql(sql), values)).rows,
         });
       }, Promise.resolve());
+      if (retention && results.at(-1)!.results.length) {
+        const event = retentionEvent(
+          retention.target,
+          retention.cutoff,
+          results.at(-1)!.results.length,
+        );
+        try {
+          await client.query(
+            'INSERT INTO audit_events (id,project_id,actor_id,system_actor,action,target_id,result,request_id,created_at,metadata) VALUES ($1,NULL,NULL,$2,$3,$4,$5,$6,$7,$8)',
+            [
+              event.id,
+              event.systemActor,
+              event.action,
+              event.targetId,
+              event.result,
+              event.requestId,
+              event.createdAt,
+              JSON.stringify(event.metadata),
+            ],
+          );
+        } catch {
+          throw new AuditFailure();
+        }
+      }
       await client.query('COMMIT');
       return results;
     } catch (error) {
@@ -134,16 +177,19 @@ export function createPostgresAsyncStore(pool: Pool): AsyncStore &
         UNION ALL SELECT id,updated_at FROM (SELECT id,updated_at FROM async_jobs WHERE status='failed' AND updated_at<? ORDER BY updated_at,id LIMIT ?) f
       ) t ORDER BY updated_at,id LIMIT ?`;
       const parameters = [before, limit, before, limit, before, limit, limit];
-      const results = await mutate([
+      const results = await mutate(
         [
-          `DELETE FROM async_job_steps WHERE job_id IN (${candidates})`,
-          parameters,
+          [
+            `DELETE FROM async_job_steps WHERE job_id IN (${candidates})`,
+            parameters,
+          ],
+          [
+            `DELETE FROM async_jobs WHERE id IN (${candidates}) RETURNING id`,
+            parameters,
+          ],
         ],
-        [
-          `DELETE FROM async_jobs WHERE id IN (${candidates}) RETURNING id`,
-          parameters,
-        ],
-      ]);
+        { target: 'async-jobs', cutoff: before },
+      );
       return results.at(-1)?.results.length ?? 0;
     },
     async recoverableJobs(now, limit) {
@@ -313,14 +359,33 @@ export function createPostgresAsyncStore(pool: Pool): AsyncStore &
         ],
       ]);
     },
-    async replay(ref, now) {
+    async replay(ref, now, audit) {
       identity(ref);
       time(now);
-      const rows = await query(
-        "UPDATE async_deliveries SET state='pending',attempts=0,publication_attempts=0,failure=NULL,available_at=?,updated_at=?,work_token=NULL,work_until=0,publish_token=NULL,publish_until=0 WHERE delivery_id=? AND state='failed' RETURNING delivery_id",
-        [now, now, identity(ref)],
+      const event = auditEvent(audit);
+      if (
+        event.action !== 'async.replayed' ||
+        event.targetId !== ref.eventId ||
+        event.metadata.source !== ref.source ||
+        event.createdAt !== now
+      )
+        throw new AuditFailure('AUDIT_INVALID');
+      const result = await postgresAuditedQuery<Row>(
+        pool,
+        event,
+        pgSql(
+          `UPDATE async_deliveries SET state='pending',attempts=0,publication_attempts=0,failure=NULL,available_at=?,updated_at=?,work_token=NULL,work_until=0,publish_token=NULL,publish_until=0 WHERE delivery_id=? AND state='failed' AND EXISTS (SELECT 1 FROM ${ref.source === 'core' ? 'outbox' : 'plugin_event_outbox'} e WHERE e.${ref.source === 'core' ? 'id' : 'event_id'}=? AND (e.project_id=? OR (e.project_id IS NULL AND CAST(? AS text) IS NULL))) RETURNING delivery_id`,
+        ),
+        [
+          now,
+          now,
+          identity(ref),
+          ref.eventId,
+          event.projectId,
+          event.projectId,
+        ],
       );
-      return rows.length === 1;
+      return result.rows.length === 1;
     },
     async backlog() {
       const row = (
@@ -348,24 +413,27 @@ export function createPostgresAsyncStore(pool: Pool): AsyncStore &
       const parameters = [before, limit, before, limit, limit];
       // One transaction retires failed source events before removing their replay metadata.
       // Cursor reconciliation can never recreate an expired poison delivery.
-      const results = await mutate([
+      const results = await mutate(
         [
-          `SELECT delivery_id FROM async_deliveries WHERE delivery_id IN (${candidates}) FOR UPDATE`,
-          parameters,
+          [
+            `SELECT delivery_id FROM async_deliveries WHERE delivery_id IN (${candidates}) FOR UPDATE`,
+            parameters,
+          ],
+          [
+            `UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND id IN (SELECT event_id FROM async_deliveries WHERE source='core' AND delivery_id IN (${candidates}))`,
+            [before, ...parameters],
+          ],
+          [
+            `UPDATE plugin_event_outbox SET delivered_at=? WHERE delivered_at IS NULL AND event_id IN (SELECT event_id FROM async_deliveries WHERE source='plugin' AND delivery_id IN (${candidates}))`,
+            [before, ...parameters],
+          ],
+          [
+            `DELETE FROM async_deliveries WHERE delivery_id IN (${candidates}) RETURNING delivery_id`,
+            parameters,
+          ],
         ],
-        [
-          `UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND id IN (SELECT event_id FROM async_deliveries WHERE source='core' AND delivery_id IN (${candidates}))`,
-          [before, ...parameters],
-        ],
-        [
-          `UPDATE plugin_event_outbox SET delivered_at=? WHERE delivered_at IS NULL AND event_id IN (SELECT event_id FROM async_deliveries WHERE source='plugin' AND delivery_id IN (${candidates}))`,
-          [before, ...parameters],
-        ],
-        [
-          `DELETE FROM async_deliveries WHERE delivery_id IN (${candidates}) RETURNING delivery_id`,
-          parameters,
-        ],
-      ]);
+        { target: 'async-deliveries', cutoff: before },
+      );
       return results.at(-1)?.results.length ?? 0;
     },
     async create(id, maxSteps, now) {

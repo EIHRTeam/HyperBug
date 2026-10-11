@@ -1,3 +1,5 @@
+import { d1AuditedMutation } from './audit-write.ts';
+import { auditEvent, AuditFailure } from '@hyperbug/security';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   ASYNC_LIMITS,
@@ -13,6 +15,20 @@ import {
   type CleanupCheckpoint,
 } from '@hyperbug/application';
 
+function retentionEvent(target: string, cutoff: number, count: number) {
+  return auditEvent({
+    id: crypto.randomUUID(),
+    projectId: null,
+    actorId: null,
+    systemActor: 'core.maintenance',
+    action: 'retention.purged',
+    targetId: target,
+    result: 'success',
+    requestId: crypto.randomUUID(),
+    createdAt: Date.now(),
+    metadata: { v: 1, cutoff, count },
+  });
+}
 type Row = Record<string, unknown>;
 type Statement = [string, unknown[]];
 const number = (row: Row, key: string) => Number(row[key]);
@@ -84,10 +100,31 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
         .bind(...values)
         .all<Row>()
     ).results;
-  const mutate = async (statements: Statement[]) => {
-    return db.batch<Row>(
-      statements.map(([sql, values]) => db.prepare(sql).bind(...values)),
+  const mutate = async (
+    statements: Statement[],
+    retention?: { target: string; cutoff: number },
+  ) => {
+    const prepared = statements.map(([sql, values]) =>
+      db.prepare(sql).bind(...values),
     );
+    if (retention) {
+      const event = retentionEvent(retention.target, retention.cutoff, 1);
+      prepared.push(
+        db
+          .prepare(
+            "INSERT INTO audit_events (id,project_id,actor_id,system_actor,action,target_id,result,request_id,created_at,metadata) SELECT ?,NULL,NULL,'core.maintenance','retention.purged',?,'success',?,?,json_object('v',1,'cutoff',?,'count',changes()) WHERE changes()>0",
+          )
+          .bind(
+            event.id,
+            event.targetId,
+            event.requestId,
+            event.createdAt,
+            retention.cutoff,
+          ),
+      );
+    }
+    const results = await db.batch<Row>(prepared);
+    return results.slice(0, statements.length);
   };
 
   const guard = (ref: TaskReference, token: string, now: number) => {
@@ -159,16 +196,19 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
         UNION ALL SELECT id,updated_at FROM (SELECT id,updated_at FROM async_jobs WHERE status='failed' AND updated_at<? ORDER BY updated_at,id LIMIT ?) f
       ) t ORDER BY updated_at,id LIMIT ?`;
       const parameters = [before, limit, before, limit, before, limit, limit];
-      const results = await mutate([
+      const results = await mutate(
         [
-          `DELETE FROM async_job_steps WHERE job_id IN (${candidates})`,
-          parameters,
+          [
+            `DELETE FROM async_job_steps WHERE job_id IN (${candidates})`,
+            parameters,
+          ],
+          [
+            `DELETE FROM async_jobs WHERE id IN (${candidates}) RETURNING id`,
+            parameters,
+          ],
         ],
-        [
-          `DELETE FROM async_jobs WHERE id IN (${candidates}) RETURNING id`,
-          parameters,
-        ],
-      ]);
+        { target: 'async-jobs', cutoff: before },
+      );
       return results.at(-1)?.results.length ?? 0;
     },
     async recoverableJobs(now, limit) {
@@ -338,14 +378,34 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
         ],
       ]);
     },
-    async replay(ref, now) {
+    async replay(ref, now, audit) {
       identity(ref);
       time(now);
-      const rows = await query(
-        "UPDATE async_deliveries SET state='pending',attempts=0,publication_attempts=0,failure=NULL,available_at=?,updated_at=?,work_token=NULL,work_until=0,publish_token=NULL,publish_until=0 WHERE delivery_id=? AND state='failed' RETURNING delivery_id",
-        [now, now, identity(ref)],
+      const event = auditEvent(audit);
+      if (
+        event.action !== 'async.replayed' ||
+        event.targetId !== ref.eventId ||
+        event.metadata.source !== ref.source ||
+        event.createdAt !== now
+      )
+        throw new AuditFailure('AUDIT_INVALID');
+      const result = await d1AuditedMutation<Row>(
+        db,
+        db
+          .prepare(
+            `UPDATE async_deliveries SET state='pending',attempts=0,publication_attempts=0,failure=NULL,available_at=?,updated_at=?,work_token=NULL,work_until=0,publish_token=NULL,publish_until=0 WHERE delivery_id=? AND state='failed' AND EXISTS (SELECT 1 FROM ${ref.source === 'core' ? 'outbox' : 'plugin_event_outbox'} e WHERE e.${ref.source === 'core' ? 'id' : 'event_id'}=? AND (e.project_id=? OR (e.project_id IS NULL AND ? IS NULL))) RETURNING delivery_id`,
+          )
+          .bind(
+            now,
+            now,
+            identity(ref),
+            ref.eventId,
+            event.projectId,
+            event.projectId,
+          ),
+        event,
       );
-      return rows.length === 1;
+      return result.results.length === 1;
     },
     async backlog() {
       const row = (await query(asyncBacklogSql, []))[0]!;
@@ -365,20 +425,23 @@ export function createD1AsyncStore(db: D1Database): AsyncStore &
       const parameters = [before, limit, before, limit, limit];
       // One transaction retires failed source events before removing their replay metadata.
       // Cursor reconciliation can never recreate an expired poison delivery.
-      const results = await mutate([
+      const results = await mutate(
         [
-          `UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND id IN (SELECT event_id FROM async_deliveries WHERE source='core' AND delivery_id IN (${candidates}))`,
-          [before, ...parameters],
+          [
+            `UPDATE outbox SET delivered_at=? WHERE delivered_at IS NULL AND id IN (SELECT event_id FROM async_deliveries WHERE source='core' AND delivery_id IN (${candidates}))`,
+            [before, ...parameters],
+          ],
+          [
+            `UPDATE plugin_event_outbox SET delivered_at=? WHERE delivered_at IS NULL AND event_id IN (SELECT event_id FROM async_deliveries WHERE source='plugin' AND delivery_id IN (${candidates}))`,
+            [before, ...parameters],
+          ],
+          [
+            `DELETE FROM async_deliveries WHERE delivery_id IN (${candidates}) RETURNING delivery_id`,
+            parameters,
+          ],
         ],
-        [
-          `UPDATE plugin_event_outbox SET delivered_at=? WHERE delivered_at IS NULL AND event_id IN (SELECT event_id FROM async_deliveries WHERE source='plugin' AND delivery_id IN (${candidates}))`,
-          [before, ...parameters],
-        ],
-        [
-          `DELETE FROM async_deliveries WHERE delivery_id IN (${candidates}) RETURNING delivery_id`,
-          parameters,
-        ],
-      ]);
+        { target: 'async-deliveries', cutoff: before },
+      );
       return results.at(-1)?.results.length ?? 0;
     },
     async create(id, maxSteps, now) {

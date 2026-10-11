@@ -1,3 +1,4 @@
+import { issueAuditAction } from '@hyperbug/application';
 import { searchMeter } from './search-meter.ts';
 import { createD1SearchBudgetStore } from './search-budget.ts';
 import {
@@ -564,22 +565,21 @@ export function createD1Repository(db: D1Database): IssueRepository {
           metadata,
         ),
     );
-    if (intent.auditAction)
-      statements.push(
-        db
-          .prepare(
-            "INSERT INTO audit_events (id, project_id, actor_id, action, target_id, result, request_id, created_at, metadata) VALUES (?, ?, ?, ?, ?, 'success', ?, ?, '{}')",
-          )
-          .bind(
-            intent.mutationId,
-            intent.projectId,
-            intent.principalId,
-            intent.auditAction,
-            intent.id,
-            intent.requestId,
-            intent.now,
-          ),
-      );
+    statements.push(
+      db
+        .prepare(
+          "INSERT INTO audit_events (id, project_id, actor_id, action, target_id, result, request_id, created_at, metadata) VALUES (?, ?, ?, ?, ?, 'success', ?, ?, '{}')",
+        )
+        .bind(
+          intent.mutationId,
+          intent.projectId,
+          intent.principalId,
+          issueAuditAction(operation),
+          intent.id,
+          intent.requestId,
+          intent.now,
+        ),
+    );
     statements.push(
       db
         .prepare(

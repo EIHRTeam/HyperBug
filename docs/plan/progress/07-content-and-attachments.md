@@ -6,14 +6,15 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress (07.1, 07.2a–d/V2 and 07.3a/b/d/e/i/V3 verified at their recorded scopes; 07.3g/V5 locally accepted; complete cleanup/scanner/CORS and suspended audit remain)
+- Status: In progress (07.1, 07.2a–d/V2 and 07.3a/b/d/e/i/V3 verified at their recorded scopes; 07.3g/V5 locally accepted; complete cleanup/scanner/CORS remain; 07.2e audit accepted 2026-10-11)
 - Delivery scope: MVP backend
 - Prerequisites: 06 complete; cleanup job contracts from 02/05, execution completed in 09.
 - Implementation started: Yes (2026-10-03).
-- Completed implementation checklist IDs: 07.1a–07.1i, 07.2a–07.2d, 07.3a, 07.3b, 07.3d, 07.3e, 07.3g, 07.3i, 07.V1, 07.V2, 07.V3, 07.V5, 07.V6, 07.V7.
+- Completed implementation checklist IDs: 07.1a–07.1i, 07.2a–07.2e, 07.3a, 07.3b, 07.3d, 07.3e, 07.3g, 07.3i, 07.V1, 07.V2, 07.V3, 07.V5, 07.V6, 07.V7.
 - Active/next checklist group: 07.3h reviewed operational historical manifests and tombstone quiescence/compaction after verified fresh actual-R2/dual-store ledger composition; 07.3f actual local ClamAV/trusted native transport/both-profile durable journeys pass, with production bridge/resource/egress/admission/signature-update isolation still unverified. 07.3g/V5 and 07.2b–d/V2 are accepted; 07.3c now has a verified actual Workers/ingress/D1/R2/Chrome upload slice; corresponding Node/S3 installed-policy/browser composition remains incomplete.
-- Last updated: 2026-10-04.
+- Last updated: 2026-10-11.
 - Blocking issues discovered: Module 06 prerequisites verified against the current tree. Actual R2 binding/S3/signing/CORS and real local SeaweedFS storage/promotion proofs pass; persisted quota/intent/direct-multipart immutable finalization now passes both local profiles; scanner/result hooks and latest-result persistence pass synthetic default checks and actual local signed ClamAV durable journeys on both stores; production scanner bridge/isolation/update, corresponding Node/S3 installed-policy/browser CORS, general issue/comment linking and full cleanup acceptance remain open. Form consumption and isolated authorized media are locally accepted; deployed media DNS/proxy/browser evidence remains absent; the separate actual Workers upload/CORS slice is verified. Actual Node/S3 exact-key discovery now passes real SeaweedFS and R2 S3 acceptance; native Workers/R2 now supplies the same bounded policy and passes actual remote-storage discovery; failed/incomplete discovery still retains quota. The 2026-09-18 Issue Form format question was resolved on 2026-10-03: support GitHub Issue Forms YAML as a bounded definition/authoring format, with user-supplied `.yml` definitions normalized into the canonical JSON schema. The format layer is now implemented; [ISSUE-FORMS](../../ISSUE-FORMS.md) records supported attributes and deviations. This does not add GitHub API/repository synchronization or issue-template chooser configuration.
+- Selected audit evidence: [Selected audit evidence](../evidence/2026-10-11-selected-audit.md).
 - Evidence: [07 validation](../evidence/07-content-validation.md) and [local derivation measurements](../evidence/07-markdown-derivation.json). `docs/MARKDOWN-POLICY.md` and [ADR 0003](../../decisions/0003-markdown-representation-and-pagination.md) record the accepted representation/transport/pagination direction. A read-only baseline review of Issue Form/Template coverage was recorded on 2026-09-18.
 
 ## Step tracking
@@ -21,7 +22,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 07.1 | Implement the canonical Markdown pipeline | Implemented and locally verified 2026-10-03 including V7 replacement bundle | [MARKDOWN-POLICY](../../MARKDOWN-POLICY.md); [ADR 0003](../../decisions/0003-markdown-representation-and-pagination.md) |
-| 07.2 | Implement forms and templates | Format, immutable stores, management, atomic submission and released attachment consumption locally verified; audit remains suspended | [ISSUE-FORMS](../../ISSUE-FORMS.md); [07 evidence](../evidence/07-content-validation.md) |
+| 07.2 | Implement forms and templates | Format, immutable stores, management, atomic submission and released attachment consumption locally verified; audit locally verified 2026-10-11 | [ISSUE-FORMS](../../ISSUE-FORMS.md); [07 evidence](../evidence/07-content-validation.md) |
 | 07.3 | Implement portable attachment storage | 07.3a/b/d/e/i and V3 verified at recorded scopes; local persisted quota/capability/manual processing passes; 07.3g/V5 locally verified; Node/S3 browser CORS/scanner/general linking/full cleanup remain | [Storage evidence](../evidence/07-storage-validation.md); [Lifecycle evidence](../evidence/07-upload-lifecycle-validation.md); dispatch/CORS rollout remains open |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
@@ -1099,3 +1100,41 @@ Final bounded read-only actual named test-D1 inventory: **0 upload intents, 0 at
 - Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
 - Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
 - Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.
+
+
+### 2026-10-11 — Resume selected audit portions (implementation checkpoint)
+
+- Scope and checklist IDs: User-authorized 06.1c, 06.2c, 07.2e and 09.3e only; this record owns the corresponding module's portions.
+- Progress/change summary: Read current plans, accepted evidence, source policies and development security/testing references. Integrate required success audit records into existing conditional writes and transactions; preserve current authorization, content, retention and delivery behavior.
+- Files/artifacts: Existing application ports, shared server handlers, D1/PostgreSQL adapters and focused fixtures; final evidence will be linked at closure.
+- Verification: In progress. Initial typecheck identifies required fixture adaptation, no production type errors. Context7 resolve/query on 2026-10-11 selected /llmstxt/developers_cloudflare_d1_llms-full_txt; official D1 batch rollback documentation confirms transaction behavior. changes() semantics will be verified through actual local workerd failure tests.
+- Decisions/deviations: No new endpoint, retention policy, migration, provider, dependency, deployment, SPA or roadmap work. Existing audit history and protected untracked drafts are preserved. Other suspended portions remain suspended.
+- Blockers/open questions: None so far; selected boxes stay unchecked until verification.
+- Next actions: Complete atomic audit/replay integration, verify both stores and HTTP journeys, then update canonical checklists and handoff.
+- Next-session cautions: Uncommitted audit implementation is in progress; do not claim gate/native/provider acceptance from local checks.
+
+
+### 2026-10-11 — Complete selected audit portions
+
+- Scope and checklist IDs: Explicitly resumed 06.1c, 06.2c, 07.2e and 09.3e; this module owns its corresponding portions. No boundary expansion.
+- Progress: Selected canonical checkboxes complete. Required management/issue/form success events, atomic authorized replay and nonempty terminal-retention summaries implemented and verified on both stores; existing cleanup/reference/permission/schema/idempotency behavior preserved.
+- Change summary: Use mandatory prepared audit inputs and existing D1 batch/PostgreSQL transactions; close the event catalog, correlate management events with server request IDs, and exclude content/configuration values. Preserve all historical rows and receipt compatibility; no backfill or new API/schema/retention policy.
+- Files/artifacts: [Selected evidence and review](../evidence/2026-10-11-selected-audit.md); application/server/security and both adapters; shared failure/HTTP/catalog fixtures; corresponding specifications, paired EN/ZH security guides, plans/suspension/master progress. Protected untracked drafts untouched.
+- Verification: 399 distinct focused checks passed / 4 optional-provider skips (unit19, workerd199/2, real disposable PostgreSQL18.6 181/2). Final error-boundary placement refreshed unit19 and both-store HTTP2+2; these overlap the matrix and are not extra checks. Final typecheck, lint/import boundaries, all-target build, docs:build, scoped oxfmt38 files, scan:secrets, 1038 relative file links/four selected checkboxes and git diff --check pass. Initial fixture/type/loopback failures and corrected outcomes are detailed in the evidence. D1 is local emulation; provider skips are unclaimed.
+- Decisions/deviations: Primary focused security/consistency review; no baseline deviation, independent-review/delegation claim, provider/migration/deployment, per-credential/blob audit expansion, new controlled legal/privacy deletion surface or acceptance-gate change. R14 CPU observations precede this patch; new current-profile acceptance belongs to owning gates.
+- Blockers/open questions: None for the four selected portions. Module07 attachment/scanner/CORS/historical cleanup remainders remain; G1/G2 closed and13.G6 open.
+- Next actions: Selected audit goal complete; no further implementation or hosted trial in this scope. Preserve owning-module remainders and other audit suspension.
+- Next-session cautions: Patch is uncommitted; no push/PR edit. No remote resources/data changed. Keep protected/private files excluded, old migrations/history retained and CPU/provider/release claims within their original evidence boundaries.
+
+
+### 2026-10-11 — User-authorized selected audit publication
+
+- Scope and checklist IDs: Commit and push the verified 06.1c, 06.2c, 07.2e and 09.3e patch on feat/v1; shared persistence/security dependencies retain their existing scope.
+- Progress: Prepared the completed audit patch for publication under the user's explicit instruction.
+- Change summary: Publish the existing atomic audit implementation, focused fixtures, evidence and synchronized reader guidance; no additional application behavior or gate changes.
+- Files/artifacts: [Selected audit evidence](../evidence/2026-10-11-selected-audit.md), the corresponding implementation/specifications and this publication handoff.
+- Verification: Reuse the recorded 399 focused passes / 4 optional-provider skips and completed static/build/document checks. Application tests are not repeated for unchanged code. Staged diff hygiene, secret scan and remote-ref verification are the publication checks.
+- Decisions and deviations: Normal push of the current branch; exclude all six pre-existing untracked root drafts and private ignored artifacts.
+- Blockers/open questions: None at preparation.
+- Next actions: Commit the prepared patch, push origin/feat/v1 and verify its remote SHA matches local HEAD; report the resulting commit in the publication response.
+- Next-session cautions: Preserve other suspended audit portions, Module07 remainders and G1/G2/13.G6 state. This publication supplies no new hosted CI, CPU, provider, deployment or release acceptance evidence.

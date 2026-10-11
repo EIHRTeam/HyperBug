@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import {
   assertId,
   assertInstant,
@@ -70,8 +71,14 @@ export interface ContentDefinitionStore {
     version?: number,
   ): Promise<IssueTemplateRecord | null>;
   /** Head and immutable version commit together; names shared across both kinds. */
-  saveForm(input: SaveIssueForm): Promise<IssueFormRecord>;
-  saveTemplate(input: SaveIssueTemplate): Promise<IssueTemplateRecord>;
+  saveForm(
+    input: SaveIssueForm,
+    audit: PreparedAuditEvent,
+  ): Promise<IssueFormRecord>;
+  saveTemplate(
+    input: SaveIssueTemplate,
+    audit: PreparedAuditEvent,
+  ): Promise<IssueTemplateRecord>;
   /** Resolve authored defaults through current project-local taxonomy and Staff handles. */
   resolveFormDefaults(
     projectId: string,

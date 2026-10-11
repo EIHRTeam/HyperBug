@@ -44,7 +44,7 @@ export interface MutationIdentity {
   now: number;
   expiresAt: number;
   requestId: string;
-  /** Required security audit action chosen by the authorized application service. */
+  /** Legacy checked hint; adapters derive the required action even when omitted. */
   auditAction?: 'issue.created' | 'issue.edited';
 }
 /** Bounded taxonomy cardinality on every write path (06.3d bound, fixed now). */
@@ -504,3 +504,25 @@ export * from './async-workflows.ts';
 export * from './async-maintenance.ts';
 
 export * from './async-minimum.ts';
+
+/** Closed correspondence; every committed issue mutation emits exactly one audit record. */
+export function issueAuditAction(operation: IssueOperation) {
+  switch (operation) {
+    case 'issue.create':
+      return 'issue.created' as const;
+    case 'issue.edit':
+      return 'issue.edited' as const;
+    case 'issue.close':
+      return 'issue.closed' as const;
+    case 'issue.reopen':
+      return 'issue.reopened' as const;
+    case 'issue.labels':
+      return 'issue.labels' as const;
+    case 'issue.assignees':
+      return 'issue.assignees' as const;
+    case 'issue.type':
+      return 'issue.type' as const;
+    case 'issue.milestone':
+      return 'issue.milestone' as const;
+  }
+}

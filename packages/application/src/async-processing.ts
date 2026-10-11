@@ -1,3 +1,4 @@
+import type { PreparedAuditEvent } from './prepared-audit.ts';
 import { assertId } from '@hyperbug/domain';
 
 /** Private references only; canonical content/configuration is loaded at execution. */
@@ -111,7 +112,11 @@ export interface AsyncStore {
     reason: AsyncFailure,
   ): Promise<void>;
   /** Call only after a fresh operator authorization; never expose a raw store as an API. */
-  replay(ref: TaskReference, now: number): Promise<boolean>;
+  replay(
+    ref: TaskReference,
+    now: number,
+    audit: PreparedAuditEvent,
+  ): Promise<boolean>;
   backlog(): Promise<AsyncBacklog>;
   /** Terminal references only; source retention and audit history are unaffected. */
   /** Expire safe terminal metadata and atomically retire failed sources; pending retries are preserved. */
@@ -122,10 +127,27 @@ export async function replayFailedTask(input: {
   reference: TaskReference;
   now: number;
   authorize: () => Promise<boolean>;
+  actorId: string;
+  requestId: string;
 }): Promise<boolean> {
   validateTaskReference(input.reference);
   if (!(await input.authorize())) throw new AsyncError('permanent');
-  return input.store.replay(input.reference, input.now);
+  assertId(input.actorId);
+  assertId(input.requestId);
+  const event = await input.store.load(input.reference);
+  if (!event) return false;
+  return input.store.replay(input.reference, input.now, {
+    id: crypto.randomUUID(),
+    projectId: event.projectId,
+    actorId: input.actorId,
+    systemActor: null,
+    action: 'async.replayed',
+    targetId: input.reference.eventId,
+    result: 'success',
+    requestId: input.requestId,
+    createdAt: input.now,
+    metadata: { v: 1, source: input.reference.source },
+  });
 }
 export interface TaskQueue {
   enqueue(reference: TaskReference): Promise<void>;

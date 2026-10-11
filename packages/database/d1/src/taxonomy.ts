@@ -1,3 +1,5 @@
+import { d1AuditedMutation, scopedAudit } from './audit-write.ts';
+import type { PreparedAuditEvent } from '@hyperbug/application';
 import type { D1Database } from '@cloudflare/workers-types';
 import {
   nameKeyOf,
@@ -174,23 +176,31 @@ export function createD1TaxonomyStore(db: D1Database): TaxonomyStore {
   };
 
   return {
-    async createLabel(input: LabelCreateInput) {
-      const row = await db
-        .prepare(
-          'INSERT INTO labels (id, project_id, name, name_key, description, color) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (project_id, name_key) DO NOTHING RETURNING id',
-        )
-        .bind(
-          input.id,
-          input.projectId,
-          input.name,
-          nameKeyOf(input.name),
-          input.description,
-          input.color,
-        )
-        .first<{ id: string }>();
+    async createLabel(input: LabelCreateInput, audit: PreparedAuditEvent) {
+      scopedAudit(audit, input.projectId, input.id, 'label.created');
+      const row =
+        (
+          await d1AuditedMutation<{ id: string }>(
+            db,
+            db
+              .prepare(
+                'INSERT INTO labels (id, project_id, name, name_key, description, color) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (project_id, name_key) DO NOTHING RETURNING id',
+              )
+              .bind(
+                input.id,
+                input.projectId,
+                input.name,
+                nameKeyOf(input.name),
+                input.description,
+                input.color,
+              ),
+            audit,
+          )
+        ).results[0] ?? null;
       return row === null ? 'name-conflict' : 'created';
     },
-    async updateLabel(input: LabelUpdateInput) {
+    async updateLabel(input: LabelUpdateInput, audit: PreparedAuditEvent) {
+      scopedAudit(audit, input.projectId, input.id, 'label.updated');
       const current = await loadLabel(input.projectId, input.id);
       if (current === null) return { outcome: 'not-found' };
       const name = input.name ?? current.name;
@@ -200,21 +210,27 @@ export function createD1TaxonomyStore(db: D1Database): TaxonomyStore {
         (await nameKeyTaken('labels', input.projectId, nameKey, input.id))
       )
         return { outcome: 'name-conflict' };
-      const row = await db
-        .prepare(
-          'UPDATE labels SET name = ?, name_key = ?, description = ?, color = ?, revision = revision + 1 WHERE project_id = ? AND id = ? AND revision = ? RETURNING ' +
-            labelColumns,
-        )
-        .bind(
-          name,
-          nameKey,
-          input.description ?? current.description,
-          input.color ?? current.color,
-          input.projectId,
-          input.id,
-          input.expectedRevision,
-        )
-        .first<LabelRow>();
+      const row =
+        (
+          await d1AuditedMutation<LabelRow>(
+            db,
+            db
+              .prepare(
+                'UPDATE labels SET name = ?, name_key = ?, description = ?, color = ?, revision = revision + 1 WHERE project_id = ? AND id = ? AND revision = ? RETURNING ' +
+                  labelColumns,
+              )
+              .bind(
+                name,
+                nameKey,
+                input.description ?? current.description,
+                input.color ?? current.color,
+                input.projectId,
+                input.id,
+                input.expectedRevision,
+              ),
+            audit,
+          )
+        ).results[0] ?? null;
       return row === null
         ? { outcome: 'conflict' }
         : { outcome: 'written', record: toLabel(row) };
@@ -228,38 +244,50 @@ export function createD1TaxonomyStore(db: D1Database): TaxonomyStore {
         .all<LabelRow>();
       return rows.results.map(toLabel);
     },
-    async deleteLabel(projectId, id) {
+    async deleteLabel(projectId, id, audit) {
+      scopedAudit(audit, projectId, id, 'label.deleted');
       if (await referenced('issue_labels', 'label_id', projectId, id))
         return 'referenced';
-      const result = await db
-        .prepare('DELETE FROM labels WHERE project_id = ? AND id = ?')
-        .bind(projectId, id)
-        .run();
+      const result = await d1AuditedMutation(
+        db,
+        db
+          .prepare('DELETE FROM labels WHERE project_id = ? AND id = ?')
+          .bind(projectId, id),
+        audit,
+      );
       if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes > 1)
         throw new Error('Invalid label deletion');
       return result.meta.changes === 1 ? 'deleted' : 'not-found';
     },
 
-    async createIssueType(input) {
-      const row = await db
-        .prepare(
-          'INSERT INTO issue_types (id, project_id, name, name_key, description, icon, color, position, enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (project_id, name_key) DO NOTHING RETURNING id',
-        )
-        .bind(
-          input.id,
-          input.projectId,
-          input.name,
-          nameKeyOf(input.name),
-          input.description,
-          input.icon,
-          input.color,
-          input.position,
-          input.enabled ? 1 : 0,
-        )
-        .first<{ id: string }>();
+    async createIssueType(input, audit) {
+      scopedAudit(audit, input.projectId, input.id, 'issue-type.created');
+      const row =
+        (
+          await d1AuditedMutation<{ id: string }>(
+            db,
+            db
+              .prepare(
+                'INSERT INTO issue_types (id, project_id, name, name_key, description, icon, color, position, enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (project_id, name_key) DO NOTHING RETURNING id',
+              )
+              .bind(
+                input.id,
+                input.projectId,
+                input.name,
+                nameKeyOf(input.name),
+                input.description,
+                input.icon,
+                input.color,
+                input.position,
+                input.enabled ? 1 : 0,
+              ),
+            audit,
+          )
+        ).results[0] ?? null;
       return row === null ? 'name-conflict' : 'created';
     },
-    async updateIssueType(input) {
+    async updateIssueType(input, audit) {
+      scopedAudit(audit, input.projectId, input.id, 'issue-type.updated');
       const current = await loadType(input.projectId, input.id);
       if (current === null) return { outcome: 'not-found' };
       const name = input.name ?? current.name;
@@ -269,24 +297,30 @@ export function createD1TaxonomyStore(db: D1Database): TaxonomyStore {
         (await nameKeyTaken('issue_types', input.projectId, nameKey, input.id))
       )
         return { outcome: 'name-conflict' };
-      const row = await db
-        .prepare(
-          'UPDATE issue_types SET name = ?, name_key = ?, description = ?, icon = ?, color = ?, position = ?, enabled = ?, revision = revision + 1 WHERE project_id = ? AND id = ? AND revision = ? RETURNING ' +
-            typeColumns,
-        )
-        .bind(
-          name,
-          nameKey,
-          input.description ?? current.description,
-          input.icon ?? current.icon,
-          input.color ?? current.color,
-          input.position ?? current.position,
-          (input.enabled ?? current.enabled) ? 1 : 0,
-          input.projectId,
-          input.id,
-          input.expectedRevision,
-        )
-        .first<IssueTypeRow>();
+      const row =
+        (
+          await d1AuditedMutation<IssueTypeRow>(
+            db,
+            db
+              .prepare(
+                'UPDATE issue_types SET name = ?, name_key = ?, description = ?, icon = ?, color = ?, position = ?, enabled = ?, revision = revision + 1 WHERE project_id = ? AND id = ? AND revision = ? RETURNING ' +
+                  typeColumns,
+              )
+              .bind(
+                name,
+                nameKey,
+                input.description ?? current.description,
+                input.icon ?? current.icon,
+                input.color ?? current.color,
+                input.position ?? current.position,
+                (input.enabled ?? current.enabled) ? 1 : 0,
+                input.projectId,
+                input.id,
+                input.expectedRevision,
+              ),
+            audit,
+          )
+        ).results[0] ?? null;
       return row === null
         ? { outcome: 'conflict' }
         : { outcome: 'written', record: toIssueType(row) };
@@ -300,54 +334,69 @@ export function createD1TaxonomyStore(db: D1Database): TaxonomyStore {
         .all<IssueTypeRow>();
       return rows.results.map(toIssueType);
     },
-    async deleteIssueType(projectId, id) {
+    async deleteIssueType(projectId, id, audit) {
+      scopedAudit(audit, projectId, id, 'issue-type.deleted');
       if (await referenced('issues', 'type_id', projectId, id))
         return 'referenced';
-      const result = await db
-        .prepare('DELETE FROM issue_types WHERE project_id = ? AND id = ?')
-        .bind(projectId, id)
-        .run();
+      const result = await d1AuditedMutation(
+        db,
+        db
+          .prepare('DELETE FROM issue_types WHERE project_id = ? AND id = ?')
+          .bind(projectId, id),
+        audit,
+      );
       if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes > 1)
         throw new Error('Invalid issue type deletion');
       return result.meta.changes === 1 ? 'deleted' : 'not-found';
     },
 
-    async createMilestone(input) {
-      await db
-        .prepare(
-          "INSERT INTO milestones (id, project_id, title, description, state, due_date, revision, created_at, updated_at) VALUES (?, ?, ?, ?, 'open', ?, 1, ?, ?)",
-        )
-        .bind(
-          input.id,
-          input.projectId,
-          input.title,
-          input.description,
-          input.dueDate,
-          input.nowMs,
-          input.nowMs,
-        )
-        .run();
+    async createMilestone(input, audit) {
+      scopedAudit(audit, input.projectId, input.id, 'milestone.created');
+      await d1AuditedMutation(
+        db,
+        db
+          .prepare(
+            "INSERT INTO milestones (id, project_id, title, description, state, due_date, revision, created_at, updated_at) VALUES (?, ?, ?, ?, 'open', ?, 1, ?, ?)",
+          )
+          .bind(
+            input.id,
+            input.projectId,
+            input.title,
+            input.description,
+            input.dueDate,
+            input.nowMs,
+            input.nowMs,
+          ),
+        audit,
+      );
       return 'created';
     },
-    async updateMilestone(input) {
+    async updateMilestone(input, audit) {
+      scopedAudit(audit, input.projectId, input.id, 'milestone.updated');
       const current = await loadMilestone(input.projectId, input.id);
       if (current === null) return { outcome: 'not-found' };
-      const row = await db
-        .prepare(
-          'UPDATE milestones SET title = ?, description = ?, state = ?, due_date = ?, revision = revision + 1, updated_at = ? WHERE project_id = ? AND id = ? AND revision = ? RETURNING ' +
-            milestoneColumns,
-        )
-        .bind(
-          input.title ?? current.title,
-          input.description ?? current.description,
-          input.state ?? current.state,
-          input.dueDate === undefined ? current.due_date : input.dueDate,
-          Math.max(input.nowMs, current.updated_at),
-          input.projectId,
-          input.id,
-          input.expectedRevision,
-        )
-        .first<MilestoneRow>();
+      const row =
+        (
+          await d1AuditedMutation<MilestoneRow>(
+            db,
+            db
+              .prepare(
+                'UPDATE milestones SET title = ?, description = ?, state = ?, due_date = ?, revision = revision + 1, updated_at = ? WHERE project_id = ? AND id = ? AND revision = ? RETURNING ' +
+                  milestoneColumns,
+              )
+              .bind(
+                input.title ?? current.title,
+                input.description ?? current.description,
+                input.state ?? current.state,
+                input.dueDate === undefined ? current.due_date : input.dueDate,
+                Math.max(input.nowMs, current.updated_at),
+                input.projectId,
+                input.id,
+                input.expectedRevision,
+              ),
+            audit,
+          )
+        ).results[0] ?? null;
       if (row === null) return { outcome: 'conflict' };
       const progress = (await progressByMilestone(input.projectId)).get(
         row.id,
@@ -385,13 +434,17 @@ export function createD1TaxonomyStore(db: D1Database): TaxonomyStore {
         return view;
       });
     },
-    async deleteMilestone(projectId, id) {
+    async deleteMilestone(projectId, id, audit) {
+      scopedAudit(audit, projectId, id, 'milestone.deleted');
       if (await referenced('issues', 'milestone_id', projectId, id))
         return 'referenced';
-      const result = await db
-        .prepare('DELETE FROM milestones WHERE project_id = ? AND id = ?')
-        .bind(projectId, id)
-        .run();
+      const result = await d1AuditedMutation(
+        db,
+        db
+          .prepare('DELETE FROM milestones WHERE project_id = ? AND id = ?')
+          .bind(projectId, id),
+        audit,
+      );
       if (!Number.isSafeInteger(result.meta.changes) || result.meta.changes > 1)
         throw new Error('Invalid milestone deletion');
       return result.meta.changes === 1 ? 'deleted' : 'not-found';

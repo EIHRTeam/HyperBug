@@ -2,7 +2,7 @@
 
 [Documentation home](../index.md) · [Operations](operations.md)
 
-> Status: Backend security/account flows are locally verified at their recorded scopes. Cloudflare Minimum is a formal third profile with disclosed password risk. Full G1/G2 and real-Free acceptance remain open; this is not production readiness. Later-module audit and Argon2id performance work remain suspended.
+> Status: Backend security/account flows are locally verified at their recorded scopes. Cloudflare Minimum is a formal third profile with disclosed password risk. Full G1/G2 and real-Free acceptance remain open; this is not production readiness. Project, issue, form/template and async replay/retention audit are locally verified; other later audit and Argon2id performance work remain suspended.
 
 ## Set the environment and browser origins
 
@@ -71,3 +71,9 @@ Local Node checks passed for hybrid negotiation, classical fallback and certific
 Recovery-code generation and regeneration require authentication within `ADMIN_RECENT_AUTH_SECONDS` (default 300 seconds). A stale session receives `REAUTHENTICATION_REQUIRED` (403), leaving existing codes valid. With CAPTCHA configured, passkey login requires a `captchaToken` for the login action. Account/role/plugin administration, bootstrap enrollment and recovery-code replacement commit their audit event with the database mutation; an audit insert failure rolls everything back and returns `AUDIT_UNAVAILABLE` (503).
 
 Session state is read from the primary on every request. Idle expiry is renewed only when due: every five minutes for Users and three minutes for Staff, within the existing absolute lifetime. Logout, revocation and credential changes still take effect on the next request.
+
+## Project and async audit records
+
+Project and taxonomy changes, issue lifecycle changes, and form/template saves commit their required audit record with the change. A failed audit write rolls back the change. Issue retries and unchanged relation setters do not duplicate successful records. Audit metadata excludes titles, Markdown, form definitions and answers.
+
+Administrative replay uses the existing authorized operator integration; it records the operator and request together with the failed-task reset. Nonempty terminal task/job cleanup records its category, retention cutoff and count. Cleanup preserves pending retries, referenced active attachments and audit history. There is no new public replay or history-deletion endpoint. Full backend/release acceptance remains open.

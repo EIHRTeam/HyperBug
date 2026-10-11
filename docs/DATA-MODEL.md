@@ -70,7 +70,7 @@ Every Issue, comment, label, type, milestone, attachment and relation belongs to
 
 ## Transactions, retries and visibility
 
-Repository interfaces express complete mutation intents, not database transaction callbacks. `createIssue` allocates the number and writes the Issue, timeline event, optional required audit entry, outbox event and safe mutation receipt in one atomic outcome. `editIssue` conditionally changes a revision with the same side records. Success means all required rows are durable; any failed constraint or stale write leaves none of that attempted mutation's rows.
+Repository interfaces express complete mutation intents, not database transaction callbacks. `createIssue` allocates the number and writes the Issue, timeline event, required audit entry, outbox event and safe mutation receipt in one atomic outcome. `editIssue` conditionally changes a revision with the same side records. Close/reopen and taxonomy/assignment changes also require one matching audit entry; same-value issue setters and receipt replays do not duplicate events. Success means all required rows are durable; any failed constraint or stale write leaves none of that attempted mutation's rows.
 
 D1 executes supported prepared-statement batches. Conditional zero-row updates must trigger a database constraint failure before any receipt/event can commit; do not treat zero affected rows as automatic rollback. PostgreSQL uses a checked transaction and row locking for number allocation. Both adapters return the same conflict/not-found/replay semantics. No external network call, blob write or plugin callback runs inside these transactions.
 
@@ -91,6 +91,8 @@ Search mappings are planned, not public SQL: D1 uses an FTS5 table keyed by Issu
 ## Deletion and retention
 
 Archive a project before controlled deletion. User content deletion/moderation replaces public content with a tombstone while preserving immutable identity/number and permitted timeline attribution. Hidden/redacted content and history are staff-restricted; public list/search/detail must not leak old content through projections or event metadata. Actual content retention durations and legal-erasure operations must be configured and implemented by the owning modules; no silent destructive default is introduced here.
+
+Project/taxonomy management ports require prepared audit records and commit them with their conditional mutations; project creation also includes its first administrator grant. Form/template management commits head, immutable version and audit together. Audit metadata excludes authored content/configuration values.
 
 Security audit is append-only to ordinary application operations. Controlled privacy/legal cleanup is a separate audited process; no API edits or deletes individual audit entries. Outbox delivery and idempotency expiry do not delete security audit. Principal removal must preserve actor references via tombstones.
 

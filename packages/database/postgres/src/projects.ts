@@ -1,3 +1,9 @@
+import {
+  postgresAuditedQuery,
+  postgresAuditInsert,
+  scopedAudit,
+} from './audit-write.ts';
+import type { PreparedAuditEvent } from '@hyperbug/application';
 import type { Pool } from 'pg';
 import {
   validateProjectRecord,
@@ -48,7 +54,11 @@ const columns =
  */
 export function createPostgresProjectStore(pool: Pool): ProjectStore {
   return {
-    async create(input: ProjectCreateInput): Promise<ProjectCreateOutcome> {
+    async create(
+      input: ProjectCreateInput,
+      audit: PreparedAuditEvent,
+    ): Promise<ProjectCreateOutcome> {
+      scopedAudit(audit, input.id, input.id, 'project.created');
       const client = await pool.connect();
       try {
         await client.query('BEGIN');
@@ -71,6 +81,7 @@ export function createPostgresProjectStore(pool: Pool): ProjectStore {
           "INSERT INTO project_roles (project_id, principal_id, principal_kind, role, granted_at) VALUES ($1, $2, 'staff', 'administrator', $3)",
           [input.id, input.administratorPrincipalId, input.nowMs],
         );
+        await postgresAuditInsert(client, audit);
         await client.query('COMMIT');
         return 'created';
       } catch (error) {
@@ -96,7 +107,9 @@ export function createPostgresProjectStore(pool: Pool): ProjectStore {
     },
     async configure(
       input: ProjectConfigureInput,
+      audit: PreparedAuditEvent,
     ): Promise<ProjectConfigureOutcome> {
+      scopedAudit(audit, input.id, input.id, 'project.configured');
       const current = await pool
         .query<ProjectRow>(
           `SELECT ${columns} FROM projects WHERE id = $1 LIMIT 1`,
@@ -104,7 +117,9 @@ export function createPostgresProjectStore(pool: Pool): ProjectStore {
         )
         .then((result) => result.rows[0] ?? null);
       if (current === null) return { outcome: 'not-found' };
-      const { rows } = await pool.query<ProjectRow>(
+      const { rows } = await postgresAuditedQuery<ProjectRow>(
+        pool,
+        audit,
         'UPDATE projects SET name = $1, visibility = $2, revision = revision + 1, updated_at = GREATEST(updated_at, $3) WHERE id = $4 AND revision = $5 RETURNING ' +
           columns,
         [
@@ -121,7 +136,9 @@ export function createPostgresProjectStore(pool: Pool): ProjectStore {
     },
     async archive(
       input: Omit<ProjectConfigureInput, 'name' | 'visibility'>,
+      audit: PreparedAuditEvent,
     ): Promise<ProjectArchiveOutcome> {
+      scopedAudit(audit, input.id, input.id, 'project.archived');
       const current = await pool
         .query<ProjectRow>(
           `SELECT ${columns} FROM projects WHERE id = $1 LIMIT 1`,
@@ -129,7 +146,9 @@ export function createPostgresProjectStore(pool: Pool): ProjectStore {
         )
         .then((result) => result.rows[0] ?? null);
       if (current === null) return { outcome: 'not-found' };
-      const { rows } = await pool.query<ProjectRow>(
+      const { rows } = await postgresAuditedQuery<ProjectRow>(
+        pool,
+        audit,
         "UPDATE projects SET status = 'archived', revision = revision + 1, updated_at = GREATEST(updated_at, $1) WHERE id = $2 AND revision = $3 AND status = 'active' RETURNING " +
           columns,
         [input.nowMs, input.id, input.expectedRevision],
