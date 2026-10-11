@@ -476,3 +476,19 @@ All native variants now call the actual `minimum.ts` scheduled entry, including 
 [Eight-isolate composed local profile](09-composed-local-profile.json) observes sixteen max200/32768 dispatches with empty derived body/acknowledged source.100us V8 samples show cold non-idle median6150.5us(range4732–7985),warm2305.5us(range1723–2629). Sampling excludes idle/program and begins after module startup; provider/runtime glue, handler frames and tokenization dominate. This is diagnostic scope; no native margin/distribution, causal speedup or full-profile acceptance claim. Target remains10 ms; no canonical capacity reduction.
 
 Tail51403,supervisor14232 and guardian9520 run only this owned trial. Native deadline04:14:25.423 UTC and absolute cleanup04:19:25.423 UTC2026-10-11. Guardian cleans on a failed native bound, successful three-stage completion or its deadline, then verifies original-resource comparison. Registration/unobserved execution cannot close09.1f/09.V6. G1/G2 closed,13.G6 open,09.3e suspended.
+
+
+### Composed job diagnostic and tokenizer candidate
+
+[Actual composed local job profiling](09-composed-local-job-profile.json) covers eight fresh isolates/two steps each. Every tick uses9 statements/combined calls,16 reads/9 writes; exact[0,1] witnesses and checkpoint2 hold. Cold sampled non-idle median3506.5us(range2848–5265),warm2035us(range1607–2631), after module startup. No native CPU or full-profile claim.
+
+The measured title tokenizer cost motivated a [private startup-preparation candidate](09-tokenizer-startup-prototype.json), one constant `searchTokenText` call before handlers. It preserves semantics but gives no reliable margin: cold median6150.5→5830.5us with overlapping ranges and maximum7985→9565us; warm2305.5→2652.5us worsens. Reject for production; no application edit or native deployment change. User authorization does not justify speculative capacity reduction or changing the target on unobserved execution.
+
+Actual R11 deployment reports startup119ms separately. Private fetch401 at03:43 and captured live-tail request frames verify observation; native scheduled execution remains pending. The application source stays stable during supervisor-controlled clean builds.
+
+
+### R11 deadline, unobserved native execution and cleanup recovery
+
+At04:19:27 UTC the original guardian hit its absolute deadline, then authentication failed before any cleanup. Supervisor terminates0 at native deadline; tail terminates1 and guardian1. On active-goal continuation, exact handles and PIDs are terminal/absent. Refreshed Wrangler authentication, then read current owned resources, provider scheduled history and D1 before mutating: Worker/domain still existed; history empty at04:47:45, pending checkpoint0/no witnesses, cancelled sibling unchanged, max200/32768 canonical event pending/unindexed. This is unobserved execution, not a10ms failure.
+
+Exact owned resource cleanup verifieszero; independent original comparison preserves both Workers/domains/schedules/Queues/Workflows. Data cleanup verifies157 baseline records/exact singleton sets/FKs, zero owned mutable work, inactive fixtures and one timeline/one audit record retained. Final adaptive quota captured with its delayed-analytics limitation. [Unaccepted trial receipt](09-hosted-composed-cron-trial-receipt.json) preserves the failed guardian and independently verified manual recovery; no success-only publisher ran. R11 isclosed; no live trial. Native obligations stayopen.

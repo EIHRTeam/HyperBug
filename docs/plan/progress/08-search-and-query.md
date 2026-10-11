@@ -441,3 +441,29 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native interruption/full composition CPU and clean resume remain unobserved;09.1f/09.V6 open.
 - Next actions: Observe existing guarded stages; on any failed bound or original deadline remove owned resources/work and independently verify157 baseline records/singletons/original resources.
 - Next-session cautions: R11 tail51403(PID71010),supervisor14232(PID71014),guardian9520(PID70920); native04:14:25.423 UTC,cleanup04:19:25.423 UTC. No inventory rerun,new simultaneous trial,protected/private staging,push/PR edit,paid override,audit/gate closure.
+
+
+### 2026-10-11 — Composed job profiling and rejected tokenizer preparation
+
+- Scope and checklist IDs:09.1f/09.V6 authorized performance investigation; search/data/operational evidence dependencies.
+- Progress: Eight full composed local job isolates finish exact[0,1]/checkpoint2;9 statements/combined calls per tick,16 reads/9 writes. Sampled cold non-idle median3506.5us,warm2035us, diagnostic only.
+- Change summary: Evaluate private startup tokenizer preparation; reject for production because a small cold median change is within broad overlap, max worsens and warm median rises. No application source,capacity,target or native trial version changes.
+- Files/artifacts: [Composed local job profile](../evidence/09-composed-local-job-profile.json), [rejected tokenizer prototype](../evidence/09-tokenizer-startup-prototype.json), ongoing R11 evidence; private profiles.
+- Verification: Sixteen composed scheduled job calls and sixteen prototype max200/32768 dispatches pass their witness/index/source checks. Prototype cold median5830.5us(range3475–9565),warm2652.5us versus baseline6150.5/2305.5; no causal/native speedup claim. R11 private fetch401 and live-tail request witnesses confirm working observation; no native scheduled frame yet at03:46.
+- Decisions and deviations: Keep measured production16d6500 source stable while autonomous native supervisor builds its prepared clean variants. Module startup119ms is separately reported by actual deployment; local invocation sampling excludes it.
+- Blockers/open questions: Native composed CPU/interruption/redeployment remains pending;09.1f/09.V6 incomplete.
+- Next actions: Collect existing guarded native stages/deadline cleanup; validate final documentation and receipt against actual outcomes.
+- Next-session cautions: R11 original handles/deadlines remain; do not deploy a rejected prototype, edit application source during supervisor-controlled builds,repeat green lanes or infer acceptance from local samples. No push/PR edit,audit or gate closure.
+
+
+### 2026-10-11 — R11 native observation deadline and recovered cleanup
+
+- Scope and checklist IDs:09.1f/09.V6 performance continuation and data/search/operational evidence dependencies.
+- Progress: No native scheduled frame; provider history empty at04:47:45 UTC. Current main job pending/checkpoint0/no witnesses, cancelled sibling unchanged and maximum canonical source pending/unindexed. No CPU failure inferred.
+- Change summary: Guardian reached04:19 deadline but failed authentication before cleanup. Refreshed credentials, inspected actual current resources/data before mutations, then independently completed cleanup; all handles terminal/PIDs absent.
+- Files/artifacts: [Unaccepted composed Cron receipt](../evidence/09-hosted-composed-cron-trial-receipt.json), current evidence/audit/progress; private cleanup and terminal receipts.
+- Verification:157 original records/exact singleton sets/FKs restored; original two Workers/domain mappings/schedules/Queues/Workflows preserved. Owned resources/outbox/deliveries/jobs/steps/search zero; one timeline/one audit entry and inactive fixtures retained. Tail exit1,supervisor0,guardian1 are actual terminal outcomes; failed guardian history preserved.
+- Decisions and deviations: R11 closed; goal service nowactive. Preserve10ms and title-only capacity. New short hosted authenticated HTTP fixture may measure actual scheduled function and D1 interruption/redeployment with honest invocation labeling; it cannot replace native Cron evidence.
+- Blockers/open questions: Native Cron missing across bounded trials;09.1f/09.V6 remain incomplete. Native scheduling requires external execution; no accepted full-profile/billing/paid performance claim.
+- Next actions: Fresh backup/inventory before new mutation; collect whole composed hosted function CPU and actual D1 job recovery, then revisit measured hotspots/native scheduling proof.
+- Next-session cautions: Never restart R11 processes or reuse its157-record baseline for new mutation. Do not publish success-only receipt or deploy rejected tokenizer candidate. Keep09.3e suspended,G1/G2 closed,13.G6 open; no protected/private staging,push/PR edit,paid feature or production action.

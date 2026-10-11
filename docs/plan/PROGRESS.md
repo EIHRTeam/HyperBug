@@ -1256,3 +1256,8 @@ Under standing user authorization after repeated native CPU failures, [ADR 0014]
 ### 2026-10-11 — R10 closed; explicit performance continuation
 
 R10 stopped on the goal service's paused state with no native execution or CPU result. [Unaccepted receipt](evidence/09-hosted-native-job-trial-receipt.json) verifies152 original records/exact singletons/FKs, preserved original resources/schedules and zero owned work/resources; all process handles are terminal. The latest human instruction resumes performance optimization and conditionally permits target/capacity revision after repeated failures.10 ms remains unchanged;09.1f/09.V6 remain open,09.3e suspended,G1/G2 closed and13.G6 open. New trials need a fresh backup/inventory.
+
+
+### 2026-10-11 — Composed diagnostics and unobserved R11 cleanup
+
+Full composed local max dispatch cold/warm sampled medians6150.5/2305.5us and jobs3506.5/2035us are diagnostics. Startup tokenizer preparation fails to demonstrate margin and is rejected. [R11 unaccepted receipt](evidence/09-hosted-composed-cron-trial-receipt.json) records no native scheduled event, expired-auth guardian failure and independently recovered cleanup:157 original records/singletons/FKs/resources preserved,owned work/resources zero,all handles terminal. Goal service active;09.1f/09.V6 remain open,10ms unchanged,09.3e suspended,G1/G2 closed,13.G6 open. No native CPU failure inferred.

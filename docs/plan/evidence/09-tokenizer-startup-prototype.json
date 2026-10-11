@@ -1,0 +1,134 @@
+{
+  "method": "Private local workerd V8 100us non-idle samples; same maximum fixture and scheduled entry; one searchTokenText call on constant ASCII during module startup",
+  "baseline": "09-composed-local-profile.json",
+  "results": {
+    "cold": {
+      "isolates": 8,
+      "sampledNonIdleUs": {
+        "min": 3475,
+        "median": 5830.5,
+        "max": 9565,
+        "values": [
+          4445,
+          5952,
+          9565,
+          3475,
+          5701,
+          5709,
+          7187,
+          6630
+        ]
+      },
+      "topSampledFunctions": [
+        [
+          "(anonymous)",
+          11132
+        ],
+        [
+          "(garbage collector)",
+          5681
+        ],
+        [
+          "_send",
+          4963
+        ],
+        [
+          "scheduled",
+          4592
+        ],
+        [
+          "addAggregatedD1MetaToSpan",
+          2732
+        ],
+        [
+          "one",
+          2333
+        ],
+        [
+          "hd",
+          2307
+        ],
+        [
+          "admitAndClaim",
+          1403
+        ],
+        [
+          "_wrappedFetch",
+          910
+        ],
+        [
+          "fetch",
+          772
+        ]
+      ]
+    },
+    "warm": {
+      "isolates": 8,
+      "sampledNonIdleUs": {
+        "min": 1975,
+        "median": 2652.5,
+        "max": 2963,
+        "values": [
+          2620,
+          2148,
+          1975,
+          2963,
+          2850,
+          2614,
+          2785,
+          2685
+        ]
+      },
+      "topSampledFunctions": [
+        [
+          "(anonymous)",
+          4907
+        ],
+        [
+          "scheduled",
+          2699
+        ],
+        [
+          "toJson",
+          2288
+        ],
+        [
+          "admitAndClaim",
+          1935
+        ],
+        [
+          "setAttributes",
+          1180
+        ],
+        [
+          "cb",
+          1126
+        ],
+        [
+          "hd",
+          1024
+        ],
+        [
+          "clearTimeout",
+          976
+        ],
+        [
+          "setTimeout",
+          922
+        ],
+        [
+          "backfill",
+          902
+        ]
+      ]
+    }
+  },
+  "limitations": [
+    "Not deployed or implemented",
+    "Eight sequential local isolates do not prove causal performance gains",
+    "Startup preparation shifts small bounded work before invocation; not a change in Unicode semantics or permissions"
+  ],
+  "decision": "Reject for production: cold median change6150.5\u21925830.5us is small against overlapping ranges and increased maximum7985\u21929565us; warm median2305.5\u21922652.5us worsens. No reliable margin demonstrated.",
+  "verification": "All sixteen maximum fixtures retain empty indexed bodies and source acknowledgement",
+  "productionChanges": false
+}
