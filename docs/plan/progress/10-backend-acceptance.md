@@ -10,8 +10,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend gate
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
-- Completed implementation checklist IDs: None.
-- Active/next checklist group: Authorized B1–B6; next B2 10.1a–e.
+- Completed implementation checklist IDs: 10.1a–e.
+- Active/next checklist group: Authorized B1–B6; next B3 07.3c/f/h/V4.
 - Last updated: 2026-10-11.
 - Blocking issues discovered: 01.V4 accepted by user equivalence decision; Standard is not measured by user decision. G1 remains Not passed.
 - Evidence: Planning documents only; no implementation or runtime validation yet.
@@ -20,7 +20,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 10.1 | Complete public contracts and client | Not started | None yet |
+| 10.1 | Complete public contracts and client | Complete | [B2](../evidence/10-contract-client-validation.md) |
 | 10.2 | Execute the backend MVP acceptance matrix | Not started | None yet |
 | 10.3 | Establish measurable performance and operational readiness | Not started | None yet |
 
@@ -468,3 +468,15 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: No Module 01 blocker. Residual risk: default-branch trigger execution remains unobserved; GitHub-side trigger failure would surface on the first real main push. PR #2 merge is a separate user decision outside this mission.
 - Next actions: Continue B2 10.1a–e and B3 upload closure.
 - Next-session cautions: Do not push main or merge PR #2. Standard remains unmeasured and G1 closed.
+
+### 2026-10-11 — Module 10 B2 public contract/client complete
+
+- Scope and checklist IDs: 10.1a–e; shared 02 public-contract compatibility.
+- Progress: OpenAPI and framework-independent client implemented and verified; all five 10.1 checks close.
+- Change summary: Consolidate existing schemas/methods/labels/errors; typed cookie-free client, safe bounded transport, explicit receipt/resource replay, drift checks and EN/ZH examples.
+- Files/artifacts: [B2 evidence](../evidence/10-contract-client-validation.md), contracts/openapi.json, packages/api-client, tooling/public-api.ts, existing server labels/errors, package/lock workspace links, contract/unit fixtures and API-CLIENT/paired API guides.
+- Verification: Nine focused unit/contract checks pass; final types/lint/api:check/build/docs/licenses/secrets/scoped-format/diff pass. Actual provider/deployment not run. Setup/initial failures and exact commands are in the evidence.
+- Decisions and deviations: No external dependency, protocol/schema meaning/baseline change or lint exemption; primary focused security/compatibility review. 01.V4 user equivalence retained.
+- Blockers/open questions: Standard not measured; overall G1 remains closed.
+- Next actions: B3 evidence-backed 07.3c/f/h/V4 closure, then B4 acceptance matrix.
+- Next-session cautions: No main push/PR merge/SPA; preserve protected drafts and pinned resolutions; estimates never fill Standard acceptance rows.

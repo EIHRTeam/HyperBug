@@ -921,3 +921,15 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: None at preparation.
 - Next actions: Commit the prepared patch, push origin/feat/v1 and verify its remote SHA matches local HEAD; report the resulting commit in the publication response.
 - Next-session cautions: Preserve other suspended audit portions, Module07 remainders and G1/G2/13.G6 state. This publication supplies no new hosted CI, CPU, provider, deployment or release acceptance evidence.
+
+### 2026-10-11 — Module 10 B2 public contract/client complete
+
+- Scope and checklist IDs: 10.1a–e; shared 02 public-contract compatibility.
+- Progress: OpenAPI and framework-independent client implemented and verified; all five 10.1 checks close.
+- Change summary: Consolidate existing schemas/methods/labels/errors; typed cookie-free client, safe bounded transport, explicit receipt/resource replay, drift checks and EN/ZH examples.
+- Files/artifacts: [B2 evidence](../evidence/10-contract-client-validation.md), contracts/openapi.json, packages/api-client, tooling/public-api.ts, existing server labels/errors, package/lock workspace links, contract/unit fixtures and API-CLIENT/paired API guides.
+- Verification: Nine focused unit/contract checks pass; final types/lint/api:check/build/docs/licenses/secrets/scoped-format/diff pass. Actual provider/deployment not run. Setup/initial failures and exact commands are in the evidence.
+- Decisions and deviations: No external dependency, protocol/schema meaning/baseline change or lint exemption; primary focused security/compatibility review. 01.V4 user equivalence retained.
+- Blockers/open questions: Standard not measured; overall G1 remains closed.
+- Next actions: B3 evidence-backed 07.3c/f/h/V4 closure, then B4 acceptance matrix.
+- Next-session cautions: No main push/PR merge/SPA; preserve protected drafts and pinned resolutions; estimates never fill Standard acceptance rows.

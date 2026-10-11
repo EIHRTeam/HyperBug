@@ -15,11 +15,11 @@ G1 covers all three profiles under [ADR 0012](../../decisions/0012-cloudflare-mi
 
 ### Step 10.1 — Complete public contracts and client
 
-- [ ] **10.1a** Consolidate OpenAPI from the public schema source and verify every MVP route's request, response, error, pagination, auth, and rate-limit contract, including the unauthenticated instance capability document from 04.2g with its tier, degradation and password-hash fields.
-- [ ] **10.1b** Build `packages/api-client` against public contracts/OpenAPI, without importing Elysia implementation types or `apps/api-*`.
-- [ ] **10.1c** Implement configurable API URL, bearer token injection, business-request `credentials: "omit"`, cancellation/timeouts, stable headers, safe errors, and bounded retry behavior.
-- [ ] **10.1d** Retry unsafe mutations only with the documented idempotency mechanism; never blindly replay a submitted Issue after an ambiguous network failure.
-- [ ] **10.1e** Add schema drift/compatibility checks and publish English API usage examples for a non-browser client.
+- [x] **10.1a** Consolidate OpenAPI from the public schema source and verify every MVP route's request, response, error, pagination, auth, and rate-limit contract, including the unauthenticated instance capability document from 04.2g with its tier, degradation and password-hash fields.
+- [x] **10.1b** Build `packages/api-client` against public contracts/OpenAPI, without importing Elysia implementation types or `apps/api-*`.
+- [x] **10.1c** Implement configurable API URL, bearer token injection, business-request `credentials: "omit"`, cancellation/timeouts, stable headers, safe errors, and bounded retry behavior.
+- [x] **10.1d** Retry unsafe mutations only with the documented idempotency mechanism; never blindly replay a submitted Issue after an ambiguous network failure.
+- [x] **10.1e** Add schema drift/compatibility checks and publish English API usage examples for a non-browser client.
 
 ### Step 10.2 — Execute the backend MVP acceptance matrix
 

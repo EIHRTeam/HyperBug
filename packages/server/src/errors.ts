@@ -1,5 +1,5 @@
 /** Only catalogued messages cross the API boundary, even for expected errors. */
-const failures = {
+export const failures = {
   BODY_TOO_LARGE: [413, 'Request body exceeds the limit.'],
   INVALID_JSON: [400, 'Invalid JSON body.'],
   INPUT_LIMIT_EXCEEDED: [400, 'Request input exceeds the allowed limits.'],
