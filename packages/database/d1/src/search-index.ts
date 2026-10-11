@@ -184,7 +184,15 @@ export function createD1SearchIndexStore(
           );
         }
         query.signal?.throwIfAborted();
-        const results = statements.length ? await work.batch(statements) : [];
+        // A single fenced upsert is already atomic. Keep its metadata/returned
+        // row while avoiding the provider's batch-result aggregation wrapper.
+        // Multi-document pages still commit as one transaction.
+        const results =
+          statements.length === 1
+            ? [await statements[0]!.all()]
+            : statements.length
+              ? await work.batch(statements)
+              : [];
         return {
           processed: page.length,
           updated: results.reduce((n, result) => n + result.results.length, 0),

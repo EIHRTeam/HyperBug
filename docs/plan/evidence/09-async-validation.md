@@ -515,3 +515,17 @@ Next measured candidate: the index writer currently wraps even one `INSERT ... R
 The uncommitted D1 candidate sends one fenced INSERT RETURNING through metered prepared-statement all; multi-document pages keep batch transactionality. SQL,current canonical revision/projection/visibility checks,limits and abort/metadata gates are unchanged; source acknowledgement remains a separate post-I/O operation. Focused actual D116 search/consumer checks plus the previously unselected visibility/day-admission fence1 pass,typecheck/lint/boundaries/scoped format pass. This confirms single-statement RETURNING and metadata in actual local D1; PostgreSQL unchanged/not rerun.
 
 [Eight-isolate actual composed diagnostic](09-single-index-write-local-profile.json) gives cold/warm sampled medians7248/2680us versus baseline6150.5/2305.5,with overlapping ranges. It does not demonstrate benefit. A fresh one-sample hosted comparison is prepared with a new backup; candidate stays uncommitted and will be rejected if CPU does not improve. No target/capacity or early acknowledgement change.
+
+
+## R13 single-write hosted comparison
+
+Fresh167-record/59-table logical backup restores locally/FKs before mutation; original resource inventory refreshed. New dispatch-only owned test Worker/domain uses existing test D1,zero Cron/Queue/Workflow/R2/schema changes and no job/precommitted witness. Version6edcaf81-d781-46fe-acdc-13250a69afee after private token installation calls actual Minimum scheduled method at fixed phase0. Full composition and max200/32768 fixture match R12 dispatch; candidate D1 single-write method is the only production source difference,hashed in private source receipt.
+
+Free human-attested delayed adaptive preflight05:13:57 UTC:4993699 reads,99777 writes,99780 requests remaining;not billing. Initial read-only HTTPS ping still has certificate provisioning failure;no authenticated function CPU yet. Tail38337(PID79131),guardian82945(PID79057),original absolute cleanup05:27:26.438 UTC2026-10-11. Source stays stable;candidate is not an accepted speedup and remains uncommitted. CPU/outcome bound,completion or deadline cleans and independently compares167 original records/singletons/resources.10ms/native-Cron/gate obligations unchanged.
+
+
+### R13 full composed hosted dispatch9ms and cleanup
+
+[Final R13 receipt](09-hosted-single-write-dispatch-receipt.json) records actual authenticated HTTP dispatch through full Minimum scheduled composition: CPU9ms/wall467ms,HTTP200,one safe log,10 statements/conservative subrequests,63 reads/22 writes. Maximum title200/body32768 stays canonical;indexrevision1,title371bytes,derived body0 and source done/attempt1. Earlier R12 full composed observation was14ms. Separate one-sample trials do not prove causality or distribution;local medians worsened. The refactor preserves identical SQL,current-state/revision/projection/visibility checks,post-I/O meters/abort and separate source acknowledgement. One statement remains atomic;multiple statements keep transactional batch.17 focused actual D1 passes/types/lint/boundaries/format remain the semantic evidence.
+
+Guardian cleans on completion:167 original records/exact singletons/FKs/original resources preserved,owned work/resources zero,both handles exit0/PIDs absent and private token removed. All applied migrations/history retained;one timeline/one audit record and inactive fixtures remain. No native-Cron/full-profile/billing/paid Standard/release acceptance claimed. Retain small refactor and target10ms;new native proof needs fresh backup/inventory.

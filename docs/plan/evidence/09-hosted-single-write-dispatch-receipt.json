@@ -1,0 +1,183 @@
+{
+  "recordedAt": "2026-10-11T05:23:40.173891+00:00",
+  "trial": "R13",
+  "acceptance": "One full composed hosted HTTP max dispatch sample meets10ms at9ms; independent cleanup complete; native Cron acceptance still incomplete",
+  "plan": "Workers Free (user-attested)",
+  "cpuTargetMs": 10,
+  "invocationKind": "Authenticated HTTP fixture invokes actual minimum.ts scheduled method;not native Cron",
+  "productionChange": "Single fenced index upsert uses metered all/RETURNING;multi-document page remains batch transaction",
+  "resources": {
+    "worker": "hyperbug-09-native-2d4c071e402c",
+    "hostname": "async-http-2d4c071e402c.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cronCount": 0,
+    "queues": "not created",
+    "workflows": "not created",
+    "r2": "unused"
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-11T05:13:57.385Z",
+      "kind": "Delayed adaptive analytics,not billing",
+      "remainingD1Reads": 4993699,
+      "remainingD1Writes": 99777,
+      "remainingWorkerRequests": 99780
+    },
+    "after": {
+      "at": "2026-10-11T05:20:56.225Z",
+      "kind": "Delayed adaptive analytics,not billing",
+      "remainingD1Reads": 4992975,
+      "remainingD1Writes": 99744,
+      "remainingWorkerRequests": 99715
+    }
+  },
+  "deployment": {
+    "createdAt": "2026-10-11T05:16:04.046244Z",
+    "deploymentId": "06a47255-3309-40f3-b161-f3f889ce62a9",
+    "versionIds": [
+      "6edcaf81-d781-46fe-acdc-13250a69afee"
+    ],
+    "source": {
+      "at": "2026-10-11T05:13:54.595Z",
+      "commit": "82c8e1e361fb4eed9783c2abcd54b77e420a8821",
+      "mode": "dispatch",
+      "invocation": "Authenticated HTTP calls actual Minimum scheduled method; no native Cron proof",
+      "artifactSha256": {
+        "proof-worker.mjs": "2ecad8556d6bc0e595de15955cf594761f0061c9328015ff81251266f8cc46e9",
+        "rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+        "source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777"
+      },
+      "extraFaultPreflightQueries": 0,
+      "uncommittedSourceChange": {
+        "path": "packages/database/d1/src/search-index.ts",
+        "sha256": "0fc1a26dbc023d1d98326b0bb1804538c9e82f8d47dfe820955196d371fdc834",
+        "method": "single fenced index write uses all; multi-document keeps batch"
+      },
+      "noDeployment": true
+    }
+  },
+  "measurement": {
+    "at": "2026-10-11T05:19:27.776000+00:00",
+    "cpuMs": 9,
+    "wallMs": 467,
+    "outcome": "ok",
+    "metrics": [
+      {
+        "component": "async-minimum",
+        "phase": 0,
+        "outcome": "done",
+        "job": null,
+        "queries": 10,
+        "subrequests": 10,
+        "reads": 63,
+        "writes": 22,
+        "backlog": {
+          "pending": 0,
+          "failed": 0,
+          "oldestAt": null
+        },
+        "ageMs": null
+      }
+    ],
+    "exceptions": [],
+    "logCount": 1
+  },
+  "canonical": {
+    "capturedAt": "2026-10-11T05:20:00.811Z",
+    "revision": 1,
+    "indexedRevision": 1,
+    "titleCodePoints": 200,
+    "bodyCodePoints": 32768,
+    "indexedTitleBytes": 371,
+    "indexedBodyBytes": 0,
+    "projectionVersion": "title-v1:hyperbug-text-1",
+    "deliveryState": "done",
+    "attempts": 1
+  },
+  "comparison": {
+    "previousReceipt": "09-hosted-composed-http-recovery-receipt.json",
+    "previousComposedHttpCpuMs": 14,
+    "currentComposedHttpCpuMs": 9,
+    "interpretation": "Different fresh trials/deployments,one sample each;observations do not prove causal speedup or distribution. Local sample medians worsened."
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 167,
+      "foreignKeysValid": true,
+      "singletonStateRestored": true,
+      "singletonCounts": {
+        "async_minimum_budget": 1,
+        "async_minimum_cursors": 2,
+        "search_budget": 0
+      },
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "original": {
+      "at": "2026-10-11T05:20:49.272Z",
+      "originalWorkerCount": 2,
+      "remainingWorkerCount": 2,
+      "originalWorkersPreserved": true,
+      "originalDomainsPreserved": true,
+      "ownedWorkerAbsent": true,
+      "ownedDomainAbsent": true,
+      "originalSchedulesPreserved": true,
+      "originalQueuesPreserved": true,
+      "originalWorkflowsPreserved": true
+    },
+    "processes": {
+      "tail": {
+        "handle": 38337,
+        "pid": 79131,
+        "terminal": true,
+        "exitCode": 0
+      },
+      "guardian": {
+        "handle": 82945,
+        "pid": 79057,
+        "terminal": true,
+        "exitCode": 0
+      }
+    },
+    "guardian": {
+      "at": "2026-10-11T05:20:56.238Z",
+      "reason": "HTTP diagnostic stages complete",
+      "cleaned": true
+    },
+    "privateTokenRemoved": true
+  },
+  "limitations": [
+    "One9ms sample has1ms measured margin;not sustained cold/p99 acceptance",
+    "Authenticated HTTP overhead included;no product HTTP/auth acceptance",
+    "Native Cron proof remains required;local/profile/billing/paid Standard/release acceptance separate",
+    "No job/precommitted witness in this dispatch-only trial;R12 supplies actual hosted job recovery",
+    "Raw DNS inventory unavailable;Worker/domain mappings verified",
+    "Target and numeric quotas/limits remain unchanged;canonical content limits preserved",
+    "09.1f/09.V6 incomplete;09.3e suspended;G1/G2 closed;13.G6 open"
+  ]
+}

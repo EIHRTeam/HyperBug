@@ -803,3 +803,29 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Whether native result handling changes whole composed CPU;10ms/native Cron obligations remain open.
 - Next actions: Fresh bounded authenticated hosted dispatch comparison after new167-record backup/inventory;collect actual CPU and cleanup,then retain/reject candidate based on evidence.
 - Next-session cautions: Do not claim performance improvement or commit candidate as accepted yet. Keep all application source stable once comparison is deployed,no early acknowledgement/limit weakening,private/protected staging,push/PR edit,audit/gate closure.
+
+
+### 2026-10-11 — R13 bounded single-write hosted comparison deployed
+
+- Scope and checklist IDs:09.1f/09.V6 and Module08 D1 index optimization,with data/operational dependencies.
+- Progress: New dispatch-only authenticated HTTP comparison deployed; candidate remains uncommitted. No native-Cron claim or job fixture/precommitted witness.
+- Change summary: Fresh167-record/59-table restored backup and inventory; exact same max200/32768 producer/full scheduled entry/private request guard as R12 dispatch,with only candidate single-write method changed.
+- Files/artifacts: Ignored module09-hosted-r13 backup/config/source hashes/deploy/guard logs; [comparison evidence](../evidence/09-async-validation.md#r13-single-write-hosted-comparison).
+- Verification: Actual post-secret version6edcaf81;zero Cron/Queue/Workflow/R2/schema change. Free user-attested preflight delayed adaptive headroom4993699 reads,99777 writes,99780 requests at05:13:57 UTC. First read-only TLS readiness ping still provisioning;no authenticated CPU result.
+- Decisions and deviations: Local timing does not demonstrate gain; one hosted comparison resolves whether to retain/reject candidate. Numeric limits,target10ms,semantics and post-I/O acknowledgement unchanged.
+- Blockers/open questions: Native whole-function timing and167-record cleanup pending;09.1f/09.V6 stillopen.
+- Next actions: Bounded readiness check,private dispatch,current-state/CPU capture and cleanup;retain only with evidence.
+- Next-session cautions: R13 tail38337(PID79131),guardian82945(PID79057),absolute cleanup05:27:26.438 UTC2026-10-11. Never restart an expired guard/reuse baseline/new simultaneous trial;no source drift,private/protected staging,push/PR edit,audit/gate closure.
+
+
+### 2026-10-11 — Single-write hosted sample9ms and verified cleanup
+
+- Scope and checklist IDs:09.1f/09.V6 authorized optimization;Module08 D1 index seam and data/operational dependencies.
+- Progress: Full composed hosted max200/32768 dispatch uses9ms,versus earlier R12 observation14ms;one sample each,not causal/distribution proof. Retain the small single-write refactor after meaningful semantic checks and observed hosted fit.
+- Change summary: Use metered all/RETURNING for one atomic fenced upsert;multi-document pages keep batch transactions. All SQL,current-state/abort/metadata gates,numeric bounds,three provider calls/ten statements and post-effect acknowledgement retained.
+- Files/artifacts: packages/database/d1/src/search-index.ts,[R13 receipt](../evidence/09-hosted-single-write-dispatch-receipt.json),[local diagnostic](../evidence/09-single-index-write-local-profile.json),internal runbook/ADR/progress.
+- Verification: Version6edcaf81,HTTP200,CPU9ms/wall467ms,one safe log,10 statements/conservative subrequests,63 reads/22 writes;revision1 indexed/acknowledged,title371bytes,derived body0,canonical lengths unchanged. Earlier focused D1 tests17 unique passes,typecheck/lint/boundaries/source format pass.167 original records/exact singleton sets/FKs/original two Workers/domains/schedules/Queues/Workflows preserved;owned work/resources zero;tail38337/guardian82945 exit0,PIDs absent,private token removed. PostgreSQL unchanged/not rerun. Final docs/links/JSON/secrets/diff pending commit verification.
+- Decisions and deviations:9ms has only1ms measured margin;local medians worsened,so do not claim a stable speedup. Keep10ms and title-only reduction;further capacity/target change unnecessary for this sample. No source acknowledgement coupling or security/limit relaxation.
+- Blockers/open questions: Native Cron/full composed scheduled acceptance remains;09.1f/09.V6 incomplete.
+- Next actions: Commit coherent verified refactor;fresh bounded native Cron job interruption/redeployment/composed dispatch trial with new baseline and guard,then requirement audit.
+- Next-session cautions: R13 closed/no live resources/processes;do not restart/reuse baseline/token. Keep source stable once new trial deploys;no private/protected staging,push/PR edit,paid feature,audit/gate closure.

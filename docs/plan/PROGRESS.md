@@ -1271,3 +1271,8 @@ After R11 cleanup, R12 has a fresh162-record backup and independent15-minute gua
 ### 2026-10-11 — Hosted composed recovery verified; dispatch CPU still fails
 
 [Actual hosted composed HTTP receipt](evidence/09-hosted-composed-http-recovery-receipt.json) proves invocation interruption9ms/clean redeployment resume7ms,exact[0,1] and pending-event survival. Full max200/32768 dispatch14ms fails10ms. Guardian independently restores162 baseline records/singletons/FKs/original resources;owned work/resources zero,both handles terminal,private token removed. HTTP evidence cannot replace native Cron.09.1f/09.V6 stayopen,09.3e suspended,G1/G2 closed,13.G6 open. Next: measured single-index-write provider-result refactor,not target/capacity change.
+
+
+### 2026-10-11 — Single fenced index write meets composed HTTP sample
+
+The small D1 single-write refactor preserves multi-document transactions/SQL/fences/limits and17 focused D1 checks. [Fresh composed HTTP max dispatch9ms](evidence/09-hosted-single-write-dispatch-receipt.json) meets10ms,after R12 observation14ms;one sample each and worse local medians do not prove a stable/causal speedup.167 original records/singletons/FKs/resources preserved,owned work/resources zero,terminal processes/private token removed. R12 hosted job recovery remains verified;native Cron09.1f/09.V6 stayopen,target10ms unchanged,09.3e suspended,G1/G2 closed,13.G6 open. Next fresh bounded native proof follows commit.
