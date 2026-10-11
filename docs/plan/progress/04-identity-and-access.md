@@ -1095,3 +1095,15 @@ Native pilot final headroom: corrected read-only GraphQL at14:35:25UTC estimates
 - Next-session cautions: Trials1–4 cleaned; never reuse names/state/backups/tokens. No extra load or crypto tuning to force a pass. Existing unrelated certificates unchanged; private backups retained ignored; protected root files unstaged.
 
 Final repair/evidence verification: documentation build, known credential-signature scan,918 changed-file relative links, both new scalar JSON receipts and git diff --check pass. Source scoped formatter/types/lint and4 focused production-entry regressions already pass; unchanged green lanes not repeated.
+
+### 2026-10-12 — Native composition evidence clarified
+
+- Scope and checklist IDs: Evidence follow-up for the user-authorized Module04 composition repair supporting 10.2a/f and 10.3b/g; no further implementation.
+- Progress: Repair remains verified by its recorded four production-entry regressions and native upload. [Retained-log review](../evidence/10-native-retained-log-review.md) shows the twelve later CPU events are GET404 root/eight-letter requests outside the acceptance harness, not measured auth-path acceptance.
+- Change summary: Link the privacy-safe scalar supplement and distinguish the 404 CPU concern from auth/MVP performance; no checklist or policy changes.
+- Files/artifacts: This record, Module10 reports and retained-log supplement.
+- Verification: Twelve retained owned API invocation records, all status404/outcome ok/CPU6–21ms; unique CPU/wall/outcome match with original tail set. Documentation checks only; unchanged application lanes reused.
+- Decisions and deviations: User preference requires MCP or Wrangler for future provider work; dashboard tab closed. No new traffic, resources, secrets, certificate mutation or scope extension.
+- Blockers/open questions: Standard unmeasured, actual Minimum metrics/capacity and harness TLS unavailable; G1 Not passed and 13.G6 open.
+- Next actions: Resolve Module10 external/profile constraints before further acceptance; leave repaired auth invariants intact.
+- Next-session cautions: Do not treat 404 CPU as auth quantiles or change crypto/thresholds; cleaned trial state must not be reused. No main push, PR merge, paid profile or SPA authorized.

@@ -11,9 +11,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
 - Completed implementation checklist IDs: 10.1a–e, 10.2b/c/d/e, 10.3a/c/d/e/f.
-- Active/next checklist group: B1–B6 reported; local Minimum integration passes.10.2d and local Minimum metrics are verified;10.2a/f and10.3b/g remain partial. The authorized auth-composition repair passes local fail-closed regressions and native production upload; fresh TLS-gated trial reaches no acceptance HTTP; unattributed native CPU exceeds the existing stop threshold.
-- Last updated: 2026-10-11.
-- Blocking issues discovered: Cross-site CSP blocker resolved under authorized ADR0015; auth-composition upload blocker is repaired and native upload passes; verified TLS remains unavailable and unlabelled native CPU reaches21ms, triggering safe stop. Standard is not measured by user decision; actual Minimum full-profile/headroom/capacity evidence remains incomplete. G1 remains Not passed.
+- Active/next checklist group: B1–B6 reported; local Minimum integration passes.10.2d and local Minimum metrics are verified;10.2a/f and10.3b/g remain partial. The authorized auth-composition repair passes local fail-closed regressions and native production upload; fresh TLS-gated trial reaches no acceptance HTTP; retained invocation logs establish CPU overflow on the 404 path outside the harness.
+- Last updated: 2026-10-12.
+- Blocking issues discovered: Cross-site CSP blocker resolved under authorized ADR0015; auth-composition upload blocker is repaired and native upload passes; verified TLS remains unavailable and retained 404 invocation CPU reaches 21 ms, triggering safe stop. Standard is not measured by user decision; actual Minimum full-profile/headroom/capacity evidence remains incomplete. G1 remains Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
 
 ## Step tracking
@@ -654,3 +654,17 @@ Native pilot final headroom: corrected read-only GraphQL at14:35:25UTC estimates
 - Next-session cautions: Trials1–4 cleaned; never reuse names/state/backups/tokens. No extra load or crypto tuning to force a pass. Existing unrelated certificates unchanged; private backups retained ignored; protected root files unstaged.
 
 Final repair/evidence verification: documentation build, known credential-signature scan,918 changed-file relative links, both new scalar JSON receipts and git diff --check pass. Source scoped formatter/types/lint and4 focused production-entry regressions already pass; unchanged green lanes not repeated.
+
+### 2026-10-12 — Retained native logs and final blocked audit
+
+- Scope and checklist IDs: Read-only evidence clarification for 10.2a/f, 10.3b/g and 10.G2/G4/G5; no product changes or new trial.
+- Progress: Twelve retained owned API invocation records establish GET404 root/eight-letter paths, including CPU overflow. All twelve CPU/wall/outcome tuples match the original scalar tail receipt uniquely; no timestamp-only or request-ID join claimed. No checklist item closes.
+- Change summary: Preserve the original trial4 receipt; add privacy-safe scalar supplement and interpretation across matrix/readiness/quota/native/gate reports. Correct the current progress date.
+- Files/artifacts: [Retained-log review](../evidence/10-native-retained-log-review.md), its linked JSON and existing reports; Module04 progress and master summary.
+- Verification: Signed-in retained Cloudflare Logs UI, exact owned API Worker/raw cf-worker-event filter, twelve expanded records. Documentation-only structure/relative links/JSON/tuple comparison/scoped formatting/diff checks recorded below; application lanes not rerun because behavior is unchanged.
+- Decisions and deviations: User now requires MCP or Wrangler for provider work; temporary dashboard log tab closed. Initial displayed-type filter returned no records, corrected from inspected raw type. Standard remains not measured; no new traffic/resource/certificate/SSL mutation, paid/main/merge/SPA or scope extension.
+- Blockers/open questions: Same Standard exclusion persists across three consecutive goal turns; actual Minimum integration/metrics/quota attribution/capacity and verified TLS remain unavailable, with 404 CPU above the existing stop. No meaningful authorized acceptance action remains. Goal requires an external/profile decision and authorized resolution of native stop conditions; it is blocked, not complete.
+- Next actions: Preserve 10.2a/f, 10.3b/g and 10.G2/G4/G5 unchecked. Resume dependent acceptance only when constraints or external conditions change; obtain needed provider access through MCP/Wrangler and report capability gaps.
+- Next-session cautions: Trials1–4 are cleaned; never reuse names/backups/tokens or run extra load under the 10ms stop. Do not infer auth CPU from these 404 samples, weaken security/thresholds, measure Standard without authorization, or stage protected root drafts. G1 Not passed, SPA blocked, 13.G6 open.
+
+Final documentation verification: installed VitePress1.6.4 docs build passes1.41s, known credential-signature scan passes,588 relative links/scalar JSON/twelve unique tuple comparisons/seven unchanged incomplete IDs/diff pass. pnpm's wrapper refuses on virtual-store setting mismatch; no reinstall/config edit. Installed oxfmt excludes docs under the existing docs/** rule, so formatting is recorded excluded. No application lanes or hosted trials rerun.
