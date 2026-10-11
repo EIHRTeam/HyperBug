@@ -579,3 +579,42 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native Cron/full composed scheduled acceptance remains;09.1f/09.V6 incomplete.
 - Next actions: Commit coherent verified refactor;fresh bounded native Cron job interruption/redeployment/composed dispatch trial with new baseline and guard,then requirement audit.
 - Next-session cautions: R13 closed/no live resources/processes;do not restart/reuse baseline/token. Keep source stable once new trial deploys;no private/protected staging,push/PR edit,paid feature,audit/gate closure.
+
+
+### 2026-10-11 — R14 native composition retry preparation
+
+- Scope and checklist IDs: Authorized09.1f/09.V6 continuation using committed b756222; data/search/operational dependencies.
+- Progress: Prepare a fresh bounded native Cron fault/redeploy/resume/maximum-dispatch trial; earlier R12/R13 HTTP results do not replace native execution.
+- Change summary: Private helpers retain actual Minimum entry/configuration and fenced D1 fault; new baseline, independent cleanup guardian and standard Wrangler expiry refresh guard. No application change or target revision.
+- Files/artifacts: Ignored module09-native-r14 helpers/backup; [requirement audit](../evidence/09-completion-audit.md).
+- Verification: Source/working tree inspected; previous trials closed. Private helper syntax passes; fresh backup in progress. Context7 lookup2026-10-11 confirms declarative Cron, omitted schedules preserved, empty schedules removed, Free Cron CPU10ms. Propagation/credential-refresh details require provider/runtime observation.
+- Decisions and deviations: Keep10ms/title-only capacity. Registration and unobserved execution never count as CPU acceptance. Standard billing/full-profile acceptance remains separate.
+- Blockers/open questions: Native composed recovery/CPU and current-baseline cleanup remain unverified.
+- Next actions: Complete fresh backup/inventory/headroom, start finite guardians before mutations, then observe actual scheduled frames and clean independently.
+- Next-session cautions: Never reuse earlier baseline or restart an expired trial; preserve protected drafts, original resources/data/history, suspended09.3e, closed G1/G2 and open13.G6.
+
+
+### 2026-10-11 — R14 committed native trial running
+
+- Scope and checklist IDs:09.1f/09.V6 continuation and data/search/operational dependencies.
+- Progress: Fresh committed b756222 native composed fault/redeploy/resume/dispatch trial deployed; no scheduled execution observed yet.
+- Change summary: One declarative5-minute Cron, existing max producer and actual job at checkpoint0/no witnesses; bounded supervisor plus independent cleanup and credential guards. No production source/target/capacity change.
+- Files/artifacts: [R14 running evidence](../evidence/09-async-validation.md#r14-committed-source-native-retry--2026-10-11), requirement audit; ignored private baseline/logs/helpers.
+- Verification:59 tables/172 baseline records restored with valid FKs; original two Workers/zero schedules/Queues/Workflows captured. Version36634181/one Cron registered. Actual cancelled sibling and oversized refusal hold; current job0/no witnesses and pending event confirmed. Preflight delayed headroom4992005 reads/99705 writes/99715 requests; Free attested,billing unavailable.
+- Decisions and deviations: Keep10ms/title-only; unobserved Cron is not CPU failure. Read-only inventory transient EOF retried before mutation. Application verification not repeated because committed source is unchanged.
+- Blockers/open questions: Native composed execution/recovery/CPU and172-record cleanup unverified;09.1f/09.V6 open.
+- Next actions: Poll existing live supervisor67280/tail58992/guardian11126/auth78249; inspect safe native frames/current D1, then independently verify original data/resources and terminal handles.
+- Next-session cautions: Native deadline06:14:21/cleanup06:19:21 UTC2026-10-11; guardianPID81021,auth81024,tail81119,supervisor81122. Never restart/extend/reuse baseline/new simultaneous trial or claim cleanup while live. Preserve audit/gate/protected-file boundaries.
+
+
+### 2026-10-11 — R14 running-trial documentation checkpoint
+
+- Scope and checklist IDs:09.1f/09.V6 pending native proof; affected data/search/operations record.
+- Progress: Running trial documented; no native scheduled frame, acceptance or cleanup claim.
+- Change summary: Preserve fixed deadlines/live handles and distinguish committed source from registration evidence.
+- Files/artifacts: R14 evidence, requirement audit and affected progress records.
+- Verification: docs:build, scan:secrets,328 relative file links/new R14 anchors, Module09 receipt JSON and diff whitespace pass. A simple broad anchor normalizer mismatches an existing historical B3 anchor; broad anchor validation is not claimed. No application lanes repeated for this documentation/deployment batch.
+- Decisions and deviations:10ms/title-only unchanged; no billing/full-profile/gate acceptance.
+- Blockers/open questions: Actual native Cron recovery/CPU and cleanup remain open.
+- Next actions: Continue observing supervisor67280, tail58992, guardian11126 and auth78249; retain original06:14:21 observation/06:19:21 cleanup deadlines.
+- Next-session cautions: All four processes confirmed live; poll existing handles/state, never restart or extend this trial or create a simultaneous trial. Keep09.3e suspended,G1/G2 closed,13.G6 open and protected drafts untracked.
