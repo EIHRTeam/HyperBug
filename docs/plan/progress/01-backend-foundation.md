@@ -11,7 +11,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 00 complete; G0 passed.
 - Implementation started: Yes.
 - Completed implementation checklist IDs: 01.1a–01.1e, 01.2a–01.2f, 01.3a–01.3e, 01.V1–01.V3.
-- Active/next checklist group: 01.3f and 01.V4, the post-completion SAST increment added on 2026-09-18. The original foundation acceptance remains met; these two items are open, so the module is no longer Complete.
+- Active/next checklist group: 01.V4 (main-push evidence), the post-completion SAST increment added on 2026-09-18. The original foundation acceptance remains met; 01.3f is now verified; 01.V4 remains open, so the module is no longer Complete.
 - Last updated: 2026-10-05 (PR 2 CI repair).
 - Blocking issues discovered: None remaining for the original phase acceptance. An earlier intermittent Node reset remains recorded; later local, clean-checkout and hosted runs pass.
 - Evidence: [Local foundation validation](../evidence/01-foundation-validation.md); [PR 2 CI repair](../evidence/2026-10-05-pr2-ci-repair.md). Hosted PR CodeQL analysis and Security API alerts are confirmed; the full 01.V4 main-push/open/update requirement remains incomplete.
@@ -668,3 +668,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None. Repair commit 54bdf8aa2e14d4640aec4bab92f099253f142318 is published to feat/v1 / PR 2; fresh hosted Backend Tests, CodeQL and Documentation all completed successfully.
 - Next actions: CI repair complete. Preserve existing owning-module next actions and all module/gate remainders; no further application checks required for this documentation-only closing record.
 - Next-session cautions: Preserve all protected untracked drafts, audit suspension and G1/G2/13.G6 state. This repair creates no hosted Cloudflare resources and changes no application behavior or dependencies.
+
+### 2026-10-11 — Module 10 B1 hosted SAST closure
+
+- Scope and checklist IDs: 01.3f closed; 01.V4 partially verified; module 10 prerequisite assessment.
+- Progress: Revalidated hosted CodeQL PR analysis and uploaded Security results through the GitHub API. The earlier no-hosted-run blocker is historical, not current.
+- Change summary: Close the workflow implementation item; retain the independent main-push verification and Module 01 In progress.
+- Files/artifacts: [SAST evidence](../evidence/10-sast-validation.md); module 01 checklist/progress and module 10 progress.
+- Verification: Actual GitHub run 37266055745 is pull_request/completed/success; analysis job 111623017334 succeeds. Latest Security analysis 1931226057 on PR merge c364e5369a5baa20fbae9a806d0a1d92c782312e has 87 rules, zero results and no analysis error; open-alert query returns an empty array. Static workflow inspection confirms the default suite and job-local permissions. No application test needed for documentation-only B1.
+- Decisions and deviations: No workflow, query, token scope, branch or PR change. No main push authorized.
+- Blockers/open questions: 01.V4 main-push half requires the user's publication decision. Asked asynchronously; independent module 10 work may continue.
+- Next actions: B2 10.1a–e contract/client; leave 01.V4 open until actual main evidence exists.
+- Next-session cautions: Preserve protected drafts; PR analysis is not main-push evidence; G1 and the SPA remain closed.

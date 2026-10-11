@@ -6,14 +6,14 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Not started
+- Status: In progress
 - Delivery scope: MVP backend gate
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
-- Implementation started: No.
+- Implementation started: Yes; B1 prerequisite evidence consolidated.
 - Completed implementation checklist IDs: None.
-- Active/next checklist group: 10.1, after prerequisites are satisfied.
-- Last updated: 2026-09-17.
-- Blocking issues discovered: None during planning; prerequisite completion is still required.
+- Active/next checklist group: Authorized B1–B6; next B2 10.1a–e.
+- Last updated: 2026-10-11.
+- Blocking issues discovered: 01.V4 main-push evidence; Standard is not measured by user decision. G1 remains Not passed.
 - Evidence: Planning documents only; no implementation or runtime validation yet.
 
 ## Step tracking
@@ -444,3 +444,15 @@ Every session affecting this module MUST append an entry following the [required
 - Next-session cautions: R14 closed; never restart or reuse its baseline. New authorized hosted work needs fresh backup/inventory. Keep protected/private files unstaged; no push/PR edit, paid capability, production action, crypto tuning, SPA or audit resume.
 
 Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secrets`,675 relative file links/new R14 anchors, receipt JSON, all24 stable Module09 IDs (23 complete/09.3e suspended), Module08 integration boxes, common production bundle hashes and `git diff --check` pass. Production source/tests/tooling/dependencies are unchanged since b756222; no unchanged application lane rerun. Reader EN/ZH content and gate/status/handoff consistency checked; documentation formatting is not claimed because the formatter excludes docs.
+
+### 2026-10-11 — Module 10 B1 hosted SAST closure
+
+- Scope and checklist IDs: 01.3f closed; 01.V4 partially verified; module 10 prerequisite assessment.
+- Progress: Revalidated hosted CodeQL PR analysis and uploaded Security results through the GitHub API. The earlier no-hosted-run blocker is historical, not current.
+- Change summary: Close the workflow implementation item; retain the independent main-push verification and Module 01 In progress.
+- Files/artifacts: [SAST evidence](../evidence/10-sast-validation.md); module 01 checklist/progress and module 10 progress.
+- Verification: Actual GitHub run 37266055745 is pull_request/completed/success; analysis job 111623017334 succeeds. Latest Security analysis 1931226057 on PR merge c364e5369a5baa20fbae9a806d0a1d92c782312e has 87 rules, zero results and no analysis error; open-alert query returns an empty array. Static workflow inspection confirms the default suite and job-local permissions. No application test needed for documentation-only B1.
+- Decisions and deviations: No workflow, query, token scope, branch or PR change. No main push authorized.
+- Blockers/open questions: 01.V4 main-push half requires the user's publication decision. Asked asynchronously; independent module 10 work may continue.
+- Next actions: B2 10.1a–e contract/client; leave 01.V4 open until actual main evidence exists.
+- Next-session cautions: Preserve protected drafts; PR analysis is not main-push evidence; G1 and the SPA remain closed.
