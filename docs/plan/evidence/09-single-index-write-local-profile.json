@@ -1,0 +1,133 @@
+{
+  "method": "Eight local workerd isolates/100us V8 non-idle samples; actual scheduled entry; maximum fixture; diagnostic not provider CPU",
+  "change": "Single index upsert uses metered statement.all; multi-document pages retain atomic batch",
+  "baseline": "09-composed-local-profile.json",
+  "results": {
+    "cold": {
+      "isolates": 8,
+      "sampledNonIdleUs": {
+        "min": 5057,
+        "median": 7248.0,
+        "max": 9829,
+        "values": [
+          7616,
+          9829,
+          8071,
+          6880,
+          9735,
+          5057,
+          5789,
+          5922
+        ]
+      },
+      "topSampledFunctions": [
+        [
+          "(anonymous)",
+          13690
+        ],
+        [
+          "_send",
+          9076
+        ],
+        [
+          "scheduled",
+          6064
+        ],
+        [
+          "Ov",
+          4536
+        ],
+        [
+          "(garbage collector)",
+          3387
+        ],
+        [
+          "ES",
+          2740
+        ],
+        [
+          "backfill",
+          2599
+        ],
+        [
+          "enterSpan",
+          1832
+        ],
+        [
+          "aggregateD1Meta",
+          1556
+        ],
+        [
+          "admitAndClaim",
+          1403
+        ]
+      ]
+    },
+    "warm": {
+      "isolates": 8,
+      "sampledNonIdleUs": {
+        "min": 1481,
+        "median": 2680.0,
+        "max": 5609,
+        "values": [
+          2752,
+          2107,
+          2745,
+          3156,
+          2615,
+          5609,
+          1481,
+          1851
+        ]
+      },
+      "topSampledFunctions": [
+        [
+          "(anonymous)",
+          4879
+        ],
+        [
+          "toJson",
+          3978
+        ],
+        [
+          "scheduled",
+          2941
+        ],
+        [
+          "_send",
+          2189
+        ],
+        [
+          "aggregateD1Meta",
+          1180
+        ],
+        [
+          "setAttributes",
+          1152
+        ],
+        [
+          "Ty",
+          956
+        ],
+        [
+          "backfill",
+          888
+        ],
+        [
+          "text",
+          766
+        ],
+        [
+          "c",
+          756
+        ]
+      ]
+    }
+  },
+  "verification": "Sixteen composed max200/32768 dispatches acknowledge source,index unchanged revision and empty derived body",
+  "limitations": [
+    "Startup excluded",
+    "Sequential local samples are noisy and do not prove native speedup",
+    "No target/capacity change or acceptance claim"
+  ]
+}

@@ -1261,3 +1261,13 @@ R10 stopped on the goal service's paused state with no native execution or CPU r
 ### 2026-10-11 — Composed diagnostics and unobserved R11 cleanup
 
 Full composed local max dispatch cold/warm sampled medians6150.5/2305.5us and jobs3506.5/2035us are diagnostics. Startup tokenizer preparation fails to demonstrate margin and is rejected. [R11 unaccepted receipt](evidence/09-hosted-composed-cron-trial-receipt.json) records no native scheduled event, expired-auth guardian failure and independently recovered cleanup:157 original records/singletons/FKs/resources preserved,owned work/resources zero,all handles terminal. Goal service active;09.1f/09.V6 remain open,10ms unchanged,09.3e suspended,G1/G2 closed,13.G6 open. No native CPU failure inferred.
+
+
+### 2026-10-11 — Short hosted composed-function diagnostic
+
+After R11 cleanup, R12 has a fresh162-record backup and independent15-minute guard. Authenticated HTTP invokes the actual Minimum scheduled method with ordinary configuration, fixed phases and no Cron; it can inform CPU/redeployment recovery, not replace native Cron proof. Native obligations remain open; no target/capacity change,source edit,gate closure or publication. See [owning progress](progress/09-async-and-workflows.md#2026-10-11--r12-short-authenticated-hosted-function-diagnostic).
+
+
+### 2026-10-11 — Hosted composed recovery verified; dispatch CPU still fails
+
+[Actual hosted composed HTTP receipt](evidence/09-hosted-composed-http-recovery-receipt.json) proves invocation interruption9ms/clean redeployment resume7ms,exact[0,1] and pending-event survival. Full max200/32768 dispatch14ms fails10ms. Guardian independently restores162 baseline records/singletons/FKs/original resources;owned work/resources zero,both handles terminal,private token removed. HTTP evidence cannot replace native Cron.09.1f/09.V6 stayopen,09.3e suspended,G1/G2 closed,13.G6 open. Next: measured single-index-write provider-result refactor,not target/capacity change.

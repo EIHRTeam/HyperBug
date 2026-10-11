@@ -467,3 +467,42 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Native Cron missing across bounded trials;09.1f/09.V6 remain incomplete. Native scheduling requires external execution; no accepted full-profile/billing/paid performance claim.
 - Next actions: Fresh backup/inventory before new mutation; collect whole composed hosted function CPU and actual D1 job recovery, then revisit measured hotspots/native scheduling proof.
 - Next-session cautions: Never restart R11 processes or reuse its157-record baseline for new mutation. Do not publish success-only receipt or deploy rejected tokenizer candidate. Keep09.3e suspended,G1/G2 closed,13.G6 open; no protected/private staging,push/PR edit,paid feature or production action.
+
+
+### 2026-10-11 — R12 short authenticated hosted function diagnostic
+
+- Scope and checklist IDs:09.1f/09.V6 authorized performance/recovery investigation; data/search/operational dependencies.
+- Progress: Prepare new authenticated HTTP fixture calling the actual Minimum scheduled method; no Cron and no native-Cron claim.
+- Change summary: Fresh backup/inventory, bounded fault/resume/dispatch artifacts, private token binding over Wrangler standard input and independent15-minute guard. Request guard denies unauthorized/non-POST/non-proof-path calls before D1 work; no request body controls SQL,phase or references. Fixed phases4/0 and zero original jobs/outbox protect baseline work.
+- Files/artifacts: Ignored module09-hosted-r12 helpers/backup/deploy logs, [current evidence](../evidence/09-async-validation.md#r12-authenticated-hosted-function-diagnostic).
+- Verification:162 original records/59 tables locally restored with valid FKs; actual fault version5729f20d after secret installation,zero Cron. Preflight adaptive headroom4995864 reads,99882 writes,99867 requests at04:52:46 UTC; Free user-attested,not billing. First read-only HTTPS ping has transient certificate-handshake failure; no authenticated invocation or CPU result yet.
+- Decisions and deviations: HTTP native Worker CPU/redeployment proof can guide optimization, but cannot substitute for missing native Cron.10ms unchanged; no product source,capacity or policy edit. Context7 confirms secret put stdin/new deployed version; secret value never printed/committed.
+- Blockers/open questions: Hosted protected-fetch readiness/function CPU/recovery and cleanup pending; original native obligations remain open.
+- Next actions: Bounded read-only readiness checks,then unauthorized denial and authenticated fault/current-state proof,clean redeploy/resume and max dispatch; independently clean162 baseline records/resources.
+- Next-session cautions: R12 tail2630(PID77062),guardian97277(PID77006); cleanup05:08:37.445 UTC2026-10-11. Respect original deadline,no inventory rerun,new simultaneous trial,secret/private/protected staging,push/PR edit,paid override,audit or gate closure.
+
+
+### 2026-10-11 — Hosted composed recovery passes; maximum dispatch14ms
+
+- Scope and checklist IDs:09.1f/09.V6 performance continuation; affected data/search/operational dependencies.
+- Progress: Actual hosted composed fault9ms, clean redeployment/resume7ms, exact[0,1]/checkpoint2 and pending-event survival verified. Maximum dispatch acknowledges/indexes unchanged200/32768 canonical content at14ms, failing10ms. These are authenticated HTTP invocations, not native Cron.
+- Change summary: Record all three real deployments and authoritative outcomes; guardian stops on14ms and independently cleans. No target/capacity or product source change.
+- Files/artifacts: [Hosted composed HTTP receipt](../evidence/09-hosted-composed-http-recovery-receipt.json), evidence/audit/progress; ignored private source/deploy/cleanup logs.
+- Verification: Fault version5729f20d, resume4768d153, dispatchaa440963; unauthorized proofPOST401. Actual checkpoint1/[0] and checkpoint2/[0,1] both preserve source; cancelled sibling/oversized refusal hold. Canonical/indexrevision1,derived body0,title371bytes,done/attempt1.162 original records/exact singletons/FKs and original two Workers/domains/schedules/Queues/Workflows preserved; owned work/resources zero; tail2630/guardian97277 exit0,PIDs absent,private token removed. Docs/JSON/links/secrets/diff checks pending final update; no unchanged application lane repeated.
+- Decisions and deviations: Keep10ms and title-only. Full composed dispatch14ms warrants another measured refactor; internal target revision cannot establish physical Free/release acceptance. Fault metadata omits post-commit lost-result counters; CPU includes whole test invocation and extra preflight. No native-Cron or OS-process-kill claim.
+- Blockers/open questions:09.1f/09.V6 remain incomplete: full composed dispatch CPU and native Cron observation.
+- Next actions: Reduce provider-result overhead around the single index upsert while preserving SQL,current-state/abort/meter checks; focused D1 verification and fresh bounded hosted comparison.
+- Next-session cautions: R12 closed; no live resources/processes. New mutations need fresh backup/inventory. Do not reuse deleted proof token,alter post-I/O source acknowledgement,stage private/protected files,push/PR edit,resume audit or close gates.
+
+
+### 2026-10-11 — Single index write performance experiment
+
+- Scope and checklist IDs: Authorized09.1f/09.V6 optimization and Module08 D1 index seam; data/operational evidence dependencies.
+- Progress: One fenced index upsert uses metered all/RETURNING; multi-document pages retain batch transactions. This is an uncommitted candidate,not a demonstrated improvement.
+- Change summary: Keep identical SQL,fences,quota numbers,three provider calls/ten statements and post-I/O processor acknowledgement. Avoid only the one-statement batch/result wrapper.
+- Files/artifacts: packages/database/d1/src/search-index.ts, [local diagnostic](../evidence/09-single-index-write-local-profile.json), private comparison helpers.
+- Verification: Typecheck,lint/boundaries,scoped source format pass. Focused D1 search/consumer selection16 passes/179 intentionally deselected; separately previously unselected current projection/visibility/day-admission fence1 pass/3 deselected.8 local composed max isolates/16 dispatches pass, but cold/warm sampled medians7248/2680us versus6150.5/2305.5 worsen with overlapping ranges. No native improvement inferred. PostgreSQL unchanged,not rerun.
+- Decisions and deviations: D1 all returns RETURNING rows/valid metadata in actual local runtime; Context7 confirms ordinary result/transaction shapes but not CPU savings. Local result cautions against accepting this candidate without a hosted comparison; revert if it does not help.
+- Blockers/open questions: Whether native result handling changes whole composed CPU;10ms/native Cron obligations remain open.
+- Next actions: Fresh bounded authenticated hosted dispatch comparison after new167-record backup/inventory;collect actual CPU and cleanup,then retain/reject candidate based on evidence.
+- Next-session cautions: Do not claim performance improvement or commit candidate as accepted yet. Keep all application source stable once comparison is deployed,no early acknowledgement/limit weakening,private/protected staging,push/PR edit,audit/gate closure.
