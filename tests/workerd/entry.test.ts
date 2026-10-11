@@ -59,6 +59,7 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
       compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
       d1Databases: ['DB'],
       r2Buckets: ['HYPERBUG_UPLOAD_BLOB'],
+      queueProducers: { ASYNC_TASKS: 'entry-test-events' },
       ratelimits: {
         ABUSE_VOLUMETRIC: {
           namespace_id: '703398',
@@ -104,10 +105,6 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
       (migration) => migration.name === '0014_oauth_codes',
     );
     if (!oauthMigration) throw new Error('OAuth migration missing');
-    const pluginMigration = migrations.find(
-      (migration) => migration.name === '0015_plugin_registry',
-    );
-    if (!pluginMigration) throw new Error('Plugin registry migration missing');
     for (const migration of migrations.slice(
       0,
       migrations.findIndex(
@@ -123,6 +120,12 @@ it('reports configured abuse dependencies ready only while the D1 schema is usab
     await db.batch(recoveryMigration.statements.map((sql) => db.prepare(sql)));
     await db.batch(webauthnMigration.statements.map((sql) => db.prepare(sql)));
     await db.batch(oauthMigration.statements.map((sql) => db.prepare(sql)));
+    // Readiness still proves the missing-credential schema above; scheduled
+    // maintenance below runs against the complete current application schema.
+    for (const migration of migrations.slice(
+      migrations.indexOf(oauthMigration) + 1,
+    ))
+      await db.batch(migration.statements.map((sql) => db.prepare(sql)));
     const missingTokenKey = await fetch(new URL('/health/ready', base));
     expect(missingTokenKey.status).toBe(503);
     expect(missingTokenKey.headers.get('cache-control')).toBe('no-store');

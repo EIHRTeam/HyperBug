@@ -796,3 +796,16 @@ Every session affecting this module MUST append an entry following the [required
 - Next-session cautions: R14 closed; never restart or reuse its baseline. New authorized hosted work needs fresh backup/inventory. Keep protected/private files unstaged; no push/PR edit, paid capability, production action, crypto tuning, SPA or audit resume.
 
 Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secrets`,675 relative file links/new R14 anchors, receipt JSON, all24 stable Module09 IDs (23 complete/09.3e suspended), Module08 integration boxes, common production bundle hashes and `git diff --check` pass. Production source/tests/tooling/dependencies are unchanged since b756222; no unchanged application lane rerun. Reader EN/ZH content and gate/status/handoff consistency checked; documentation formatting is not claimed because the formatter excludes docs.
+
+
+### 2026-10-11 — Repair PR 2 workerd CI fixture drift
+
+- Scope and checklist IDs: Maintenance of 01.3b runtime CI and 09.3d scheduler composition; no checklist or acceptance-gate changes.
+- Progress: GitHub job 114408401135 in run 38118576297 reports two failures; reproduced both locally with 5 passing tests before editing. Initial sandbox execution could not bind loopback; unrestricted local emulation reproduced the hosted failures.
+- Change summary: Apply the remaining current D1 migrations after the staged readiness checks and provide the scheduler's local queue producer. Isolate the password dry-run in a dedicated Wrangler fixture config instead of inheriting application Workflows/Queues.
+- Files/artifacts: tests/workerd/entry.test.ts, tests/workerd/standard-password.test.ts, tests/fixtures/standard-password-wrangler.jsonc; baseline log /tmp/hyperbug-ci-before-unrestricted.log; [failed hosted job](https://github.com/EIHRTeam/HyperBug/actions/runs/38118576297/job/114408401135).
+- Verification: Baseline focused workerd: 2 failed / 5 passed, matching CI; fixed focused workerd: 7 passed / 0 failed; full corepack pnpm test:workerd: 36 files / 302 passed / 2 optional skips in 148.20 s (Node 24.21.0, local workerd), log /tmp/hyperbug-ci-workerd.log. Typecheck, lint/import boundaries, scoped formatting, secret scan and git diff --check passed. Context7 resolved Cloudflare Workers and queried /cloudflare/workers-sdk on 2026-10-11: Workflow class exports must match configured bindings; official source fixtures support the diagnosis. Exact installed Wrangler 4.144.0 and Miniflare 5.20260926.1-alpha behavior will be checked locally.
+- Decisions and deviations: Keep production scheduler fail-closed behavior and current migrations intact. Password dry-run still checks the exact Wasm checksum and Argon2id vector; a dedicated config avoids unrelated Workflow requirements. GitHub connector works; local gh authentication is invalid.
+- Blockers/open questions: None for local repair; hosted publication/recheck pending. All focused/full workerd and relevant quality checks passed.
+- Next actions: Publish the verified repair to existing PR 2 and inspect fresh hosted results; keep all existing module/gate remainders unchanged.
+- Next-session cautions: Preserve all protected untracked drafts, audit suspension and G1/G2/13.G6 state. This repair creates no hosted Cloudflare resources and changes no application behavior or dependencies.

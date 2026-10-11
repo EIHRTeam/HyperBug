@@ -122,7 +122,7 @@ it('runs the Wrangler dry-run JS and unchanged Wasm module in local workerd', as
       'deploy',
       'tests/fixtures/standard-password-worker.ts',
       '--config',
-      'apps/api-cloudflare/wrangler.jsonc',
+      'tests/fixtures/standard-password-wrangler.jsonc',
       '--env=',
       '--dry-run',
       '--outdir',
