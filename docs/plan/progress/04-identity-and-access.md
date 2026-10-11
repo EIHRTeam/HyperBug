@@ -969,3 +969,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
 - Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
 - Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.
+
+### 2026-10-11 — Module 10 B4 acceptance matrix
+
+- Scope and checklist IDs: 10.2a–f; shared module acceptance evidence consolidation.
+- Progress: Extended existing local Standard/Node HTTP journeys pass the complete form/upload/search/discussion/triage path. 10.2b/c/e close; a/d/f retain missing evidence.
+- Change summary: Shared form/upload/search helper and existing fixture composition; assemble migration/storage/async/plugin/security matrix with real/emulated/hosted attribution and quota limits.
+- Files/artifacts: [B4 matrix](../evidence/10-backend-matrix.md); tests/fixtures/acceptance-content-journey.ts and both acceptance-journey suites; Module10 checklist/progress.
+- Verification: One final pass per extended journey (local workerd/D1/R2 emulation; actual local PostgreSQL18.6/Node/S3 emulation); types/lint pass. Earlier failure/repair and unchanged reused evidence are enumerated in B4. No hosted resources.
+- Decisions and deviations: Synthetic journey scanner remains explicit; separate actual ClamAV retained. Test less/write more cadence; no unchanged broad/security/provider lane repeated.
+- Blockers/open questions: Actual Standard not measured; integrated Minimum and separate-registrable-domain/explicitly blocked-cookie browser proof absent; some quota attribution/headroom unavailable. G1/SPA closed,13.G6 open.
+- Next actions: B5 10.3a–f, then B6 model and gate assessment.
+- Next-session cautions: Never treat emulator tiers as paid measurements or inherited native receipts as current-source CPU; preserve all protected root drafts.

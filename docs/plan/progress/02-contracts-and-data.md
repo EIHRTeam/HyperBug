@@ -933,3 +933,15 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: Standard not measured; overall G1 remains closed.
 - Next actions: B3 evidence-backed 07.3c/f/h/V4 closure, then B4 acceptance matrix.
 - Next-session cautions: No main push/PR merge/SPA; preserve protected drafts and pinned resolutions; estimates never fill Standard acceptance rows.
+
+### 2026-10-11 — Module 10 B4 acceptance matrix
+
+- Scope and checklist IDs: 10.2a–f; shared module acceptance evidence consolidation.
+- Progress: Extended existing local Standard/Node HTTP journeys pass the complete form/upload/search/discussion/triage path. 10.2b/c/e close; a/d/f retain missing evidence.
+- Change summary: Shared form/upload/search helper and existing fixture composition; assemble migration/storage/async/plugin/security matrix with real/emulated/hosted attribution and quota limits.
+- Files/artifacts: [B4 matrix](../evidence/10-backend-matrix.md); tests/fixtures/acceptance-content-journey.ts and both acceptance-journey suites; Module10 checklist/progress.
+- Verification: One final pass per extended journey (local workerd/D1/R2 emulation; actual local PostgreSQL18.6/Node/S3 emulation); types/lint pass. Earlier failure/repair and unchanged reused evidence are enumerated in B4. No hosted resources.
+- Decisions and deviations: Synthetic journey scanner remains explicit; separate actual ClamAV retained. Test less/write more cadence; no unchanged broad/security/provider lane repeated.
+- Blockers/open questions: Actual Standard not measured; integrated Minimum and separate-registrable-domain/explicitly blocked-cookie browser proof absent; some quota attribution/headroom unavailable. G1/SPA closed,13.G6 open.
+- Next actions: B5 10.3a–f, then B6 model and gate assessment.
+- Next-session cautions: Never treat emulator tiers as paid measurements or inherited native receipts as current-source CPU; preserve all protected root drafts.

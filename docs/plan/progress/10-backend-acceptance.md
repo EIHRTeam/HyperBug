@@ -10,27 +10,25 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP backend gate
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
-- Completed implementation checklist IDs: 10.1a–e.
-- Active/next checklist group: Authorized B1–B6; next B3 07.3c/f/h/V4.
+- Completed implementation checklist IDs: 10.1a–e, 10.2b/c/e.
+- Active/next checklist group: Authorized B1–B6; next B5 10.3a–f; B4 partial items remain explicit.
 - Last updated: 2026-10-11.
 - Blocking issues discovered: 01.V4 accepted by user equivalence decision; Standard is not measured by user decision. G1 remains Not passed.
-- Evidence: Planning documents only; no implementation or runtime validation yet.
+- Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 10.1 | Complete public contracts and client | Complete | [B2](../evidence/10-contract-client-validation.md) |
-| 10.2 | Execute the backend MVP acceptance matrix | Not started | None yet |
+| 10.2 | Execute the backend MVP acceptance matrix | 10.2b/c/e verified; a/d/f partial | [B4 matrix](../evidence/10-backend-matrix.md) |
 | 10.3 | Establish measurable performance and operational readiness | Not started | None yet |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
 
 ## Next actions
 
-1. Read the latest master and dependency progress records and verify prerequisites.
-2. Start the first unfinished item in 10.1.
-3. Record the actual files changed, checks run, decisions, and next-session cautions here.
+Continue B5 measurements/operational report, then B6 separate Minimum/model/gate assessment. Keep 10.2a/d/f missing results explicit; no production Standard/SPA authorization is inferred.
 
 ## Next-session cautions
 
@@ -494,3 +492,17 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Next-session cautions: No main push/merge/SPA/paid capability; retained-key tombstones must not be erased from inferred provenance; no synthetic scan relabeling.
 
 B3 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=true corepack pnpm scan:secrets`, relative-link/checklist consistency and `git diff --check` pass. No unchanged application lane repeated.
+
+### 2026-10-11 — Module 10 B4 acceptance matrix
+
+- Scope and checklist IDs: 10.2a–f; shared module acceptance evidence consolidation.
+- Progress: Extended existing local Standard/Node HTTP journeys pass the complete form/upload/search/discussion/triage path. 10.2b/c/e close; a/d/f retain missing evidence.
+- Change summary: Shared form/upload/search helper and existing fixture composition; assemble migration/storage/async/plugin/security matrix with real/emulated/hosted attribution and quota limits.
+- Files/artifacts: [B4 matrix](../evidence/10-backend-matrix.md); tests/fixtures/acceptance-content-journey.ts and both acceptance-journey suites; Module10 checklist/progress.
+- Verification: One final pass per extended journey (local workerd/D1/R2 emulation; actual local PostgreSQL18.6/Node/S3 emulation); types/lint pass. Earlier failure/repair and unchanged reused evidence are enumerated in B4. No hosted resources.
+- Decisions and deviations: Synthetic journey scanner remains explicit; separate actual ClamAV retained. Test less/write more cadence; no unchanged broad/security/provider lane repeated.
+- Blockers/open questions: Actual Standard not measured; integrated Minimum and separate-registrable-domain/explicitly blocked-cookie browser proof absent; some quota attribution/headroom unavailable. G1/SPA closed,13.G6 open.
+- Next actions: B5 10.3a–f, then B6 model and gate assessment.
+- Next-session cautions: Never treat emulator tiers as paid measurements or inherited native receipts as current-source CPU; preserve all protected root drafts.
+
+B4 final verification: types/lint, two focused journeys, scoped oxfmt, docs build, secrets, relative links and `git diff --check` pass. No hosted resource created or new dependency.

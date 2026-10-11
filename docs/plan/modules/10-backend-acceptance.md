@@ -24,11 +24,13 @@ G1 covers all three profiles under [ADR 0012](../../decisions/0012-cloudflare-mi
 ### Step 10.2 — Execute the backend MVP acceptance matrix
 
 - [ ] **10.2a** Run the full API journey on all three profiles: accounts/permissions → project → Issue Form/upload → Issue → search → comment/reaction → triage → close/reopen → timeline.
-- [ ] **10.2b** Run fresh/upgrade database migrations, repository conformance, actual R2 and selected S3 compatibility, queue replay, workflow recovery, and plugin lifecycle tests.
-- [ ] **10.2c** Run security regression coverage for BOLA, identity confusion, token expiry/revocation, OAuth/PKCE, CORS/CSRF, XSS, unsafe URLs, upload handling, rate limits, and plugin boundaries.
+- [x] **10.2b** Run fresh/upgrade database migrations, repository conformance, actual R2 and selected S3 compatibility, queue replay, workflow recovery, and plugin lifecycle tests.
+- [x] **10.2c** Run security regression coverage for BOLA, identity confusion, token expiry/revocation, OAuth/PKCE, CORS/CSRF, XSS, unsafe URLs, upload handling, rate limits, and plugin boundaries.
 - [ ] **10.2d** Verify separate registrable domains, exact allowlists, third-party-cookie blocking, and no frontend-host proxy dependency with a minimal auth fixture.
-- [ ] **10.2e** Record which checks ran in local emulation, real self-host services, and actual Cloudflare staging. Provision only within the authorized environment; missing access remains an explicit gate blocker.
+- [x] **10.2e** Record which checks ran in local emulation, real self-host services, and actual Cloudflare staging. Provision only within the authorized environment; missing access remains an explicit gate blocker.
 - [ ] **10.2f** Record the deployment tier and remaining quota headroom for every acceptance environment. Include Minimum functional evidence in the three-profile G1 matrix under ADR 0012; keep its Free-plan quota evidence separately attributed for 13.G6 and never merge it into standard-profile performance baselines.
+
+B4 evidence: [three-profile matrix](../evidence/10-backend-matrix.md). 10.2a/d/f remain partial: actual Standard unmeasured, integrated Minimum journey/separate-domain blocked-cookie browser proof and complete quota attribution/headroom missing. Reporting an unknown is not measurement.
 
 ### Step 10.3 — Establish measurable performance and operational readiness
 

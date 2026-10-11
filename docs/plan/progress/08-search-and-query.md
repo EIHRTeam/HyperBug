@@ -599,3 +599,15 @@ Every session affecting this module MUST append an entry following the [required
 - Next-session cautions: R14 closed; never restart or reuse its baseline. New authorized hosted work needs fresh backup/inventory. Keep protected/private files unstaged; no push/PR edit, paid capability, production action, crypto tuning, SPA or audit resume.
 
 Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secrets`,675 relative file links/new R14 anchors, receipt JSON, all24 stable Module09 IDs (23 complete/09.3e suspended), Module08 integration boxes, common production bundle hashes and `git diff --check` pass. Production source/tests/tooling/dependencies are unchanged since b756222; no unchanged application lane rerun. Reader EN/ZH content and gate/status/handoff consistency checked; documentation formatting is not claimed because the formatter excludes docs.
+
+### 2026-10-11 — Module 10 B4 acceptance matrix
+
+- Scope and checklist IDs: 10.2a–f; shared module acceptance evidence consolidation.
+- Progress: Extended existing local Standard/Node HTTP journeys pass the complete form/upload/search/discussion/triage path. 10.2b/c/e close; a/d/f retain missing evidence.
+- Change summary: Shared form/upload/search helper and existing fixture composition; assemble migration/storage/async/plugin/security matrix with real/emulated/hosted attribution and quota limits.
+- Files/artifacts: [B4 matrix](../evidence/10-backend-matrix.md); tests/fixtures/acceptance-content-journey.ts and both acceptance-journey suites; Module10 checklist/progress.
+- Verification: One final pass per extended journey (local workerd/D1/R2 emulation; actual local PostgreSQL18.6/Node/S3 emulation); types/lint pass. Earlier failure/repair and unchanged reused evidence are enumerated in B4. No hosted resources.
+- Decisions and deviations: Synthetic journey scanner remains explicit; separate actual ClamAV retained. Test less/write more cadence; no unchanged broad/security/provider lane repeated.
+- Blockers/open questions: Actual Standard not measured; integrated Minimum and separate-registrable-domain/explicitly blocked-cookie browser proof absent; some quota attribution/headroom unavailable. G1/SPA closed,13.G6 open.
+- Next actions: B5 10.3a–f, then B6 model and gate assessment.
+- Next-session cautions: Never treat emulator tiers as paid measurements or inherited native receipts as current-source CPU; preserve all protected root drafts.

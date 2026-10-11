@@ -1,3 +1,10 @@
+import { configureNodeUploads } from '../../apps/api-node/src/uploads.ts';
+import { startLocalS3 } from '../../tooling/local-s3.ts';
+import { uploadProof } from '../fixtures/upload-proof.ts';
+import {
+  createAcceptanceFormIssue,
+  searchAcceptanceIssue,
+} from '../fixtures/acceptance-content-journey.ts';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { Pool } from 'pg';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
@@ -38,6 +45,8 @@ let configured: ReturnType<typeof configureNodeAbuseAdmission>;
 let listener: Awaited<ReturnType<typeof listenNode>>;
 let directory: string;
 let base: string;
+let storage: Awaited<ReturnType<typeof startLocalS3>>;
+let uploadStorage: Awaited<ReturnType<typeof configureNodeUploads>>;
 const sessionKeys = cryptoFixture();
 
 const post = (
@@ -188,6 +197,18 @@ beforeAll(async () => {
     ),
     allowedOrigins: ['http://localhost:5173'],
   };
+  storage = await startLocalS3();
+  const storageFile = join(directory, 'upload-storage.json');
+  await writeFile(
+    storageFile,
+    JSON.stringify({ ...storage, allowLocalHttp: true }),
+    { mode: 0o600 },
+  );
+  uploadStorage = await configureNodeUploads(
+    configured.uploadIntentStore,
+    storageFile,
+    'local',
+  );
   listener = await listenNode(
     createApp({
       adapter: node(),
@@ -210,6 +231,10 @@ beforeAll(async () => {
       projectRoleStore: configured.projectRoleStore,
       projectStore: configured.projectStore,
       taxonomyStore: configured.taxonomyStore,
+      contentDefinitionStore: configured.contentDefinitionStore,
+      uploads: uploadStorage.uploads,
+      searchStore: configured.searchStore,
+      searchIndexStore: configured.searchIndexStore,
       issueRepository: configured.issueRepository,
       commentStore: configured.commentStore,
       reactionStore: configured.reactionStore,
@@ -227,6 +252,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await listener?.close().catch(() => {});
+  uploadStorage?.close();
+  await storage?.close();
   await pool?.end().catch(() => {});
   if (bootstrap)
     await bootstrap.query(`DROP DATABASE ${databaseName}`).catch(() => {});
@@ -291,17 +318,42 @@ it('delivers the V1 HTTP workflow on Node/PostgreSQL', async () => {
   const milestone = (await createdMilestone.json()) as { id: string };
 
   // A plain user creates the issue; the taxonomy is applied by staff triage.
-  const createdIssue = await call(`/api/v1/projects/${project.id}/issues`, {
-    method: 'POST',
-    token: authorToken,
-    body: { title: 'Crash during the journey', body: 'Full workflow body 🚀' },
-  });
-  expect(createdIssue.status).toBe(201);
-  const issue = (await createdIssue.json()) as {
+  const proof = async (id: string, operation: string, text = '') => {
+    const record = await configured.uploadIntentStore!.get({
+      id,
+      projectId: project.id,
+      principalId: (
+        (await (
+          await call('/api/v1/account', { token: authorToken })
+        ).json()) as { principalId: string }
+      ).principalId,
+    });
+    if (!record || !uploadStorage.uploads)
+      throw new Error('Missing journey upload');
+    return uploadProof(
+      uploadStorage.uploads,
+      { id, projectId: project.id, principalId: record.principalId },
+      operation,
+      text,
+    );
+  };
+  const issue = (await createAcceptanceFormIssue({
+    call,
+    projectId: project.id,
+    staffToken,
+    authorToken,
+    proof,
+  })) as {
     id: string;
     number: number;
     revision: number;
+    state: string;
+    authorId: string;
+    body: string;
   };
+  await searchAcceptanceIssue(call, project.id, issue.id, async () => {
+    return configured.searchIndexStore!.backfill({ projectId: project.id });
+  });
   expect(issue.number).toBe(1);
   expect(issue.revision).toBe(1);
 

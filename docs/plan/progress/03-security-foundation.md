@@ -1882,3 +1882,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: None at preparation.
 - Next actions: Commit the prepared patch, push origin/feat/v1 and verify its remote SHA matches local HEAD; report the resulting commit in the publication response.
 - Next-session cautions: Preserve other suspended audit portions, Module07 remainders and G1/G2/13.G6 state. This publication supplies no new hosted CI, CPU, provider, deployment or release acceptance evidence.
+
+### 2026-10-11 — Module 10 B4 acceptance matrix
+
+- Scope and checklist IDs: 10.2a–f; shared module acceptance evidence consolidation.
+- Progress: Extended existing local Standard/Node HTTP journeys pass the complete form/upload/search/discussion/triage path. 10.2b/c/e close; a/d/f retain missing evidence.
+- Change summary: Shared form/upload/search helper and existing fixture composition; assemble migration/storage/async/plugin/security matrix with real/emulated/hosted attribution and quota limits.
+- Files/artifacts: [B4 matrix](../evidence/10-backend-matrix.md); tests/fixtures/acceptance-content-journey.ts and both acceptance-journey suites; Module10 checklist/progress.
+- Verification: One final pass per extended journey (local workerd/D1/R2 emulation; actual local PostgreSQL18.6/Node/S3 emulation); types/lint pass. Earlier failure/repair and unchanged reused evidence are enumerated in B4. No hosted resources.
+- Decisions and deviations: Synthetic journey scanner remains explicit; separate actual ClamAV retained. Test less/write more cadence; no unchanged broad/security/provider lane repeated.
+- Blockers/open questions: Actual Standard not measured; integrated Minimum and separate-registrable-domain/explicitly blocked-cookie browser proof absent; some quota attribution/headroom unavailable. G1/SPA closed,13.G6 open.
+- Next actions: B5 10.3a–f, then B6 model and gate assessment.
+- Next-session cautions: Never treat emulator tiers as paid measurements or inherited native receipts as current-source CPU; preserve all protected root drafts.

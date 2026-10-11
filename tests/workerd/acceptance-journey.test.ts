@@ -1,3 +1,9 @@
+import type { D1Database } from '@cloudflare/workers-types';
+import { createD1SearchIndexStore } from '@hyperbug/database-d1';
+import {
+  createAcceptanceFormIssue,
+  searchAcceptanceIssue,
+} from '../fixtures/acceptance-content-journey.ts';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
@@ -125,6 +131,7 @@ beforeAll(async () => {
       compatibilityDate: '2026-09-16',
       compatibilityFlags: ['nodejs_compat', 'enable_request_signal'],
       d1Databases: ['DB'],
+      r2Buckets: ['HYPERBUG_UPLOAD_BLOB'],
       ratelimits: {
         ABUSE_VOLUMETRIC: {
           namespace_id: '703415',
@@ -133,6 +140,14 @@ beforeAll(async () => {
       },
       bindings: {
         HYPERBUG_ENV: 'local',
+        HYPERBUG_UPLOAD_STORAGE: JSON.stringify({
+          accountId: 'a'.repeat(32),
+          bucket: 'hyperbug-test',
+          credentials: {
+            accessKeyId: 'fixture-access',
+            secretAccessKey: 'fixture-secret',
+          },
+        }),
         ALLOWED_ORIGINS: authOrigin,
         HYPERBUG_ABUSE_KEY_RING: abuseKeyFixture(),
         HYPERBUG_KEY_RING: await cryptoFixture().source.read(),
@@ -248,13 +263,18 @@ it('delivers the V1 HTTP workflow on workerd/D1', async () => {
   const milestone = (await createdMilestone.json()) as { id: string };
 
   // A plain user creates the issue; the taxonomy is applied by staff triage.
-  const createdIssue = await call(`/api/v1/projects/${project.id}/issues`, {
-    method: 'POST',
-    token: authorToken,
-    body: { title: 'Crash during the journey', body: 'Full workflow body 🚀' },
-  });
-  expect(createdIssue.status).toBe(201);
-  const issue = (await createdIssue.json()) as {
+  const proof = async (id: string, operation: string, text = '') => {
+    const r = await post('/_proof/upload', { id, operation, text });
+    expect(r.status).toBe(200);
+    return r.json();
+  };
+  const issue = (await createAcceptanceFormIssue({
+    call,
+    projectId: project.id,
+    staffToken,
+    authorToken,
+    proof,
+  })) as {
     id: string;
     number: number;
     revision: number;
@@ -262,11 +282,17 @@ it('delivers the V1 HTTP workflow on workerd/D1', async () => {
     authorId: string;
     body: string;
   };
+  await searchAcceptanceIssue(call, project.id, issue.id, async () => {
+    return createD1SearchIndexStore(
+      (await mf.getD1Database('DB')) as unknown as D1Database,
+    ).backfill({ projectId: project.id });
+  });
   expect(issue.number).toBe(1);
   expect(issue.revision).toBe(1);
   expect(issue.state).toBe('open');
   expect(issue.authorId).toBe(authorPrincipalId);
-  expect(issue.body).toBe('Full workflow body 🚀');
+  expect(issue.body).toContain('Full workflow body 🚀');
+  expect(issue.body).toContain('/attachments/');
 
   // The list page shape: items with projections that exclude the body, plus
   // the cursor field; the boundary keeps the response uncacheable.
