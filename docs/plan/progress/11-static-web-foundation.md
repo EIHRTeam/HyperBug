@@ -13,8 +13,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Completed implementation checklist IDs: None.
 - Active/next checklist group: 11.1, after prerequisites are satisfied.
 - Last updated: 2026-10-12.
-- Blocking issues discovered: HANDOFF-11 P0 remains unresolved: native TLS/labelled MVP CPU and provider inspection/transport access are unavailable. G1 prerequisites remain incomplete.
-- Evidence: Planning and [P0 prerequisite diagnosis](../evidence/10-p0-provider-diagnostic.md); no frontend implementation or runtime validation.
+- Blocking issues discovered: HANDOFF-11 P0 is partial: MCP provider inspection and fresh remote TLS pass, but outside-harness404 CPU16ms triggers the unchanged10ms stop before labelled MVP requests. G1 prerequisites remain incomplete.
+- Evidence: Planning, [prior diagnosis](../evidence/10-p0-provider-diagnostic.md) and [MCP P0 trial7](../evidence/10-p0-mcp-trial.md); no frontend implementation or runtime validation.
 
 ## Step tracking
 
@@ -104,3 +104,29 @@ Every session affecting this module MUST append an entry following the [required
 - Next-session cautions: No frontend implementation evidence exists.10.2a/f,10.3b/g and10.G2/G4/G5 stay incomplete;13.G6 remains separate. Protected root handoffs untouched.
 
 Final P0 verification: installed VitePress1.6.4 docs build passes1.59s; `node tooling/secrets.mjs` passes; scoped Python validation passes370 relative links, scalar JSON, unchanged repaired-production bundle hashes, observed cleanup/key counts, ephemeral secret removal and the exact seven unchecked Module10 IDs; G1/Module11 states are unchanged. `git diff --check` passes. Installed oxfmt explicitly excludes all seven documentation targets under existing ignore rules (exit2/no targets), so formatting is recorded excluded, not passed. Application/browser/performance lanes are not rerun because product behavior is unchanged; no hosted acceptance request or sample ran.
+
+### 2026-10-12 — P0 Cloudflare API MCP continuation started
+
+- Scope and checklist IDs: HANDOFF-11 P0 only; 10.2a/f, 10.3b/g and gate reporting; no P1 implementation.
+- Progress: MCP reads authorized Workers/domains, active zone, certificate packs and full DNS inventory successfully; earlier Wrangler certificate/DNS permission gaps are cleared on this connection.
+- Change summary: Prepare one fresh guarded production-bundle trial; exact-domain TLS probes from authorized oci, followed only by bounded labelled MVP requests if verified.
+- Files/artifacts: Ignored .local/module10-native-pilot7 preparation; scalar report pending.
+- Verification: Certificate/DNS MCP200, three existing certificate packs and36 DNS records; two original Worker domains. No matching old trial certificate or wildcard test DNS record.
+- Decisions and deviations: Preserve10ms stop on every observed invocation, no warm-up/filter/TLS bypass, no paid/Standard/SPA action.
+- Blockers/open questions: Fresh-domain certificate/TLS and representative CPU not yet established.
+- Next actions: Fresh backup/inventory, finite independent cleanup, unchanged native upload through MCP, domain/certificate verification and remote TLS.
+- Next-session cautions: Never reuse trials1–6 state/names/backups/secrets; G1 Not passed, Module11 Not started,13.G6 open.
+
+### 2026-10-12 — P0 TLS resolved through MCP; frontend remains gated
+
+- Scope and checklist IDs: P0 prerequisite reporting only; 11.1/11.V1 remain unstarted and unchecked.
+- Progress: Provider visibility and verified remote TLS resolve. Native CPU guard stops on unlabelled16ms GET404 traffic before any labelled MVP request; P0 remains partial.
+- Change summary: Update current prerequisite blockers and cross-link Module10 evidence; no frontend files, dependencies, application checks or capability behavior change.
+- Files/artifacts: This log, [MCP report](../evidence/10-p0-mcp-trial.md), [scalar receipt](../evidence/10-p0-mcp-trial.json), Module10 and master records.
+- Verification: Fresh backup/production uploads/domain/certificate/TLS/native guard and cleanup pass at their stated scopes; full original resources/197rows/FKs preserved,0 owned resources/active data and generated secrets removed. Documentation verification follows; browser/application tests not run.
+- Decisions and deviations: Explicit user authorizations resolve automatic-review backup/secret-upload rejections.10ms unchanged; no G1 exemption or P0→P1 authorization inferred. Standard remains unmeasured.
+- Blockers/open questions: Actual Minimum integration/full metrics/quota/capacity and labelled CPU remain incomplete in addition to Standard. G1 Not passed, Module11 Not started,13.G6 open.
+- Next actions: Report remaining CPU stop; user decides any further rule/remediation scope. Do not begin11.1.
+- Next-session cautions: Trials1–7 cleaned; no reused resource/state/secret or extra load, baseline weakening, main/merge/paid/SPA action. Protected drafts stay unstaged.
+
+Final MCP P0 verification: installed VitePress1.6.4 documentation build passes; `node tooling/secrets.mjs` passes; scoped Python validates468 relative links, scalar JSON/cleanup/CPU/TLS invariants, the exact seven unchecked Module10 IDs and unchanged G1/Module11 gates; `git diff --check` passes. Scoped installed oxfmt exits2 because existing docs/** ignore rules exclude all10 targets; formatting is excluded, not passed. No product/application/browser/performance lane is rerun because source behavior is unchanged. No new hosted acceptance request is sent.

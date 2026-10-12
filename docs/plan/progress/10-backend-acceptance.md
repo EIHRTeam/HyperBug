@@ -11,9 +11,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
 - Completed implementation checklist IDs: 10.1a–e, 10.2b/c/d/e, 10.3a/c/d/e/f.
-- Active/next checklist group: HANDOFF-11 P0 reported;10.2a/f and10.3b/g remain partial. Auth-composition repair and prior native uploads remain verified. Fresh trials5/6 stop before deployment completes on provider504/read-only inventory timeout; no target TLS or labelled MVP CPU evidence is obtained. Restore provider inspection/transport access before another entirely fresh guarded trial.
+- Active/next checklist group: HANDOFF-11 P0 trial7 reports verified remote TLS and restored provider inspection. CPU attribution remains blocked: unlabelled GET404 API CPU16ms triggers the unchanged10ms guard before the first labelled request. No further hosted load; a user decision is needed before changing the stop rule or extending into backend remediation.
 - Last updated: 2026-10-12.
-- Blocking issues discovered: Verified target TLS and labelled MVP CPU remain unavailable. Certificate inventory403/9109 and DNS inventory403/10000 persist; fresh provider management504/timeout prevents deployment. Prior404 CPU reaches21ms under the unchanged10ms stop. Standard remains unmeasured by user decision; actual Minimum integration/full metrics/quota attribution/capacity remain incomplete. G1 remains Not passed.
+- Blocking issues discovered: Provider certificate/DNS access and fresh-domain TLS are resolved through MCP. Native CPU overflow16ms on outside-harness404 traffic prevents labelled MVP attribution under the unchanged10ms stop. Standard remains unmeasured by user decision; actual Minimum integration/full metrics/quota attribution/capacity remain incomplete. G1 remains Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
 
 ## Step tracking
@@ -28,7 +28,8 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-Restore reliable provider management and certificate/DNS inspection through MCP or Wrangler, then use a new backup/inventory/names/keys and independent finite cleanup guard to verify exact-domain TLS from oci and attribute labelled MVP requests. [P0 diagnosis](../evidence/10-p0-provider-diagnostic.md) records the current capability gaps. Do not replay cleaned trials, use a local proxy, change the10ms stop, measure Standard or begin P1 without the required authorization.
+Report the remaining CPU stop and obtain the user's decision before another hosted trial, changing its interpretation, or implementing backend remediation outside this P0 scope. [MCP trial7](../evidence/10-p0-mcp-trial.md) proves provider visibility and remote TLS, but no labelled MVP request runs. Never replay cleaned trials or weaken10ms/TLS/security bounds; Standard stays unmeasured and P1 remains gated.
+
 
 ## Next-session cautions
 
@@ -696,3 +697,31 @@ P0 checkpoint: Trial5 stops before upload on Cloudflare504 Gateway Timeout from 
 - Next-session cautions: Trials1–6 are cleaned; never reuse their names/state/backups/secrets. Preserve permanent removed-key identities and append-only history. No new native response, sample, quantile or capacity is established; protected root drafts stay unstaged.
 
 Final P0 verification: installed VitePress1.6.4 docs build passes1.59s; `node tooling/secrets.mjs` passes; scoped Python validation passes370 relative links, scalar JSON, unchanged repaired-production bundle hashes, observed cleanup/key counts, ephemeral secret removal and the exact seven unchecked Module10 IDs; G1/Module11 states are unchanged. `git diff --check` passes. Installed oxfmt explicitly excludes all seven documentation targets under existing ignore rules (exit2/no targets), so formatting is recorded excluded, not passed. Application/browser/performance lanes are not rerun because product behavior is unchanged; no hosted acceptance request or sample ran.
+
+### 2026-10-12 — P0 Cloudflare API MCP continuation started
+
+- Scope and checklist IDs: HANDOFF-11 P0 only; 10.2a/f, 10.3b/g and gate reporting; no P1 implementation.
+- Progress: MCP reads authorized Workers/domains, active zone, certificate packs and full DNS inventory successfully; earlier Wrangler certificate/DNS permission gaps are cleared on this connection.
+- Change summary: Prepare one fresh guarded production-bundle trial; exact-domain TLS probes from authorized oci, followed only by bounded labelled MVP requests if verified.
+- Files/artifacts: Ignored .local/module10-native-pilot7 preparation; scalar report pending.
+- Verification: Certificate/DNS MCP200, three existing certificate packs and36 DNS records; two original Worker domains. No matching old trial certificate or wildcard test DNS record.
+- Decisions and deviations: Preserve10ms stop on every observed invocation, no warm-up/filter/TLS bypass, no paid/Standard/SPA action.
+- Blockers/open questions: Fresh-domain certificate/TLS and representative CPU not yet established.
+- Next actions: Fresh backup/inventory, finite independent cleanup, unchanged native upload through MCP, domain/certificate verification and remote TLS.
+- Next-session cautions: Never reuse trials1–6 state/names/backups/secrets; G1 Not passed, Module11 Not started,13.G6 open.
+
+MCP checkpoint: Explicit user approval authorizes the private full D1 backup after automatic review rejects the broad extraction. Untruncated paginated schema/table retrieval produces a verified fresh59-table/197-row logical restore. Independent20-minute cleanup guard is active; four new lifecycle key references register and unchanged Minimum production API multipart upload succeeds200. Ingress upload is rejected by automatic review for transmitting its generated signing secret; exact Worker/account authorization is pending. No public-domain attachment, certificate creation, TLS or HTTP request yet.
+
+### 2026-10-12 — P0 MCP TLS resolved; CPU guard prevents attribution
+
+- Scope and checklist IDs: HANDOFF-11 P0 only; 10.2a/f, 10.3b/g and 10.G2/G4/G5 reporting. No product or frontend implementation.
+- Progress: MCP restores certificate/DNS/provider inspection; unchanged production Minimum and ingress upload. Fresh exact-domain automatic certificate becomes active and oci verifies TLSv1.3/chain/hostname. CPU attribution remains unresolved.
+- Change summary: Record fresh guarded trial7 and scalar evidence; replace stale current provider/TLS blocker text while preserving historical receipts and all incomplete checkboxes.
+- Files/artifacts: [MCP report/commands/lookup](../evidence/10-p0-mcp-trial.md), [scalar receipt](../evidence/10-p0-mcp-trial.json), linked acceptance reports, Module10/11 logs and master; private ignored .local/module10-native-pilot7 tooling/backup.
+- Verification: Explicitly authorized fresh private backup59tables/197rows restores locally with valid FKs. Both MCP uploads200, workers.dev/previews disabled, two unfiltered tails connect, exact domain/DNS/certificate observed pending→active. Eleven verified remote TLS attempts: ten SSLError, then success.34 unlabelled GET404 samples (17 per root), all outcome ok; API0–16ms/ingress1–3ms. Guard stops on first16ms; pilotHTTP0. Independent cleanup preserves197 original rows/FKs,4 exact removed key identities,0 owned active data/resources; full original Worker/domain/certificate IDs and36 DNS records preserved. Exact-pack cleanup returns1406; final inventories resolve absence without retry. Tail DELETE10007 after Worker deletion; all processes terminal, generated secret/payload/tail-URL copies removed. Final documentation checks follow.
+- Decisions and deviations: Automatic review rejects bulk backup and ingress test-secret upload; user explicitly approves both exact actions before retry. No remaining approval-review block. Context7 Workers queries return no matching content; SDK query and Cloudflare MCP docs/OpenAPI fill gaps, with actual scalar CPU/TLS evidence. No manual SSL/DCV change, paid/Standard/main/merge/push/SPA action, native warm-up/filter/extra load, backend repair or baseline change.
+- Blockers/open questions: Outside-harness404 CPU exceeds the unchanged10ms stop before labelled requests. Representative MVP CPU, integration/full metrics/quota/capacity remain unavailable. Standard is not the only unmet criterion; G1 Not passed and13.G6 open.
+- Next actions: Report partial P0 resolution and remaining stop condition; return any new rule/backend-remediation scope decision to the user. No further hosted request or P1 starts.
+- Next-session cautions: Trials1–7 are cleaned; never reuse names/state/backups/secrets or infer a causal CPU/certificate history, quantile/capacity/Free acceptance from these observations. Preserve permanent key tombstones, append-only history, protected root drafts and gate states.
+
+Final MCP P0 verification: installed VitePress1.6.4 documentation build passes; `node tooling/secrets.mjs` passes; scoped Python validates468 relative links, scalar JSON/cleanup/CPU/TLS invariants, the exact seven unchecked Module10 IDs and unchanged G1/Module11 gates; `git diff --check` passes. Scoped installed oxfmt exits2 because existing docs/** ignore rules exclude all10 targets; formatting is excluded, not passed. No product/application/browser/performance lane is rerun because source behavior is unchanged. No new hosted acceptance request is sent.
