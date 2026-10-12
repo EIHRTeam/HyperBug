@@ -11,9 +11,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
 - Completed implementation checklist IDs: 10.1a–e, 10.2b/c/d/e, 10.3a/c/d/e/f.
-- Active/next checklist group: B1–B6 reported; local Minimum integration passes.10.2d and local Minimum metrics are verified;10.2a/f and10.3b/g remain partial. The authorized auth-composition repair passes local fail-closed regressions and native production upload; fresh TLS-gated trial reaches no acceptance HTTP; retained invocation logs establish CPU overflow on the 404 path outside the harness.
+- Active/next checklist group: HANDOFF-11 P0 reported;10.2a/f and10.3b/g remain partial. Auth-composition repair and prior native uploads remain verified. Fresh trials5/6 stop before deployment completes on provider504/read-only inventory timeout; no target TLS or labelled MVP CPU evidence is obtained. Restore provider inspection/transport access before another entirely fresh guarded trial.
 - Last updated: 2026-10-12.
-- Blocking issues discovered: Cross-site CSP blocker resolved under authorized ADR0015; auth-composition upload blocker is repaired and native upload passes; verified TLS remains unavailable and retained 404 invocation CPU reaches 21 ms, triggering safe stop. Standard is not measured by user decision; actual Minimum full-profile/headroom/capacity evidence remains incomplete. G1 remains Not passed.
+- Blocking issues discovered: Verified target TLS and labelled MVP CPU remain unavailable. Certificate inventory403/9109 and DNS inventory403/10000 persist; fresh provider management504/timeout prevents deployment. Prior404 CPU reaches21ms under the unchanged10ms stop. Standard remains unmeasured by user decision; actual Minimum integration/full metrics/quota attribution/capacity remain incomplete. G1 remains Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
 
 ## Step tracking
@@ -28,7 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-Current authorized work is reported and repaired; further native acceptance needs verified TLS and a justified resolution of the existing CPU stop, while actual Standard remains excluded. Do not replay cleaned trials or change policy to force completion. Actual Standard remains excluded; no SPA authorization is inferred.
+Restore reliable provider management and certificate/DNS inspection through MCP or Wrangler, then use a new backup/inventory/names/keys and independent finite cleanup guard to verify exact-domain TLS from oci and attribute labelled MVP requests. [P0 diagnosis](../evidence/10-p0-provider-diagnostic.md) records the current capability gaps. Do not replay cleaned trials, use a local proxy, change the10ms stop, measure Standard or begin P1 without the required authorization.
 
 ## Next-session cautions
 
@@ -668,3 +668,31 @@ Final repair/evidence verification: documentation build, known credential-signat
 - Next-session cautions: Trials1–4 are cleaned; never reuse names/backups/tokens or run extra load under the 10ms stop. Do not infer auth CPU from these 404 samples, weaken security/thresholds, measure Standard without authorization, or stage protected root drafts. G1 Not passed, SPA blocked, 13.G6 open.
 
 Final documentation verification: installed VitePress1.6.4 docs build passes1.41s, known credential-signature scan passes,588 relative links/scalar JSON/twelve unique tuple comparisons/seven unchanged incomplete IDs/diff pass. pnpm's wrapper refuses on virtual-store setting mismatch; no reinstall/config edit. Installed oxfmt excludes docs under the existing docs/** rule, so formatting is recorded excluded. No application lanes or hosted trials rerun.
+
+### 2026-10-12 — P0 native blocker diagnosis and fresh-trial preparation
+
+- Scope and checklist IDs: HANDOFF-11 P0 only; 10.2a/f, 10.3b/g and 10.G2/G4 reporting. No P1 implementation.
+- Progress: Both authorized SSH hosts resolve the test zone to public Cloudflare addresses. Wrangler4.144.0 authentication refresh initially times out; IPv4-first DNS restores existing OAuth access without re-login or credential disclosure.
+- Change summary: Prepare a new isolated native trial with fresh backup/inventory/names/keys and finite independent cleanup. Preserve the 10 ms stop rule; correlate native samples with labels, request method/path and response status.
+- Files/artifacts: Ignored .local/module10-native-pilot5 tooling; public scalar diagnostic/evidence to follow.
+- Verification: SSH oci/unpkg server-side tool/DNS preflight pass; initial sandbox SSH/listener restrictions require authorized escalation. Default Wrangler refresh fails UND_ERR_CONNECT_TIMEOUT; NODE_OPTIONS=--dns-result-order=ipv4first whoami passes. Local DNS still supplies synthetic198.18/15 addresses, including IPv4-mapped IPv6.
+- Decisions and deviations: Reuse code only from trial4, never its names/state/backups/secrets. No provider dashboard, TLS bypass, threshold change, Standard measurement or SPA start. Context7 resolve/query refreshed Workers custom domains/tail and SDK OAuth transport; native CPU/status field coverage still requires runtime evidence.
+- Blockers/open questions: Exact fresh-domain DNS/certificate/TLS and labelled MVP CPU not yet measured; all prior incomplete gate items remain unchecked.
+- Next actions: Provider read-only preflight, fresh backup and guarded deploy; verified TLS from SSH before bounded labelled requests. Stop on first CPU above10ms or missing attribution.
+- Next-session cautions: Only one writer on feat/v1; protected root drafts untouched. Standard stays unmeasured, G1 Not passed, Module11 Not started and13.G6 open.
+
+P0 checkpoint: Trial5 stops before upload on Cloudflare504 Gateway Timeout from Wrangler's GET of the fresh Worker's secret metadata; this is not a10021 composition rejection or a harness90-second timeout. Independent cleanup verifies193 baseline records/FKs and0 owned Workers/domains/active data; four removed permanent key identities remain. Ephemeral secret copies removed. One new trial may address the transient provider failure; it requires a new backup, inventory, random names and independent guard, and preserves all CPU/TLS bounds.
+
+### 2026-10-12 — P0 stopped on provider capability gaps; cleanup verified
+
+- Scope and checklist IDs: HANDOFF-11 P0 only;10.2a/f,10.3b/g and10.G2/G4/G5 reporting. No product/P1 implementation or checklist closure.
+- Progress: IPv4-first DNS restores Wrangler login; both authorized SSH hosts resolve the test zone publicly. Certificate inventory403/9109 and DNS inventory403/10000 remain. Fresh trial5 fails Wrangler secret metadata GET with504; one fresh trial6 fails read-only inventory on30s timeout before deployment. Native target TLS/HTTP/CPU remain unmeasured.
+- Change summary: Record exact access/transport gaps and privacy-safe receipts; correct the old master paragraph that still described the already-authorized composition repair as pending. Prepared attribution tooling is ignored and unexercised; no claim that it passes live acceptance.
+- Files/artifacts: [P0 report/commands/lookup](../evidence/10-p0-provider-diagnostic.md), [scalar receipt](../evidence/10-p0-provider-diagnostic.json), native/gate reports, Module10/11 progress and master; ignored .local/module10-native-pilot5/6 diagnostics/backups/tooling.
+- Verification: Production Minimum/ingress build passes; verified fresh logical backups59tables/193 then197records. Both independent20-minute guards finish cleanup with original records unchanged, valid FKs and0 owned Workers/domains/active data. Exact owned-key query: trial5 four removed identities, trial6 zero; helper's unconditional configured-key count corrected only in the interpreted scalar receipt. Temporary secret/password copies removed; donor R2 credentials unchanged. Final sampled headroom99,966requests/4,997,890reads/99,960writes, account-wide/delayed, not billing attribution. Final docs/secrets/links/JSON/checklist/diff checks recorded below; unchanged application lanes not rerun.
+- Decisions and deviations: No certificate/dashboard/SSL/permission change, local proxy, TLS bypass, extra load, CPU reinterpretation, paid feature, Standard measurement, main/merge or SPA action. No remote Wrangler/Node/npx path exposed; no software installed. HANDOFF-11 requires reporting and stopping on unresolved capability gaps.
+- Blockers/open questions: Reliable authorized provider transport plus certificate/DNS visibility are needed before a fresh deployed TLS/labelled CPU trial. Standard is not the only missing criterion: actual Minimum integration/full metrics/quota attribution/capacity also remain incomplete. G1 Not passed,13.G6 open.
+- Next actions: Restore MCP/Wrangler access and run one entirely new guarded trial within existing bounds. Return any representative CPU above10ms to the user for a baseline decision; do not start P1.
+- Next-session cautions: Trials1–6 are cleaned; never reuse their names/state/backups/secrets. Preserve permanent removed-key identities and append-only history. No new native response, sample, quantile or capacity is established; protected root drafts stay unstaged.
+
+Final P0 verification: installed VitePress1.6.4 docs build passes1.59s; `node tooling/secrets.mjs` passes; scoped Python validation passes370 relative links, scalar JSON, unchanged repaired-production bundle hashes, observed cleanup/key counts, ephemeral secret removal and the exact seven unchecked Module10 IDs; G1/Module11 states are unchanged. `git diff --check` passes. Installed oxfmt explicitly excludes all seven documentation targets under existing ignore rules (exit2/no targets), so formatting is recorded excluded, not passed. Application/browser/performance lanes are not rerun because product behavior is unchanged; no hosted acceptance request or sample ran.

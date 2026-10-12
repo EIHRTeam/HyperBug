@@ -1,0 +1,235 @@
+{
+  "date": "2026-10-12",
+  "baseCommit": "a3d3797",
+  "scope": "HANDOFF-11 P0 only",
+  "profile": "cloudflare-minimum",
+  "plan": "Workers Free user-attested; no new billing verification",
+  "cpuStopMs": 10,
+  "source": {
+    "at": "2026-10-12T12:54:12.975Z",
+    "commit": "a3d379762f2602cfc583099404110a401fd23980",
+    "hashes": {
+      "dist/cloudflare-minimum/minimum.mjs": "69b96d6d1a61bebb96660d42328e820b7cf8c4a7767a85bc60b33d0c699812d4",
+      "dist/cloudflare-minimum/rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+      "dist/cloudflare-minimum/source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777",
+      "dist/cloudflare-ingress/ingress.mjs": "43b52986f4b93abdc33b4fe98653d9cba1f36d85930e606a3148a8e1fe58bf69"
+    },
+    "instrumentation": "unchanged production source, no DB/CPU wrapper",
+    "sampling": 1
+  },
+  "documentationLookup": {
+    "date": "2026-10-12",
+    "libraries": [
+      "/llmstxt/developers_cloudflare_workers_llms-full_txt",
+      "/cloudflare/workers-sdk"
+    ],
+    "gaps": [
+      "certificate issuance deadline and exact permission grant unavailable",
+      "native CPU/status fields still require actual labelled runtime events"
+    ]
+  },
+  "providerVisibility": {
+    "at": "2026-10-12T12:50:38.161Z",
+    "authorizedZoneFound": true,
+    "certificates": {
+      "available": false,
+      "status": 403,
+      "codes": [
+        9109
+      ]
+    },
+    "dns": {
+      "available": false,
+      "status": 403,
+      "codes": [
+        10000
+      ]
+    },
+    "db": {
+      "active_keys": 0
+    }
+  },
+  "transportPreflight": {
+    "localDns": "synthetic 198.18.0.0/15 and IPv4-mapped IPv6",
+    "sshHosts": [
+      "oci",
+      "unpkg"
+    ],
+    "testZonePublicIPv4": [
+      "104.21.2.97",
+      "172.67.129.14"
+    ],
+    "zoneDnsIsExactTrialDns": false,
+    "wranglerDefaultAuthRefresh": "UND_ERR_CONNECT_TIMEOUT",
+    "wranglerIPv4FirstAuthRefresh": "passed",
+    "wranglerPresentOnRemoteNoninteractivePath": false,
+    "remoteCredentialFreeCloudflareApiHttpStatus": 403,
+    "targetTlsCauseResolved": false,
+    "localProxyUsed": false,
+    "certificateVerificationDisabled": false
+  },
+  "attempts": [
+    {
+      "trial": 5,
+      "backup": {
+        "canonicalTables": 59,
+        "canonicalRows": 193,
+        "foreignKeysValid": true,
+        "sha256": "0e403448ce0db8e840ccee30ac9a8d1a214bac017b2e1246034eef245a72c77f"
+      },
+      "deployment": {
+        "api": false,
+        "ingress": false,
+        "nativeUploadCompleted": false
+      },
+      "failure": {
+        "stage": "Wrangler fresh-worker secret metadata read",
+        "status": 504,
+        "code": "GATEWAY_TIMEOUT",
+        "compositionRejected": false
+      },
+      "acceptance": {
+        "httpRequestsSentByHarness": 0,
+        "httpResponses": 0,
+        "nativeCpuSamples": 0,
+        "verifiedTargetTls": false
+      },
+      "cleanup": {
+        "at": "2026-10-12T12:55:28.393Z",
+        "resources": {
+          "workers": 0,
+          "domains": 0
+        },
+        "preExistingRowsVerified": 193,
+        "foreignKeysValid": true,
+        "ownedActiveDataRemaining": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "retainedInactivePrincipals": 0,
+        "retainedRemovedKeyIdentities": 4,
+        "appendOnlyAuditPreserved": true,
+        "r2ObjectsCreated": 0,
+        "queuesCreated": 0,
+        "workflowsCreated": 0,
+        "configuredKeyRefCountReportedByHelper": 4,
+        "ownedKeyCountVerified": 4
+      },
+      "guard": {
+        "finiteDeadlineMinutes": 20,
+        "independentProcess": true,
+        "terminal": true,
+        "result": {
+          "at": "2026-10-12T12:55:28.404Z",
+          "cleaned": true,
+          "reason": "controlled stop"
+        }
+      },
+      "ephemeralSecretCopiesRemoved": true
+    },
+    {
+      "trial": 6,
+      "backup": {
+        "canonicalTables": 59,
+        "canonicalRows": 197,
+        "foreignKeysValid": true,
+        "sha256": "3cc75fd7c6e9cdbc3b078faa4f4f9dec83fe9f3ed6b8ddd779b23c10c3811755"
+      },
+      "deployment": {
+        "api": false,
+        "ingress": false,
+        "nativeUploadCompleted": false
+      },
+      "failure": {
+        "stage": "read-only inventory before deployment",
+        "status": null,
+        "code": "TIMEOUT_30000MS",
+        "compositionRejected": false
+      },
+      "acceptance": {
+        "httpRequestsSentByHarness": 0,
+        "httpResponses": 0,
+        "nativeCpuSamples": 0,
+        "verifiedTargetTls": false
+      },
+      "cleanup": {
+        "at": "2026-10-12T12:59:44.524Z",
+        "resources": {
+          "workers": 0,
+          "domains": 0
+        },
+        "preExistingRowsVerified": 197,
+        "foreignKeysValid": true,
+        "ownedActiveDataRemaining": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "retainedInactivePrincipals": 0,
+        "retainedRemovedKeyIdentities": 0,
+        "appendOnlyAuditPreserved": true,
+        "r2ObjectsCreated": 0,
+        "queuesCreated": 0,
+        "workflowsCreated": 0,
+        "configuredKeyRefCountReportedByHelper": 4,
+        "ownedKeyCountVerified": 0
+      },
+      "guard": {
+        "finiteDeadlineMinutes": 20,
+        "independentProcess": true,
+        "terminal": true,
+        "result": {
+          "at": "2026-10-12T12:59:44.539Z",
+          "cleaned": true,
+          "reason": "controlled stop"
+        }
+      },
+      "ephemeralSecretCopiesRemoved": true
+    }
+  ],
+  "headroomBefore": {
+    "at": "2026-10-12T12:51:01.448Z",
+    "estimated": true,
+    "billing": false,
+    "d1": {
+      "remainingReads": 5000000,
+      "remainingWrites": 100000
+    },
+    "workers": {
+      "remainingRequests": 99966
+    }
+  },
+  "headroomRetryBefore": {
+    "at": "2026-10-12T12:57:15.616Z",
+    "estimated": true,
+    "billing": false,
+    "d1": {
+      "remainingReads": 4998931,
+      "remainingWrites": 99960
+    },
+    "workers": {
+      "remainingRequests": 99966
+    }
+  },
+  "headroomAfter": {
+    "at": "2026-10-12T13:01:05.667Z",
+    "estimated": true,
+    "billing": false,
+    "d1": {
+      "remainingReads": 4997890,
+      "remainingWrites": 99960
+    },
+    "workers": {
+      "remainingRequests": 99966
+    }
+  },
+  "acceptedNativeRequests": 0,
+  "nativeCpuAttributable": false,
+  "standardMeasured": false,
+  "g1": "Not passed",
+  "module11": "Not started",
+  "p1Started": false
+}
