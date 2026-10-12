@@ -737,3 +737,5 @@ Final MCP P0 verification: installed VitePress1.6.4 documentation build passes; 
 - Blockers/open questions: Local pnpm scripts stop on pre-existing enableGlobalVirtualStore mismatch; installed script executables used directly. Full working-tree formatting also sees protected untracked drafts; explicit git-file arguments follow .claude skill links, unlike CI directory scanning. Clean tracked snapshot verifies the exact CI formatter invocation without changing drafts/skills. Hosted repair verification pending publication.
 - Next actions: Publish the scoped repair to feat/v1/PR2 and inspect fresh CI; preserve existing module next actions.
 - Next-session cautions: Protected root drafts/handoffs stay unstaged. Do not modify migration warnings or dependency installation settings as part of this formatting repair. G1/G2 and13.G6 remain unchanged; no main push or PR merge.
+
+Hosted checkpoint:157591e passes the original formatting failure and both quality jobs advance through contracts. The next high audit failure is the unused frontend generator graph, handled in Module01/11 maintenance records. No API semantics or Module10 gates changed.

@@ -4,7 +4,9 @@ Module 11 P1 implements only 11.1a–g and 11.V1. The user explicitly continued 
 
 ## Toolchain and commands
 
-`apps/web` pins React/React DOM 19.3.0, TypeScript 7.0.2, Vite 8.3.4, TanStack Router 1.170.42, Query 5.104.2, Form 1.33.5, Tailwind CSS and its Vite plugin 4.3.3, Base UI 1.9.0 and shadcn 4.21.4. `components.json` selects the CLI's Base UI `base-nova` style; no generated primitive is installed in this increment. Form is exposed for future form ownership; no product form is implemented.
+`apps/web` pins React/React DOM 19.3.0, TypeScript 7.0.2, Vite 8.3.4, TanStack Router 1.170.42, Query 5.104.2, Form 1.33.5, Tailwind CSS and its Vite plugin 4.3.3, and Base UI 1.9.0. `components.json` retains the shadcn Base UI `base-nova` style; no generated primitive is installed in this increment. Form is exposed for future form ownership; no product form is implemented.
+
+The unused shadcn 4.21.4 generator CLI was removed from the locked development graph on 2026-10-13: its fast-glob/micromatch chain brings in braces 3.0.3, affected by [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), with no patched version listed at lookup time. No source/build script imports the CLI, so the existing shell, Base UI dependencies and component configuration remain usable. Before a future component-generation increment, review a CLI graph that passes the unchanged full dependency audit; do not restore the vulnerable version or bypass the audit.
 
 React Compiler 1.0.0 runs through `reactCompilerPreset({ target: '19' })` in `vite.config.ts`, using `@rolldown/plugin-babel` 0.2.4 and Babel 7.29.7. The stable Babel integration is selected; the experimental Rust implementation is not required. Production shell and both route chunks contain compiler memo-cache output. Compilation is an optimization and cannot replace hook rules or behavioral checks.
 
