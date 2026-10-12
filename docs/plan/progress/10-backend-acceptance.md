@@ -725,3 +725,15 @@ MCP checkpoint: Explicit user approval authorizes the private full D1 backup aft
 - Next-session cautions: Trials1–7 are cleaned; never reuse names/state/backups/secrets or infer a causal CPU/certificate history, quantile/capacity/Free acceptance from these observations. Preserve permanent key tombstones, append-only history, protected root drafts and gate states.
 
 Final MCP P0 verification: installed VitePress1.6.4 documentation build passes; `node tooling/secrets.mjs` passes; scoped Python validates468 relative links, scalar JSON/cleanup/CPU/TLS invariants, the exact seven unchecked Module10 IDs and unchanged G1/Module11 gates; `git diff --check` passes. Scoped installed oxfmt exits2 because existing docs/** ignore rules exclude all10 targets; formatting is excluded, not passed. No product/application/browser/performance lane is rerun because source behavior is unchanged. No new hosted acceptance request is sent.
+
+### 2026-10-13 — PR 2 OpenAPI formatting CI repair
+
+- Scope and checklist IDs: Maintenance of 01.3b and 10.1a/e only; repair failed quality jobs 115023013824 and 115022997166 on PR #2 commit 3081b375. No gate/checklist status change.
+- Progress: Both failures are oxfmt rejection of packages/contracts/openapi.json; runtime Node/workerd, PostgreSQL, documentation and CodeQL checks succeeded on the original commit.
+- Change summary: Format generated OpenAPI through the installed oxfmt stdin CLI with the JSON target path, as already done for generated TypeScript. Regenerate the committed JSON without semantic changes.
+- Files/artifacts: tooling/public-api.ts, packages/contracts/openapi.json, and Module01/10 progress records; [failed job](https://github.com/EIHRTeam/HyperBug/actions/runs/38313027034/job/115023013824?pr=2).
+- Verification: Node24.21.0/oxfmt0.68.0; node tooling/public-api.ts --check passes75 paths, contract suite2/2 passes, root TypeScript/lint/import boundaries pass, parsed JSON matches HEAD exactly. Tracked-source snapshot oxfmt --check . passes571 files.
+- Decisions and deviations: Context7 resolve/query on2026-10-13: /websites/cli_github_manual (gh run view/pr checks) and /websites/oxc_rs (formatter stdin/config), citing https://cli.github.com/manual/gh_run_view and https://oxc.rs/docs/guide/usage/formatter/quickstart.html; installed CLI confirms behavior. No dependency/config/API policy change.
+- Blockers/open questions: Local pnpm scripts stop on pre-existing enableGlobalVirtualStore mismatch; installed script executables used directly. Full working-tree formatting also sees protected untracked drafts; explicit git-file arguments follow .claude skill links, unlike CI directory scanning. Clean tracked snapshot verifies the exact CI formatter invocation without changing drafts/skills. Hosted repair verification pending publication.
+- Next actions: Publish the scoped repair to feat/v1/PR2 and inspect fresh CI; preserve existing module next actions.
+- Next-session cautions: Protected root drafts/handoffs stay unstaged. Do not modify migration warnings or dependency installation settings as part of this formatting repair. G1/G2 and13.G6 remain unchanged; no main push or PR merge.

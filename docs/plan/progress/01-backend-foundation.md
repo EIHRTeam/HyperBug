@@ -704,3 +704,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: Frontend's temporary Pages cleanup awaits exact authorization after automatic-review rejection; no Module01 gate changed.
 - Next actions: Finish Module11 cleanup/handoff within its scope.
 - Next-session cautions: Protected root drafts remain unstaged; G1 remains Not passed, no backend acceptance implied.
+
+### 2026-10-13 — PR 2 OpenAPI formatting CI repair
+
+- Scope and checklist IDs: Maintenance of 01.3b and 10.1a/e only; repair failed quality jobs 115023013824 and 115022997166 on PR #2 commit 3081b375. No gate/checklist status change.
+- Progress: Both failures are oxfmt rejection of packages/contracts/openapi.json; runtime Node/workerd, PostgreSQL, documentation and CodeQL checks succeeded on the original commit.
+- Change summary: Format generated OpenAPI through the installed oxfmt stdin CLI with the JSON target path, as already done for generated TypeScript. Regenerate the committed JSON without semantic changes.
+- Files/artifacts: tooling/public-api.ts, packages/contracts/openapi.json, and Module01/10 progress records; [failed job](https://github.com/EIHRTeam/HyperBug/actions/runs/38313027034/job/115023013824?pr=2).
+- Verification: Node24.21.0/oxfmt0.68.0; node tooling/public-api.ts --check passes75 paths, contract suite2/2 passes, root TypeScript/lint/import boundaries pass, parsed JSON matches HEAD exactly. Tracked-source snapshot oxfmt --check . passes571 files.
+- Decisions and deviations: Context7 resolve/query on2026-10-13: /websites/cli_github_manual (gh run view/pr checks) and /websites/oxc_rs (formatter stdin/config), citing https://cli.github.com/manual/gh_run_view and https://oxc.rs/docs/guide/usage/formatter/quickstart.html; installed CLI confirms behavior. No dependency/config/API policy change.
+- Blockers/open questions: Local pnpm scripts stop on pre-existing enableGlobalVirtualStore mismatch; installed script executables used directly. Full working-tree formatting also sees protected untracked drafts; explicit git-file arguments follow .claude skill links, unlike CI directory scanning. Clean tracked snapshot verifies the exact CI formatter invocation without changing drafts/skills. Hosted repair verification pending publication.
+- Next actions: Publish the scoped repair to feat/v1/PR2 and inspect fresh CI; preserve existing module next actions.
+- Next-session cautions: Protected root drafts/handoffs stay unstaged. Do not modify migration warnings or dependency installation settings as part of this formatting repair. G1/G2 and13.G6 remain unchanged; no main push or PR merge.

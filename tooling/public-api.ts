@@ -601,8 +601,15 @@ function schemaType(schema: Schema): string {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const generated = generatePublicApi();
   const files = {
-    'packages/contracts/openapi.json':
-      JSON.stringify(generated.document, null, 2) + '\n',
+    'packages/contracts/openapi.json': execFileSync(
+      'node_modules/.bin/oxfmt',
+      ['--stdin-filepath', 'packages/contracts/openapi.json'],
+      {
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+        input: JSON.stringify(generated.document, null, 2) + '\n',
+      },
+    ),
     'packages/api-client/src/operations.ts': generated.source,
   };
   for (const [path, source] of Object.entries(files)) {
