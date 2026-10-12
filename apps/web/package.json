@@ -1,0 +1,42 @@
+{
+  "name": "@hyperbug/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build && node scripts/prepare-deployment.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepare:deployment": "node scripts/prepare-deployment.ts",
+    "serve": "node scripts/serve-static.ts",
+    "lint": "oxlint --config ../../.oxlintrc.json --deny-warnings src scripts vite.config.ts && node ../../tooling/check-boundaries.mjs",
+    "format": "oxfmt --write src scripts public index.html vite.config.ts package.json tsconfig.json components.json",
+    "format:check": "oxfmt --check src scripts public index.html vite.config.ts package.json tsconfig.json components.json"
+  },
+  "dependencies": {
+    "@hyperbug/api-client": "workspace:*",
+    "@hyperbug/contracts": "workspace:*",
+    "@base-ui/react": "1.9.0",
+    "@tanstack/react-form": "1.33.5",
+    "@tanstack/react-query": "5.104.2",
+    "@tanstack/react-router": "1.170.42",
+    "clsx": "2.1.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwind-merge": "3.7.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "shadcn": "4.21.4",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "@babel/core": "7.29.7",
+    "@types/babel__core": "7.20.5",
+    "@rolldown/plugin-babel": "0.2.4",
+    "babel-plugin-react-compiler": "1.0.0"
+  }
+}

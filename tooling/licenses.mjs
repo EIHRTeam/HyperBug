@@ -20,6 +20,8 @@ const allowed = new Set([
   '(MIT AND ISC)',
   '(MIT AND Zlib)',
 ]);
+// Exact build-tooling reviews: docs/development/FRONTEND.md#dependency-license-review.
+// These exceptions do not approve runtime redistribution or future versions.
 const failed = [];
 for (const [license, packages] of Object.entries(report)) {
   const reviewedDevTooling =
@@ -34,7 +36,15 @@ for (const [license, packages] of Object.entries(report)) {
         (license === 'MPL-2.0' &&
           (pkg.name === 'lightningcss' ||
             pkg.name.startsWith('lightningcss-')) &&
-          pkg.versions.every((version) => version === '1.33.0')),
+          pkg.versions.every((version) =>
+            ['1.32.0', '1.33.0'].includes(version),
+          )) ||
+        (license === 'CC-BY-4.0' &&
+          pkg.name === 'caniuse-lite' &&
+          pkg.versions.every((version) => version === '1.0.30001815')) ||
+        (license === '(MIT OR CC0-1.0)' &&
+          pkg.name === 'type-fest' &&
+          pkg.versions.every((version) => version === '4.41.0')),
     );
   if (!allowed.has(license) && !reviewedDevTooling)
     failed.push({ license, packages });

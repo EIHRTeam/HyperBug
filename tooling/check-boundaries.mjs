@@ -96,6 +96,7 @@ export function checkImport(file, specifier) {
   if (
     (from === 'web' || from === 'api-client') &&
     target &&
+    target !== from &&
     !['contracts', 'api-client'].includes(target)
   )
     return `${file}: client imports server implementation ${target}`;
@@ -125,7 +126,7 @@ export function checkBoundaries() {
         const failure = checkImport(file, specifier);
         if (failure) failures.push(failure);
       }
-    } else if (/\.[cm]?[jt]s$/.test(file) && !file.endsWith('.d.ts')) {
+    } else if (/\.[cm]?[jt]sx?$/.test(file) && !file.endsWith('.d.ts')) {
       // Cover static imports/exports, side-effect imports, import() type expressions and require().
       // Specifiers never contain whitespace, which keeps quoted string literals
       // like the 'import' capability vocabulary from parsing as statements.

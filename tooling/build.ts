@@ -1,5 +1,6 @@
 import { copyFile, mkdir, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { build } from 'tsdown';
 import {
   appTargets,
@@ -13,7 +14,7 @@ import { markdownPolicyUpgradePlugin } from '../tests/fixtures/markdown-policy-u
 // Node/workerd test lanes re-run it for the artifacts they need, so no test
 // bundles its own fixture with a hand-copied configuration.
 //
-// Usage: node tooling/build.ts [--target=all|node|cloudflare|cloudflare-ingress|fixtures]
+// Usage: node tooling/build.ts [--target=all|node|cloudflare|cloudflare-minimum|cloudflare-ingress|fixtures|web]
 const targets = new Set([
   'all',
   'node',
@@ -21,6 +22,7 @@ const targets = new Set([
   'cloudflare-minimum',
   'cloudflare-ingress',
   'fixtures',
+  'web',
 ]);
 const requested = process.argv
   .filter((argument) => argument.startsWith('--target='))
@@ -78,3 +80,13 @@ if (wants('fixtures'))
   });
 
 console.log(`Built targets: ${selected.join(', ')}`);
+
+if (wants('web')) {
+  execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build'], {
+    cwd: 'apps/web',
+    stdio: 'inherit',
+  });
+  execFileSync(process.execPath, ['apps/web/scripts/prepare-deployment.ts'], {
+    stdio: 'inherit',
+  });
+}

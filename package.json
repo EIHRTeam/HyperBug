@@ -31,7 +31,7 @@
     "dev:cloudflare": "node tooling/dev-cloudflare.mjs",
     "dev:cloudflare:turnstile": "wrangler dev --config apps/api-cloudflare/wrangler.jsonc --env local-turnstile",
     "build": "node tooling/build.ts",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p apps/api-cloudflare && tsc --noEmit -p apps/api-cloudflare/tsconfig.ingress.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p apps/api-cloudflare && tsc --noEmit -p apps/api-cloudflare/tsconfig.ingress.json && tsc --noEmit -p apps/web",
     "lint": "oxlint --deny-warnings apps packages tooling tests && node tooling/check-boundaries.mjs",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",

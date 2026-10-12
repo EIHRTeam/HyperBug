@@ -25,6 +25,7 @@
     "tooling/**/*.ts"
   ],
   "exclude": [
+    "apps/web",
     "apps/api-cloudflare",
     "tests/fixtures/worker.ts",
     "tests/fixtures/account-worker.ts",

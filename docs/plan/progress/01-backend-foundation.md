@@ -692,3 +692,15 @@ Every session affecting this module MUST append an entry following the [required
 - Blockers/open questions: No Module 01 blocker. Residual risk: default-branch trigger execution remains unobserved; GitHub-side trigger failure would surface on the first real main push. PR #2 merge is a separate user decision outside this mission.
 - Next actions: Continue B2 10.1a–e and B3 upload closure.
 - Next-session cautions: Do not push main or merge PR #2. Standard remains unmeasured and G1 closed.
+
+### 2026-10-13 — Frontend P1 shared tooling integration
+
+- Scope and checklist IDs: Shared tooling/dependency impact of authorized11.1a–g/11.V1; no new Module01 checklist or backend behavior change.
+- Progress: Root types/build include frontend; TSX boundary scan permits same-owner web imports and rejects backend imports. React hooks/accessibility lint scoped to web; existing Oxc versions retained.
+- Change summary: One lockfile adds frontend/compiler graph with strict peers/lifecycle controls unchanged. Narrow reviewed build-tool license allowances and exact release-age exceptions; backend Vitest Vite resolution retained.
+- Files/artifacts: Root manifests/config/tooling, [frontend engineering review](../../development/FRONTEND.md), [P1 evidence](../evidence/11-p1-foundation.md).
+- Verification: Root types/lint,10 focused frontend/existing lint-boundary tests, frozen offline install and15-expression license/secret scans pass. Existing external package keys preserved; no old importer changes except root public-client workspace link. Backend suites not rerun because runtime behavior is unchanged.
+- Decisions and deviations: Stable React Compiler Babel integration explicitly requested; exact dev-only license obligations documented, no general license-policy relaxation or lifecycle expansion.
+- Blockers/open questions: Frontend's temporary Pages cleanup awaits exact authorization after automatic-review rejection; no Module01 gate changed.
+- Next actions: Finish Module11 cleanup/handoff within its scope.
+- Next-session cautions: Protected root drafts remain unstaged; G1 remains Not passed, no backend acceptance implied.

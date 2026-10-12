@@ -1,0 +1,168 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query';
+import {
+  createRootRouteWithContext,
+  createRoute,
+  createRouter,
+  lazyRouteComponent,
+  Link,
+  Outlet,
+  RouterProvider,
+} from '@tanstack/react-router';
+import { instanceQuery } from './capabilities.ts';
+import type { RuntimeConfig } from './runtime-config.ts';
+
+interface ApplicationContext {
+  config: RuntimeConfig;
+  instance: ReturnType<typeof instanceQuery>;
+}
+
+const rootRoute = createRootRouteWithContext<ApplicationContext>()({
+  component: ApplicationShell,
+  notFoundComponent: () => (
+    <>
+      <h1>Page not found</h1>
+      <p>This address is not part of this instance.</p>
+      <Link to="/">Return to overview</Link>
+    </>
+  ),
+});
+const overviewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  component: lazyRouteComponent(
+    () => import('./routes/overview.tsx'),
+    'Overview',
+  ),
+});
+const instanceRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/instance',
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { section: 'capabilities' | 'limits' } => ({
+    section: search.section === 'limits' ? 'limits' : 'capabilities',
+  }),
+  component: lazyRouteComponent(
+    () => import('./routes/instance.tsx'),
+    'Instance',
+  ),
+});
+
+function makeRouter(context: ApplicationContext) {
+  return createRouter({
+    routeTree: rootRoute.addChildren([overviewRoute, instanceRoute]),
+    context,
+    defaultPreload: 'intent',
+    defaultPendingComponent: () => <output>Loading page…</output>,
+    defaultErrorComponent: () => (
+      <>
+        <h1>Page unavailable</h1>
+        <p>Reload this page to try again.</p>
+      </>
+    ),
+  });
+}
+export type ApplicationRouter = ReturnType<typeof makeRouter>;
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: ApplicationRouter;
+  }
+}
+
+export function useInstance() {
+  const { instance } = rootRoute.useRouteContext();
+  return useQuery(instance);
+}
+export function usePublicConfig() {
+  return rootRoute.useRouteContext().config;
+}
+export { instanceRoute };
+
+function ApplicationShell() {
+  const config = usePublicConfig();
+  const instance = useInstance();
+  return (
+    <>
+      <a className="skip-link" href="#content">
+        Skip to content
+      </a>
+      <header className="site-header">
+        <Link to="/" className="brand">
+          <span className="brand-mark" aria-hidden="true">
+            H
+          </span>
+          {config.applicationName}
+        </Link>
+        <nav aria-label="Primary">
+          <Link
+            to="/"
+            activeOptions={{ exact: true }}
+            activeProps={{ 'aria-current': 'page' }}
+          >
+            Overview
+          </Link>
+          <Link
+            to="/instance"
+            search={{ section: 'capabilities' }}
+            activeProps={{ 'aria-current': 'page' }}
+          >
+            Instance
+          </Link>
+        </nav>
+      </header>
+      <main id="content" tabIndex={-1}>
+        {instance.isPending ? (
+          <>
+            <h1>Connecting to this instance</h1>
+            <output>Checking available capabilities…</output>
+          </>
+        ) : instance.isError ? (
+          <>
+            <h1>This instance is unavailable</h1>
+            <p role="alert">
+              Its capabilities could not be verified. Try again or contact its
+              administrator.
+            </p>
+            <button
+              type="button"
+              disabled={instance.isFetching}
+              onClick={() => {
+                void instance.refetch();
+              }}
+            >
+              Try again
+            </button>
+          </>
+        ) : (
+          <Outlet />
+        )}
+      </main>
+      <footer className="site-footer">
+        <p>Powered by HyperBug · A shared place for feedback</p>
+      </footer>
+    </>
+  );
+}
+
+export function startApplication(
+  container: HTMLElement,
+  config: RuntimeConfig,
+) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  const router = makeRouter({ config, instance: instanceQuery(config) });
+  createRoot(container).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </StrictMode>,
+  );
+}

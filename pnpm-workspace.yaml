@@ -12,6 +12,9 @@ allowBuilds:
   sharp: false
 
 minimumReleaseAgeExclude:
+  # User-requested stable React Compiler integration; the Rolldown bridge
+  # is pre-1.0 development tooling, not a runtime or persistent dependency.
+  - '@rolldown/plugin-babel@0.2.4'
   - '@cloudflare/workers-types@5.20260917.1 || 5.20261003.1'
   - miniflare@5.20260916.0-alpha
   - wrangler@4.133.0
@@ -22,6 +25,8 @@ minimumReleaseAgeExclude:
   - oxfmt@0.68.0
   - '@aws-sdk/client-s3@3.1146.0'
   - '@aws-sdk/s3-request-presigner@3.1146.0'
+  - '@tanstack/query-core@5.104.2'
+  - '@tanstack/react-query@5.104.2'
 
 strictPeerDependencies: true
 
@@ -32,6 +37,9 @@ verifyDepsBeforeRun: error
 # fix to the documentation toolchain; plugin-vue 5.2.4 supports Vite 6.
 # See docs/development/DOCUMENTATION.md for the compatibility checks.
 overrides:
+  # Keep the pre-P1 backend test runner's Vite resolution. apps/web alone
+  # tracks latest stable Vite; adding it must not upgrade unrelated tooling.
+  'vitest@5.0.1>vite': 8.3.0
   'vitepress@1.6.4>vite': 6.4.3
   # GHSA-68fv-2mgg-jv7q: retain patched source-map consumers across tooling.
   'source-map-js@<1.2.2': 1.2.2

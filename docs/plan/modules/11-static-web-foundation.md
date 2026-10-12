@@ -1,7 +1,7 @@
 # 11 — Static web application, authentication client, and UI foundation
 
 Phase: MVP frontend  
-Prerequisites: 10.G1–10.G5 all complete.  
+Prerequisites: 10.G1–10.G5 all complete. The user explicitly continued the scoped 11.1/11.V1 P1 foundation after the P0 report; this sequencing exception does not pass G1 or authorize later increments.
 Progress: [Session log and current status](../progress/11-static-web-foundation.md)  
 Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
@@ -13,13 +13,13 @@ Create a portable static application that consumes the accepted backend, with ac
 
 ### Step 11.1 — Establish the static application
 
-- [ ] **11.1a** Read the development guidance and refresh Context7 documentation for the selected React/TanStack/Vite/UI stack; search/retrieve modern-web-guidance before relevant web implementation.
-- [ ] **11.1b** Scaffold `apps/web` using React 19, TypeScript 7, Vite latest stable, TanStack Router/Query/Form, Tailwind CSS 4, shadcn/ui, and Base UI at verified locked versions.
-- [ ] **11.1c** Produce generic static `dist/` output with route splitting, hashed assets, and the Baseline Widely Available build target. No SSR, Pages Functions, or required host-specific proxy.
-- [ ] **11.1d** Load a validated public `config.json` before initializing API access. Support API/application-name changes without recompilation, safe failure UI, and fresh config/index versus immutable asset caching.
-- [ ] **11.1e** Define state ownership: Router for shareable query state, Query for server state, Form for forms, React for local UI, and minimal ephemeral global state only when justified.
-- [ ] **11.1f** Establish deployment-generated CSP/security headers consistent with runtime API/auth/media origins and reviewed plugin declarations.
-- [ ] **11.1g** Consume the instance capability document (04.2g) in the static application before enabling dependent surfaces: deployment tier, degradation identifiers, available authentication capabilities and documented limits. No runtime code injection, no client-side downgrade, and no UI that implies an unavailable security capability.
+- [x] **11.1a** Read the development guidance and refresh Context7 documentation for the selected React/TanStack/Vite/UI stack; search/retrieve modern-web-guidance before relevant web implementation.
+- [x] **11.1b** Scaffold `apps/web` using React 19, TypeScript 7, Vite latest stable, TanStack Router/Query/Form, Tailwind CSS 4, shadcn/ui, and Base UI at verified locked versions.
+- [x] **11.1c** Produce generic static `dist/` output with route splitting, hashed assets, and the Baseline Widely Available build target. No SSR, Pages Functions, or required host-specific proxy.
+- [x] **11.1d** Load a validated public `config.json` before initializing API access. Support API/application-name changes without recompilation, safe failure UI, and fresh config/index versus immutable asset caching.
+- [x] **11.1e** Define state ownership: Router for shareable query state, Query for server state, Form for forms, React for local UI, and minimal ephemeral global state only when justified.
+- [x] **11.1f** Establish deployment-generated CSP/security headers consistent with runtime API/auth/media origins and reviewed plugin declarations.
+- [x] **11.1g** Consume the instance capability document (04.2g) in the static application before enabling dependent surfaces: deployment tier, degradation identifiers, available authentication capabilities and documented limits. No runtime code injection, no client-side downgrade, and no UI that implies an unavailable security capability.
 
 ### Step 11.2 — Implement the browser auth boundary
 
@@ -44,6 +44,8 @@ Create a portable static application that consumes the accepted backend, with ac
 - [ ] **11.V3** Run keyboard, screen-reader, touch, zoom, reduced-motion, and baseline-browser checks on navigation, forms, and dialogs.
 - [ ] **11.V4** Inspect CSP violations and bundle splitting; record initial bundle/CWV measurements as baselines rather than unsupported promises.
 - [ ] **11.V5** Verify capability-driven application states: a minimum-tier instance loads with the capability document applied, unavailable flows are explained rather than failing, and no surface requests a capability the document reports as unavailable.
+
+P1 implementation/hosting evidence: [foundation report](../evidence/11-p1-foundation.md). 11.V1 remains unchecked until owned Pages cleanup is verified.
 
 ## Source coverage
 

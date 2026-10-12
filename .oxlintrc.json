@@ -287,6 +287,15 @@
       "rules": {
         "no-await-in-loop": "off"
       }
+    },
+    {
+      "files": ["apps/web/**/*.ts", "apps/web/**/*.tsx"],
+      "plugins": ["react", "jsx-a11y"],
+      "rules": {
+        "react/rules-of-hooks": "error",
+        "react/exhaustive-deps": "error",
+        "react/react-in-jsx-scope": "off"
+      }
     }
   ]
 }

@@ -4,7 +4,7 @@ Selected audit closure (2026-10-11): **06.1c, 06.2c, 07.2e and 09.3e resumed and
 
 Review remediation checkpoint (2026-10-05): **B1–B15 implementation, recorded live measurements and owned-resource cleanup finished.** B15 retains 1,000 ms configured deadlines, explicitly samples production Worker logs at 0.1, fixes the CAPTCHA form field and raises the Minimum root password bound to ten after measured saturation. The final ten-login burst passed 10/10; observed CPU 20–47 ms and unverified billing attribution leave Free-plan acceptance open. Successful live CAPTCHA passkey login and Standard deployment measurements remain unverified. G1/G2 stay closed; 13.G6 stays open. See the [cross-module record](evidence/2026-10-05-review-remediation.md) and [live measurements/cleanup](evidence/2026-10-05-b15-live-measurements.md).
 
-Module10 local Minimum integration, [separate-domain browser proof](evidence/10-auth-csp-review.md), [local metrics](evidence/10-minimum-local-performance.md) and the authorized [composition repair](evidence/10-native-startup-blocker.md) pass at recorded scopes. [P0 MCP trial7](evidence/10-p0-mcp-trial.md) resolves provider certificate/DNS inspection and verifies fresh-domain TLSv1.3 from oci after automatic issuance. Outside-harness GET404 API CPU16ms triggers the unchanged10ms guard before any labelled MVP request; CPU attribution remains blocked. Cleanup preserves197 original rows/FKs/all original resource IDs/DNS records,0 owned Workers/domains/certificates/DNS/active data, with generated secrets removed.10.2a/f,10.3b/g and10.G2/G4/G5 remain incomplete. Standard stays **not measured**; actual Minimum integration/full metrics/quota attribution/capacity are also missing. G1 Not passed, Module11 Not started and13.G6 open; no further hosted load or P1 begins.
+Module10 local Minimum integration, [separate-domain browser proof](evidence/10-auth-csp-review.md), [local metrics](evidence/10-minimum-local-performance.md) and the authorized [composition repair](evidence/10-native-startup-blocker.md) pass at recorded scopes. [P0 MCP trial7](evidence/10-p0-mcp-trial.md) resolves provider certificate/DNS inspection and verifies fresh-domain TLSv1.3 from oci after automatic issuance. Outside-harness GET404 API CPU16ms triggers the unchanged10ms guard before any labelled MVP request; CPU attribution remains blocked. Cleanup preserves197 original rows/FKs/all original resource IDs/DNS records,0 owned Workers/domains/certificates/DNS/active data, with generated secrets removed.10.2a/f,10.3b/g and10.G2/G4/G5 remain incomplete. Standard stays **not measured**; actual Minimum integration/full metrics/quota attribution/capacity are also missing. G1 Not passed and13.G6 open; no further hosted P0 load. The later explicit P1 continuation authorizes only11.1a–g/11.V1; Module11 is In progress with foundation implemented and temporary Pages cleanup pending ([P1 evidence](evidence/11-p1-foundation.md)).
 
 
 Last updated: 2026-10-12
@@ -38,7 +38,7 @@ Module09 completion (2026-10-11): all23 non-suspended checks are verified;09.3e 
 | 08 | [Structured search, filters, and query performance](modules/08-search-and-query.md) | Complete (local scope; Module 09 dispatch/retry verified) | [B1–B4 local implementation and acceptance](progress/08-search-and-query.md); real tier performance/release acceptance remains open |
 | 09 | [Outbox delivery, queues, durable workflows, and cleanup](modules/09-async-and-workflows.md) | Complete (09.3e audit verified; native recovery/dispatch retained at recorded scope) | [Session record](progress/09-async-and-workflows.md) |
 | 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | Blocked (Standard unmeasured; actual Minimum metrics/capacity incomplete) | [Session record](progress/10-backend-acceptance.md) |
-| 11 | [Static web application, authentication client, and UI foundation](modules/11-static-web-foundation.md) | Not started | [Session record](progress/11-static-web-foundation.md) |
+| 11 | [Static web application, authentication client, and UI foundation](modules/11-static-web-foundation.md) | In progress | [Session record](progress/11-static-web-foundation.md) |
 | 12 | [Public feedback, discussion, and staff web workflows](modules/12-web-product-workflows.md) | Not started | [Session record](progress/12-web-product-workflows.md) |
 | 13 | [MVP release, deployment, and maintenance readiness](modules/13-mvp-release-and-operations.md) | Not started | [Session record](progress/13-mvp-release-and-operations.md) |
 | 14 | [Post-MVP issue relations, hierarchy, and saved views](modules/14-relations-and-saved-views.md) | Not started | [Session record](progress/14-relations-and-saved-views.md) |
@@ -52,7 +52,7 @@ All 16 module 00 guidance checklist items are complete. Module 01 has reproducib
 | Gate | Required evidence | Current state |
 | --- | --- | --- |
 | G0 — Guidance ready | Module 00 skills, registration, and validation | Passed; [evidence](evidence/00-guidance-validation.md) |
-| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; SPA development must wait |
+| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; scoped11.1/11.V1 sequencing exception only |
 | G2 — MVP accepted | Module 13.G1–13.G5 including deployment/recovery evidence | Not passed |
 | Post-MVP backend gates | Backend acceptance before UI in 14, 15, and each provider in 16 | Not started |
 | Markdown representation policy | 07.1 implementation, local determinism/persistence/cost and replacement-bundle cursor/validator evidence | Implemented and locally verified including V7; deployment unclaimed ([07 evidence](evidence/07-content-validation.md)) |
@@ -1309,3 +1309,15 @@ Module10 B1–B6 reports, contract/client and prerequisite closures are committe
 ### 2026-10-12 — MCP resolves P0 TLS; CPU stop remains
 
 [Fresh trial7](evidence/10-p0-mcp-trial.md) restores provider inspection, uploads both unchanged production roots and verifies exact-domain remote TLS after automatic issuance. Unlabelled GET404 API16ms exceeds unchanged10ms; guard stops before labelledHTTP0.197 original rows/FKs and all original resource IDs/DNS records preserved; owned resources/active data0 and generated secrets removed. Backup/test-secret automatic-review rejections are explicitly authorized before retry.10.2a/f,10.3b/g and10.G2/G4/G5 remain open; actual Minimum metrics/integration/quota/capacity and Standard remain incomplete, G1 Not passed, Module11 Not started,13.G6 open. No rule/backend/SPA/paid/main/merge/push extension.
+
+### 2026-10-13 — Scoped P1 foundation and frontend tooling
+
+- Scope and checklist IDs: Explicit continuation of11.1a–g/11.V1 after P0 report; requested React Compiler/oxlint/oxfmt. This supersedes the older SPA hold only for P1.
+- Progress: Module11 In progress;11.1a–g complete. Actual same-build generic/Pages deep links and config A→B pass;11.V1 awaits owned-resource cleanup.
+- Change summary: Static config-first React/TanStack capability shell, exact pinned graph/compiler, CSP/cache hosting adapters and shared types/lint/build integration; bilingual operator guide and engineering review.
+- Files/artifacts: [P1 report](evidence/11-p1-foundation.md), Module11/01 logs, apps/web, lockfile/root tooling and docs.
+- Verification: Types/lint/format/build/frozen installation,10 focused checks,15-expression license scan and secret scan pass. Documentation handoff recorded in Module11. No backend acceptance/CWV/full accessibility/auth matrix claimed.
+- Decisions and deviations: G1 Not passed, Standard unmeasured, Module10 incomplete IDs/10ms stop unchanged;11.2/11.3/11.V2–V5/Module12 not authorized.
+- Blockers/open questions: Automatic review rejects exact Pages deletion; direct cleanup approval pending. Guardian failed authentication and exited. Local servers/tabs cleaned.
+- Next actions: Delete exact owned Pages project after authorization and verify preserved originals before closing11.V1/P1; no push/PR edit or further deployment.
+- Next-session cautions: Protected root drafts/handoffs unstaged; never infer G1 passing from frontend proof or assume attempted cleanup succeeded.

@@ -16,6 +16,10 @@ Module 00 has now created and validated the [development](../../.agents/skills/h
 
 Execute the bounded B1–B6 mission in the supplied HANDOFF-10. Close 01.3f using hosted PR CodeQL evidence. The user explicitly accepts that same committed workflow/source/default queries/job-local permissions and Security upload as equivalent to 01.V4’s main-push half; the default-branch trigger remains unobserved and a trigger failure would surface on the first real main push. No main push or PR #2 merge is authorized. Standard is not measured; model output is analysis only, never acceptance, a regression threshold or an SLO. G1 and the SPA remain closed while its Standard requirement is unmet.
 
+## Module 11 scoped P1 continuation (2026-10-12/13)
+
+After the P0 report the user explicitly continued only11.1a–g/11.V1. The static foundation and React Compiler/oxlint/oxfmt are implemented; actual same-build hosting is verified, with temporary Pages cleanup pending. This overrides the earlier no-SPA instruction only for this scope. G1 remains Not passed, all incomplete Module10 checks remain incomplete, and11.2/11.3/11.V2–V5/Module12 are not authorized. See [P1 evidence](evidence/11-p1-foundation.md).
+
 ## Start here
 
 1. Read [Master progress](PROGRESS.md), [Execution protocol](EXECUTION.md), and the latest progress entry for the next eligible module.

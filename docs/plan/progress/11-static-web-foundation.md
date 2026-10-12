@@ -6,37 +6,36 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Not started
-- Delivery scope: MVP frontend
-- Prerequisites: 10.G1–10.G5 all complete.
-- Implementation started: No.
-- Completed implementation checklist IDs: None.
-- Active/next checklist group: 11.1, after prerequisites are satisfied.
-- Last updated: 2026-10-12.
-- Blocking issues discovered: HANDOFF-11 P0 is partial: MCP provider inspection and fresh remote TLS pass, but outside-harness404 CPU16ms triggers the unchanged10ms stop before labelled MVP requests. G1 prerequisites remain incomplete.
-- Evidence: Planning, [prior diagnosis](../evidence/10-p0-provider-diagnostic.md) and [MCP P0 trial7](../evidence/10-p0-mcp-trial.md); no frontend implementation or runtime validation.
+- Status: In progress
+- Delivery scope: MVP frontend; current P1 limited to11.1a–g/11.V1.
+- Prerequisites: G1 remains Not passed; explicit P1 continuation after P0 is a scoped sequencing exception only.
+- Implementation started: Static foundation and requested React Compiler/oxlint/oxfmt implemented.
+- Completed implementation checklist IDs: 11.1a–g.
+- Active/next checklist group: Finish owned Pages cleanup before closing11.V1/P1;11.2/11.3 and11.V2–V5 remain unauthorized.
+- Last updated: 2026-10-13.
+- Blocking issues discovered: Exact Pages-project deletion rejected by automatic approval review; explicit approval pending. P0 CPU attribution and backend G1 remain incomplete.
+- Evidence: [P1 report](../evidence/11-p1-foundation.md), [frontend engineering guide](../../development/FRONTEND.md) and [P0 MCP report](../evidence/10-p0-mcp-trial.md).
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 11.1 | Establish the static application | Not started | None yet |
-| 11.2 | Implement the browser auth boundary | Not started | None yet |
-| 11.3 | Build accessible reusable UI primitives | Not started | None yet |
+| 11.1 | Establish the static application | Complete | P1 report; actual types/lint/build/config/capability checks |
+| 11.V1 | Same-build generic/Pages preview | In progress | Hosting proof passes; owned-project cleanup pending |
+| 11.2 | Implement the browser auth boundary | Not started | Outside authorized P1 |
+| 11.3 | Build accessible reusable UI primitives | Not started | Outside authorized P1 |
 
-The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
+The linked plan owns the canonical checkboxes. No backend gate or later frontend acceptance is implied.
 
 ## Next actions
 
-1. Read the latest master and dependency progress records and verify prerequisites.
-2. Resolve and report P0 first; obtain the explicit P0→P1 go-ahead and satisfy the G1 rule before starting11.1.
-3. Record the actual files changed, checks run, decisions, and next-session cautions here.
+1. After explicit approval, delete only `hyperbug-11-9f880c7e4720` via cloudflare-api MCP, verify both previews absent and six original projects preserved.
+2. Close11.V1/P1 only after cleanup; preserve G1 Not passed and every incomplete Module10 item.
+3. Await separate authorization/prerequisite decisions for any later frontend increment; do not begin11.2/11.3 or additional P0 traffic.
 
 ## Next-session cautions
 
-The frontend is a static SPA. Apply modern-web guidance with project-specific exceptions: no same-origin cookie API, SSR fallback, or persistent browser credentials.
-
-Do not infer completed implementation from this initialized record. Inspect the current repository and prior session entries before continuing.
+Public config and static output only; no persistent browser credentials, SSR, Functions or mandatory proxy. Invalid config/instance data must fail closed. Regenerate CSP when origins change. Temporary guardian failed and exited; do not assume cleanup from a stop file or an attempted deletion. Protected root drafts remain unstaged; no push/PR/deployment authorization beyond the recorded disposable preview.
 
 ## Session log
 
@@ -130,3 +129,31 @@ Final P0 verification: installed VitePress1.6.4 docs build passes1.59s; `node to
 - Next-session cautions: Trials1–7 cleaned; no reused resource/state/secret or extra load, baseline weakening, main/merge/paid/SPA action. Protected drafts stay unstaged.
 
 Final MCP P0 verification: installed VitePress1.6.4 documentation build passes; `node tooling/secrets.mjs` passes; scoped Python validates468 relative links, scalar JSON/cleanup/CPU/TLS invariants, the exact seven unchecked Module10 IDs and unchanged G1/Module11 gates; `git diff --check` passes. Scoped installed oxfmt exits2 because existing docs/** ignore rules exclude all10 targets; formatting is excluded, not passed. No product/application/browser/performance lane is rerun because source behavior is unchanged. No new hosted acceptance request is sent.
+
+### 2026-10-12 — Explicit P1 continuation after P0 report
+
+- Scope and checklist IDs: User's latest active goal explicitly requests continuing and completing HANDOFF-11 P1: 11.1a–g and11.V1 only.
+- Progress: Read current guidance/checklist, confirm no apps/web exists and fresh P0 report/cleanup committed as32d49e7. Begin frontend research and dependency verification.
+- Change summary: Record the new scoped sequencing authorization after the P0 boundary report. This supersedes the earlier prohibition on starting this P1 scope; it does not make any backend acceptance criterion pass.
+- Files/artifacts: This progress record; modern-web guide receipts and Context7/registry lookups to be linked in P1 evidence.
+- Verification: Actual worktree has only protected untracked root drafts; G0 passed, G1 Not passed. P0 TLS/provider inspection resolved, CPU attribution still blocked. Context7 selected stack resolve/query and action-oriented modern-web search run before implementation.
+- Decisions and deviations: Treat the explicit latest P1 goal as a narrow user-directed sequencing exception. Preserve all Module10 unchecked IDs, G1 Not passed, CPU10ms and Standard exclusion.11.2/11.3/11.V2–V5 and Module12 stay outside scope. Temporary Pages preview is already authorized with random names and complete cleanup.
+- Blockers/open questions: Current dependency versions/compatibility and actual same-build generic/Pages verification to establish. No further native P0 traffic.
+- Next actions: Complete research, scaffold exact authorized stack/runtime config/capability foundation/security-header deployment tooling, then one focused verification step and Pages cleanup.
+- Next-session cautions: No gate passing inferred from P1; no backend/crypto/migration/policy change or unrelated package upgrade. Protected drafts remain unstaged.
+
+P1 checkpoint: Config-first entry, React/TanStack Router/Query shell with split overview/instance routes, shared public-capability validation, reviewed build-time plugin-origin declarations, neutral Tailwind/shadcn Base UI scaffold, deployment policy generation and portable static host are implemented. Registry-pinned dependencies install with strict peers; pnpm adds exact release-age exclusions for @tanstack/query-core/react-query5.104.2, recorded for review rather than silently treated as old policy. No lifecycle allowance expanded. Existing root typecheck/build now include the web app; no product auth/workflow/UI primitive increment is started. Whole-step types/lint/build verification is in progress; hosted11.V1 remains pending and P0/G1 unchanged.
+
+### 2026-10-13 — P1 implemented with compiler and Oxc tooling; cleanup approval pending
+
+- Scope and checklist IDs: 11.1a–g/11.V1 plus explicit React Compiler, oxlint and oxfmt request; no later increment or backend repair.
+- Progress: 11.1a–g implemented and verified. Same-build generic/Pages deep links/config replacement pass;11.V1 remains unchecked pending owned Pages cleanup.
+- Change summary: Add static React/TanStack capability foundation, config-first validated entry, deployment CSP/cache adapters, compiler, frontend lint/format scripts, TSX boundaries and root build/types integration. Synchronize English/Chinese operator guide.
+- Files/artifacts: `apps/web`, workspace manifests/lockfile, root tooling/config, focused test, [P1 evidence](../evidence/11-p1-foundation.md), [engineering guide](../../development/FRONTEND.md), bilingual hosting pages.
+- Verification: Root types/lint, frontend lint/format/build, frozen offline install,15-expression license scan, secret scan pass;10 focused trust/lint/boundary tests pass. Actual preview and local Node API/browser proof; no full backend/CWV/accessibility/auth acceptance claimed. Documentation build/links/whitespace recorded below.
+- Decisions and deviations: Explicit P1 sequencing exception leaves G1 Not passed. Exact reviewed dev-license/release-age exceptions; no old external package removed or importer changed except root public-client link and new web importer. Stable compiler Babel bridge; no experimental compiler or lifecycle relaxation.
+- Blockers/open questions: Guardian authentication/cleanup failed and exited; automatic review rejects exact Pages project deletion pending direct user authorization. Owned project/two previews remain. P0 CPU/G1 unchanged.
+- Next actions: Obtain pending exact cleanup approval, delete only owned project via MCP, verify original six names and0 owned project/deployments, then close11.V1/P1. No later increment/push/PR edit.
+- Next-session cautions: Do not bypass rejected deletion or infer cleanup from attempted stop. Local listeners and owned browser tabs are closed. Protected drafts/handoffs remain unstaged; config origin changes require regenerated CSP. Preserve all Module10 incomplete checks and unchanged10ms rule.
+
+Final P1 local handoff: installed VitePress1.6.4 docs build passes;448 scoped relative links and checklist/G1 consistency pass; `git diff --check` passes. Frontend/root scoped oxfmt pass; documentation is manually maintained under the existing docs ignore policy. Root drafts/handoffs remain unstaged. P1 cleanup remains pending exactly as recorded above; do not mark the goal complete until verified.
