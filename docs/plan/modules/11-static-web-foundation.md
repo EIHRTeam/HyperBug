@@ -39,13 +39,13 @@ Create a portable static application that consumes the accepted backend, with ac
 
 ## Verification and acceptance
 
-- [ ] **11.V1** Serve the same build from a generic static server and Cloudflare Pages preview, including direct deep links and runtime config replacement.
+- [x] **11.V1** Serve the same build from a generic static server and Cloudflare Pages preview, including direct deep links and runtime config replacement.
 - [ ] **11.V2** Test cross-site login/refresh/logout with third-party cookies blocked and inspect browser storage, URLs, logs, and caches for credential leaks.
 - [ ] **11.V3** Run keyboard, screen-reader, touch, zoom, reduced-motion, and baseline-browser checks on navigation, forms, and dialogs.
 - [ ] **11.V4** Inspect CSP violations and bundle splitting; record initial bundle/CWV measurements as baselines rather than unsupported promises.
 - [ ] **11.V5** Verify capability-driven application states: a minimum-tier instance loads with the capability document applied, unavailable flows are explained rather than failing, and no surface requests a capability the document reports as unavailable.
 
-P1 implementation/hosting evidence: [foundation report](../evidence/11-p1-foundation.md). 11.V1 remains unchecked until owned Pages cleanup is verified.
+P1 implementation/hosting evidence: [foundation report](../evidence/11-p1-foundation.md). 11.V1 includes verified owned Pages cleanup; later acceptance items remain unchecked.
 
 ## Source coverage
 

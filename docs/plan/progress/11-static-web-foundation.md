@@ -10,10 +10,10 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP frontend; current P1 limited to11.1a–g/11.V1.
 - Prerequisites: G1 remains Not passed; explicit P1 continuation after P0 is a scoped sequencing exception only.
 - Implementation started: Static foundation and requested React Compiler/oxlint/oxfmt implemented.
-- Completed implementation checklist IDs: 11.1a–g.
-- Active/next checklist group: Finish owned Pages cleanup before closing11.V1/P1;11.2/11.3 and11.V2–V5 remain unauthorized.
+- Completed implementation checklist IDs: 11.1a–g and11.V1 (P1 complete).
+- Active/next checklist group: None authorized;11.2/11.3 and11.V2–V5 remain later increments.
 - Last updated: 2026-10-13.
-- Blocking issues discovered: Exact Pages-project deletion rejected by automatic approval review; explicit approval pending. P0 CPU attribution and backend G1 remain incomplete.
+- Blocking issues discovered: None within P1. Explicit cleanup approval resolves the deletion blocker; P0 CPU attribution and backend G1 remain incomplete.
 - Evidence: [P1 report](../evidence/11-p1-foundation.md), [frontend engineering guide](../../development/FRONTEND.md) and [P0 MCP report](../evidence/10-p0-mcp-trial.md).
 
 ## Step tracking
@@ -21,7 +21,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
 | 11.1 | Establish the static application | Complete | P1 report; actual types/lint/build/config/capability checks |
-| 11.V1 | Same-build generic/Pages preview | In progress | Hosting proof passes; owned-project cleanup pending |
+| 11.V1 | Same-build generic/Pages preview | Complete | Same-build hosting and zero-owned-resource receipt |
 | 11.2 | Implement the browser auth boundary | Not started | Outside authorized P1 |
 | 11.3 | Build accessible reusable UI primitives | Not started | Outside authorized P1 |
 
@@ -29,13 +29,12 @@ The linked plan owns the canonical checkboxes. No backend gate or later frontend
 
 ## Next actions
 
-1. After explicit approval, delete only `hyperbug-11-9f880c7e4720` via cloudflare-api MCP, verify both previews absent and six original projects preserved.
-2. Close11.V1/P1 only after cleanup; preserve G1 Not passed and every incomplete Module10 item.
-3. Await separate authorization/prerequisite decisions for any later frontend increment; do not begin11.2/11.3 or additional P0 traffic.
+1. P1 is complete; no further work is authorized in this increment.
+2. Preserve G1 Not passed and every incomplete Module10 item. Await a separate scope/prerequisite decision before later frontend work.
 
 ## Next-session cautions
 
-Public config and static output only; no persistent browser credentials, SSR, Functions or mandatory proxy. Invalid config/instance data must fail closed. Regenerate CSP when origins change. Temporary guardian failed and exited; do not assume cleanup from a stop file or an attempted deletion. Protected root drafts remain unstaged; no push/PR/deployment authorization beyond the recorded disposable preview.
+Public config and static output only; no persistent browser credentials, SSR, Functions or mandatory proxy. Invalid config/instance data must fail closed. Regenerate CSP when origins change. The temporary Pages project and both previews are deleted with preserved original inventory; do not reuse their names/state. Local listeners/tabs are closed. Protected root drafts remain unstaged; no push/PR/production release is authorized.
 
 ## Session log
 
@@ -157,3 +156,17 @@ P1 checkpoint: Config-first entry, React/TanStack Router/Query shell with split 
 - Next-session cautions: Do not bypass rejected deletion or infer cleanup from attempted stop. Local listeners and owned browser tabs are closed. Protected drafts/handoffs remain unstaged; config origin changes require regenerated CSP. Preserve all Module10 incomplete checks and unchanged10ms rule.
 
 Final P1 local handoff: installed VitePress1.6.4 docs build passes;448 scoped relative links and checklist/G1 consistency pass; `git diff --check` passes. Frontend/root scoped oxfmt pass; documentation is manually maintained under the existing docs ignore policy. Root drafts/handoffs remain unstaged. P1 cleanup remains pending exactly as recorded above; do not mark the goal complete until verified.
+
+### 2026-10-13 — Explicit cleanup approval and P1 closure
+
+- Scope and checklist IDs: Complete the remaining11.V1 owned-resource cleanup; final11.1a–g/11.V1 requirement audit only.
+- Progress: User explicitly authorizes deletion of hyperbug-11-9f880c7e4720 and both preview deployments. MCP deletion200 and subsequent project/list/exact-deployment absence checks pass; original six names/subdomains preserved. P1 complete; Module11 remains In progress for later unauthorized increments.
+- Change summary: Close11.V1, update current handoff/master and retain a scalar cleanup receipt. No application/backend/toolchain change.
+- Files/artifacts: [P1 report](../evidence/11-p1-foundation.md), [cleanup receipt](../evidence/11-p1-cleanup.json), paired checklist/progress, master and plan entry point.
+- Verification: Real cloudflare-api MCP deletion and provider8000007 absence proof at06:45 JST; saved-before/final inventory equality; no listeners on4173/4408. Existing committed browser/build/test evidence remains intact. Final documentation/link/secret/whitespace checks follow.
+- Decisions and deviations: Explicit approval resolves the automatic-review rejection; no workaround or unauthorized deletion. G1 Not passed, Module10 incomplete items and unchanged10ms rule preserved.
+- Blockers/open questions: None within P1; no backend-gate closure implied.
+- Next actions: No further authorized P1 work. Await separate direction for11.2/11.3 or backend prerequisites; no push/PR action.
+- Next-session cautions: Temporary project/deployments cleaned; protected root drafts remain unstaged; preserve current static trust boundary and regeneration of CSP with runtime origins.
+
+Final closure checks: VitePress1.6.4 docs build,367 scoped relative links, JSON/cleanup/original-inventory assertions, exact eight P1 checkboxes, unchanged compiled hashes/application/backend source, secret signatures and whitespace pass. Earlier application verification is retained because only provider cleanup and engineering records changed. Protected root drafts remain untracked. P1 is complete; G1 remains Not passed.

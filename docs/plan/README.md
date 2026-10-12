@@ -18,7 +18,7 @@ Execute the bounded B1–B6 mission in the supplied HANDOFF-10. Close 01.3f usin
 
 ## Module 11 scoped P1 continuation (2026-10-12/13)
 
-After the P0 report the user explicitly continued only11.1a–g/11.V1. The static foundation and React Compiler/oxlint/oxfmt are implemented; actual same-build hosting is verified, with temporary Pages cleanup pending. This overrides the earlier no-SPA instruction only for this scope. G1 remains Not passed, all incomplete Module10 checks remain incomplete, and11.2/11.3/11.V2–V5/Module12 are not authorized. See [P1 evidence](evidence/11-p1-foundation.md).
+After the P0 report the user explicitly continued only11.1a–g/11.V1. The static foundation and React Compiler/oxlint/oxfmt are implemented; actual same-build hosting and zero-owned-resource Pages cleanup are verified. P1 is complete. This overrides the earlier no-SPA instruction only for this scope. G1 remains Not passed, all incomplete Module10 checks remain incomplete, and11.2/11.3/11.V2–V5/Module12 are not authorized. See [P1 evidence](evidence/11-p1-foundation.md).
 
 ## Start here
 
