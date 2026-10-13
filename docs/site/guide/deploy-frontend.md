@@ -5,7 +5,7 @@
 **For:** Operators evaluating the static frontend foundation.
 **Goal:** Host the same build independently of the API and replace public configuration without rebuilding.
 
-The foundation provides overview and instance-capability pages. Sign-in and issue workflows are later increments. Generic hosting and a temporary Pages preview were verified against a local Node public endpoint. Backend acceptance G1 and release acceptance remain incomplete; this is not a production release or a complete backend compatibility matrix.
+The foundation provides overview, account and instance-capability pages, with sign-in through the authorization service. Issue workflows remain a later increment. Generic hosting and a temporary Pages preview were verified against a local Node public endpoint. Backend acceptance G1 and release acceptance remain incomplete; this is not a production release or a complete backend compatibility matrix.
 
 ## Build and check
 
@@ -47,6 +47,14 @@ This replaces `dist/config.json` and generates host-neutral `hosting.json` plus 
 
 When origins change, regenerate and publish headers together with config. Config replacement alone leaves old CSP permissions. The backend's exact CORS allowlist must include the frontend origin. The source default config uses placeholder example.net origins; replace it with your deployment configuration.
 
+## Register sign-in and use the account page
+
+On the authorization service, register public client `hyperbug-web`, the exact frontend callback URI `https://YOUR_FRONTEND/oauth/callback`, and scope `public-api`. The client has no secret. Include the exact frontend origin in the backend CORS allowlist. Registration and headers must match the selected deployment origins.
+
+Open Account and choose **Sign in**. Credential entry and consent happen on the authorization service at the top level, so third-party cookies are unnecessary. A reload loses this app’s token; choose Sign in again to recover through the authorization service’s first-party session. Failed or expired callbacks require a fresh attempt. Unavailable capabilities are explained before a dependent action is offered.
+
+**Sign out of this app** asks for confirmation, clears local private state and revokes the app’s bearer token. The authorization service’s first-party session is separate and can remain active. If revocation cannot be confirmed, the app tells you; local state is still cleared and the prior token expires within 15 minutes.
+
 ## Generic static hosting
 
 ```sh
@@ -77,7 +85,7 @@ Pages consumes the generated headers/redirects; no Functions directory exists. P
 
 Open `/` and directly refresh `/instance?section=limits` on both hosts. Confirm the name/capabilities come from the selected API, config finishes before the first API request and unavailable capabilities remain unavailable. Replace config and regenerate headers, reload, then confirm the new name/API origin with unchanged asset hashes. Inspect actual HTML/config/asset response headers.
 
-The foundation stores no browser credentials. Sign-in, expiry/logout, user cache isolation and full keyboard/screen-reader/touch/browser acceptance remain pending. For rollback, restore a matching build, public config and hosting policy together; retain hashed assets needed by already-open pages.
+Access tokens stay in memory. Reloading requires a new top-level sign-in; expiry, denied access and app sign-out clear private cached data and unsaved drafts. Keyboard, VoiceOver, zoom and Safari navigation have manual verification, with automated Chrome and touch-emulation evidence; this does not claim every device or assistive-technology combination. For rollback, restore a matching build, public config and hosting policy together; retain hashed assets needed by already-open pages.
 
 ## Source references
 

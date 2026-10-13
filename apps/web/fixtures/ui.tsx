@@ -16,6 +16,10 @@ import {
 const callback = takeCallback();
 const config = await loadRuntimeConfig();
 const queries = new QueryClient();
+const subscribeCache = (listener: () => void) =>
+  queries.getQueryCache().subscribe(listener);
+const privateCacheCount = () =>
+  queries.getQueryCache().findAll({ queryKey: ['private'] }).length;
 const auth = new BrowserAuth(config, queries);
 if (callback) await auth.completeCallback(callback);
 
@@ -120,6 +124,7 @@ function DraftForm() {
 
 function Fixture() {
   const state = useSyncExternalStore(auth.subscribe, auth.getSnapshot);
+  const cacheCount = useSyncExternalStore(subscribeCache, privateCacheCount);
   const [confirmed, setConfirmed] = useState(false);
   return (
     <>
@@ -136,6 +141,13 @@ function Fixture() {
         <h1>UI acceptance fixture</h1>
         <p>Reusable primitives only; no product editing workflow.</p>
         <output>{state.notice}</output>
+        <p data-testid="account-kind">
+          {state.account
+            ? state.account.kind === 'staff'
+              ? 'Staff'
+              : 'Public user'
+            : 'Signed out'}
+        </p>
         <div className="actions">
           <button
             type="button"
@@ -157,16 +169,13 @@ function Fixture() {
             type="button"
             onClick={() => {
               queries.setQueryData(['private', state.epoch], 'fixture private');
-              setConfirmed(true);
+              setConfirmed((value) => !value);
             }}
           >
             Seed private cache
           </button>
         </div>
-        <p data-testid="cache-count">
-          Private cache entries:{' '}
-          {queries.getQueryCache().findAll({ queryKey: ['private'] }).length}
-        </p>
+        <p data-testid="cache-count">Private cache entries: {cacheCount}</p>
         <section id="controls">
           <h2>Field and dialog</h2>
           <DraftForm key={state.epoch} />

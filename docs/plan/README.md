@@ -51,7 +51,7 @@ Cross-module specifications and accepted direction records live in these English
 | [ADR 0009](../decisions/0009-standard-password-login.md) | Standard-profile password login may open after functional account/provider implementation; independent audit and further performance characterization do not gate enablement | 03.2e/03.V5, 04.1d |
 | [PLUGIN-SPEC](../PLUGIN-SPEC.md), [EXTENDING-PLUGINS](../EXTENDING-PLUGINS.md), [ADR 0010](../decisions/0010-plugin-execution-model-and-contracts.md) | Trusted plugin execution model, independently versioned Plugin API/SDK/runtime contract packages, policy invariants, deferred untrusted code hosting, extension-author quickstart | 05.1–05.3 |
 
-Module 11 sequencing decision (2026-10-13): the user extends the P1 exception to the complete Module 11 checklist through HANDOFF-11. G1 remains Not passed, Module 10 remains Blocked and 13.G6 remains open. Local authentication/UI verification is authorized; Module 12 and later work, P0 and hosted traffic are excluded.
+Module 11 sequencing decision (2026-10-13): the user extends the P1 exception to the complete Module 11 checklist through HANDOFF-11. All 22 items are now complete at the [recorded local/manual scopes](evidence/11-completion.md), with verified local cleanup. G1 remains Not passed, Module 10 remains Blocked and 13.G6 remains open. Local authentication/UI verification is authorized; Module 12 and later work, P0 and hosted traffic are excluded.
 
 ## Module index
 

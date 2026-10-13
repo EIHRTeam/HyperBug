@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-13",
+  "localOnly": true,
+  "heldFixturePid": 81287,
+  "ownedCertificateFingerprint": "F4488C16F7F7428E5BAD482506F063BE389E50EA",
+  "originalCertificateFingerprints": [],
+  "certificateVerifiedBefore": true,
+  "certificateUntrustedAfter": true,
+  "certificateEntryRemoved": true,
+  "originalCertificateInventoryPreserved": true,
+  "privateFixtureDirectoryRemoved": true,
+  "fixtureProcessAbsent": true,
+  "listenersAbsent": [
+    56227,
+    56229,
+    56230,
+    56231
+  ],
+  "privateCluster": "wrapper stopped and removed private socket/data cluster on child completion",
+  "temporaryUiBuildRemoved": true,
+  "publicTraceInspectedAndRemoved": true,
+  "minimumCleanup": {
+    "localOnly": true,
+    "staticChildExited": true,
+    "miniflareDisposed": true,
+    "temporaryDirectoryRemoved": true
+  },
+  "hostedResourcesCreated": 0,
+  "hostedRequests": 0
+}

@@ -28,6 +28,8 @@ const context = await chromium.launchPersistentContext(profile, {
 let stage = 'trusted TLS and third-party cookie canary';
 let failureMessage;
 try {
+  // Each explicit run starts its disposable browser profile without a session.
+  await context.clearCookies();
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
   await cdp.send('Network.enable');
@@ -132,6 +134,7 @@ try {
   await page
     .getByRole('button', { name: 'Sign out of this app', exact: true })
     .click();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await page
     .getByRole('heading', { name: 'Sign in to this instance.' })
     .waitFor();

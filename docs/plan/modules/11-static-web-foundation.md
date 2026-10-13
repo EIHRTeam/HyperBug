@@ -26,12 +26,12 @@ Create a portable static application that consumes the accepted backend, with ac
 - [x] **11.2a** Implement top-level Authorization Code + PKCE S256 with per-attempt state/verifier and validated callback/return routes using the accepted backend protocol.
 - [x] **11.2b** Keep access tokens only in memory. If a redirect requires transient state/verifier storage, define a short-lived one-shot policy, clear it after callback, and never put tokens there.
 - [x] **11.2c** Implement expiry, revocation, logout, and top-level login recovery without persistent refresh tokens or hidden-iframe/third-party-cookie assumptions.
-- [ ] **11.2d** Clear or partition user-specific Query caches on identity/permission changes and logout; handle expired auth during edits without leaking drafts between principals.
+- [x] **11.2d** Clear or partition user-specific Query caches on identity/permission changes and logout; handle expired auth during edits without leaking drafts between principals.
 - [x] **11.2e** Use the public API client with `credentials: "omit"` for business calls; keep authorization-service cookie flows separate.
 
 ### Step 11.3 — Build accessible reusable UI primitives
 
-- [ ] **11.3a** Establish semantic landmarks, navigation, headings, labels, buttons, links, focus styles, responsive layout, contrast, zoom, and reduced-motion behavior.
+- [x] **11.3a** Establish semantic landmarks, navigation, headings, labels, buttons, links, focus styles, responsive layout, contrast, zoom, and reduced-motion behavior.
 - [x] **11.3b** Implement field/error/loading/empty/permission-denied states. Synchronize visual validation with ARIA after interaction; use error summaries and avoid duplicate announcements.
 - [x] **11.3c** Choose native dialog or an accessible Base UI primitive per use case. Verify initial focus, Escape, explicit close/cancel, and focus restoration; newer dismissal gestures remain optional.
 - [x] **11.3d** Record a feature compatibility ledger with guide IDs and fallbacks. Newly Available/Limited features cannot block the core issue workflow.
@@ -40,12 +40,14 @@ Create a portable static application that consumes the accepted backend, with ac
 ## Verification and acceptance
 
 - [x] **11.V1** Serve the same build from a generic static server and Cloudflare Pages preview, including direct deep links and runtime config replacement.
-- [ ] **11.V2** Test cross-site login/refresh/logout with third-party cookies blocked and inspect browser storage, URLs, logs, and caches for credential leaks.
-- [ ] **11.V3** Run keyboard, screen-reader, touch, zoom, reduced-motion, and baseline-browser checks on navigation, forms, and dialogs.
-- [ ] **11.V4** Inspect CSP violations and bundle splitting; record initial bundle/CWV measurements as baselines rather than unsupported promises.
-- [ ] **11.V5** Verify capability-driven application states: a minimum-tier instance loads with the capability document applied, unavailable flows are explained rather than failing, and no surface requests a capability the document reports as unavailable.
+- [x] **11.V2** Test cross-site login/refresh/logout with third-party cookies blocked and inspect browser storage, URLs, logs, and caches for credential leaks.
+- [x] **11.V3** Run keyboard, screen-reader, touch, zoom, reduced-motion, and baseline-browser checks on navigation, forms, and dialogs.
+- [x] **11.V4** Inspect CSP violations and bundle splitting; record initial bundle/CWV measurements as baselines rather than unsupported promises.
+- [x] **11.V5** Verify capability-driven application states: a minimum-tier instance loads with the capability document applied, unavailable flows are explained rather than failing, and no surface requests a capability the document reports as unavailable.
 
-P1 implementation/hosting evidence: [foundation report](../evidence/11-p1-foundation.md). 11.V1 includes verified owned Pages cleanup; later acceptance items remain unchecked.
+Completion evidence: [Module 11 final report](../evidence/11-completion.md). All 22 checklist items are verified at their recorded scopes; G1 remains Not passed, Module 10 Blocked and 13.G6 open.
+
+P1 implementation/hosting evidence: [foundation report](../evidence/11-p1-foundation.md). 11.V1 includes verified owned Pages cleanup; remaining acceptance evidence is recorded in the final report.
 
 ## Source coverage
 

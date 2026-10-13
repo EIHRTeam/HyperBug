@@ -6,15 +6,15 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress
+- Status: Complete
 - Delivery scope: MVP frontend; all Module 11 authorized on 2026-10-13.
 - Prerequisites: G1 remains Not passed; user-directed exception extends to all Module 11; Module 10 remains Blocked.
-- Implementation started: Static foundation and requested React Compiler/oxlint/oxfmt implemented.
-- Completed implementation checklist IDs: 11.1a–g and11.V1 (P1 complete).
-- Active/next checklist group: B1: 11.2a–e, then B2: 11.3a–e and B3: 11.V2–V5.
+- Implementation started: Static foundation, memory-only browser authentication and accessible primitives implemented and verified.
+- Completed implementation checklist IDs: 11.1a–g, 11.2a–e, 11.3a–e and 11.V1–V5 (all 22 items).
+- Active/next checklist group: None within Module 11; Module 12 remains unopened.
 - Last updated: 2026-10-13.
-- Blocking issues discovered: None within P1. Explicit cleanup approval resolves the deletion blocker; P0 CPU attribution and backend G1 remain incomplete.
-- Evidence: [P1 report](../evidence/11-p1-foundation.md), [frontend engineering guide](../../development/FRONTEND.md) and [P0 MCP report](../evidence/10-p0-mcp-trial.md).
+- Blocking issues discovered: None within Module 11. Backend G1 and Module 10 remain incomplete.
+- Evidence: [Final report](../evidence/11-completion.md), [local cleanup](../evidence/11-local-cleanup.json), [P1 report](../evidence/11-p1-foundation.md), [frontend engineering guide](../../development/FRONTEND.md) and [P0 MCP report](../evidence/10-p0-mcp-trial.md).
 
 ## Step tracking
 
@@ -22,19 +22,20 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | --- | --- | --- | --- |
 | 11.1 | Establish the static application | Complete | P1 report; actual types/lint/build/config/capability checks |
 | 11.V1 | Same-build generic/Pages preview | Complete | Same-build hosting and zero-owned-resource receipt |
-| 11.2 | Implement the browser auth boundary | In progress | Authorized by HANDOFF-11; evidence pending |
-| 11.3 | Build accessible reusable UI primitives | In progress | Authorized by HANDOFF-11; evidence pending |
+| 11.2 | Implement the browser auth boundary | Complete | B1 review, auth unit5, real cross-site and identity/draft receipts |
+| 11.3 | Build accessible reusable UI primitives | Complete | B2 source/UI receipt, user manual all-pass, contrast and compatibility ledger |
+| 11.V2–V5 | Auth/accessibility/performance/capabilities | Complete | Final report; local-only evidence and zero-owned-resource cleanup |
 
 The linked plan owns the canonical checkboxes. No backend gate or later frontend acceptance is implied.
 
 ## Next actions
 
-1. Complete browser auth (11.2), accessible primitives (11.3) and focused local evidence (11.V2–V5).
+1. Module 11 is complete; no remaining action within this scope.
 2. Preserve G1 Not passed, Module 10 Blocked and 13.G6 open; no Module 12 or hosted traffic.
 
 ## Next-session cautions
 
-Public config and static output only; no persistent browser credentials, SSR, Functions or mandatory proxy. Invalid config/instance data must fail closed. Regenerate CSP when origins change. The temporary Pages project and both previews are deleted with preserved original inventory; do not reuse their names/state. The local B2/B3 fixture is held for user-directed manual checks; terminate and verify cleanup after results. Protected root drafts remain unstaged; no push/PR/production release is authorized.
+Public config and static output only; no persistent browser credentials, SSR, Functions or mandatory proxy. Invalid config/instance data must fail closed. Regenerate CSP when origins change. The temporary Pages project and both previews are deleted with preserved original inventory; do not reuse their names/state. All owned local B2/B3 services, private data, certificate trust/entry and temporary UI/trace artifacts are cleaned. Protected root drafts remain unstaged; no push/PR/production release is authorized.
 
 ## Session log
 
@@ -261,3 +262,18 @@ P0 closure checks:585 relative links/receipt/gate/cleanup consistency and git di
 
 
 2026-10-13 manual checkpoint: the user reports **all pass** for the eight requested Safari/VoiceOver/keyboard/field/dialog/zoom/emulated-touch/reduced-motion/navigation checks. [Manual receipt](../evidence/11-manual-accessibility.json) distinguishes user evidence from automation and records the installed Safari version, not an independently reported version. No further CUA testing. B2 source/type/lint/format/build and focused UI/plugin checks pass; final 11.V3 closure remains in B3 with contrast and documented limits.
+
+
+### 2026-10-13 — B3 verification and module completion
+
+- Scope and checklist IDs: Close 11.2d, 11.3a and 11.V2–V5; all 22 Module 11 checks complete, with retained P1 evidence.
+- Progress: Module 11 Complete at the scoped user-directed sequencing exception. G1 Not passed, Module 10 Blocked, 13.G6 open; Module 12 and later modules remain unopened.
+- Change summary: Real cross-site final auth/identity/draft proof, user manual accessibility report, measured contrast, actual local Minimum capability application/failure states, production CDP/CWV/bundle/CSP baseline, synchronized English/Chinese reader guide and exact local cleanup. Final callback exchange joins cancellation/epoch protection; unavailable storage cannot strand sign-in or skip revocation.
+- Files/artifacts: [Final requirement/evidence map](../evidence/11-completion.md), browser/identity/UI/manual/contrast/capability/performance/cleanup receipts, focused test runners/auth regressions, auth source, test-only cache subscription, FRONTEND and bilingual deploy-frontend pages, canonical plan/master/session state.
+- Verification: Pinned toolchain web/root types, lint, scoped format, build, auth5/foundation6 unit cases, secret scan and docs build pass. Real Node/PostgreSQL18.6/Chrome155 login/reload/recovery/revocation and Staff→User/logout/denial/expiry draft/cache clearing pass; user reports manual Safari/VoiceOver/keyboard/zoom/touch-emulation/motion/navigation all pass. Actual workerd/Miniflare/D1 Minimum document drives UI with only instance GET; client capability fault injection is explicitly classified. Final local cold sample: LCP88ms/FCP48ms/CLS0/lab interaction candidate40ms, initial JS371879 raw bytes/113993 gzip bytes, no long tasks/CSP violations, lazy routes verified. These are baselines, not field INP or SLOs.
+- Decisions and deviations: No native computer-use tests after user steering; manual receipt is trusted user evidence, installed Safari27.0 metadata is separately sourced. No physical mobile/Firefox/full-AT claim. Late-exchange test initially replaced a captured transport and timed out; changing its mock implementation in place resolves the fixture without extending timeout. Cache indicator uses a subscription under React Compiler. No dependency/backend/policy/gate relaxation.
+- Blockers/open questions: None within Module 11. Existing global backend/release/13.G6 gaps remain outside scope.
+- Next actions: Commit B3; no push/PR edit or next-module work. Any Module 12 start requires separate scope/prerequisite decision.
+- Next-session cautions: [Cleanup](../evidence/11-local-cleanup.json) independently verifies exact certificate/trust removal with preserved originals, process/four listeners/private files absent and temporary UI/trace removed; private cluster wrapper exits0 and Minimum emulator/static child disposed. Protected root drafts/handoffs remain untracked; G1 Not passed and Module 10 Blocked must not be inferred otherwise from frontend completion.
+
+Final closure checks: 422 scoped relative links, all22 canonical checks, retained G1/Module10/13.G6/Module12 states, evidence JSON/manual/cleanup/bilingual assertions, secret signatures and git diff --check pass. Final VitePress1.6.4 docs build passes. Web/root types, scoped lint/format and final production build pass; auth5 and foundation/plugin6 pass in their focused runs. B1 commit59c5690 and B2 commit55cb982 are local; B3 is prepared for its separate commit. No remaining Module 11 blocker or owned local service/certificate/private fixture remains.

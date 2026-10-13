@@ -167,23 +167,21 @@ it('clears private query/mutation state on expiry, permission loss and logout, a
   const auth = new BrowserAuth(config, queries);
   const seedPrivate = () => {
     queries.setQueryData(['private', 'principal-a'], { draft: 'private' });
-    queries
-      .getMutationCache()
-      .build(
-        queries,
-        { mutationKey: ['private-edit'], mutationFn: async () => 'private' },
-        {
-          status: 'success',
-          data: 'private',
-          error: null,
-          failureCount: 0,
-          failureReason: null,
-          isPaused: false,
-          variables: undefined,
-          context: undefined,
-          submittedAt: Date.now(),
-        },
-      );
+    queries.getMutationCache().build(
+      queries,
+      { mutationKey: ['private-edit'], mutationFn: async () => 'private' },
+      {
+        status: 'success',
+        data: 'private',
+        error: null,
+        failureCount: 0,
+        failureReason: null,
+        isPaused: false,
+        variables: undefined,
+        context: undefined,
+        submittedAt: Date.now(),
+      },
+    );
   };
   let { callback } = await attempt(auth);
   await auth.completeCallback(callback);
@@ -212,4 +210,75 @@ it('clears private query/mutation state on expiry, permission loss and logout, a
   expect(auth.getSnapshot().account).toBeNull();
   expect(storage.size).toBe(0);
   expect(queries.getMutationCache().getAll()).toHaveLength(0);
+});
+
+it('cannot restore authentication from a late callback exchange after another tab signs out', async () => {
+  let notify: ((event: { data: string }) => void) | undefined;
+  vi.stubGlobal(
+    'BroadcastChannel',
+    class {
+      set onmessage(listener: typeof notify) {
+        notify = listener;
+      }
+      postMessage() {}
+    },
+  );
+  const auth = new BrowserAuth(config, queries);
+  const { callback } = await attempt(auth);
+  let release!: (response: Response) => void;
+  let started!: () => void;
+  const requestStarted = new Promise<void>((done) => {
+    started = done;
+  });
+  let signal: AbortSignal | undefined;
+  // The API client captures its transport at construction; change that mock in place.
+  vi.mocked(fetch).mockImplementation(async (_url, init) => {
+    signal = init?.signal ?? undefined;
+    started();
+    return new Promise<Response>((done) => {
+      release = done;
+    });
+  });
+  const completed = auth.completeCallback(callback);
+  await requestStarted;
+  notify?.({ data: 'signed-out' });
+  expect(signal?.aborted).toBe(true);
+  release(
+    new Response(
+      JSON.stringify({
+        accessToken: token,
+        tokenType: 'Bearer',
+        expiresIn: 600,
+        scope: 'public-api',
+      }),
+      { headers: { 'content-type': 'application/json' } },
+    ),
+  );
+  await completed;
+  expect(auth.getSnapshot().account).toBeNull();
+  expect(auth.getSnapshot().notice).toBe('Signed out in another tab.');
+  expect(storage.size).toBe(0);
+  await expect(auth.request('GET /api/v1/account')).rejects.toThrow();
+});
+
+it('fails sign-in safely when transient storage is unavailable and still revokes on sign-out', async () => {
+  const auth = new BrowserAuth(config, queries);
+  const originalStorage = sessionStorage;
+  const { callback } = await attempt(auth);
+  await auth.completeCallback(callback);
+  vi.stubGlobal('sessionStorage', {
+    ...originalStorage,
+    setItem: () => {
+      throw new Error('STORAGE_DISABLED');
+    },
+    removeItem: () => {
+      throw new Error('STORAGE_DISABLED');
+    },
+  });
+  await auth.signOut();
+  expect(requests.at(-1)?.url).toBe(config.authBaseUrl + '/auth/token/revoke');
+  await auth.signIn();
+  expect(auth.getSnapshot().pending).toBe(false);
+  expect(auth.getSnapshot().account).toBeNull();
+  expect(auth.getSnapshot().notice).toContain('Check browser storage');
 });

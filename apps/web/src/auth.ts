@@ -244,7 +244,11 @@ export class BrowserAuth {
       }).toString();
       location.assign(url.href);
     } catch {
-      sessionStorage.removeItem(redirectAttemptKey);
+      try {
+        sessionStorage.removeItem(redirectAttemptKey);
+      } catch {
+        /* Storage may be unavailable. */
+      }
       this.#publish({
         pending: false,
         notice: 'Sign-in could not start. Check browser storage and try again.',
@@ -254,9 +258,13 @@ export class BrowserAuth {
 
   async completeCallback(parameters: URLSearchParams) {
     this.#invalidate('');
+    const epoch = this.#snapshot.epoch;
+    const controller = new AbortController();
+    this.#requests.add(controller);
     try {
       const attempt = consumeAttempt(this.config, parameters);
       const token = await this.#authClient.request('POST /auth/token', {
+        signal: controller.signal,
         body: {
           grant_type: 'authorization_code',
           client_id: publicClientId,
@@ -265,6 +273,8 @@ export class BrowserAuth {
           code_verifier: attempt.verifier,
         },
       });
+      if (epoch !== this.#snapshot.epoch)
+        throw new ApiClientError(0, 'CANCELLED');
       if (
         token.tokenType !== 'Bearer' ||
         !/^at_[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token.accessToken) ||
@@ -287,10 +297,13 @@ export class BrowserAuth {
       this.#publish({ account, notice: 'Signed in.' });
       history.replaceState(null, '', attempt.returnTo);
     } catch {
-      this.#invalidate(
-        'Sign-in could not be verified. Start a new sign-in attempt.',
-      );
+      if (epoch === this.#snapshot.epoch)
+        this.#invalidate(
+          'Sign-in could not be verified. Start a new sign-in attempt.',
+        );
       history.replaceState(null, '', '/account');
+    } finally {
+      this.#requests.delete(controller);
     }
   }
 
@@ -346,7 +359,11 @@ export class BrowserAuth {
     this.#invalidate(
       'Signed out of this app. The authorization service may still have a first-party session.',
     );
-    sessionStorage.removeItem(redirectAttemptKey);
+    try {
+      sessionStorage.removeItem(redirectAttemptKey);
+    } catch {
+      /* Revocation must still run. */
+    }
     this.#channel?.postMessage('signed-out');
     if (!token) return;
     try {

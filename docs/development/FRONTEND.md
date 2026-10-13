@@ -4,7 +4,7 @@ Module 11 implements the static foundation, browser authentication boundary and 
 
 ## Toolchain and commands
 
-`apps/web` pins React/React DOM 19.3.0, TypeScript 7.0.2, Vite 8.3.4, TanStack Router 1.170.42, Query 5.104.2, Form 1.33.5, Tailwind CSS and its Vite plugin 4.3.3, and Base UI 1.9.0. `components.json` retains the shadcn Base UI `base-nova` style; no generated primitive is installed in this increment. Form is exposed for future form ownership; no product form is implemented.
+`apps/web` pins React/React DOM 19.3.0, TypeScript 7.0.2, Vite 8.3.4, TanStack Router 1.170.42, Query 5.104.2, Form 1.33.5, Tailwind CSS and its Vite plugin 4.3.3, and Base UI 1.9.0. `components.json` retains the shadcn Base UI `base-nova` style; primitives are authored as source without a generator. Form owns the separate acceptance fixture and reusable helpers; no Module 12 product form is implemented.
 
 The unused shadcn 4.21.4 generator CLI was removed from the locked development graph on 2026-10-13: its fast-glob/micromatch chain brings in braces 3.0.3, affected by [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), with no patched version listed at lookup time. No source/build script imports the CLI, so the existing shell, Base UI dependencies and component configuration remain usable. Before a future component-generation increment, review a CLI graph that passes the unchanged full dependency audit; do not restore the vulnerable version or bypass the audit.
 
@@ -33,13 +33,13 @@ Strict peers, frozen installation and existing lifecycle controls remain enforce
 | --- | --- |
 | Router | Paths and shareable `section=capabilities|limits` state; lazy overview and instance routes; browser history |
 | Query | Public instance document, keyed by API origin; 60-second stale time and five-minute garbage collection; cancellation; no automatic retry/refocus/reconnect request |
-| Form | Future form values/validation/submission; dependency/export prepared, no form implemented |
+| Form | Form values/validation/submission through reusable helpers; separate UI acceptance fixture, no product workflow |
 | React | Local presentation; compiler optimization; no duplicate server state |
-| Application context | Immutable validated public config and instance-query definition; no credentials or additional global store |
+| Application context | Validated config, public query definition and the minimal BrowserAuth controller; immutable credential-free snapshots, private memory-only token |
 
 The small entry loads a bounded 16 KiB JSON config with a ten-second abort, `cache: 'no-store'`, `credentials: 'omit'` and rejected redirects. It validates before importing the React app or constructing API/Query clients. Unknown fields, URL credentials/paths/query/fragments and remote HTTP are rejected; loopback HTTP is permitted for development. Missing/invalid config presents a native safe error with retry. No persistent credentials, raw HTML sink, service worker, proxy, SSR or Pages Function exists.
 
-The public API client omits credentials, bounds response size and forwards cancellation. The authoritative `InstanceDocumentSchema` is embedded at build time through a Vite virtual module; the frontend interpreter validates that exact schema without bundling TypeBox/server implementations. Dependent route content remains gated on successful validation. Authentication flags, tier, password policy, search scope, degradation identifiers and limits are displayed from the document, never inferred from config. These flags govern presentation, not server authorization. Identity-specific cache isolation belongs to 11.2.
+The public API client omits credentials, bounds response size and forwards cancellation. The authoritative `InstanceDocumentSchema` is embedded at build time through a Vite virtual module; the frontend interpreter validates that exact schema without bundling TypeBox/server implementations. Dependent route content remains gated on successful validation. Authentication flags, tier, password policy, search scope, degradation identifiers and limits are displayed from the document, never inferred from config. These flags govern presentation, not server authorization. Identity-specific cache/epoch isolation is implemented by 11.2.
 
 `prepare-deployment.ts` generates host-neutral `hosting.json` plus Pages adapters from validated runtime config and reviewed build-time plugin origins. The current plugin list is empty. Exact API/auth/media origins are permitted; no unsafe-inline/eval or arbitrary runtime plugin loading is introduced. CSP output is bounded to Pages' 2,000-character line limit. Changing origins requires regenerating headers as well as replacing config. Pages detachment syntax `! Cache-Control` prevents overlapping defaults from being merged into config/asset overrides.
 
@@ -57,9 +57,9 @@ Modern-web-guidance search/retrieve ran before web implementation, with guide ID
 | Focus-visible and reduced-motion query | Established support; explicit focus styles and no essential animation; no workflow depends on motion |
 | Tailwind-generated `@property`/newer CSS | Optional generated enhancements only; shell layout/colors use ordinary declarations, with no essential utility requiring these features |
 | Compiler | Build-time tool; generated React 19 runtime memoization tested; no additional browser API requirement |
-| Future dialogs, forms, richer plugin UI | Not implemented or compatibility-accepted here; formal 11.3/11.V3 ledger and assistive-technology matrix remain pending |
+| Native dialogs, fields, source-composed plugin slots | Implemented and verified at the Module 11 scopes below; product forms and installed plugins remain later work |
 
-Vite's target transforms supported syntax; it is not a full cross-browser or WCAG conformance claim. Initial bundle sizes are recorded in the P1 evidence; CWV, screen-reader, touch and baseline-browser acceptance remain 11.V3/V4.
+Vite's target transforms supported syntax; it is not a full cross-browser or WCAG conformance claim. Initial bundle sizes are recorded in the P1 evidence; Current CWV, manual VoiceOver/Safari and emulated-touch evidence is recorded in Module 11 B3; no field performance or full-device matrix is claimed.
 
 ## Dependency license review
 
@@ -112,3 +112,16 @@ Modern-web search/retrieve, 2026-10-13: `accessibility`, `validate-input-after-i
 Additional Context7 resolve/query: `/tanstack/router` (`onRendered` focus after committed DOM; useLocation can describe pending navigation), `/websites/react_dev_reference` (immutable cached useSyncExternalStore snapshots, effect timing/StrictMode), `/vitejs/vite` (configFile:false and explicit separate build input). References: [Router events](https://tanstack.com/router/latest/docs/framework/react/guide/router-events), [React external store](https://react.dev/reference/react/useSyncExternalStore), [Vite build API](https://vite.dev/guide/api-javascript#build). Actual pinned exports/typechecks/builds supply version-specific integration proof.
 
 `node apps/web/scripts/build-ui-fixture.ts` builds `fixtures/ui.html` separately into `/tmp/hyperbug-module11-ui`; it does not alter production build input. The fixture uses the same primitives/Form/auth boundary for browser and assistive-technology checks without implementing Module 12 product forms or publishing test hooks. The local runner may serve this artifact only on its disposable test hosts.
+
+
+## Module 11 verification scope (2026-10-13)
+
+[Final evidence](../plan/evidence/11-completion.md) pairs each checklist item with actual observations. Cross-site production-app login/reload/recovery/API-only logout uses real local Node/PostgreSQL and trusted HTTPS Chrome with a blocked third-party-cookie canary. The separate source-built UI fixture proves real Staff→User changes, revoked-token denial during edits and expiry clearing of drafts/caches; its clock acceleration affects only the actual browser timer. Source tests also cover 403 and a cancelled late callback exchange, including cross-tab logout and unavailable storage. No credential enters snapshots or persistence.
+
+The user reports all pass for manual Safari27.0/VoiceOver, keyboard, field/dialog, 200% zoom, narrow layout, touch emulation, reduced motion and navigation/history checks. Safari version comes from its local application bundle; speech was not recorded. Automated Chrome155 checks and stylesheet contrast calculations supplement this report. No physical phone, Firefox runtime or exhaustive assistive-technology matrix is claimed; essential features use the compatibility ledger's Widely Available platform mechanisms. No further native computer-use tests occurred after the user's direction.
+
+A real existing Minimum Worker fixture runs locally in Miniflare/workerd with private D1 migrations, key registry and acknowledged audited tier activation. Its actual capability document drives title-only search, PBKDF2 disclosure, background limits and unavailable passkeys. Additional network fault injection tests unavailable auth and malformed capability documents; those are client failure-state tests, not provider acceptance. No hosted traffic or 13.G6 claim.
+
+Context7 Miniflare resolution initially returned no library. Refined Cloudflare Workers resolution selected `/cloudflare/workers-sdk`; query returned the official [Miniflare README](https://github.com/cloudflare/workers-sdk/tree/main/packages/miniflare), ready URL, D1 access and dispose methods. The pinned5.20260926.1-alpha converter/module options come from existing repository fixtures and actual runtime proof. No dependency added.
+
+Performance uses automated CDP timeline tracing plus PerformanceObserver rather than native computer-use testing, following the user override. Numbers are one local cold sample with cache disabled, no throttling and a 250ms observer settling window; lab interaction candidates are not field INP percentiles or an SLO. Actual assets, raw/gzip sizes, lazy route loading, largest chunk and zero CSP violations are recorded in [baseline](../plan/evidence/11-performance-baseline.json). A test-only Query cache indicator required a proper subscription because a direct mutable-cache read was memoized by the React Compiler; the production app already uses Query subscriptions.
