@@ -7,6 +7,7 @@ import {
 } from '../../apps/web/src/runtime-config.ts';
 import { validateInstanceDocument } from '../../apps/web/src/capability-validation.ts';
 import { deploymentPolicy } from '../../apps/web/scripts/prepare-deployment.ts';
+import { validatePluginDescriptors } from '../../apps/web/src/plugins.ts';
 
 const publicConfig = {
   schemaVersion: 1,
@@ -41,6 +42,42 @@ const minimum = {
 };
 
 describe('static frontend trust boundaries', () => {
+  it('accepts only source-composed plugin descriptors with unique ids and exact CSP origins', () => {
+    const descriptor = {
+      id: 'local-review',
+      slot: 'instance' as const,
+      component: () => null,
+      origins: {
+        id: 'local-review',
+        connect: ['https://provider.example.org'],
+        images: [],
+        frames: [],
+        scripts: [],
+      },
+    };
+    const reviewed = validatePluginDescriptors([descriptor]);
+    expect(Object.isFrozen(reviewed[0]?.origins.connect)).toBe(true);
+    expect(() => validatePluginDescriptors([descriptor, descriptor])).toThrow();
+    expect(() =>
+      validatePluginDescriptors([
+        {
+          ...descriptor,
+          origins: { ...descriptor.origins, scripts: ['javascript:alert(1)'] },
+        },
+      ]),
+    ).toThrow();
+    expect(() =>
+      validatePluginDescriptors([
+        {
+          ...descriptor,
+          origins: {
+            ...descriptor.origins,
+            connect: ['https://provider.example.org/path'],
+          },
+        },
+      ]),
+    ).toThrow();
+  });
   it('allows frontend-local TSX imports while denying backend implementations', () => {
     expect(
       checkImport('apps/web/src/app.tsx', './capabilities.ts'),

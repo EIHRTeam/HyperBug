@@ -34,7 +34,7 @@ The linked plan owns the canonical checkboxes. No backend gate or later frontend
 
 ## Next-session cautions
 
-Public config and static output only; no persistent browser credentials, SSR, Functions or mandatory proxy. Invalid config/instance data must fail closed. Regenerate CSP when origins change. The temporary Pages project and both previews are deleted with preserved original inventory; do not reuse their names/state. Local listeners/tabs are closed. Protected root drafts remain unstaged; no push/PR/production release is authorized.
+Public config and static output only; no persistent browser credentials, SSR, Functions or mandatory proxy. Invalid config/instance data must fail closed. Regenerate CSP when origins change. The temporary Pages project and both previews are deleted with preserved original inventory; do not reuse their names/state. The local B2/B3 fixture is held for user-directed manual checks; terminate and verify cleanup after results. Protected root drafts remain unstaged; no push/PR/production release is authorized.
 
 ## Session log
 
@@ -245,3 +245,19 @@ P0 closure checks:585 relative links/receipt/gate/cleanup consistency and git di
 - Blockers/open questions: No B1 blocker. Native dialog/form/draft/browser baseline proof remains B2/B3.
 - Next actions: Commit B1; implement B2 accessible primitives; complete B3 evidence.
 - Next-session cautions: Local fixture intentionally held for the following batches, must terminate and independently verify cleanup. No hosted traffic, G1/Module10/13.G6 change, later module, push or PR edit.
+
+
+### 2026-10-13 — B2 accessible primitives
+
+- Scope and checklist IDs: 11.3a–e; b–e implemented and focused-browser verified. 11.3a awaits final contrast/manual cross-browser evidence in B3; 11.V3 remains open.
+- Progress: Field/error/state/native-dialog primitives, committed-route focus/title and trusted plugin slot implemented; no Module 12 workflow.
+- Change summary: Single delayed visual/ARIA validation state, error summary focus/links, native Cancel/Escape/restore focus, responsive outline/field/dialog styles and frozen source-only plugin descriptors/CSP origins. Separate test-only UI build excludes acceptance hooks from production.
+- Files/artifacts: apps/web/components, routes, forms/plugins/styles, fixture/scripts/tooling inclusion, FRONTEND compatibility ledger, local runner cleanup repair, [UI browser receipt](../evidence/11-ui-browser.json).
+- Verification: Web typecheck/lint/build pass; plugin/foundation6 unit cases pass. Chrome155.0.8059.40 rendered form/error-summary/dialog/reflow/reduced-motion/emulated-touch/CSP checks pass. First passes expose Form isTouched-on-change and stale blur errors; correct with isBlurred/submit gating and blur revalidation, without weakened assertions. Invisible closed-dialog buttons are excluded from visible touch-target measurement.
+- Decisions and deviations: User directs no computer-use tests; manual Safari/VoiceOver/keyboard/zoom/touch/motion instructions sent. Automated checks continue; no screen-reader conformance claim. Native VoiceOver inspection timed out and process was not running. Mac certificate prompt approved by user; temporary certificate/trust is cleanup-owned. Initial B1 SIGTERM cleanup met adapter already-closed listener; fix narrowly and remove both exact session-created keychain entries by fingerprint.
+- Blockers/open questions: Manual results pending. Local certificate and services remain held for those checks; owning fixture cleanup must complete.
+- Next actions: Commit B2 after scoped checks, then B3 identity/cache/capability/performance evidence and user manual report.
+- Next-session cautions: No CUA test actions. Keep existing gates/Module10/13.G6 and protected drafts unchanged; no hosted traffic, added dependency or later workflow.
+
+
+2026-10-13 manual checkpoint: the user reports **all pass** for the eight requested Safari/VoiceOver/keyboard/field/dialog/zoom/emulated-touch/reduced-motion/navigation checks. [Manual receipt](../evidence/11-manual-accessibility.json) distinguishes user evidence from automation and records the installed Safari version, not an independently reported version. No further CUA testing. B2 source/type/lint/format/build and focused UI/plugin checks pass; final 11.V3 closure remains in B3 with contrast and documented limits.

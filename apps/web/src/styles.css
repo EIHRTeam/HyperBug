@@ -41,9 +41,7 @@ a {
   color: inherit;
   text-underline-offset: 0.25em;
 }
-a:focus-visible,
-button:focus-visible,
-main:focus-visible {
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 3px solid var(--ring);
   outline-offset: 5px;
 }
@@ -81,6 +79,8 @@ main {
   border-bottom: 1px solid var(--border);
 }
 .brand {
+  overflow-wrap: anywhere;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
@@ -238,4 +238,69 @@ code {
 
 output {
   display: block;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+.field {
+  margin-block: 1.5rem;
+  max-width: 36rem;
+}
+.field label {
+  display: block;
+  font-weight: 600;
+}
+.field-hint {
+  color: var(--muted-foreground);
+  margin-block: 0.25rem 0.5rem;
+}
+.field input,
+select,
+textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem;
+  font: inherit;
+  border: 1px solid #6d7a71;
+  border-radius: var(--radius);
+  color: var(--foreground);
+  background: #ffffff;
+}
+.field input[aria-invalid='true'] {
+  border: 2px solid #9b2424;
+}
+.field-error {
+  color: #9b2424;
+  font-weight: 600;
+}
+.error-summary {
+  border: 2px solid #9b2424;
+  padding: 1rem;
+  max-width: 36rem;
+}
+.error-summary h2 {
+  margin-top: 0;
+}
+.state-message {
+  margin-block: 1rem;
+}
+dialog {
+  color: var(--foreground);
+  background: var(--background);
+  margin: auto;
+  border: 1px solid #6d7a71;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: min(36rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  overflow: auto;
+}
+dialog h2 {
+  margin-top: 0;
+}
+dialog::backdrop {
+  background: rgb(0 0 0 / 50%);
 }

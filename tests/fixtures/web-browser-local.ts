@@ -1,5 +1,6 @@
 import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
+import { X509Certificate } from 'node:crypto';
 import { readFile, writeFile, rm } from 'node:fs/promises';
 import {
   createServer,
@@ -29,6 +30,7 @@ if (process.env.HYPERBUG_TEST_POSTGRES !== '1')
   throw new Error('Use the private PostgreSQL test cluster wrapper');
 const databaseName = 'hyperbug_web_module11_test';
 const root = resolve('apps/web/dist');
+const uiRoot = resolve('/tmp/hyperbug-module11-ui');
 const bootstrap = new Pool({ max: 1 });
 let pool: Pool | undefined;
 let configured: ReturnType<typeof configureNodeAbuseAdmission> | undefined;
@@ -39,6 +41,7 @@ let api: Awaited<ReturnType<typeof listenNode>> | undefined;
 let tlsApi: Awaited<ReturnType<typeof listenNode>> | undefined;
 let localOrigin = '';
 let trusted = false;
+let certificateFingerprint = '';
 let staticServer: ReturnType<typeof createServer> | undefined;
 const enrollmentCode =
   'hbbs1_' +
@@ -60,6 +63,9 @@ async function staticHandler(
   };
   const policy = deploymentPolicy(config);
   const path = new URL(request.url ?? '/', 'http://localhost').pathname;
+  const ui =
+    request.headers.host?.startsWith('ui.hyperbug-browser.test:') ||
+    path === '/fixtures/ui.html';
   let file = resolve(root, '.' + decodeURIComponent(path));
   if (
     (file !== root && !file.startsWith(root + sep)) ||
@@ -74,14 +80,23 @@ async function staticHandler(
   if (path === '/config.json') body = Buffer.from(JSON.stringify(config));
   else {
     try {
-      body = await readFile(file);
+      body = await readFile(
+        ui ? resolve(uiRoot, '.' + decodeURIComponent(path)) : file,
+      );
     } catch {
       if (extname(path)) {
-        response.writeHead(404).end();
-        return;
+        try {
+          body = await readFile(
+            resolve(uiRoot, '.' + decodeURIComponent(path)),
+          );
+        } catch {
+          response.writeHead(404).end();
+          return;
+        }
+      } else {
+        file = ui ? join(uiRoot, 'fixtures/ui.html') : join(root, 'index.html');
+        body = await readFile(file);
       }
-      file = join(root, 'index.html');
-      body = await readFile(file);
     }
   }
   response.writeHead(200, {
@@ -128,6 +143,7 @@ try {
     }
   }
   browser = await createAcceptanceBrowserFixture(staticHandler);
+  const uiOrigin = browser.origin.replace('client.', 'ui.');
   staticServer = createServer((request, response) => {
     void staticHandler(request, response).catch(() =>
       response.writeHead(500).end(),
@@ -162,7 +178,7 @@ try {
       { HYPERBUG_ENV: 'local', ALLOWED_ORIGINS: browser.origin },
       'node',
     ),
-    allowedOrigins: [browser.origin, browser.authOrigin, localOrigin],
+    allowedOrigins: [browser.origin, uiOrigin, browser.authOrigin, localOrigin],
   };
   const makeApp = () =>
     createApp({
@@ -184,7 +200,7 @@ try {
       oauthClients: [
         {
           clientId: 'hyperbug-web',
-          redirectUris: [browser!.redirectUri],
+          redirectUris: [browser!.redirectUri, `${uiOrigin}/oauth/callback`],
           scopes: ['public-api'],
         },
       ],
@@ -230,6 +246,9 @@ try {
     { stdio: 'pipe' },
   );
   trusted = true;
+  certificateFingerprint = new X509Certificate(
+    browser.tls.cert,
+  ).fingerprint.replaceAll(':', '');
   const options = join(browser.directory, 'web-options.json');
   await writeFile(
     options,
@@ -242,28 +261,33 @@ try {
       ),
       directory: browser.directory,
       localOrigin,
+      uiOrigin,
       receipt: resolve('docs/plan/evidence/11-browser-auth.json'),
     }),
     { mode: 0o600 },
   );
-  const result = await promisify(execFile)(
-    process.execPath,
-    ['tests/fixtures/web-browser.mjs', options],
-    { timeout: 60000 },
-  );
-  process.stdout.write(result.stdout);
+  if (!process.argv.includes('--serve-only')) {
+    const result = await promisify(execFile)(
+      process.execPath,
+      ['tests/fixtures/web-browser.mjs', options],
+      { timeout: 60000 },
+    );
+    process.stdout.write(result.stdout);
+  }
   console.log(
     JSON.stringify({
       localOrigin,
       options,
       certificateTrusted: true,
-      browserAuth: 'passed',
+      browserAuth: process.argv.includes('--serve-only')
+        ? 'not run; server only'
+        : 'passed',
     }),
   );
   if (process.argv.includes('--hold')) {
     await writeFile(
       '/tmp/hyperbug-module11-local.json',
-      JSON.stringify({ localOrigin, options }),
+      JSON.stringify({ localOrigin, options, pid: process.pid }),
       { mode: 0o600 },
     );
     await new Promise<void>((done) => {
@@ -276,8 +300,34 @@ try {
     execFileSync('security', ['remove-trusted-cert', browser.certificatePath], {
       stdio: 'pipe',
     });
-  await tlsApi?.close();
-  await api?.close();
+  if (trusted)
+    execFileSync(
+      'security',
+      [
+        'delete-certificate',
+        '-Z',
+        certificateFingerprint,
+        join(process.env.HOME!, 'Library/Keychains/login.keychain-db'),
+      ],
+      { stdio: 'pipe' },
+    );
+  // The adapter also closes on SIGTERM; tolerate only that already-closed case.
+  const closeListener = async (listener: typeof api) => {
+    try {
+      await listener?.close();
+    } catch (error) {
+      if (
+        !(
+          error instanceof Error &&
+          'code' in error &&
+          error.code === 'ERR_SERVER_NOT_RUNNING'
+        )
+      )
+        throw error;
+    }
+  };
+  await closeListener(tlsApi);
+  await closeListener(api);
   if (staticServer)
     await new Promise<void>((done) => {
       staticServer!.close(() => done());

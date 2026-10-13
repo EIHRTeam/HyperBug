@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "prepare:deployment": "node scripts/prepare-deployment.ts",
     "serve": "node scripts/serve-static.ts",
-    "lint": "oxlint --config ../../.oxlintrc.json --deny-warnings src scripts vite.config.ts && node ../../tooling/check-boundaries.mjs",
-    "format": "oxfmt --write src scripts public index.html vite.config.ts package.json tsconfig.json components.json",
-    "format:check": "oxfmt --check src scripts public index.html vite.config.ts package.json tsconfig.json components.json"
+    "lint": "oxlint --config ../../.oxlintrc.json --deny-warnings src scripts fixtures vite.config.ts && node ../../tooling/check-boundaries.mjs",
+    "format": "oxfmt --write src scripts fixtures public index.html vite.config.ts package.json tsconfig.json components.json",
+    "format:check": "oxfmt --check src scripts fixtures public index.html vite.config.ts package.json tsconfig.json components.json"
   },
   "dependencies": {
     "@hyperbug/api-client": "workspace:*",

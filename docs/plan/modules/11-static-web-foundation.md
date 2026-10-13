@@ -32,10 +32,10 @@ Create a portable static application that consumes the accepted backend, with ac
 ### Step 11.3 — Build accessible reusable UI primitives
 
 - [ ] **11.3a** Establish semantic landmarks, navigation, headings, labels, buttons, links, focus styles, responsive layout, contrast, zoom, and reduced-motion behavior.
-- [ ] **11.3b** Implement field/error/loading/empty/permission-denied states. Synchronize visual validation with ARIA after interaction; use error summaries and avoid duplicate announcements.
-- [ ] **11.3c** Choose native dialog or an accessible Base UI primitive per use case. Verify initial focus, Escape, explicit close/cancel, and focus restoration; newer dismissal gestures remain optional.
-- [ ] **11.3d** Record a feature compatibility ledger with guide IDs and fallbacks. Newly Available/Limited features cannot block the core issue workflow.
-- [ ] **11.3e** Wire only build-time trusted plugin UI descriptors and checked CSP origins. Reject arbitrary runtime JavaScript configuration.
+- [x] **11.3b** Implement field/error/loading/empty/permission-denied states. Synchronize visual validation with ARIA after interaction; use error summaries and avoid duplicate announcements.
+- [x] **11.3c** Choose native dialog or an accessible Base UI primitive per use case. Verify initial focus, Escape, explicit close/cancel, and focus restoration; newer dismissal gestures remain optional.
+- [x] **11.3d** Record a feature compatibility ledger with guide IDs and fallbacks. Newly Available/Limited features cannot block the core issue workflow.
+- [x] **11.3e** Wire only build-time trusted plugin UI descriptors and checked CSP origins. Reject arbitrary runtime JavaScript configuration.
 
 ## Verification and acceptance
 

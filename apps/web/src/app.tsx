@@ -1,4 +1,9 @@
-import { StrictMode, useSyncExternalStore } from 'react';
+import {
+  StrictMode,
+  useLayoutEffect,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 import { BrowserAuth } from './auth.ts';
 import { createRoot } from 'react-dom/client';
 import {
@@ -109,6 +114,12 @@ function ApplicationShell() {
   const config = usePublicConfig();
   const instance = useInstance();
   const { state } = useAuth();
+  const previousEpoch = useRef(state.epoch);
+  useLayoutEffect(() => {
+    if (previousEpoch.current !== state.epoch)
+      document.getElementById('content')?.focus();
+    previousEpoch.current = state.epoch;
+  }, [state.epoch]);
   return (
     <>
       <a className="skip-link" href="#content">
@@ -186,6 +197,19 @@ export async function startApplication(
   const auth = new BrowserAuth(config, queryClient);
   if (callback) await auth.completeCallback(callback);
   const router = makeRouter({ config, instance: instanceQuery(config), auth });
+  let previousHref = location.pathname + location.search;
+  router.subscribe('onRendered', ({ toLocation }) => {
+    const page =
+      toLocation.pathname === '/account'
+        ? 'Account'
+        : toLocation.pathname === '/instance'
+          ? 'Instance'
+          : 'Overview';
+    document.title = `${page} · ${config.applicationName}`;
+    if (previousHref !== toLocation.href)
+      document.getElementById('content')?.focus();
+    previousHref = toLocation.href;
+  });
   createRoot(container).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>

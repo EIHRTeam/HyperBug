@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { instanceRoute, useInstance } from '../app.tsx';
+import { TrustedPluginSlot } from '../components/plugin-slot.tsx';
 
 const labels = {
   passwordRegistration: 'Password registration',
@@ -106,6 +107,7 @@ export function Instance() {
           </p>
         </section>
       )}
+      <TrustedPluginSlot />
     </>
   );
 }

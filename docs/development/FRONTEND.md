@@ -1,6 +1,6 @@
 # Static frontend foundation
 
-Module 11 P1 implements only 11.1a–g and 11.V1. The user explicitly continued P1 after the P0 report; G1 remains Not passed. Authentication clients, issue workflows, reusable UI primitives and the later browser/accessibility/performance acceptance are separate increments.
+Module 11 implements the static foundation, browser authentication boundary and accessible primitives. The user extended the P1 sequencing exception to all Module 11 on 2026-10-13; G1 remains Not passed and Module 10 remains Blocked. Product issue workflows remain Module 12. Verification status is recorded in the owning checklist and evidence.
 
 ## Toolchain and commands
 
@@ -87,3 +87,28 @@ The token stays in a private memory field outside React and Query. Exchange and 
 Sign-out is the accepted API-only logout: discard local state immediately, revoke the captured token through `/auth/token/revoke`, and broadcast a token-free sign-out event to other same-origin tabs when BroadcastChannel exists. Server failure is disclosed; local credentials still disappear. The authorization service's first-party cookie session remains separate. No cross-origin cookie logout request or auth-origin HTML modification is introduced.
 
 Context7 resolve/query on 2026-10-13: `/tanstack/query` (cancellation, dependent query keys, QueryClient/mutation cache clear), `/tanstack/form` (interaction/submit validation and field errors), `/microsoft/playwright` (role locators and CDP sessions). Sources: [Query cancellation](https://tanstack.com/query/latest/docs/framework/react/guides/query-cancellation), [query keys](https://tanstack.com/query/latest/docs/framework/react/guides/query-keys), [Form validation](https://tanstack.com/form/latest/docs/framework/react/guides/validation), [Playwright CDP](https://playwright.dev/docs/api/class-cdpsession). Context7 did not cover macOS certificate trust or Network.setCookieControls; the existing fixture and actual local Chrome experiment supply that evidence. No package is added.
+
+
+## Accessible primitives and compatibility (Module 11 B2)
+
+`components/ui.tsx` supplies associated labels/hints, fields with one interaction-gated visual/ARIA error state, a focused error summary with links, loading/empty/error/permission messages and a native confirmation dialog. TanStack Form owns values/validation; errors become visible after blur or submit and clear on correction. Required/minimum/maximum constraints remain native attributes. With `noValidate`, Form drives the shared error/ARIA boolean rather than combining native pseudo-class state with a second validator. Error summaries receive focus after failed submission; field errors and summaries are not additional live regions. Plain native controls supply keyboard/IME behavior.
+
+Dialogs open with `showModal()`, deliberately focus Cancel, retain native Escape/inertness and restore the trigger on close. Explicit Cancel remains available on touch devices. No light-dismiss, mobile back gesture or `closedby` dependency is needed. Route titles and main focus update after Router `onRendered`; identity-boundary focus returns to main. CSS uses readable wrapping, input boundaries, visible outline focus, responsive wrapping, ordinary layout and no essential motion.
+
+Only source-imported descriptors in `plugins.ts` can populate the `instance` extension slot. Unique ids, slot/component shape and exact public origins are checked; descriptors and origin arrays are frozen. Hosting CSP derives from those same declarations. Runtime JSON still rejects extra code/plugin fields. No native plugin is installed and no remote script is loaded by the slot. Provider script permissions remain reviewed build-time declarations under the existing policy.
+
+Modern-web search/retrieve, 2026-10-13: `accessibility`, `validate-input-after-interaction`, `accessible-error-announcement`, `required-field-feedback`, `light-dismiss-a-dialog`, `platform-controls-dismiss-dialog`. The installed skill-version warns that a newer skill file exists; current guide content was fetched successfully. No skill installation is part of this task.
+
+| Feature | Current compatibility and chosen behavior |
+| --- | --- |
+| Labels/required controls, focus-visible, reduced-motion, grid/flex/wrapping | Baseline Widely Available; semantic native controls and outline focus; no motion dependency |
+| `:user-valid` / `:user-invalid` | Guides report Widely Available since 2023-11-02; Form's interacted/error state drives both visuals and ARIA instead of relying on native selector timing for custom validation. No selector/polyfill required |
+| Native dialog / showModal / Escape | Widely Available baseline; native focus/inertness with explicit initial/restored focus and Cancel |
+| Dialog `closedby` / mobile back / light-dismiss | Guides report Limited Availability (no Safari); omitted. Escape and explicit Cancel remain complete dismissal mechanisms |
+| BroadcastChannel | Optional detected cross-tab sign-out enhancement; per-tab memory expiry/revocation still work without it |
+| Secure-context Web Crypto, URL/history/sessionStorage | Existing platform baseline; storage failure prevents sign-in safely while public browsing remains usable; access tokens never persist |
+| PerformanceObserver event timing | Measurement-only browser tooling, never a workflow dependency; unavailable measurements are reported rather than polyfilled |
+
+Additional Context7 resolve/query: `/tanstack/router` (`onRendered` focus after committed DOM; useLocation can describe pending navigation), `/websites/react_dev_reference` (immutable cached useSyncExternalStore snapshots, effect timing/StrictMode), `/vitejs/vite` (configFile:false and explicit separate build input). References: [Router events](https://tanstack.com/router/latest/docs/framework/react/guide/router-events), [React external store](https://react.dev/reference/react/useSyncExternalStore), [Vite build API](https://vite.dev/guide/api-javascript#build). Actual pinned exports/typechecks/builds supply version-specific integration proof.
+
+`node apps/web/scripts/build-ui-fixture.ts` builds `fixtures/ui.html` separately into `/tmp/hyperbug-module11-ui`; it does not alter production build input. The fixture uses the same primitives/Form/auth boundary for browser and assistive-technology checks without implementing Module 12 product forms or publishing test hooks. The local runner may serve this artifact only on its disposable test hosts.

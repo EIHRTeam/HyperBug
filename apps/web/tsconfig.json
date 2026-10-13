@@ -10,6 +10,6 @@
     "isolatedModules": true,
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src", "scripts", "vite.config.ts"],
+  "include": ["src", "scripts", "fixtures", "vite.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

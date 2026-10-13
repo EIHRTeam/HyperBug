@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth, useInstance } from '../app.tsx';
+import { ConfirmDialog, StateMessage } from '../components/ui.tsx';
 
 export function Account() {
   const { auth, state } = useAuth();
@@ -45,14 +46,19 @@ export function Account() {
             >
               {checking ? 'Checking access…' : 'Check access'}
             </button>
-            <button
-              type="button"
-              onClick={() => {
+            <ConfirmDialog
+              triggerLabel="Sign out of this app"
+              title="Sign out of this app?"
+              confirmLabel="Sign out"
+              onConfirm={() => {
                 void auth.signOut();
               }}
             >
-              Sign out of this app
-            </button>
+              <p>
+                Your unsaved changes will be cleared. The authorization
+                service’s first-party session is separate.
+              </p>
+            </ConfirmDialog>
           </div>
           <p>
             Signing out revokes this app’s bearer token. The authorization
@@ -70,10 +76,11 @@ export function Account() {
           {state.pending ? 'Opening sign-in…' : 'Sign in'}
         </button>
       ) : (
-        <p>
-          Sign-in is unavailable on this instance. Contact its administrator for
-          available account options.
-        </p>
+        <StateMessage kind="empty" title="Sign-in is unavailable">
+          <p>
+            Contact this instance’s administrator for available account options.
+          </p>
+        </StateMessage>
       )}
       {data?.authentication.passkeys ? (
         <p>Passkeys are available through the authorization service.</p>
