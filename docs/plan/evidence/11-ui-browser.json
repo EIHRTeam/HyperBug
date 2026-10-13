@@ -1,0 +1,38 @@
+{
+  "environment": "real local Chrome; separately compiled test-only primitives; HTTP static host with real local Node public config",
+  "browser": "155.0.8059.40",
+  "initialNeutral": true,
+  "afterBlurInvalid": true,
+  "correctionClearsError": true,
+  "summaryFocusAndLink": true,
+  "duplicateLiveErrors": false,
+  "fieldSnapshot": "- textbox \"Draft title (required)\" [invalid]",
+  "modalSnapshot": "- dialog \"Discard the draft?\":\n  - heading \"Discard the draft?\" [level=2]\n  - paragraph: Cancel keeps this test draft.\n  - button \"Cancel\"\n  - button \"Discard\"",
+  "modalInitialCancelFocus": true,
+  "escapeAndExplicitCancel": true,
+  "focusRestored": true,
+  "reflow": {
+    "width": 320,
+    "scrollWidth": 320,
+    "reducedMotion": true,
+    "animation": "none"
+  },
+  "textZoom": {
+    "percent": 200,
+    "normalViewportNoOverflow": true,
+    "combined320Observation": {
+      "width": 320,
+      "scrollWidth": 640
+    }
+  },
+  "touch": {
+    "emulated": true,
+    "viewport": [
+      390,
+      844
+    ],
+    "dismiss": true,
+    "targetsAtLeast24": true
+  },
+  "cspViolations": []
+}

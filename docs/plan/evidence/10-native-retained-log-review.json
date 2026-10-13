@@ -1,0 +1,169 @@
+{
+  "reviewDateLocal": "2026-10-12",
+  "reviewDateUtc": "2026-10-11",
+  "reviewCommit": "c96bc2e",
+  "classification": "read-only retained actual Cloudflare invocation logs; not acceptance or benchmark",
+  "source": "Signed-in Cloudflare Logs UI; exact owned API Worker and raw invocation type",
+  "query": "$metadata.service = \"hyperbug-10-api-594828b31148\" AND $metadata.type = \"cf-worker-event\"",
+  "displayedInvocationRows": 12,
+  "tupleMatch": {
+    "method": "Unique CPU/wall/outcome tuples compared with original trial4 tail receipt",
+    "matches": 12,
+    "requestIdentifierJoin": false,
+    "timestampOnlyJoin": false
+  },
+  "observations": [
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:45.237",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "root",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 9,
+      "wallTimeMs": 602,
+      "matchingTailEventTimestamp": 1791730604343
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:45.224",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "root",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 8,
+      "wallTimeMs": 568,
+      "matchingTailEventTimestamp": 1791730604403
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:45.207",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "eight-letter-path",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 8,
+      "wallTimeMs": 370,
+      "matchingTailEventTimestamp": 1791730604604
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:45.198",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "eight-letter-path",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 11,
+      "wallTimeMs": 566,
+      "matchingTailEventTimestamp": 1791730604408
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:44.051",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "root",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 6,
+      "wallTimeMs": 322,
+      "matchingTailEventTimestamp": 1791730603550
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:43.990",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "eight-letter-path",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 8,
+      "wallTimeMs": 500,
+      "matchingTailEventTimestamp": 1791730603267
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:43.879",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "eight-letter-path",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 6,
+      "wallTimeMs": 481,
+      "matchingTailEventTimestamp": 1791730603178
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:43.864",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "root",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 8,
+      "wallTimeMs": 523,
+      "matchingTailEventTimestamp": 1791730603114
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:42.901",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "eight-letter-path",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 21,
+      "wallTimeMs": 622,
+      "matchingTailEventTimestamp": 1791730601710
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:42.894",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "root",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 8,
+      "wallTimeMs": 538,
+      "matchingTailEventTimestamp": 1791730602136
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:42.874",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "eight-letter-path",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 14,
+      "wallTimeMs": 293,
+      "matchingTailEventTimestamp": 1791730602224
+    },
+    {
+      "dashboardTimestampLocal": "2026-10-11 23:56:42.706",
+      "timeZone": "GMT+9",
+      "method": "GET",
+      "pathClass": "root",
+      "status": 404,
+      "outcome": "ok",
+      "cpuTimeMs": 10,
+      "wallTimeMs": 151,
+      "matchingTailEventTimestamp": 1791730602333
+    }
+  ],
+  "interpretation": {
+    "native404CpuOverflowObserved": true,
+    "guardStopPathClass": "eight-letter-path",
+    "maximumCpuPathClass": "eight-letter-path",
+    "harnessHttpRequests": 0,
+    "mvpPathBenchmarkAccepted": false,
+    "sustainableCapacityMeasured": false,
+    "callerIdentityEstablished": false,
+    "internalCpuCauseEstablished": false
+  },
+  "privacy": {
+    "sourceIpsRetained": false,
+    "headersRetained": false,
+    "rawEightLetterPathsRetained": false,
+    "acmeTokensRetained": false
+  },
+  "externalMutations": false,
+  "newHostedTestTraffic": false,
+  "temporaryLogTabClosed": true,
+  "futureProviderToolPreference": "MCP or Wrangler; report missing access rather than use dashboard"
+}

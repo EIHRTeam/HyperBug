@@ -1,0 +1,142 @@
+{
+  "method": "Local workerd V8 100us sampled non-idle frames; eight fresh isolates, actual minimum.ts scheduled handler; diagnostic not provider CPU",
+  "sourceCommit": "16d6500",
+  "fixture": {
+    "kind": "conformance",
+    "steps": 2,
+    "coldCheckpoint": 1,
+    "warmCheckpoint": 2,
+    "exactWitnesses": [
+      0,
+      1
+    ]
+  },
+  "results": {
+    "cold": {
+      "isolates": 8,
+      "sampledNonIdleUs": {
+        "min": 2848,
+        "median": 3506.5,
+        "max": 5265,
+        "values": [
+          3344,
+          3359,
+          4723,
+          2848,
+          5265,
+          3654,
+          3357,
+          4352
+        ]
+      },
+      "topSampledFunctions": [
+        [
+          "(anonymous)",
+          6680
+        ],
+        [
+          "(garbage collector)",
+          3222
+        ],
+        [
+          "scheduled",
+          2416
+        ],
+        [
+          "ES",
+          2308
+        ],
+        [
+          "ry",
+          2069
+        ],
+        [
+          "_send",
+          1563
+        ],
+        [
+          "enterSpan",
+          1386
+        ],
+        [
+          "addAggregatedD1MetaToSpan",
+          1295
+        ],
+        [
+          "t",
+          1164
+        ],
+        [
+          "aggregateD1Meta",
+          1048
+        ]
+      ]
+    },
+    "warm": {
+      "isolates": 8,
+      "sampledNonIdleUs": {
+        "min": 1607,
+        "median": 2035.0,
+        "max": 2631,
+        "values": [
+          2230,
+          2631,
+          1607,
+          1733,
+          1864,
+          2237,
+          1972,
+          2098
+        ]
+      },
+      "topSampledFunctions": [
+        [
+          "enterSpan",
+          2760
+        ],
+        [
+          "(anonymous)",
+          2300
+        ],
+        [
+          "fetch",
+          2041
+        ],
+        [
+          "_send",
+          1465
+        ],
+        [
+          "Fy",
+          968
+        ],
+        [
+          "hS",
+          962
+        ],
+        [
+          "firstIfArray",
+          890
+        ],
+        [
+          "randomUUID",
+          837
+        ],
+        [
+          "setAttributes",
+          825
+        ],
+        [
+          "ES",
+          769
+        ]
+      ]
+    }
+  },
+  "verification": "Sixteen successful composed native-local scheduled calls; each9 statements/combined calls,16 reads/9 writes; eight jobs complete exact[0,1]",
+  "limitations": [
+    "Module startup precedes invocation sampling",
+    "No native CPU distribution, billing or release acceptance",
+    "Runtime/provider glue included; sampling does not measure exact CPU time"
+  ]
+}

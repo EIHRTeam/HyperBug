@@ -1,0 +1,80 @@
+{
+  "v": 1,
+  "kind": "local TLS capability verification only; no deployed Cloudflare/origin acceptance",
+  "recordedAt": "2026-09-20T16:43:20.164Z",
+  "node": "v24.21.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "nodeOpenSSL": "3.5.8",
+  "certificateTool": "OpenSSL 3.6.4 25 Aug 2026 (Library: OpenSSL 3.6.4 25 Aug 2026)",
+  "policy": {
+    "v": 1,
+    "minimumProtocol": "TLSv1.3",
+    "preferredGroup": "X25519MLKEM768",
+    "classicalFallbackObserved": true,
+    "certificateAuthentication": "classical-rsa",
+    "endToEndPqAuthentication": false
+  },
+  "observations": [
+    {
+      "name": "forced-hybrid",
+      "connected": true,
+      "authorized": true,
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "keyAgreement": {
+        "type": "TLSGroup",
+        "name": "X25519MLKEM768"
+      },
+      "certificateKeyAlgorithm": "rsa",
+      "certificateSignatureAlgorithm": "sha256WithRSAEncryption"
+    },
+    {
+      "name": "platform-default-groups",
+      "connected": true,
+      "authorized": true,
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "keyAgreement": {
+        "type": "TLSGroup",
+        "name": "X25519MLKEM768"
+      },
+      "certificateKeyAlgorithm": "rsa",
+      "certificateSignatureAlgorithm": "sha256WithRSAEncryption"
+    },
+    {
+      "name": "classical-client-fallback",
+      "connected": true,
+      "authorized": true,
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "keyAgreement": {
+        "type": "ECDH",
+        "name": "X25519",
+        "size": 253
+      },
+      "certificateKeyAlgorithm": "rsa",
+      "certificateSignatureAlgorithm": "sha256WithRSAEncryption"
+    },
+    {
+      "name": "no-shared-group",
+      "connected": false,
+      "error": "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE"
+    },
+    {
+      "name": "wrong-hostname",
+      "connected": false,
+      "error": "ERR_TLS_CERT_ALTNAME_INVALID"
+    },
+    {
+      "name": "untrusted-certificate",
+      "connected": false,
+      "error": "DEPTH_ZERO_SELF_SIGNED_CERT"
+    },
+    {
+      "name": "old-protocol-rejected",
+      "connected": false,
+      "error": "ERR_SSL_TLSV1_ALERT_PROTOCOL_VERSION"
+    }
+  ]
+}

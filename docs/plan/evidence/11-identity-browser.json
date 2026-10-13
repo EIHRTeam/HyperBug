@@ -1,0 +1,17 @@
+{
+  "environment": "real local Node/PostgreSQL and trusted HTTPS Chrome; shared source auth/Form primitives in test-only build",
+  "browser": "155.0.8059.40",
+  "principals": [
+    "staff",
+    "user"
+  ],
+  "logoutDraftAndCacheCleared": true,
+  "differentPrincipalStartsEmpty": true,
+  "authServiceFirstPartyLogout": 204,
+  "revokedDuringEditDeniedStatus": 401,
+  "deniedDraftAndCacheCleared": true,
+  "expiryDraftAndCacheCleared": true,
+  "expiryClock": "Playwright fast-forward of actual browser expiry timer after real token issuance; backend time unchanged",
+  "persistentDraftOrTokenStorage": false,
+  "tlsVerificationBypass": false
+}

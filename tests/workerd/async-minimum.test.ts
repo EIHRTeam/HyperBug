@@ -1,0 +1,537 @@
+import { countD1Calls } from '../fixtures/d1-call-count.ts';
+import { expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
+import { workerModules } from '../fixtures/worker-modules.ts';
+import { migrationStatements } from '../fixtures/migrations.ts';
+import {
+  createD1AsyncStore,
+  createD1Repository,
+  createD1PluginRegistryStore,
+  createD1PluginSettingsStore,
+  createD1MinimumAsyncStore,
+  createD1MinimumJobStore,
+} from '@hyperbug/database-d1';
+import type { D1Database } from '@cloudflare/workers-types';
+import {
+  createAsyncProcessor,
+  createAsyncEventHandler,
+  startMinimumJob,
+  runConformanceStep,
+} from '@hyperbug/application';
+
+it('Minimum resumes D1 events/jobs across runtime restart, preserves exhausted backlog and enforces invocation/retention bounds', async () => {
+  execFileSync(process.execPath, ['tooling/build.ts', '--target=fixtures'], {
+    stdio: 'pipe',
+  });
+  const persistence = await mkdtemp(join(tmpdir(), 'hyperbug-minimum-'));
+  const options = convertV4MiniflareOptions({
+    modules: workerModules('dist/async-minimum-worker'),
+    compatibilityDate: '2026-09-16',
+    compatibilityFlags: ['nodejs_compat'],
+    d1Databases: { DB: 'minimum-async' },
+  });
+  options.resourcePersistencePath = persistence;
+  let mf = new Miniflare(options);
+  try {
+    let db = await mf.getD1Database('DB');
+    for (const migration of await migrationStatements('d1')) {
+      // eslint-disable-next-line no-await-in-loop
+      await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+    }
+    let now = 2000000000000;
+    const project = crypto.randomUUID(),
+      event = crypto.randomUUID(),
+      job = crypto.randomUUID();
+    await db
+      .prepare(
+        'INSERT INTO projects(id,slug,name,created_at,updated_at) VALUES (?,?,?,?,?)',
+      )
+      .bind(project, project, 'Minimum', now, now)
+      .run();
+    await db
+      .prepare(
+        "INSERT INTO outbox(id,project_id,aggregate_id,event_type,payload,created_at,available_at) VALUES (?,?,?,'comment.create','{}',?,?)",
+      )
+      .bind(event, project, crypto.randomUUID(), now, now)
+      .run();
+    await createD1MinimumAsyncStore(db as unknown as D1Database).claim(
+      now,
+      'crashed',
+    );
+    const raw = createD1AsyncStore(db as unknown as D1Database),
+      jobs = { ...raw, claim: raw.claimJob };
+    await expect(
+      startMinimumJob(jobs, { kind: 'export', id: job, maxSteps: 2, now }),
+    ).rejects.toThrow();
+    await expect(
+      startMinimumJob(jobs, { kind: 'conformance', id: job, maxSteps: 5, now }),
+    ).rejects.toThrow();
+    await startMinimumJob(jobs, {
+      kind: 'conformance',
+      id: job,
+      maxSteps: 2,
+      now,
+    });
+    const tick = async (phase: number) => {
+      const response = await mf.dispatchFetch(
+        `http://fixture/?phase=${phase}&now=${now}`,
+      );
+      expect(response.status).toBe(200);
+      const report = (await response.json()) as {
+        queries: number;
+        subrequests: number;
+        outcome: string;
+        backlog: { pending: number; failed: number };
+      };
+      expect(report.queries).toBeLessThanOrEqual(45);
+      expect(report.subrequests).toBeLessThanOrEqual(45);
+      return report;
+    };
+    await tick(4);
+    expect((await jobs.get(job))?.checkpoint).toBe(1);
+    await mf.dispose();
+    mf = new Miniflare(options);
+    db = await mf.getD1Database('DB');
+    now += 90001;
+    expect((await tick(0)).outcome).toBe('done');
+    expect(
+      (
+        await db
+          .prepare('SELECT delivered_at FROM outbox WHERE id=?')
+          .bind(event)
+          .first()
+      )?.delivered_at,
+    ).toBe(now);
+    await tick(4);
+    expect(
+      await db
+        .prepare('SELECT status,checkpoint FROM async_jobs WHERE id=?')
+        .bind(job)
+        .first(),
+    ).toEqual({ status: 'completed', checkpoint: 2 });
+    expect(
+      (
+        await db
+          .prepare(
+            'SELECT step FROM async_job_steps WHERE job_id=? ORDER BY step',
+          )
+          .bind(job)
+          .all()
+      ).results,
+    ).toEqual([{ step: 0 }, { step: 1 }]);
+    const pending = crypto.randomUUID();
+    await db
+      .prepare(
+        "INSERT INTO outbox(id,project_id,aggregate_id,event_type,payload,created_at,available_at) VALUES (?,?,?,'comment.create','{}',?,?)",
+      )
+      .bind(pending, project, crypto.randomUUID(), now, now)
+      .run();
+    await db
+      .prepare(
+        'UPDATE async_minimum_budget SET reads=1500000,writes=30000 WHERE id=1',
+      )
+      .run();
+    const exhausted = await tick(0);
+    expect(exhausted.outcome).toBe('quota-exhausted');
+    expect(exhausted.backlog.pending).toBeGreaterThanOrEqual(1);
+    expect(
+      (
+        await db
+          .prepare('SELECT delivered_at FROM outbox WHERE id=?')
+          .bind(pending)
+          .first()
+      )?.delivered_at,
+    ).toBeNull();
+    const restartedRaw = createD1AsyncStore(db as unknown as D1Database),
+      currentJobs = { ...restartedRaw, claim: restartedRaw.claimJob },
+      quotaJob = crypto.randomUUID();
+    await startMinimumJob(currentJobs, {
+      kind: 'conformance',
+      id: quotaJob,
+      maxSteps: 1,
+      now,
+    });
+    const untouched = await currentJobs.get(quotaJob);
+    expect((await tick(4)).outcome).toBe('quota-exhausted');
+    expect(await currentJobs.get(quotaJob)).toEqual(untouched);
+    now += 86400000;
+    await tick(0);
+    expect(
+      (
+        await db
+          .prepare('SELECT delivered_at FROM outbox WHERE id=?')
+          .bind(pending)
+          .first()
+      )?.delivered_at,
+    ).toBe(now);
+    await tick(4);
+    expect((await currentJobs.get(quotaJob))?.status).toBe('completed');
+    const oversized = crypto.randomUUID();
+    await currentJobs.create(oversized, 5, now);
+    await tick(4);
+    expect((await currentJobs.get(oversized))?.status).toBe('cancelled');
+    expect(
+      (
+        await db
+          .prepare('SELECT step FROM async_job_steps WHERE job_id=?')
+          .bind(oversized)
+          .all()
+      ).results,
+    ).toHaveLength(0);
+    await tick(1);
+    await tick(2);
+    now += 2592000001;
+    await tick(3);
+    expect(
+      (await db.prepare('SELECT id FROM async_jobs WHERE id=?').bind(job).all())
+        .results,
+    ).toHaveLength(0);
+  } finally {
+    await mf.dispose();
+    await rm(persistence, { recursive: true, force: true });
+  }
+}, 25000);
+
+it('Minimum batched job witnesses preserve cancellation and replacement-lease fences', async () => {
+  const mf = new Miniflare(
+    convertV4MiniflareOptions({
+      modules: [
+        {
+          type: 'ESModule',
+          path: 'empty.mjs',
+          contents: 'export default {fetch(){return new Response("ok")}}',
+        },
+      ],
+      compatibilityDate: '2026-09-16',
+      d1Databases: { DB: 'minimum-job-witnesses' },
+    }),
+  );
+  try {
+    const db = (await mf.getD1Database('DB')) as unknown as D1Database;
+    for (const migration of await migrationStatements('d1'))
+      await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+    const raw = createD1AsyncStore(db),
+      now = Date.now(),
+      id = crypto.randomUUID();
+    await raw.create(id, 2, now);
+    const counted = countD1Calls(db);
+    for (let step = 0; step < 2; step++) {
+      const beforeCalls = counted.calls(),
+        beforeStatements = counted.statements();
+      const minimum = createD1MinimumJobStore(counted.db),
+        selection = await minimum.admit(now + step);
+      expect(selection.job?.id).toBe(id);
+      expect(
+        await runConformanceStep(
+          minimum.store,
+          { version: 1, jobId: id },
+          () => now + step,
+        ),
+      ).toEqual({ checkpoint: step + 1, terminal: step === 1 });
+      await createD1AsyncStore(counted.db).backlog();
+      expect(counted.calls() - beforeCalls).toBe(4);
+      expect(counted.statements() - beforeStatements).toBe(9);
+    }
+    expect(
+      (
+        await db
+          .prepare(
+            'SELECT step FROM async_job_steps WHERE job_id=? ORDER BY step',
+          )
+          .bind(id)
+          .all()
+      ).results,
+    ).toEqual([{ step: 0 }, { step: 1 }]);
+    for (const kind of ['cancel', 'replace'] as const) {
+      const other = crypto.randomUUID();
+      await raw.create(other, 1, now + 10);
+      const minimum = createD1MinimumJobStore(db);
+      expect((await minimum.admit(now + 10)).job?.id).toBe(other);
+      await minimum.store.get(other);
+      expect(await minimum.store.claim(other, 'original', now + 10)).toBe(true);
+      if (kind === 'cancel') await raw.cancel(other, now + 11);
+      else
+        expect(await raw.claimJob(other, 'replacement', now + 30011)).toBe(
+          true,
+        );
+      const snapshot = await minimum.store.get(other);
+      expect(snapshot?.checkpoint).toBe(0);
+      expect(
+        await minimum.store.commitStep(
+          other,
+          'original',
+          snapshot!.checkpoint,
+          now + (kind === 'cancel' ? 12 : 30012),
+        ),
+      ).toBe(false);
+      expect(
+        (
+          await db
+            .prepare('SELECT step FROM async_job_steps WHERE job_id=?')
+            .bind(other)
+            .all()
+        ).results,
+      ).toHaveLength(0);
+      if (kind === 'replace') await raw.cancel(other, now + 30013);
+    }
+  } finally {
+    await mf.dispose();
+  }
+});
+
+it('Minimum atomic admission cannot consume work when quota is refused, even with reused lease tokens', async () => {
+  const mf = new Miniflare(
+    convertV4MiniflareOptions({
+      modules: [
+        {
+          type: 'ESModule',
+          path: 'empty.mjs',
+          contents: 'export default { fetch() { return new Response("ok") } }',
+        },
+      ],
+      compatibilityDate: '2026-09-16',
+      d1Databases: { DB: 'minimum-admission' },
+    }),
+  );
+  try {
+    const db = await mf.getD1Database('DB');
+    // Upgrade a populated previous schema rather than only a fresh empty budget.
+    for (const migration of await migrationStatements('d1')) {
+      if (migration.name === '0035_async_admission_token') {
+        await db
+          .prepare(
+            'INSERT INTO async_minimum_budget(id,day,reads,writes) VALUES (1,1,1495000,29900)',
+          )
+          .run();
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+    }
+    const now = 86400001,
+      project = crypto.randomUUID(),
+      event = crypto.randomUUID();
+    await db
+      .prepare(
+        'INSERT INTO projects(id,slug,name,created_at,updated_at) VALUES (?,?,?,?,?)',
+      )
+      .bind(project, project, 'Admission', now, now)
+      .run();
+    await db
+      .prepare(
+        "INSERT INTO outbox(id,project_id,aggregate_id,event_type,payload,created_at,available_at) VALUES (?,?,?,'comment.create','{}',?,?)",
+      )
+      .bind(event, project, crypto.randomUUID(), now, now)
+      .run();
+    // Exactly one of two concurrent invocations gets the last allocation.
+    const admissions = await Promise.all(
+      [0, 1].map(() =>
+        createD1MinimumAsyncStore(db as unknown as D1Database).admitAndClaim(
+          now,
+          'reused',
+        ),
+      ),
+    );
+    expect(admissions.filter((a) => a.admitted)).toHaveLength(1);
+    expect(admissions.flatMap((a) => a.references)).toHaveLength(1);
+    const cursors = (
+      await db
+        .prepare('SELECT * FROM async_minimum_cursors ORDER BY source')
+        .all()
+    ).results;
+    const leases = (
+      await db
+        .prepare('SELECT attempts,work_token,work_until FROM async_deliveries')
+        .all()
+    ).results;
+    const refused = await createD1MinimumAsyncStore(
+      db as unknown as D1Database,
+    ).admitAndClaim(now + 1, 'reused');
+    expect(refused).toEqual({ admitted: false, references: [] });
+    expect(
+      (
+        await db
+          .prepare('SELECT * FROM async_minimum_cursors ORDER BY source')
+          .all()
+      ).results,
+    ).toEqual(cursors);
+    expect(
+      (
+        await db
+          .prepare(
+            'SELECT attempts,work_token,work_until FROM async_deliveries',
+          )
+          .all()
+      ).results,
+    ).toEqual(leases);
+    expect(
+      (await createD1AsyncStore(db as unknown as D1Database).backlog()).pending,
+    ).toBe(1);
+    const recovered = createD1MinimumAsyncStore(db as unknown as D1Database),
+      nextDay = now + 86400000;
+    const next = await recovered.admitAndClaim(nextDay, 'reused');
+    expect(next.admitted).toBe(true);
+    expect(next.references).toHaveLength(1);
+    const execution = recovered.executionStore(),
+      ref = next.references[0]!;
+    expect(await execution.begin(ref, 'reused', nextDay)).toBe('acquired');
+    // Expired completion must not acknowledge a still-recoverable source.
+    expect(await execution.complete(ref, 'reused', nextDay + 30001)).toBe(
+      false,
+    );
+    expect(
+      (
+        await db
+          .prepare('SELECT delivered_at FROM outbox WHERE id=?')
+          .bind(event)
+          .first()
+      )?.delivered_at,
+    ).toBeNull();
+    expect((await recovered.backlog()).pending).toBe(1);
+  } finally {
+    await mf.dispose();
+  }
+}, 25000);
+
+it('Minimum claim witnesses preserve stale-search handling and poison-message failures', async () => {
+  const mf = new Miniflare(
+    convertV4MiniflareOptions({
+      modules: [
+        {
+          type: 'ESModule',
+          path: 'empty.mjs',
+          contents: 'export default { fetch() { return new Response("ok") } }',
+        },
+      ],
+      compatibilityDate: '2026-09-16',
+      d1Databases: { DB: 'minimum-witness' },
+    }),
+  );
+  try {
+    const db = await mf.getD1Database('DB');
+    for (const migration of await migrationStatements('d1')) {
+      // eslint-disable-next-line no-await-in-loop
+      await db.batch(migration.statements.map((sql) => db.prepare(sql)));
+    }
+    const project = crypto.randomUUID(),
+      author = crypto.randomUUID(),
+      issue = crypto.randomUUID(),
+      event = crypto.randomUUID(),
+      now = Date.now();
+    await db.batch([
+      db
+        .prepare(
+          'INSERT INTO projects(id,slug,name,created_at,updated_at) VALUES (?,?,?,?,?)',
+        )
+        .bind(project, project, 'Witness', now, now),
+      db
+        .prepare(
+          "INSERT INTO principals(id,kind,display_name,created_at) VALUES (?,'user','Witness',?)",
+        )
+        .bind(author, now),
+    ]);
+    const repository = createD1Repository(db as unknown as D1Database);
+    const mutation = {
+      id: issue,
+      projectId: project,
+      principalId: author,
+      requestId: crypto.randomUUID(),
+      now,
+      expiresAt: now + 86400000,
+      keyHash: '1'.repeat(64),
+      payloadHash: '2'.repeat(64),
+      title: 'Original witness',
+      body: 'Canonical body',
+    };
+    await repository.createIssue({
+      ...mutation,
+      mutationId: event,
+      typeId: null,
+      milestoneId: null,
+      labelIds: [],
+      assigneeIds: [],
+      auditAction: 'issue.created',
+    });
+    const minimum = createD1MinimumAsyncStore(db as unknown as D1Database),
+      admission = await minimum.admitAndClaim(now, 'witness');
+    const later = crypto.randomUUID();
+    await repository.editIssue({
+      ...mutation,
+      mutationId: later,
+      requestId: crypto.randomUUID(),
+      now: now + 1,
+      title: 'New witness',
+      body: 'Updated canonical body',
+      expectedRevision: 1,
+      keyHash: '3'.repeat(64),
+      payloadHash: '4'.repeat(64),
+      auditAction: 'issue.edited',
+    });
+    expect(await minimum.searchStore().revisionOf(project, issue, event)).toBe(
+      1,
+    );
+    const process = (
+      store: ReturnType<typeof createD1MinimumAsyncStore>,
+      token: string,
+      time: number,
+    ) =>
+      createAsyncProcessor({
+        store: store.executionStore(),
+        token: () => token,
+        clock: () => time,
+        handle: createAsyncEventHandler({
+          search: store.searchStore(),
+          registry: createD1PluginRegistryStore(db as unknown as D1Database),
+          settings: createD1PluginSettingsStore(db as unknown as D1Database),
+          tier: 'cloudflare-minimum',
+        }),
+      });
+    expect(
+      await process(minimum, 'witness', now + 2)(admission.references[0]),
+    ).toBe('ack');
+    expect(
+      (
+        await db
+          .prepare('SELECT * FROM search_documents WHERE issue_id=?')
+          .bind(issue)
+          .all()
+      ).results,
+    ).toHaveLength(0);
+    const current = createD1MinimumAsyncStore(db as unknown as D1Database),
+      next = await current.admitAndClaim(now + 2, 'current');
+    expect(await process(current, 'current', now + 2)(next.references[0])).toBe(
+      'ack',
+    );
+    expect(
+      await db
+        .prepare('SELECT revision,title FROM search_documents WHERE issue_id=?')
+        .bind(issue)
+        .first(),
+    ).toEqual({ revision: 2, title: ' new witness ' });
+    expect((await current.backlog()).pending).toBe(0);
+    const poison = crypto.randomUUID();
+    await db
+      .prepare(
+        "INSERT INTO outbox(id,project_id,aggregate_id,event_type,payload,created_at,available_at) VALUES (?,?,?,'issue.edit','{}',?,?)",
+      )
+      .bind(poison, project, issue, now + 3, now + 3)
+      .run();
+    const bad = createD1MinimumAsyncStore(db as unknown as D1Database),
+      badClaim = await bad.admitAndClaim(now + 3, 'poison');
+    expect(await process(bad, 'poison', now + 3)(badClaim.references[0])).toBe(
+      'ack',
+    );
+    expect(
+      await db
+        .prepare('SELECT state,failure FROM async_deliveries WHERE event_id=?')
+        .bind(poison)
+        .first(),
+    ).toEqual({ state: 'failed', failure: 'invalid' });
+    expect((await bad.backlog()).failed).toBe(1);
+  } finally {
+    await mf.dispose();
+  }
+}, 25000);

@@ -1,0 +1,128 @@
+{
+  "recordedAt": "2026-10-10T21:02:55.350Z",
+  "sourceCommit": "f6a1e9e",
+  "followUpJobOptimizationCommit": "9bd76ce (not deployed in this phase-0 attempt)",
+  "plan": "Workers Free (user-attested)",
+  "cpuLimitMs": 10,
+  "acceptance": "unobserved: no native scheduled result within bounded observation",
+  "resources": {
+    "worker": "hyperbug-09-native-02c7174d8cb1",
+    "hostname": "async-native-02c7174d8cb1.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cron": "*/5 * * * *",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused"
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-10T19:48:55.349Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4986245,
+      "remainingD1Writes": 99340,
+      "remainingWorkerRequests": 99051
+    },
+    "after": {
+      "at": "2026-10-10T21:01:22.023Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4985562,
+      "remainingD1Writes": 99307,
+      "remainingWorkerRequests": 99001
+    }
+  },
+  "native": [],
+  "canonical": {
+    "capturedAt": "2026-10-10T21:00:43.477Z",
+    "rows": [
+      {
+        "deliveredAt": null,
+        "canonicalRevision": 1,
+        "indexedRevision": null,
+        "canonicalTitleCodePoints": 200,
+        "canonicalBodyCodePoints": 32768,
+        "indexedTitleBytes": null,
+        "indexedBodyBytes": null,
+        "projectionVersion": null,
+        "canonicalProjectionVersion": "hyperbug-text-1",
+        "deliveryState": null,
+        "attempts": null
+      }
+    ]
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 140,
+      "foreignKeysValid": true,
+      "singletonStateRestored": true,
+      "singletonCounts": {
+        "async_minimum_budget": 1,
+        "async_minimum_cursors": 2,
+        "search_budget": 0
+      },
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "originalComparison": {
+      "at": "2026-10-10T21:02:07.345Z",
+      "originalWorkerCount": 2,
+      "remainingWorkerCount": 2,
+      "originalWorkersPreserved": true,
+      "originalDomainsPreserved": true,
+      "ownedWorkerAbsent": true,
+      "ownedDomainAbsent": true
+    },
+    "watchdog": {
+      "at": "2026-10-10T21:01:22.035Z",
+      "reason": "absolute observation deadline",
+      "cleaned": true
+    },
+    "processes": {
+      "tail": {
+        "terminal": true,
+        "exitCode": 0
+      },
+      "monitor": {
+        "terminal": true,
+        "exitCode": 0
+      },
+      "watchdog": {
+        "terminal": true,
+        "exitCode": 0
+      }
+    }
+  },
+  "limitations": [
+    "Selective production-function phase-0 native probe; not complete production composition acceptance",
+    "Maximum 200-code-point title /32768-code-point body via actual REST-backed repository producer; not API/auth acceptance",
+    "No explicit dispatcher tick called",
+    "Prepared quota/job fixtures and phase-4 deployment are unexecuted unless separate case evidence proves otherwise",
+    "No schema migration, target change, paid feature, audit resume or gate closure",
+    "A higher project target cannot raise the documented provider Free CPU ceiling",
+    "Raw DNS inventory remains unverified; cleanup covers Worker/custom-domain control-plane mappings"
+  ]
+}

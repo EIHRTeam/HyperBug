@@ -1,0 +1,211 @@
+{
+  "recordedAt": "2026-10-10T18:28:31.416Z",
+  "sourceCommit": "00fc6c1",
+  "plan": "Workers Free (user-attested)",
+  "cpuLimitMs": 10,
+  "acceptance": "failed: native canonical dispatch 14 ms CPU",
+  "resources": {
+    "worker": "hyperbug-09-native-d4b7fbd7bda7",
+    "hostname": "async-native-d4b7fbd7bda7.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cron": "*/5 * * * *",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused"
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-10T16:15:22.484Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4989731,
+      "remainingD1Writes": 99500,
+      "remainingWorkerRequests": 99738
+    },
+    "after": {
+      "at": "2026-10-10T18:27:03.588Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4988632,
+      "remainingD1Writes": 99403,
+      "remainingWorkerRequests": 99113
+    }
+  },
+  "native": [
+    {
+      "scriptName": "hyperbug-09-native-d4b7fbd7bda7",
+      "outcome": "ok",
+      "eventTimestamp": 1791652505469,
+      "cpuTime": 14,
+      "wallTime": 892,
+      "path": null,
+      "eventKind": "scheduled",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 63,
+          "writes": 22,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "scriptName": "hyperbug-09-native-d4b7fbd7bda7",
+      "outcome": "ok",
+      "eventTimestamp": 1791652805467,
+      "cpuTime": 4,
+      "wallTime": 605,
+      "path": null,
+      "eventKind": "scheduled",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 8,
+          "subrequests": 8,
+          "reads": 29,
+          "writes": 3,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "scriptName": "hyperbug-09-native-d4b7fbd7bda7",
+      "outcome": "ok",
+      "eventTimestamp": 1791653105467,
+      "cpuTime": 3,
+      "wallTime": 584,
+      "path": null,
+      "eventKind": "scheduled",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 8,
+          "subrequests": 8,
+          "reads": 29,
+          "writes": 3,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    }
+  ],
+  "nativeTotals": {
+    "ticks": 14,
+    "canonicalTicks": 1,
+    "emptyCpuMs": [
+      4,
+      3,
+      4,
+      3,
+      3,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ]
+  },
+  "canonical": {
+    "at": "2026-10-10T18:25:17.225Z",
+    "rows": [
+      {
+        "delivered_at": 1791652506116,
+        "canonical_revision": 1,
+        "search_revision": 1,
+        "title": " hosted asynchronous search ",
+        "state": "done",
+        "attempts": 1
+      }
+    ]
+  },
+  "checks": {
+    "explicitTickInvocations": 0,
+    "nativeSourceAcknowledged": true,
+    "deliveryAttempts": 1,
+    "logSummariesPerTick": 1,
+    "exceptions": 0
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 130,
+      "foreignKeysValid": true,
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "baselineSingletonsRestoredExactly": true,
+    "tailStopped": true,
+    "monitorStopped": true,
+    "originalResourcesPreservedExactly": {
+      "verified": true,
+      "workers": 2,
+      "mappings": 2,
+      "at": "2026-10-10T18:28:00.451Z"
+    },
+    "rawDns": "Independent absence unverified; owned mapping absent"
+  },
+  "limitations": [
+    "Native first execution occurred after 21-minute monitor deadline; live tail and canonical state inspected before cleanup",
+    "Cron retained during continuation gap and emitted harmless empty ticks; cleaned before further attempt",
+    "Probe phase 0 fixed to preserve original expired identity records; not full production composition acceptance",
+    "Startup 6 ms is separate from invocation CPU",
+    "Maximum body and recovery not run after canonical CPU failure",
+    "No controlled attribution of differences between trials; no paid Standard or billing-plan acceptance"
+  ]
+}

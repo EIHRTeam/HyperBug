@@ -1,0 +1,52 @@
+{
+  "profile": "d1",
+  "fixture": {
+    "protectedRecords": 4000,
+    "retainedBackups": 500,
+    "activeKeys": 3,
+    "additionalRemovedKeyTombstones": 4000
+  },
+  "statementsPerSnapshot": 1,
+  "samples": 30,
+  "medianMs": 2.3179999999993015,
+  "p95Ms": 3.270583000001352,
+  "includesLoopbackHttp": true,
+  "plan": [
+    {
+      "id": 6,
+      "parent": 0,
+      "notused": 45,
+      "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?)"
+    },
+    {
+      "id": 9,
+      "parent": 0,
+      "notused": 34,
+      "detail": "SCAN k USING INDEX key_active_versions LEFT-JOIN"
+    },
+    {
+      "id": 24,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 1"
+    },
+    {
+      "id": 29,
+      "parent": 24,
+      "notused": 123,
+      "detail": "SEARCH r USING COVERING INDEX protected_record_key (purpose=? AND key_id=? AND key_version=?)"
+    },
+    {
+      "id": 48,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 2"
+    },
+    {
+      "id": 53,
+      "parent": 48,
+      "notused": 105,
+      "detail": "SEARCH b USING COVERING INDEX key_backup_reference_key (purpose=? AND key_id=? AND key_version=?)"
+    }
+  ]
+}

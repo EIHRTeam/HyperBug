@@ -1,0 +1,252 @@
+import {
+  securityDecisionTimeoutMs,
+  storeReadTimeoutMs,
+  storeWriteTimeoutMs,
+} from './bounds.ts';
+import { scopeKeyProvider } from '@hyperbug/security';
+import type {
+  AccountSessionStore,
+  Assurance,
+  AuthMethod,
+} from '@hyperbug/application';
+import {
+  digestCredential,
+  generateOpaqueCredential,
+  verifyCredential,
+  type KeyProvider,
+} from '@hyperbug/security';
+import { withDeadline } from './bounds.ts';
+import { RequestFailure } from './errors.ts';
+
+const cookieName = '__Host-hb_session';
+const idleMs = 30 * 60 * 1000;
+const absoluteMs = 7 * 24 * 60 * 60 * 1000;
+const cookieAttributes = 'Path=/; Secure; HttpOnly; SameSite=Lax';
+const cookiePattern =
+  /^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.(hb1_[A-Za-z0-9_-]{43})$/;
+
+function context(id: string) {
+  return {
+    resourceType: 'authorization-session',
+    resourceId: id,
+    field: 'cookie-secret',
+    projectId: null,
+    schemaVersion: 1,
+  } as const;
+}
+
+function parseCookie(request: Request): { id: string; token: string } | null {
+  const header = request.headers.get('cookie');
+  if (!header || header.length > 4096) return null;
+  let value: string | null = null;
+  for (const part of header.split(';')) {
+    const item = part.trim();
+    if (!item.startsWith(`${cookieName}=`)) continue;
+    if (value !== null) return null;
+    value = item.slice(cookieName.length + 1);
+  }
+  const match = value?.match(cookiePattern);
+  return match ? { id: match[1]!, token: match[2]! } : null;
+}
+
+/** Cookie-authenticated mutations are served only from this auth origin. */
+export function requireAuthOrigin(request: Request): void {
+  const origin = request.headers.get('origin');
+  const fetchSite = request.headers.get('sec-fetch-site');
+  if (
+    !origin ||
+    origin !== new URL(request.url).origin ||
+    (fetchSite !== null && fetchSite !== 'same-origin')
+  )
+    throw new RequestFailure('ORIGIN_FORBIDDEN');
+}
+
+export function requireAuthReadOrigin(request: Request): void {
+  const origin = request.headers.get('origin');
+  const fetchSite = request.headers.get('sec-fetch-site');
+  if (
+    (origin !== null && origin !== new URL(request.url).origin) ||
+    (fetchSite !== null && fetchSite !== 'same-origin' && fetchSite !== 'none')
+  )
+    throw new RequestFailure('ORIGIN_FORBIDDEN');
+}
+
+export function issuedSessionCookie(id: string, token: string): string {
+  return `${cookieName}=${id}.${token}; Max-Age=${absoluteMs / 1000}; ${cookieAttributes}`;
+}
+
+export const clearedSessionCookie = `${cookieName}=; Max-Age=0; ${cookieAttributes}`;
+
+/** Shared issuance for password and passkey logins; no credential is embedded. */
+export async function issueSessionCookieFor(input: {
+  readonly account: {
+    readonly principalId: string;
+    readonly identityId: string;
+    readonly credentialRevision: number;
+  };
+  /** How this credential was established; bound to the session, not the account. */
+  readonly ceremony: {
+    readonly method: AuthMethod;
+    readonly assurance: Assurance;
+  };
+  readonly provider: KeyProvider | null;
+  readonly store: AccountSessionStore | null;
+  readonly signal: AbortSignal;
+  readonly nowMs: number;
+}): Promise<string> {
+  const { account, ceremony, provider, store, signal, nowMs } = input;
+  if (!provider || !store || signal.aborted)
+    throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+  const id = crypto.randomUUID();
+  const token = generateOpaqueCredential();
+  try {
+    const digest = await withDeadline(
+      signal,
+      securityDecisionTimeoutMs(signal),
+      () => digestCredential(provider, token, context(id)),
+    );
+    const created = await withDeadline(
+      signal,
+      storeWriteTimeoutMs(signal),
+      () =>
+        store.createIfCurrent({
+          id,
+          principalId: account.principalId,
+          identityId: account.identityId,
+          credentialRevision: account.credentialRevision,
+          digest: JSON.stringify(digest),
+          nowMs,
+          idleExpiresAtMs: nowMs + idleMs,
+          absoluteExpiresAtMs: nowMs + absoluteMs,
+          authMethod: ceremony.method,
+          authenticatedAtMs: nowMs,
+          assurance: ceremony.assurance,
+        }),
+    );
+    if (!created || signal.aborted) throw new Error('Session not current');
+    return issuedSessionCookie(id, token);
+  } catch {
+    throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+  }
+}
+
+/** Primary-backed validation; revocation or credential changes deny reuse. */
+export async function currentAccountSession(input: {
+  readonly request: Request;
+  readonly provider: KeyProvider | null;
+  readonly store: AccountSessionStore | null;
+  readonly nowMs: number;
+}): Promise<{
+  principalId: string;
+  identityId: string;
+  authMethod: AuthMethod;
+  authenticatedAtMs: number;
+  assurance: Assurance;
+} | null> {
+  const { request, provider: rootProvider, store, nowMs } = input;
+  const provider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
+  const cookie = parseCookie(request);
+  if (!cookie) return null;
+  if (!provider || !store || request.signal.aborted)
+    throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+  try {
+    const record = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () => store.load(cookie.id, nowMs),
+    );
+    if (!record) return null;
+    const valid = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () =>
+        verifyCredential(
+          provider,
+          cookie.token,
+          JSON.parse(record.digest),
+          context(cookie.id),
+        ),
+    );
+    if (!valid) return null;
+    const renewIntervalMs =
+      record.principalKind === 'staff' ? 180_000 : 300_000;
+    const nextIdleExpiresAtMs = Math.min(
+      record.absoluteExpiresAtMs,
+      nowMs + idleMs,
+    );
+    if (
+      record.idleExpiresAtMs < nextIdleExpiresAtMs &&
+      record.idleExpiresAtMs - nowMs <= idleMs - renewIntervalMs
+    ) {
+      const touched = await withDeadline(
+        request.signal,
+        storeWriteTimeoutMs(request.signal),
+        () =>
+          store.touch({
+            id: cookie.id,
+            digest: record.digest,
+            nowMs,
+            idleExpiresAtMs: nextIdleExpiresAtMs,
+          }),
+      );
+      if (!touched) throw new Error('Session changed during renewal');
+    }
+    if (request.signal.aborted) throw new Error('Session validation aborted');
+    return {
+      principalId: record.principalId,
+      identityId: record.identityId,
+      authMethod: record.authMethod,
+      authenticatedAtMs: record.authenticatedAtMs,
+      assurance: record.assurance,
+    };
+  } catch {
+    throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+  }
+}
+
+export async function revokeAccountSession(input: {
+  readonly request: Request;
+  readonly provider: KeyProvider | null;
+  readonly store: AccountSessionStore | null;
+  readonly nowMs: number;
+}): Promise<void> {
+  const { request, provider: rootProvider, store, nowMs } = input;
+  const provider = rootProvider
+    ? scopeKeyProvider(rootProvider, request)
+    : null;
+  const cookie = parseCookie(request);
+  if (!cookie) return;
+  if (!provider || !store || request.signal.aborted)
+    throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+  try {
+    const record = await withDeadline(
+      request.signal,
+      storeReadTimeoutMs(request.signal),
+      () => store.load(cookie.id, nowMs),
+    );
+    if (!record) return;
+    const valid = await withDeadline(
+      request.signal,
+      securityDecisionTimeoutMs(request.signal),
+      () =>
+        verifyCredential(
+          provider,
+          cookie.token,
+          JSON.parse(record.digest),
+          context(cookie.id),
+        ),
+    );
+    if (!valid) return;
+    const revoked = await withDeadline(
+      request.signal,
+      storeWriteTimeoutMs(request.signal),
+      () => store.revoke(cookie.id, record.digest, nowMs),
+    );
+    if (!revoked || request.signal.aborted)
+      throw new Error('Session changed during revocation');
+  } catch {
+    throw new RequestFailure('AUTHORIZATION_UNAVAILABLE');
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "method": "WCAG relative luminance on actual stylesheet color pairs; supplemented by manual rendering checks",
+  "pairs": {
+    "body": {
+      "foreground": "#202c25",
+      "background": "#fafaf7",
+      "ratio": 13.865,
+      "minimum": 4.5
+    },
+    "muted": {
+      "foreground": "#56635a",
+      "background": "#fafaf7",
+      "ratio": 6.034,
+      "minimum": 4.5
+    },
+    "button": {
+      "foreground": "#ffffff",
+      "background": "#223c2e",
+      "ratio": 11.974,
+      "minimum": 4.5
+    },
+    "error": {
+      "foreground": "#9b2424",
+      "background": "#fafaf7",
+      "ratio": 7.517,
+      "minimum": 4.5
+    },
+    "focus": {
+      "foreground": "#315e42",
+      "background": "#fafaf7",
+      "ratio": 7.146,
+      "minimum": 3
+    },
+    "inputBoundary": {
+      "foreground": "#6d7a71",
+      "background": "#ffffff",
+      "ratio": 4.494,
+      "minimum": 3
+    }
+  }
+}

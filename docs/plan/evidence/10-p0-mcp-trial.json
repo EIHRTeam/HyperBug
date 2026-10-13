@@ -1,0 +1,837 @@
+{
+  "dateLocal": "2026-10-12",
+  "timezone": "Asia/Tokyo",
+  "scope": "HANDOFF-11 P0 only",
+  "trial": 7,
+  "source": {
+    "at": "2026-10-12T13:50:38.842Z",
+    "commit": "017b27861988707a3aeddbcce6a12c3af26e6e46",
+    "hashes": {
+      "dist/cloudflare-minimum/minimum.mjs": "69b96d6d1a61bebb96660d42328e820b7cf8c4a7767a85bc60b33d0c699812d4",
+      "dist/cloudflare-minimum/rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+      "dist/cloudflare-minimum/source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777",
+      "dist/cloudflare-ingress/ingress.mjs": "43b52986f4b93abdc33b4fe98653d9cba1f36d85930e606a3148a8e1fe58bf69"
+    },
+    "instrumentation": "unchanged production source; no DB/CPU wrapper",
+    "sampling": 1
+  },
+  "account": "aa51b5f3a1a926d4c97fbd0bd7e48646",
+  "profile": "cloudflare-minimum",
+  "plan": "Workers Free, standing user attestation; zone Free Website is distinct",
+  "targetCpuMs": 10,
+  "backup": {
+    "tables": 59,
+    "rows": 197,
+    "foreignKeysValid": true,
+    "sha256": "3cc75fd7c6e9cdbc3b078faa4f4f9dec83fe9f3ed6b8ddd779b23c10c3811755",
+    "explicitUserAuthorization": true,
+    "privateIgnored": true
+  },
+  "deployment": {
+    "provider": "cloudflare-api MCP",
+    "api": {
+      "success": true,
+      "status": 200,
+      "errors": [],
+      "etag": "7c18d879351c4e27ccf12a9a533378259ee3e7ba59bfcc87eb3fa7f540946419"
+    },
+    "ingress": {
+      "status": 200,
+      "success": true,
+      "errors": [],
+      "etag": "5a3cab5e655c903f61ca0ad8b7a7c0847b9a08b0794aae9f7beaf079a35439a1"
+    },
+    "hostname": "acceptance-00bf7332a514.test.eihrteam.org",
+    "domain": {
+      "id": "c361ae85d4018c9e0f5b36a9dc7f196216485193",
+      "zone_id": "91caa1ca5e95ee6983770c84bb7dacd3",
+      "zone_name": "eihrteam.org",
+      "hostname": "acceptance-00bf7332a514.test.eihrteam.org",
+      "service": "hyperbug-10-ingress-00bf7332a514",
+      "environment": "",
+      "cert_id": "d79a820a-0f40-40e6-ac12-f8047ac8e045",
+      "previews_enabled": false,
+      "enabled": true
+    },
+    "workersDevEnabled": false,
+    "previewsEnabled": false
+  },
+  "certificateDns": {
+    "initial": {
+      "at": "2026-10-12T13:56:41.934Z",
+      "certificates": [],
+      "dns": [
+        {
+          "id": "51c34d7f55989e12d270ff10501ae981",
+          "name": "acceptance-00bf7332a514.test.eihrteam.org",
+          "type": "AAAA",
+          "content": "100::",
+          "proxied": true
+        }
+      ],
+      "status": [
+        200,
+        200
+      ]
+    },
+    "pending": {
+      "at": "2026-10-12T13:57:53.454Z",
+      "status": 200,
+      "success": true,
+      "errors": [],
+      "result": {
+        "id": "d79a820a-0f40-40e6-ac12-f8047ac8e045",
+        "status": "pending_validation",
+        "type": "advanced",
+        "hosts": [
+          "eihrteam.org",
+          "acceptance-00bf7332a514.test.eihrteam.org",
+          "*.acceptance-00bf7332a514.test.eihrteam.org"
+        ],
+        "certificate_authority": "google",
+        "validation_method": "txt",
+        "certificates": [],
+        "fields": [
+          "id",
+          "type",
+          "hosts",
+          "primary_certificate",
+          "status",
+          "certificates",
+          "created_on",
+          "validity_days",
+          "validation_method",
+          "validation_records",
+          "certificate_authority"
+        ]
+      }
+    },
+    "validation": {
+      "at": "2026-10-12T13:58:37.588Z",
+      "packStatus": "pending_validation",
+      "validation_method": "txt",
+      "validation_records": [
+        {
+          "status": "valid",
+          "recordName": "_acme-challenge.eihrteam.org",
+          "recordType": "TXT",
+          "fields": [
+            "status",
+            "txt_name",
+            "txt_value"
+          ]
+        },
+        {
+          "status": "processing",
+          "recordName": "_acme-challenge.acceptance-00bf7332a514.test.eihrteam.org",
+          "recordType": "TXT",
+          "fields": [
+            "status",
+            "txt_name",
+            "txt_value"
+          ]
+        },
+        {
+          "status": "processing",
+          "recordName": "_acme-challenge.acceptance-00bf7332a514.test.eihrteam.org",
+          "recordType": "TXT",
+          "fields": [
+            "status",
+            "txt_name",
+            "txt_value"
+          ]
+        }
+      ],
+      "verificationStatus": 200,
+      "verification": []
+    },
+    "active": {
+      "at": "2026-10-12T13:59:14.911Z",
+      "status": 200,
+      "packStatus": "active",
+      "certificates": [
+        {
+          "id": "eca4709f-65a4-4b19-becb-b362d997c3ec",
+          "status": "active",
+          "expires_on": "2027-01-10T13:56:32.000000Z"
+        },
+        {
+          "id": "f56a62b1-f20b-4951-bf31-0bf1c01557b5",
+          "status": "active",
+          "expires_on": "2027-01-10T13:58:48.000000Z"
+        }
+      ]
+    }
+  },
+  "transport": {
+    "host": "oci",
+    "tlsVerification": true,
+    "acceptanceHttpRequests": 0,
+    "records": [
+      {
+        "at": "2026-10-12T13:56:41.038Z",
+        "kind": "dns",
+        "addresses": [
+          "104.21.2.97",
+          "172.67.129.14",
+          "2606:4700:3031::6815:261",
+          "2606:4700:3037::ac43:810e"
+        ],
+        "public": true
+      },
+      {
+        "at": "2026-10-12T13:56:41.066Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:56:56.066Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:57:11.082Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:57:26.569Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:57:41.543Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:57:56.356Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:58:11.536Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:58:26.595Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:58:41.131Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:58:56.152Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-12T13:59:11.166Z",
+        "kind": "tls",
+        "authorized": true,
+        "version": "TLSv1.3",
+        "certificateSha256": "5436d0ef0f7d1025a91e60d2bb5a9b1134c776fb0770920947b83528fdccc331",
+        "ownedHostnamePresent": true
+      }
+    ],
+    "ready": true
+  },
+  "pilot": {
+    "at": "2026-10-12T13:59:55.192Z",
+    "completed": false,
+    "requests": 0,
+    "reason": "Native target stop"
+  },
+  "attributableMvpRequests": 0,
+  "native404": {
+    "records": 34,
+    "perWorker": {
+      "api": 17,
+      "ingress": 17
+    },
+    "apiCpuRangeMs": [
+      0,
+      16
+    ],
+    "ingressCpuRangeMs": [
+      1,
+      3
+    ],
+    "allLabelsAbsent": true,
+    "allGet404OutcomeOk": true,
+    "samples": [
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813575058,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 1,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813574241,
+        "outcome": "ok",
+        "cpuTime": 10,
+        "wallTime": 574,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813574221,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 807,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813575055,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 7,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813582914,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 1,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813582910,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 9,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813583000,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 2,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813581694,
+        "outcome": "ok",
+        "cpuTime": 16,
+        "wallTime": 488,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813582734,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 2,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813582997,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 9,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813581687,
+        "outcome": "ok",
+        "cpuTime": 2,
+        "wallTime": 992,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813582729,
+        "outcome": "ok",
+        "cpuTime": 2,
+        "wallTime": 12,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813582771,
+        "outcome": "ok",
+        "cpuTime": 2,
+        "wallTime": 3,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813583195,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 3,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813583190,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 14,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813582767,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 14,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813582377,
+        "outcome": "ok",
+        "cpuTime": 3,
+        "wallTime": 954,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813582480,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 854,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813583786,
+        "outcome": "ok",
+        "cpuTime": 2,
+        "wallTime": 13,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813583792,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 3,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813583916,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 28,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813583922,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 3,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813584035,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 19,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813584041,
+        "outcome": "ok",
+        "cpuTime": 2,
+        "wallTime": 3,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813584481,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 17,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813584490,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 3,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813584607,
+        "outcome": "ok",
+        "cpuTime": 0,
+        "wallTime": 1,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813584603,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 10,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813582389,
+        "outcome": "ok",
+        "cpuTime": 16,
+        "wallTime": 517,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813582484,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 519,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813584553,
+        "outcome": "ok",
+        "cpuTime": 8,
+        "wallTime": 520,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813584561,
+        "outcome": "ok",
+        "cpuTime": 2,
+        "wallTime": 752,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "ingress",
+        "eventTimestamp": 1791813584549,
+        "outcome": "ok",
+        "cpuTime": 1,
+        "wallTime": 767,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 0
+      },
+      {
+        "worker": "api",
+        "eventTimestamp": 1791813584566,
+        "outcome": "ok",
+        "cpuTime": 9,
+        "wallTime": 514,
+        "label": null,
+        "method": "GET",
+        "path": "other",
+        "status": 404,
+        "exceptions": [],
+        "logsDiscarded": 4
+      }
+    ],
+    "firstGuardOverflow": {
+      "worker": "api",
+      "eventTimestamp": 1791813581694,
+      "outcome": "ok",
+      "cpuTime": 16,
+      "wallTime": 488,
+      "label": null,
+      "method": "GET",
+      "path": "other",
+      "status": 404,
+      "exceptions": [],
+      "logsDiscarded": 4
+    }
+  },
+  "guard": {
+    "independentProcess": true,
+    "absoluteDeadline": "2026-10-12T14:09:17.448Z",
+    "cleanupStarted": {
+      "at": "2026-10-12T13:59:46.677Z",
+      "reason": "native 10ms CPU target or invocation failed"
+    },
+    "result": {
+      "at": "2026-10-12T14:00:04.131Z",
+      "cleaned": true,
+      "reason": "native 10ms CPU target or invocation failed"
+    },
+    "stopUnchanged": true
+  },
+  "headroomBeforePilot": {
+    "estimated": true,
+    "billing": false,
+    "accountWide": true,
+    "d1": {
+      "remainingReads": 4984868,
+      "remainingWrites": 99940
+    },
+    "workers": {
+      "remainingRequests": 99966
+    }
+  },
+  "headroomAfterCleanup": {
+    "estimated": true,
+    "billing": false,
+    "accountWide": true,
+    "d1": {
+      "remainingReads": 4984472,
+      "remainingWrites": 99920
+    },
+    "workers": {
+      "remainingRequests": 99899
+    }
+  },
+  "cleanup": {
+    "at": "2026-10-12T14:00:04.119Z",
+    "resources": {
+      "workers": 0,
+      "domains": 0
+    },
+    "preExistingRowsVerified": 197,
+    "foreignKeysValid": true,
+    "ownedActiveDataRemaining": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "retainedInactivePrincipals": 0,
+    "retainedRemovedKeyIdentities": 4,
+    "appendOnlyAuditPreserved": true,
+    "r2ObjectsCreated": 0,
+    "queuesCreated": 0,
+    "workflowsCreated": 0,
+    "ownedDns": 0,
+    "ownedCertificates": 0,
+    "originalResourceIdsPreserved": true,
+    "originalDnsRecordsUnchanged": true,
+    "originalCounts": {
+      "workers": 2,
+      "domains": 2,
+      "queues": 0,
+      "workflows": 0,
+      "certificates": 3,
+      "dns": 36
+    },
+    "exactRemovedKeyIdentities": 4,
+    "tailProcessTerminal": true,
+    "supervisorTerminal": true,
+    "transportTerminal": true,
+    "ephemeralSecretsRemoved": true,
+    "certificateCleanupAttempt": "MCP exact-pack lookup/delete operation returned certificate-service1406 after guard domain removal; no retry; final complete inventory has no owned pack and preserves all three original pack IDs",
+    "tailDeleteAfterWorkerCleanup": "MCP returns10007 Worker does not exist for both owned tails; local sockets terminated"
+  },
+  "gate": {
+    "tls": "resolved",
+    "cpuAttribution": "unresolved; guard blocks before first labelled request",
+    "standard": "not measured",
+    "minimumIntegratedJourney": "not measured",
+    "minimumFullMetricsQuotaCapacity": "incomplete",
+    "G1": "Not passed",
+    "module11": "Not started",
+    "13.G6": "open"
+  },
+  "automaticReview": {
+    "backupRejectedThenExplicitlyAuthorized": true,
+    "ingressTestSecretRejectedThenExplicitlyAuthorized": true,
+    "remainingRejections": false
+  }
+}

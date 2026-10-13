@@ -1,0 +1,87 @@
+{
+  "at": "2026-10-11T14:47:00.596Z",
+  "baseCommit": "22008fe1efed82a8e969c10e341a42f7ece36f5f",
+  "workingTreeRepair": "apps/api-cloudflare/src/composition.ts: deferred prerequisite guards and unavailable-resource registry isolation",
+  "source": {
+    "at": "2026-10-11T14:45:44.761Z",
+    "commit": "22008fe1efed82a8e969c10e341a42f7ece36f5f",
+    "hashes": {
+      "dist/cloudflare-minimum/minimum.mjs": "69b96d6d1a61bebb96660d42328e820b7cf8c4a7767a85bc60b33d0c699812d4",
+      "dist/cloudflare-minimum/rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+      "dist/cloudflare-minimum/source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777",
+      "dist/cloudflare-ingress/ingress.mjs": "43b52986f4b93abdc33b4fe98653d9cba1f36d85930e606a3148a8e1fe58bf69"
+    },
+    "instrumentation": "Production entry with authorized composition repair; no DB/CPU wrapper",
+    "sampling": 1
+  },
+  "deployment": {
+    "api": true,
+    "ingress": true,
+    "productionBundle": true,
+    "dbCpuInstrumentation": false
+  },
+  "pilot": {
+    "at": "2026-10-11T14:46:45.560Z",
+    "completed": false,
+    "requests": 0,
+    "reason": "fetch failed"
+  },
+  "transportDiagnostic": {
+    "localDns": "198.18.0.0/15 synthetic range",
+    "tlsCode": "ECONNRESET",
+    "certificateVerificationDisabled": false,
+    "failedFetchCountsAsAcceptance": false
+  },
+  "cleanup": {
+    "at": "2026-10-11T14:47:00.596Z",
+    "resources": {
+      "workers": 0,
+      "domains": 0
+    },
+    "preExistingRowsVerified": 185,
+    "foreignKeysValid": true,
+    "ownedActiveDataRemaining": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "retainedInactivePrincipals": 0,
+    "retainedRemovedKeyIdentities": 4,
+    "appendOnlyAuditPreserved": true,
+    "r2ObjectsCreated": 0,
+    "queuesCreated": 0,
+    "workflowsCreated": 0
+  },
+  "headroomBefore": {
+    "at": "2026-10-11T14:45:27.461Z",
+    "estimated": true,
+    "billing": false,
+    "d1": {
+      "remainingReads": 4987882,
+      "remainingWrites": 99520
+    },
+    "workers": {
+      "remainingRequests": 99369
+    }
+  },
+  "headroomAfter": {
+    "at": "2026-10-11T14:47:49.703Z",
+    "estimated": true,
+    "billing": false,
+    "d1": {
+      "remainingReads": 4987882,
+      "remainingWrites": 99520
+    },
+    "workers": {
+      "remainingRequests": 99369
+    }
+  },
+  "ephemeralSecretCopiesRemoved": true,
+  "certificateInventoryContinuation": {
+    "verifiedBy": "Signed-in authorized-account dashboard on2026-10-12",
+    "ownedMatchingCertificateGroups": 0,
+    "certificateMutation": false,
+    "receipt": "10-native-tls-guarded-pilot.json"
+  }
+}

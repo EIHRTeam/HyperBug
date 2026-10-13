@@ -1,0 +1,1 @@
+CREATE INDEX "async_job_terminal" ON "async_jobs" USING btree ("status","updated_at","id");

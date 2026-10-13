@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-13",
+  "method": "manual user testing; user reply all pass",
+  "reportedBy": "user",
+  "nativeComputerUseStoppedAtUserDirection": true,
+  "safariInstalledVersion": "27.0",
+  "versionSource": "local Safari application bundle; user did not separately state version",
+  "checks": {
+    "keyboard": "pass",
+    "fieldTimingCorrectionAndSummary": "pass",
+    "dialogFocusEscapeCancelRestoration": "pass",
+    "voiceOver": "pass",
+    "zoom200PercentAndNarrowWindow": "pass",
+    "touchEmulation": "pass",
+    "reducedMotion": "pass",
+    "safariNavigationBackForward": "pass"
+  },
+  "urls": [
+    "http://127.0.0.1:56230/fixtures/ui.html",
+    "http://127.0.0.1:56230/instance?section=limits"
+  ],
+  "limits": "manual report, no captured speech transcript or physical mobile device claim"
+}

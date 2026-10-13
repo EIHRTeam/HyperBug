@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "applicationName": "HyperBug",
+  "apiBaseUrl": "https://api.example.net",
+  "authBaseUrl": "https://auth.example.net",
+  "mediaOrigins": []
+}

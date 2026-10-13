@@ -1,0 +1,154 @@
+{
+  "recordedAt": "2026-10-11T04:50:34.049893+00:00",
+  "trial": "R11",
+  "acceptance": "Unaccepted: no native scheduled event observed before absolute deadline; cleanup independently verified after guardian authentication failure",
+  "plan": "Workers Free (user-attested)",
+  "cpuLimitMs": 10,
+  "resources": {
+    "worker": "hyperbug-09-native-8a991d016ef4",
+    "hostname": "async-native-8a991d016ef4.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cron": "*/5 * * * *",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused"
+  },
+  "source": {
+    "at": "2026-10-11T03:38:37.649Z",
+    "commit": "4ecc89e23be747edcf3fc159450feb9ca2d6088c",
+    "mode": "fault",
+    "artifactSha256": {
+      "dispatch-worker.mjs": "12bf8878e6a2221f5a6611fd1c0485bb2e4aec8ebe271bde7a093d056166a97e",
+      "rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+      "source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777"
+    },
+    "privateWrapperSha256": "a9be9db7c10f59b0d89b44b1f22e11ea9b49cdff9fbe5c5f0986507e01fce9c2",
+    "extraFaultPreflightQueries": 1,
+    "interruption": "Uncaught named scheduled invocation exception after actual step0 commit; not an OS process kill",
+    "noDeployment": true
+  },
+  "workerStartupMs": 119,
+  "nativeScheduledFrames": 0,
+  "nativeCpuResult": null,
+  "providerHistory": {
+    "at": "2026-10-11T04:47:45.726Z",
+    "scheduledRecords": 0,
+    "errors": null
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-11T03:38:56.375Z",
+      "kind": "Delayed adaptive analytics; not billing",
+      "remainingD1Reads": 4997481,
+      "remainingD1Writes": 99941,
+      "remainingWorkerRequests": 99906
+    },
+    "after": {
+      "at": "2026-10-11T04:49:12.148Z",
+      "kind": "Delayed adaptive analytics; not billing",
+      "remainingD1Reads": 4996341,
+      "remainingD1Writes": 99897,
+      "remainingWorkerRequests": 99867
+    }
+  },
+  "preCleanup": {
+    "at": "2026-10-11T04:47:49.246Z",
+    "jobCheckpoint": 0,
+    "stepWitnessCount": 0,
+    "cancelledJobPreserved": true,
+    "pendingEventPreserved": true,
+    "canonicalTitleCodePoints": 200,
+    "canonicalBodyCodePoints": 32768,
+    "searchIndexAbsent": true
+  },
+  "cleanup": {
+    "at": "2026-10-11T04:50:34.048747+00:00",
+    "independentlyVerified": true,
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 157,
+      "foreignKeysValid": true,
+      "singletonStateRestored": true,
+      "singletonCounts": {
+        "async_minimum_budget": 1,
+        "async_minimum_cursors": 2,
+        "search_budget": 0
+      },
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "original": {
+      "at": "2026-10-11T04:48:21.326Z",
+      "originalWorkerCount": 2,
+      "remainingWorkerCount": 2,
+      "originalWorkersPreserved": true,
+      "originalDomainsPreserved": true,
+      "ownedWorkerAbsent": true,
+      "ownedDomainAbsent": true,
+      "originalSchedulesPreserved": true,
+      "originalQueuesPreserved": true,
+      "originalWorkflowsPreserved": true
+    },
+    "processes": {
+      "tail": {
+        "handle": 51403,
+        "pid": 71010,
+        "terminal": true,
+        "exitCode": 1
+      },
+      "supervisor": {
+        "handle": 14232,
+        "pid": 71014,
+        "terminal": true,
+        "exitCode": 0
+      },
+      "guardian": {
+        "handle": 9520,
+        "pid": 70920,
+        "terminal": true,
+        "exitCode": 1
+      }
+    },
+    "guardian": {
+      "deadlineResult": {
+        "at": "2026-10-11T04:19:28.420Z",
+        "reason": "absolute observation deadline",
+        "cleaned": false,
+        "error": "Command failed: /Users/null/.local/share/fnm/node-versions/v24.21.0/installation/bin/node node_modules/wrangler/bin/wrangler.js whoami"
+      },
+      "manualRecovery": "Refresh authentication, inspect current owned resources/jobs/max source, then remove exact owned resources/data and independently compare baseline"
+    }
+  },
+  "limitations": [
+    "No native interruption/redeployment/resume/CPU result",
+    "Local composed profile and interruption proof remain diagnostics",
+    "Tail terminated with exit1; provider-history/current-D1 checks supply independent absence of observed progress",
+    "No additional capacity reduction or target increase justified by unobserved execution",
+    "Raw DNS inventory unavailable; Worker/custom-domain mappings verified",
+    "09.1f/09.V6 incomplete;09.3e suspended;G1/G2 closed;13.G6 open"
+  ]
+}

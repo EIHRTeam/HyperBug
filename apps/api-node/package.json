@@ -1,0 +1,18 @@
+{
+  "name": "@hyperbug/api-node",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@elysia/node": "1.4.6",
+    "@hyperbug/application": "workspace:*",
+    "@hyperbug/blob-s3": "workspace:*",
+    "@hyperbug/config": "workspace:*",
+    "@hyperbug/database-postgres": "workspace:*",
+    "@hyperbug/observability": "workspace:*",
+    "@hyperbug/security": "workspace:*",
+    "@hyperbug/server": "workspace:*",
+    "graphile-worker": "0.18.0",
+    "pg": "8.23.0"
+  }
+}

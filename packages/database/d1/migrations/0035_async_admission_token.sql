@@ -1,0 +1,1 @@
+ALTER TABLE `async_minimum_budget` ADD `reservation_token` text;

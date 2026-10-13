@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-10T15:35:18.114Z",
+  "plan": "Workers Free (user-attested)",
+  "scope": "Meter/setup refactor; uninstrumented native Cron attempt r4",
+  "cpuLimitMs": 10,
+  "acceptance": "unverified: no native event in the bounded observation window",
+  "resources": {
+    "worker": "hyperbug-09-native-daca3fc46479",
+    "hostname": "async-native-daca3fc46479.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cron": "*/5 * * * *",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused"
+  },
+  "headroomBefore": {
+    "capturedAt": "2026-10-10T15:13:11.742Z",
+    "kind": "Delayed adaptive analytics; not billing",
+    "d1Remaining": {
+      "reads": 4993780,
+      "writes": 99618
+    },
+    "workersRequestsRemaining": 99865
+  },
+  "observation": {
+    "seed": {
+      "at": "2026-10-10T15:17:53.050Z",
+      "pendingCanonicalSource": true
+    },
+    "deadline": {
+      "at": "2026-10-10T15:32:53.940Z",
+      "native": [],
+      "deadlineReached": true
+    },
+    "lastCanonicalState": {
+      "at": "2026-10-10T15:31:44.207Z",
+      "rows": [
+        {
+          "delivered_at": null,
+          "canonical_revision": 1,
+          "search_revision": null,
+          "title": null,
+          "state": null,
+          "attempts": null
+        }
+      ]
+    },
+    "nativeCpuMs": null
+  },
+  "registeredHandlers": [
+    "fetch",
+    "scheduled"
+  ],
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 120,
+      "foreignKeysValid": true,
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "tailStopped": true,
+    "monitorStopped": true,
+    "baselineSingletonsRestoredExactly": true,
+    "rawDns": "Independent DNS absence unverified; custom-domain mapping absent",
+    "originalResources": {
+      "originalWorkersPreserved": true,
+      "originalDomainMappingsPreserved": true,
+      "remainingOriginalWorkers": 2,
+      "remainingOriginalMappings": 2
+    }
+  },
+  "limitations": [
+    "Registration does not prove native delivery",
+    "Latest accepted CPU evidence remains absent; earlier native 20 ms failure remains valid",
+    "No full production root, paid Standard or account-wide Free billing acceptance"
+  ],
+  "headroomAfter": {
+    "capturedAt": "2026-10-10T15:32:03.192Z",
+    "kind": "Delayed adaptive analytics; not billing",
+    "d1Remaining": {
+      "reads": 4992708,
+      "writes": 99585
+    },
+    "workersRequestsRemaining": 99777
+  }
+}

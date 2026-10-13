@@ -1,0 +1,106 @@
+{
+  "recordedAt": "2026-10-10T19:45:35.323Z",
+  "sourceCommit": "f0c9a1d",
+  "preparedFallbackCommit": "f6a1e9e",
+  "plan": "Workers Free (user-attested)",
+  "cpuLimitMs": 10,
+  "acceptance": "unobserved: no native scheduled result within bounded observation",
+  "resources": {
+    "worker": "hyperbug-09-native-219f58b807f6",
+    "hostname": "async-native-219f58b807f6.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cron": "*/5 * * * *",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused"
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-10T18:30:45.558Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4987293,
+      "remainingD1Writes": 99386,
+      "remainingWorkerRequests": 99113
+    },
+    "after": {
+      "at": "2026-10-10T19:45:11.958Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4987103,
+      "remainingD1Writes": 99353,
+      "remainingWorkerRequests": 99051
+    }
+  },
+  "native": [],
+  "canonical": {
+    "capturedAt": "2026-10-10T19:44:40.252Z",
+    "rows": [
+      {
+        "deliveredAt": null,
+        "canonicalRevision": 1,
+        "indexedRevision": null,
+        "deliveryState": null,
+        "attempts": null
+      }
+    ]
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 135,
+      "foreignKeysValid": true,
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "originalComparison": {
+      "at": "2026-10-10T19:45:35.284Z",
+      "originalWorkerCount": 2,
+      "remainingWorkerCount": 2,
+      "originalWorkersPreserved": true,
+      "originalDomainsPreserved": true,
+      "ownedWorkerAbsent": true,
+      "ownedDomainAbsent": true
+    },
+    "watchdog": {
+      "at": "2026-10-10T19:45:11.970Z",
+      "reason": "absolute observation deadline",
+      "cleaned": true
+    },
+    "processes": {
+      "tail": "terminal",
+      "monitor": "terminal",
+      "watchdog": "terminal"
+    }
+  },
+  "limitations": [
+    "Production Minimum function in native-only selective phase-0 probe; not complete production composition acceptance",
+    "No explicit dispatcher tick called; fixture preparation uses actual REST-backed repository producer, not API/auth acceptance",
+    "Single canonical Issue only; maximum body and native quota/job recovery were not run on this full-text source",
+    "No schema migration, target change, paid feature or audit/gate closure",
+    "Higher project targets cannot raise the documented provider Free CPU ceiling",
+    "Raw DNS inventory remains unverified; cleanup covers Worker/custom-domain control-plane mappings."
+  ]
+}
