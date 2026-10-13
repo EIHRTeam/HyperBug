@@ -11,9 +11,9 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
 - Implementation started: Yes; B1 prerequisite evidence consolidated.
 - Completed implementation checklist IDs: 10.1a–e, 10.2b/c/d/e, 10.3a/c/d/e/f.
-- Active/next checklist group: HANDOFF-11 P0 trial7 reports verified remote TLS and restored provider inspection. CPU attribution remains blocked: unlabelled GET404 API CPU16ms triggers the unchanged10ms guard before the first labelled request. No further hosted load; a user decision is needed before changing the stop rule or extending into backend remediation.
-- Last updated: 2026-10-12.
-- Blocking issues discovered: Provider certificate/DNS access and fresh-domain TLS are resolved through MCP. Native CPU overflow16ms on outside-harness404 traffic prevents labelled MVP attribution under the unchanged10ms stop. Standard remains unmeasured by user decision; actual Minimum integration/full metrics/quota attribution/capacity remain incomplete. G1 remains Not passed.
+- Active/next checklist group: [Trial8](../evidence/10-p0-labelled-minimum-pilot.md) stopped after the first labelled instance GET403 lacked native attribution; verified TLS and cleanup complete. The [2026-10-13 decision](../evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13) retains10ms for every harness request. No further hosted load/remediation; report and await new user direction.
+- Last updated: 2026-10-13.
+- Blocking issues discovered: Provider inspection/TLS verified, but labelled instance GET403 has no unique native match, so representative CPU remains unmeasured. Standard unmeasured; actual Minimum integration/full metrics/quota attribution/capacity incomplete. G1 Not passed.
 - Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
 
 ## Step tracking
@@ -28,8 +28,7 @@ The linked module plan owns the detailed checkboxes. Update this table as work p
 
 ## Next actions
 
-Report the remaining CPU stop and obtain the user's decision before another hosted trial, changing its interpretation, or implementing backend remediation outside this P0 scope. [MCP trial7](../evidence/10-p0-mcp-trial.md) proves provider visibility and remote TLS, but no labelled MVP request runs. Never replay cleaned trials or weaken10ms/TLS/security bounds; Standard stays unmeasured and P1 remains gated.
-
+Report [trial8](../evidence/10-p0-labelled-minimum-pilot.md)'s mandatory missing-attribution stop. No further hosted request or remediation is authorized. A new explicit user direction is needed for a bounded investigation of the unmeasurable labelled403 or a fresh pilot. Preserve the [decision's binding conditions](../evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13),10ms/security/TLS bounds, Standard exclusion and later-frontend hold.
 
 ## Next-session cautions
 
@@ -741,3 +740,39 @@ Final MCP P0 verification: installed VitePress1.6.4 documentation build passes; 
 Hosted checkpoint:157591e passes the original formatting failure and both quality jobs advance through contracts. The next high audit failure is the unused frontend generator graph, handled in Module01/11 maintenance records. No API semantics or Module10 gates changed.
 
 Hosted quality closure: repair commits157591e/886da14 are pushed to feat/v1/PR2. Both push and PR quality jobs pass the full lane (including frozen install, format,406 unit/2 contract checks, secrets/licenses, high-severity audit and full build): [PR run38316851149](https://github.com/EIHRTeam/HyperBug/actions/runs/38316851149), [push run38316845131](https://github.com/EIHRTeam/HyperBug/actions/runs/38316845131). Node runtime, Documentation38316851151 and CodeQL38316851226 also pass; workerd/PostgreSQL are still running at this recording checkpoint. Changed engineering/progress relative links and whitespace pass. Final CI observation remains before user handoff; no source modification or additional local application test is needed for this closing record. Module/gate state and protected drafts are unchanged.
+
+### 2026-10-13 — CPU observation decision and fresh labelled Minimum pilot preparation
+
+- Scope and checklist IDs: HANDOFF-11 P0(b), partial10.2a/f and10.3b/g; no gate closure.
+- Progress/change summary: Apply the dated user decision before hosted traffic; prepare fresh trial8 and shared positive-attribution classifier for tail, pilot and finite supervisor.
+- Files/artifacts: [P0 decision and all binding conditions](../evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13), plan user-directed state/EXECUTION, tooling/module10-native-attribution.mjs and private ignored trial8 tooling.
+- Verification: Preparation only; controlled attribution checks and actual fresh native pilot pending.
+- Decisions and deviations: Account for sent label/method/path/status with unique both-root matches. Every harness request retains10ms; overflow, invocation failure, missing CPU or attribution stops. Everything else is retained outside MVP quantiles with method/path/status/count/ranges, unknown origin and account request/CPU consumption. Only the self-imposed observation set changes; platform limit, published thresholds/baselines, degradation and13.G6 unchanged. No extra load/warm-up/wrapper/crypto/backend/path exemption; Standard unmeasured/G1 Not passed.
+- Blockers/open questions: Actual labelled CPU remains unknown; all seven incomplete Module10 checks remain open.
+- Next actions: Fresh inventory/backup, independent finite guard, unchanged production bundles/native tails, verified remote TLS, existing sequential eight-request maximum pilot.
+- Next-session cautions: No trial/name/key/backup reuse; stop and report any labelled breach rather than engineer around it. Preserve protected drafts and append-only history; P1 already complete, no later frontend work.
+
+### 2026-10-13 — Labelled Minimum pilot stopped for missing native attribution
+
+- Scope and checklist IDs: HANDOFF-11 P0(b), partial10.2a/f,10.3b/g;10.G2/G4/G5 unchanged.
+- Progress: Decision applied; fresh TLS verified; exactly1 labelled instance GET403 sent,0 uniquely matched native events. Missing attribution triggers stop; no representative CPU pass/breach, quantile, integration or capacity claim.
+- Change summary: Shared positive-attribution classifier; sequential sent ledger/no redirect/retry; unfiltered native tails and independent finite cleanup. All dated conditions recorded in P0 evidence/progress/plan user-directed state.
+- Files/artifacts: [Pilot report](../evidence/10-p0-labelled-minimum-pilot.md), [scalar receipt](../evidence/10-p0-labelled-minimum-pilot.json), [binding decision](../evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13), tooling helper, README/EXECUTION/master/Module11 log; private ignored trial8 backup/tooling.
+- Verification: Attribution boundary/failure/missing/duplicate checks and three syntax checks pass; native TLSv1.3/exact SAN, first labelled HTTP and mandatory12-second unmatched stop observed.62 tail/80 retained GET404 observations including two11ms events remain out-of-scope with exact path/count/ranges and account-budget disclosure.201 original rows/FKs/all original resources/DNS preserved; owned resources/active data0, exact4 removed key tombstones, all handles terminal/generated secrets removed. Docs build/scoped format/lint/secrets pass; final585-relative-link/receipt/accounting/cleanup/seven-unchecked-ID/diff checks pass. No unchanged application-lane rerun.
+- Decisions and deviations: Every harness request retains10ms; only positive sent label/method/path/status matching defines scope. Unknown-origin observations are recorded outside MVP quantiles but consume account budget. All platform/published baselines/thresholds/degradation/13.G6 requirements unchanged; no extra load/warm-up/wrapper/crypto/backend/path exemption. API upload used direct local API helper with Wrangler OAuth after tool-payload truncation rather than requested MCP/Wrangler command; procedural deviation recorded, other provider operations MCP. Failed local restore order/key timestamp corrected before dependent traffic, exact no-key-write inspected before retry.
+- Blockers/open questions: Labelled403 cause/native attribution unknown. Actual Minimum integration/full metrics/quota/capacity and Standard remain incomplete; G1 Not passed,13.G6 open.
+- Next actions: Stop/report and await explicit new direction; no further pilot, alternative client, edge-policy change or backend remediation.
+- Next-session cautions: Trial8 cleaned; do not reuse names/backup/keys or treat unlabelled11ms as labelled failure. Preserve append-only history/protected drafts/P1 completed scope; no later frontend increment or main/push/merge/PR action.
+
+Final closure: installed VitePress1.6.4 docs build, known-credential scan, scoped oxfmt/oxlint and git diff --check pass;585 relative links, JSON/sent ledger/observation counts/cleanup and all seven unchanged unchecked IDs verified. No application lane repeated. Exact tail termination143/supervisor0/transport0/pilot0 recorded; no remaining owned hosted/local process. Nothing staged or committed; protected root drafts untouched.
+
+### 2026-10-13 — User-authorized P0 checkpoint publication
+
+- Scope and checklist IDs: Commit/push the prepared CPU-decision, positive-attribution helper and trial8 evidence only; no checklist or gate closure.
+- Progress/change summary: User explicitly authorizes publication on feat/v1, superseding this batch's earlier no-push instruction. Pilot remains stopped after labelled instance GET403 lacked native attribution; no new implementation or hosted traffic.
+- Files/artifacts: Prepared Module10 P0 reports/receipt, plan state/EXECUTION, affected evidence and Module10/11 logs, tooling/module10-native-attribution.mjs. Protected root drafts/handoffs and ignored private backups/tooling remain excluded.
+- Verification: Prior focused attribution/syntax/docs/lint/format/secret/585-link/receipt/cleanup checks remain valid; publication hygiene and remote commit verification are performed in this session. Context7 resolve/query2026-10-13: /git/htmldocs for explicit staging, normal branch push and remote-ref verification; no documentation gap affecting the operation. No green application or hosted lanes repeated.
+- Decisions and deviations: Publish one coherent Conventional Commit with a normal non-force origin push.10ms/platform/baselines/degradation/13.G6 unchanged; Standard unmeasured/G1 Not passed/P1-only scope retained.
+- Blockers/open questions: Existing Module10 native attribution/integration/metrics/quota/capacity and Standard gaps remain.
+- Next actions: Complete authorized commit/push and verify origin/feat/v1; no further pilot or remediation without new direction.
+- Next-session cautions: Trial8 cleaned; no private data/protected drafts, main/merge/PR edit, force push or scope extension.

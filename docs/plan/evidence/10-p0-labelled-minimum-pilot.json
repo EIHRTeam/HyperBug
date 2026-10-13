@@ -1,0 +1,2692 @@
+{
+  "dateLocal": "2026-10-13",
+  "timezone": "Asia/Tokyo",
+  "scope": "HANDOFF-11 P0(b), bounded existing pilot; no backend change",
+  "trial": 8,
+  "profile": "cloudflare-minimum",
+  "plan": "Workers Free, standing user attestation",
+  "account": "aa51b5f3a1a926d4c97fbd0bd7e48646",
+  "decision": {
+    "date": "2026-10-13",
+    "reference": "10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13",
+    "positiveAttribution": "sent acceptance label + method/path/status, exactly one native event on each production root",
+    "targetCpuMs": 10,
+    "stopOn": [
+      "cpuTime>10",
+      "attributable invocation failure",
+      "missing CPU",
+      "missing/ambiguous attribution"
+    ],
+    "everythingElse": "retained out-of-scope observations; unknown origin; excluded from MVP quantiles but account-budget consuming",
+    "noExtraLoad": true,
+    "noWarmup": true,
+    "noWrapper": true,
+    "noBackendOrCryptoChange": true,
+    "noPathExemption": true,
+    "platformPublishedThresholdDisclosureAnd13G6Unchanged": true
+  },
+  "source": {
+    "at": "2026-10-13T01:40:36.354Z",
+    "commit": "13917cc61163f64dec3c5dfbf93af15eb7051821",
+    "hashes": {
+      "dist/cloudflare-minimum/minimum.mjs": "69b96d6d1a61bebb96660d42328e820b7cf8c4a7767a85bc60b33d0c699812d4",
+      "dist/cloudflare-minimum/rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+      "dist/cloudflare-minimum/source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777",
+      "dist/cloudflare-ingress/ingress.mjs": "43b52986f4b93abdc33b4fe98653d9cba1f36d85930e606a3148a8e1fe58bf69"
+    },
+    "instrumentation": "unchanged production source; no DB/CPU wrapper",
+    "sampling": 1
+  },
+  "backup": {
+    "tables": 59,
+    "rows": 201,
+    "foreignKeysValid": true,
+    "privateIgnored": true,
+    "sha256": "555a4b18841259969ab87b77861be58e9049c631014a95909286b45260bd3458"
+  },
+  "deployment": {
+    "api": "hyperbug-10-api-697c428d5000",
+    "ingress": "hyperbug-10-ingress-697c428d5000",
+    "hostname": "acceptance-697c428d5000.test.eihrteam.org",
+    "uploadsStatus": [
+      200,
+      200
+    ],
+    "workersDev": false,
+    "previews": false,
+    "providerPathDeviation": "API upload via local direct API helper using Wrangler OAuth; ingress and control-plane inspection via MCP"
+  },
+  "transport": {
+    "host": "oci",
+    "tlsVerification": true,
+    "acceptanceHttpRequests": 0,
+    "records": [
+      {
+        "at": "2026-10-13T01:44:00.530Z",
+        "kind": "dns",
+        "addresses": [
+          "104.21.2.97",
+          "172.67.129.14",
+          "2606:4700:3031::6815:261",
+          "2606:4700:3037::ac43:810e"
+        ],
+        "public": true
+      },
+      {
+        "at": "2026-10-13T01:44:00.555Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:44:15.559Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:44:30.616Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:44:45.584Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:45:00.595Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:45:15.594Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:45:30.604Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:45:45.600Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:46:00.613Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:46:15.610Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:46:30.657Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:46:45.701Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:47:00.629Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:47:16.531Z",
+        "kind": "tls",
+        "authorized": false,
+        "error": "SSLError",
+        "code": 1
+      },
+      {
+        "at": "2026-10-13T01:47:30.644Z",
+        "kind": "tls",
+        "authorized": true,
+        "version": "TLSv1.3",
+        "certificateSha256": "948ace55bfa629f1e2ea0471c617d90097477c04bbd0052a4b2d2c660870d8d4",
+        "ownedHostnamePresent": true
+      }
+    ],
+    "ready": true
+  },
+  "sentRequests": [
+    {
+      "label": "instance",
+      "method": "GET",
+      "path": "/api/v1/instance",
+      "status": 403,
+      "sentAt": "2026-10-13T01:47:55.800Z",
+      "transportError": null
+    }
+  ],
+  "httpReceipt": {
+    "at": "2026-10-13T01:48:01.537Z",
+    "host": "oci",
+    "tlsVerification": true,
+    "records": [
+      {
+        "label": "instance",
+        "status": 403,
+        "clientMs": 38.025437854230404,
+        "errorCode": null,
+        "capability": {}
+      }
+    ]
+  },
+  "pilot": {
+    "at": "2026-10-13T01:48:13.581Z",
+    "completed": false,
+    "requests": 1,
+    "reason": "No attributable native tail event on both workers"
+  },
+  "matchedNativeEvents": [],
+  "labelledCpuBreachesObserved": 0,
+  "labelledCpuStatus": "unavailable; no matching event, neither pass nor breach inferred",
+  "mvpQuantiles": null,
+  "observations": {
+    "origin": "unknown",
+    "stopAndMvpQuantileScope": false,
+    "tail": {
+      "count": 62,
+      "groups": {
+        "api": {
+          "count": 31,
+          "cpuRangeMs": [
+            0,
+            11
+          ],
+          "wallRangeMs": [
+            0,
+            539
+          ]
+        },
+        "ingress": {
+          "count": 31,
+          "cpuRangeMs": [
+            0,
+            2
+          ],
+          "wallRangeMs": [
+            3,
+            866
+          ]
+        }
+      },
+      "samples": [
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065560,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065591,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 1,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065589,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856064605,
+          "outcome": "ok",
+          "cpuTime": 6,
+          "wallTime": 539,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065396,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065414,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856064601,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 776,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065640,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065395,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 3,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065411,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065707,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 3,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065642,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065709,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065558,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065846,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065844,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065884,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 1,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065881,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 5,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065906,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065905,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065972,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065970,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856065413,
+          "outcome": "ok",
+          "cpuTime": 6,
+          "wallTime": 497,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856065410,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 731,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856066419,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 706,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856066423,
+          "outcome": "ok",
+          "cpuTime": 6,
+          "wallTime": 517,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856067902,
+          "outcome": "ok",
+          "cpuTime": 11,
+          "wallTime": 524,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856067898,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 866,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856068848,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856068846,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856069135,
+          "outcome": "ok",
+          "cpuTime": 7,
+          "wallTime": 521,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856069132,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 703,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856069960,
+          "outcome": "ok",
+          "cpuTime": 7,
+          "wallTime": 503,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856069955,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 693,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856070685,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856070683,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 3,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856070745,
+          "outcome": "ok",
+          "cpuTime": 10,
+          "wallTime": 509,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856070733,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 805,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856071587,
+          "outcome": "ok",
+          "cpuTime": 2,
+          "wallTime": 855,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856071592,
+          "outcome": "ok",
+          "cpuTime": 11,
+          "wallTime": 516,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856072500,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856072499,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856072635,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 703,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856072638,
+          "outcome": "ok",
+          "cpuTime": 8,
+          "wallTime": 497,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856073403,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856073401,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 3,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856073456,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 1,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856073455,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 3,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856073756,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 1,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856073753,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 5,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856073848,
+          "outcome": "ok",
+          "cpuTime": 10,
+          "wallTime": 520,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856073844,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 813,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856074941,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 1,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856074939,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 5,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856075153,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856075152,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 4,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856075446,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 1,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856075444,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 5,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856082518,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 1,
+          "label": null,
+          "method": "GET",
+          "path": "/",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "api",
+          "eventTimestamp": 1791856082529,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 0,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 4
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856082516,
+          "outcome": "ok",
+          "cpuTime": 1,
+          "wallTime": 5,
+          "label": null,
+          "method": "GET",
+          "path": "/",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        },
+        {
+          "worker": "ingress",
+          "eventTimestamp": 1791856082527,
+          "outcome": "ok",
+          "cpuTime": 0,
+          "wallTime": 3,
+          "label": null,
+          "method": "GET",
+          "path": "other",
+          "status": 404,
+          "exceptions": [],
+          "logsDiscarded": 0
+        }
+      ]
+    },
+    "retained": {
+      "totalLogEvents": 240,
+      "returnedLogEvents": 240,
+      "nativeInvocations": 80,
+      "perWorker": {
+        "api": 40,
+        "ingress": 40
+      },
+      "methodPathStatusGroups": [
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/",
+          "status": 404,
+          "count": 1,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            1,
+            1
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            6,
+            6
+          ],
+          "wallRangeMs": [
+            497,
+            539
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.backup",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            11
+          ],
+          "wallRangeMs": [
+            0,
+            524
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.bak",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            7
+          ],
+          "wallRangeMs": [
+            0,
+            503
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.dev",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            0
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.live",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            8
+          ],
+          "wallRangeMs": [
+            0,
+            497
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.local",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            0
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.old",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            0
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.prod",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            0
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.production",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            10
+          ],
+          "wallRangeMs": [
+            0,
+            509
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.save",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            7
+          ],
+          "wallRangeMs": [
+            1,
+            521
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.stage",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            1
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.env.staging",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            1,
+            11
+          ],
+          "wallRangeMs": [
+            1,
+            516
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/.git/HEAD",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            6
+          ],
+          "wallRangeMs": [
+            0,
+            517
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/api/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            1
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/app/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            10
+          ],
+          "wallRangeMs": [
+            0,
+            520
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/application/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            0
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/backend/.env",
+          "status": 404,
+          "count": 1,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            0
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/config/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            1
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/env",
+          "status": 404,
+          "count": 1,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            0
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/favicon.ico",
+          "status": 404,
+          "count": 1,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            0
+          ]
+        },
+        {
+          "worker": "api",
+          "method": "GET",
+          "path": "/functions/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            0,
+            1
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/",
+          "status": 404,
+          "count": 1,
+          "cpuRangeMs": [
+            1,
+            1
+          ],
+          "wallRangeMs": [
+            5,
+            5
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            1,
+            1
+          ],
+          "wallRangeMs": [
+            731,
+            776
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.backup",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            1,
+            1
+          ],
+          "wallRangeMs": [
+            4,
+            866
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.bak",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            1
+          ],
+          "wallRangeMs": [
+            4,
+            693
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.dev",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            4
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.live",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            1
+          ],
+          "wallRangeMs": [
+            4,
+            703
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.local",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            4,
+            4
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.old",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            4,
+            4
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.prod",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            3
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.production",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            1
+          ],
+          "wallRangeMs": [
+            4,
+            805
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.save",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            1
+          ],
+          "wallRangeMs": [
+            4,
+            703
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.stage",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            3
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.env.staging",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            2
+          ],
+          "wallRangeMs": [
+            5,
+            855
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/.git/HEAD",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            1
+          ],
+          "wallRangeMs": [
+            3,
+            706
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/api/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            5
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/app/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            1
+          ],
+          "wallRangeMs": [
+            3,
+            813
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/application/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            4
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/backend/.env",
+          "status": 404,
+          "count": 1,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            3
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/config/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            1
+          ],
+          "wallRangeMs": [
+            5,
+            5
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/env",
+          "status": 404,
+          "count": 1,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            3
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/favicon.ico",
+          "status": 404,
+          "count": 1,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            3
+          ]
+        },
+        {
+          "worker": "ingress",
+          "method": "GET",
+          "path": "/functions/.env",
+          "status": 404,
+          "count": 2,
+          "cpuRangeMs": [
+            0,
+            0
+          ],
+          "wallRangeMs": [
+            3,
+            5
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "worker": "ingress",
+          "timestamp": 1791856082530,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/favicon.ico",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856082529,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/favicon.ico",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856082520,
+          "cpuTime": 1,
+          "wallTime": 5,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856082518,
+          "cpuTime": 0,
+          "wallTime": 1,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856075449,
+          "cpuTime": 0,
+          "wallTime": 5,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/functions/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856075446,
+          "cpuTime": 0,
+          "wallTime": 1,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/functions/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856075155,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/application/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856075153,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/application/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856074943,
+          "cpuTime": 0,
+          "wallTime": 5,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/api/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856074941,
+          "cpuTime": 0,
+          "wallTime": 1,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/api/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856074657,
+          "cpuTime": 1,
+          "wallTime": 813,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/app/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856074643,
+          "cpuTime": 10,
+          "wallTime": 520,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/app/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856073757,
+          "cpuTime": 1,
+          "wallTime": 5,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/config/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856073756,
+          "cpuTime": 0,
+          "wallTime": 1,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/config/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856073457,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.stage",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856073456,
+          "cpuTime": 0,
+          "wallTime": 1,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.stage",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856073404,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.dev",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856073403,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.dev",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856073338,
+          "cpuTime": 1,
+          "wallTime": 703,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.live",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856073326,
+          "cpuTime": 8,
+          "wallTime": 497,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.live",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856072502,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.local",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856072500,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.local",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856072442,
+          "cpuTime": 2,
+          "wallTime": 855,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.staging",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856072425,
+          "cpuTime": 11,
+          "wallTime": 516,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.staging",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856071545,
+          "cpuTime": 1,
+          "wallTime": 805,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.production",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856071531,
+          "cpuTime": 10,
+          "wallTime": 509,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.production",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856070686,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.prod",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856070685,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.prod",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856070650,
+          "cpuTime": 1,
+          "wallTime": 693,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.bak",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856070639,
+          "cpuTime": 7,
+          "wallTime": 503,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.bak",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856069834,
+          "cpuTime": 1,
+          "wallTime": 703,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.save",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856069826,
+          "cpuTime": 7,
+          "wallTime": 521,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.save",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856068850,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.old",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856068848,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.old",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856068763,
+          "cpuTime": 1,
+          "wallTime": 866,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.backup",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856068748,
+          "cpuTime": 11,
+          "wallTime": 524,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.backup",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856067125,
+          "cpuTime": 1,
+          "wallTime": 706,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.git/HEAD",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856067115,
+          "cpuTime": 6,
+          "wallTime": 517,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.git/HEAD",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066769,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/functions/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066767,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/functions/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066704,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/application/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066702,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/application/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066644,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/api/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066643,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/api/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066431,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/backend/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066430,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/backend/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066374,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/app/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066373,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/app/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066194,
+          "cpuTime": 0,
+          "wallTime": 5,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/config/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066191,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/config/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066165,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066164,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066140,
+          "cpuTime": 1,
+          "wallTime": 731,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066129,
+          "cpuTime": 6,
+          "wallTime": 497,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066109,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.stage",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066108,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.stage",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856066081,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.dev",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856066080,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.dev",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065974,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.live",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065972,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.live",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065909,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.local",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065906,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.local",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065886,
+          "cpuTime": 0,
+          "wallTime": 5,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.staging",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065884,
+          "cpuTime": 1,
+          "wallTime": 1,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.staging",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065848,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.production",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065846,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.production",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065710,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.prod",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065709,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.prod",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065644,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.bak",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065642,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.bak",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065594,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.save",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065591,
+          "cpuTime": 0,
+          "wallTime": 1,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.save",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065562,
+          "cpuTime": 0,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.old",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065560,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.old",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065415,
+          "cpuTime": 1,
+          "wallTime": 4,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.backup",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065414,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env.backup",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065398,
+          "cpuTime": 0,
+          "wallTime": 3,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.git/HEAD",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065396,
+          "cpuTime": 0,
+          "wallTime": 0,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.git/HEAD",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "ingress",
+          "timestamp": 1791856065377,
+          "cpuTime": 1,
+          "wallTime": 776,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env",
+          "status": 404,
+          "label": null
+        },
+        {
+          "worker": "api",
+          "timestamp": 1791856065368,
+          "cpuTime": 6,
+          "wallTime": 539,
+          "outcome": "ok",
+          "method": "GET",
+          "path": "/.env",
+          "status": 404,
+          "label": null
+        }
+      ],
+      "tailOverlap": "Two observation views overlap; do not add their counts",
+      "sampling": "head_sampling_rate=1; retained CPU-bearing invocation events, application log lines excluded"
+    },
+    "observedAbove10Ms": 2
+  },
+  "headroomDuringTlsBeforePilot": {
+    "sampledAccountWide": true,
+    "delayedAdaptiveEstimates": true,
+    "billingAttribution": false,
+    "remainingRequests": 100000,
+    "remainingD1Reads": 4999248,
+    "remainingD1Writes": 99980,
+    "excludedTrafficStillConsumesRequestAndCpuBudget": true
+  },
+  "headroomAfterCleanup": {
+    "sampledAccountWide": true,
+    "delayedAdaptiveEstimates": true,
+    "billingAttribution": false,
+    "remainingRequests": 99921,
+    "remainingD1Reads": 4998848,
+    "remainingD1Writes": 99960,
+    "excludedTrafficStillConsumesRequestAndCpuBudget": true
+  },
+  "cleanup": {
+    "at": "2026-10-13T01:48:31.569Z",
+    "resources": {
+      "workers": 0,
+      "domains": 0
+    },
+    "preExistingRowsVerified": 201,
+    "foreignKeysValid": true,
+    "ownedActiveDataRemaining": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "retainedInactivePrincipals": 0,
+    "retainedRemovedKeyIdentities": 4,
+    "appendOnlyAuditPreserved": true,
+    "r2ObjectsCreated": 0,
+    "queuesCreated": 0,
+    "workflowsCreated": 0,
+    "originalWorkerDomainIdsPreserved": true,
+    "originalCertificateIdsPreserved": true,
+    "originalDnsRecordsUnchanged": true,
+    "ownedDns": 0,
+    "ownedCertificates": 0,
+    "exactRemovedKeyIdentities": 4,
+    "tailPid": 61511,
+    "tailExit": 143,
+    "supervisorExit": 0,
+    "transportExit": 0,
+    "pilotExit": 0,
+    "ephemeralSecretsRemoved": true
+  },
+  "guard": {
+    "absoluteDeadline": "2026-10-13T02:00:36.266Z",
+    "cleanupStarted": {
+      "at": "2026-10-13T01:48:14.580Z",
+      "reason": "controlled stop"
+    },
+    "result": {
+      "at": "2026-10-13T01:48:31.580Z",
+      "cleaned": true,
+      "reason": "controlled stop"
+    }
+  },
+  "gate": {
+    "G1": "Not passed",
+    "standard": "not measured",
+    "module10": "Blocked",
+    "incompleteChecks": [
+      "10.2a",
+      "10.2f",
+      "10.3b",
+      "10.3g",
+      "10.G2",
+      "10.G4",
+      "10.G5"
+    ],
+    "module11P1": "complete at existing scope only",
+    "release13G6": "open"
+  }
+}

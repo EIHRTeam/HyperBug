@@ -10,6 +10,8 @@ Follow the user's current instructions, applicable repository guidance, and the 
 
 ## Current user-directed suspension
 
+On 2026-10-13 the user applies the [CPU-measurement decision](evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13), authorizing one fresh bounded labelled Minimum pilot. Positive sent-request attribution replaces trial7's all-observed-invocations guard. Every harness request retains 10 ms and stops on overflow/failure/missing attribution; other traffic is recorded outside MVP metrics and still consumes account budget. All linked conditions and other scope/gate restrictions remain binding.
+
 On 2026-10-12, after the P0 report, the user explicitly continued and requested completing P1 (11.1a–g/11.V1), then requested React Compiler, oxlint and oxfmt for the frontend. This scoped sequencing exception supersedes the older SPA hold only for P1. It does not pass G1, close Module10, authorize more P0 load, paid/production/staging work, later frontend increments, push or PR edits. [P1 evidence](evidence/11-p1-foundation.md) records hosting and owned-resource cleanup state.
 
 On 2026-10-11, the user explicitly authorized the narrow Module04 callback-origin CSP repair prepared during10.2d browser acceptance, with security ADR/review and both-profile browser verification. The user subsequently authorized the narrow OAuth/passkey Cloudflare auth-composition prerequisite repair after its10021 upload witness. These extensions apply only to those two repairs; main push, PR #2 merge, paid Standard measurement and SPA remain excluded.
