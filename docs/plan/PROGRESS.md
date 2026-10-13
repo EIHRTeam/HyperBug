@@ -52,7 +52,7 @@ All 16 module 00 guidance checklist items are complete. Module 01 has reproducib
 | Gate | Required evidence | Current state |
 | --- | --- | --- |
 | G0 — Guidance ready | Module 00 skills, registration, and validation | Passed; [evidence](evidence/00-guidance-validation.md) |
-| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; scoped11.1/11.V1 sequencing exception only |
+| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; user-directed Module 11 sequencing exception (2026-10-13); Module 10 remains Blocked |
 | G2 — MVP accepted | Module 13.G1–13.G5 including deployment/recovery evidence | Not passed |
 | Post-MVP backend gates | Backend acceptance before UI in 14, 15, and each provider in 16 | Not started |
 | Markdown representation policy | 07.1 implementation, local determinism/persistence/cost and replacement-bundle cursor/validator evidence | Implemented and locally verified including V7; deployment unclaimed ([07 evidence](evidence/07-content-validation.md)) |

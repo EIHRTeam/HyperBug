@@ -22,7 +22,7 @@ The user applies HANDOFF-11 P0(b): [binding conditions](evidence/10-p0-mcp-trial
 
 ## Module 11 scoped P1 continuation (2026-10-12/13)
 
-After the P0 report the user explicitly continued only11.1a–g/11.V1. The static foundation and React Compiler/oxlint/oxfmt are implemented; actual same-build hosting and zero-owned-resource Pages cleanup are verified. P1 is complete. This overrides the earlier no-SPA instruction only for this scope. G1 remains Not passed, all incomplete Module10 checks remain incomplete, and11.2/11.3/11.V2–V5/Module12 are not authorized. See [P1 evidence](evidence/11-p1-foundation.md).
+After the P0 report the user explicitly continued only11.1a–g/11.V1. The static foundation and React Compiler/oxlint/oxfmt are implemented; actual same-build hosting and zero-owned-resource Pages cleanup are verified. P1 is complete. This overrides the earlier no-SPA instruction only for this scope. G1 remains Not passed, all incomplete Module10 checks remain incomplete, and at that checkpoint later increments were unauthorized. The 2026-10-13 completion decision below extends only Module 11. See [P1 evidence](evidence/11-p1-foundation.md).
 
 ## Start here
 
@@ -50,6 +50,8 @@ Cross-module specifications and accepted direction records live in these English
 | [RATE-LIMITING](../RATE-LIMITING.md), [ADR 0008](../decisions/0008-rate-limit-consistency.md) | Sensitive primary counters, approximate volumetric limits and privacy/retention boundaries | 03.3c–03.3d |
 | [ADR 0009](../decisions/0009-standard-password-login.md) | Standard-profile password login may open after functional account/provider implementation; independent audit and further performance characterization do not gate enablement | 03.2e/03.V5, 04.1d |
 | [PLUGIN-SPEC](../PLUGIN-SPEC.md), [EXTENDING-PLUGINS](../EXTENDING-PLUGINS.md), [ADR 0010](../decisions/0010-plugin-execution-model-and-contracts.md) | Trusted plugin execution model, independently versioned Plugin API/SDK/runtime contract packages, policy invariants, deferred untrusted code hosting, extension-author quickstart | 05.1–05.3 |
+
+Module 11 sequencing decision (2026-10-13): the user extends the P1 exception to the complete Module 11 checklist through HANDOFF-11. G1 remains Not passed, Module 10 remains Blocked and 13.G6 remains open. Local authentication/UI verification is authorized; Module 12 and later work, P0 and hosted traffic are excluded.
 
 ## Module index
 

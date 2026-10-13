@@ -5,9 +5,15 @@ import { createServer } from 'node:https';
 import { once } from 'node:events';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 /** Opt-in protocol fixture only: independent static callback, no API proxy. */
-export async function createAcceptanceBrowserFixture() {
+export async function createAcceptanceBrowserFixture(
+  staticHandler?: (
+    request: IncomingMessage,
+    response: ServerResponse,
+  ) => Promise<void>,
+) {
   const directory = await mkdtemp(
     join(tmpdir(), 'hyperbug-acceptance-browser-'),
   );
@@ -63,6 +69,13 @@ export async function createAcceptanceBrowserFixture() {
         }),
       );
       return;
+    } else if (request.url === '/probe/control') {
+      // Isolated cookie-canary document; the application keeps its exact CSP.
+    } else if (staticHandler) {
+      void staticHandler(request, response).catch(() =>
+        response.writeHead(500).end(),
+      );
+      return;
     } else if (request.url?.startsWith('/oauth/callback?')) {
       callbacks++;
     } else if (request.url !== '/') {
@@ -91,6 +104,8 @@ export async function createAcceptanceBrowserFixture() {
   await new Promise<void>((resolve) => reservation.close(() => resolve()));
   const authOrigin = `https://auth.hyperbug-auth.test:${apiPort}`;
   return {
+    directory,
+    certificatePath: cert,
     tls,
     apiPort,
     origin,

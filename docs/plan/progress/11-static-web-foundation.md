@@ -7,11 +7,11 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 ## Current status
 
 - Status: In progress
-- Delivery scope: MVP frontend; current P1 limited to11.1a–g/11.V1.
-- Prerequisites: G1 remains Not passed; explicit P1 continuation after P0 is a scoped sequencing exception only.
+- Delivery scope: MVP frontend; all Module 11 authorized on 2026-10-13.
+- Prerequisites: G1 remains Not passed; user-directed exception extends to all Module 11; Module 10 remains Blocked.
 - Implementation started: Static foundation and requested React Compiler/oxlint/oxfmt implemented.
 - Completed implementation checklist IDs: 11.1a–g and11.V1 (P1 complete).
-- Active/next checklist group: None authorized;11.2/11.3 and11.V2–V5 remain later increments.
+- Active/next checklist group: B1: 11.2a–e, then B2: 11.3a–e and B3: 11.V2–V5.
 - Last updated: 2026-10-13.
 - Blocking issues discovered: None within P1. Explicit cleanup approval resolves the deletion blocker; P0 CPU attribution and backend G1 remain incomplete.
 - Evidence: [P1 report](../evidence/11-p1-foundation.md), [frontend engineering guide](../../development/FRONTEND.md) and [P0 MCP report](../evidence/10-p0-mcp-trial.md).
@@ -22,15 +22,15 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 | --- | --- | --- | --- |
 | 11.1 | Establish the static application | Complete | P1 report; actual types/lint/build/config/capability checks |
 | 11.V1 | Same-build generic/Pages preview | Complete | Same-build hosting and zero-owned-resource receipt |
-| 11.2 | Implement the browser auth boundary | Not started | Outside authorized P1 |
-| 11.3 | Build accessible reusable UI primitives | Not started | Outside authorized P1 |
+| 11.2 | Implement the browser auth boundary | In progress | Authorized by HANDOFF-11; evidence pending |
+| 11.3 | Build accessible reusable UI primitives | In progress | Authorized by HANDOFF-11; evidence pending |
 
 The linked plan owns the canonical checkboxes. No backend gate or later frontend acceptance is implied.
 
 ## Next actions
 
-1. P1 is complete; no further work is authorized in this increment.
-2. Preserve G1 Not passed and every incomplete Module10 item. Await a separate scope/prerequisite decision before later frontend work.
+1. Complete browser auth (11.2), accessible primitives (11.3) and focused local evidence (11.V2–V5).
+2. Preserve G1 Not passed, Module 10 Blocked and 13.G6 open; no Module 12 or hosted traffic.
 
 ## Next-session cautions
 
@@ -219,3 +219,29 @@ P0 closure checks:585 relative links/receipt/gate/cleanup consistency and git di
 - Blockers/open questions: Existing Module10 native attribution/integration/metrics/quota/capacity and Standard gaps remain.
 - Next actions: Complete authorized commit/push and verify origin/feat/v1; no further pilot or remediation without new direction.
 - Next-session cautions: Trial8 cleaned; no private data/protected drafts, main/merge/PR edit, force push or scope extension.
+
+
+### 2026-10-13 — Module 11 completion begins
+
+- Scope and checklist IDs: HANDOFF-11 authorizes 11.2a–e, 11.3a–e and 11.V2–V5, extending the P1 sequencing exception only to Module 11.
+- Progress: Required guidance/protocol/current source and local fixture inspected; B1 selected.
+- Change summary: Record the dated sequencing decision in EXECUTION, plan entry point, G1 row and owning plan/log.
+- Files/artifacts: Module 11 plan/log, EXECUTION, README and master progress; research ledger will extend FRONTEND.
+- Verification: Initial working tree inspected on feat/v1; implementation checks not yet run. Context7 Query/Form resolve/query and modern-web action search/retrieval performed.
+- Decisions and deviations: Existing bearer revocation provides API-only logout; cookie-authenticated authorization sessions remain separate. No protocol/policy change.
+- Blockers/open questions: None yet; real browser TLS must use trusted local certificates without verification bypass.
+- Next actions: Implement B1, verify once per batch, commit coherent changes; then B2/B3.
+- Next-session cautions: Protected untracked root drafts/handoffs must remain unstaged. No hosted resources/traffic, P0, later modules, push/PR edits; G1 Not passed, Module 10 Blocked, 13.G6 open.
+
+
+### 2026-10-13 — B1 browser auth boundary
+
+- Scope and checklist IDs: 11.2a–e. a/b/c/e verified; 11.2d implemented with cache/epoch unit evidence, browser draft proof reserved for B3.
+- Progress: Memory-only auth, PKCE and API-only logout implemented. Real cross-site SPA login/reload recovery/revocation passes.
+- Change summary: BrowserAuth private token/snapshot boundary, callback cleanup, five-minute one-shot origin-bound redirect state, cancellation/cache/epoch invalidation and account route.
+- Files/artifacts: apps/web/src/{auth,main,app}, routes/account, auth unit invariants, reusable local browser fixture/runners, FRONTEND, [browser receipt](../evidence/11-browser-auth.json).
+- Verification: Node24.21.0/pnpm11.26.0; web typecheck/lint/build pass; focused auth3/foundation5 tests pass; root typecheck passes. Local PostgreSQL18.6, real Chrome155.0.8059.40, generated test certificate trusted without verification bypass: two callbacks, blocked third-party canary, omitted cookies, reload/recovery, revocation401, zero local/session/IndexedDB/cache entries and token-free URL/console checks pass.
+- Decisions and deviations: Existing API-only logout is explicit in UI; authorization-service cookie session remains separate. First canary attempt was refused by app CSP; move only the probe to isolated fixture document, preserving exact app CSP. Temporary trust is removed on fixture cleanup.
+- Blockers/open questions: No B1 blocker. Native dialog/form/draft/browser baseline proof remains B2/B3.
+- Next actions: Commit B1; implement B2 accessible primitives; complete B3 evidence.
+- Next-session cautions: Local fixture intentionally held for the following batches, must terminate and independently verify cleanup. No hosted traffic, G1/Module10/13.G6 change, later module, push or PR edit.

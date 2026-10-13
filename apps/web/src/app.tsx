@@ -1,4 +1,5 @@
-import { StrictMode } from 'react';
+import { StrictMode, useSyncExternalStore } from 'react';
+import { BrowserAuth } from './auth.ts';
 import { createRoot } from 'react-dom/client';
 import {
   QueryClient,
@@ -20,6 +21,7 @@ import type { RuntimeConfig } from './runtime-config.ts';
 interface ApplicationContext {
   config: RuntimeConfig;
   instance: ReturnType<typeof instanceQuery>;
+  auth: BrowserAuth;
 }
 
 const rootRoute = createRootRouteWithContext<ApplicationContext>()({
@@ -53,10 +55,22 @@ const instanceRoute = createRoute({
     'Instance',
   ),
 });
+const accountRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/account',
+  component: lazyRouteComponent(
+    () => import('./routes/account.tsx'),
+    'Account',
+  ),
+});
 
 function makeRouter(context: ApplicationContext) {
   return createRouter({
-    routeTree: rootRoute.addChildren([overviewRoute, instanceRoute]),
+    routeTree: rootRoute.addChildren([
+      overviewRoute,
+      instanceRoute,
+      accountRoute,
+    ]),
     context,
     defaultPreload: 'intent',
     defaultPendingComponent: () => <output>Loading page…</output>,
@@ -83,10 +97,18 @@ export function usePublicConfig() {
   return rootRoute.useRouteContext().config;
 }
 export { instanceRoute };
+export function useAuth() {
+  const { auth } = rootRoute.useRouteContext();
+  return {
+    auth,
+    state: useSyncExternalStore(auth.subscribe, auth.getSnapshot),
+  };
+}
 
 function ApplicationShell() {
   const config = usePublicConfig();
   const instance = useInstance();
+  const { state } = useAuth();
   return (
     <>
       <a className="skip-link" href="#content">
@@ -106,6 +128,9 @@ function ApplicationShell() {
             activeProps={{ 'aria-current': 'page' }}
           >
             Overview
+          </Link>
+          <Link to="/account" activeProps={{ 'aria-current': 'page' }}>
+            Account
           </Link>
           <Link
             to="/instance"
@@ -140,7 +165,7 @@ function ApplicationShell() {
             </button>
           </>
         ) : (
-          <Outlet />
+          <Outlet key={state.epoch} />
         )}
       </main>
       <footer className="site-footer">
@@ -150,14 +175,17 @@ function ApplicationShell() {
   );
 }
 
-export function startApplication(
+export async function startApplication(
   container: HTMLElement,
   config: RuntimeConfig,
+  callback: URLSearchParams | null,
 ) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  const router = makeRouter({ config, instance: instanceQuery(config) });
+  const auth = new BrowserAuth(config, queryClient);
+  if (callback) await auth.completeCallback(callback);
+  const router = makeRouter({ config, instance: instanceQuery(config), auth });
   createRoot(container).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>

@@ -1,7 +1,7 @@
 # 11 — Static web application, authentication client, and UI foundation
 
 Phase: MVP frontend  
-Prerequisites: 10.G1–10.G5 all complete. The user explicitly continued the scoped 11.1/11.V1 P1 foundation after the P0 report; this sequencing exception does not pass G1 or authorize later increments.
+Prerequisites: 10.G1–10.G5 all complete. The user extended the P1 sequencing exception to all Module 11 on 2026-10-13 (HANDOFF-11). G1 remains Not passed and Module 10 remains Blocked; Module 12 and later increments remain unauthorized.
 Progress: [Session log and current status](../progress/11-static-web-foundation.md)  
 Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
@@ -23,11 +23,11 @@ Create a portable static application that consumes the accepted backend, with ac
 
 ### Step 11.2 — Implement the browser auth boundary
 
-- [ ] **11.2a** Implement top-level Authorization Code + PKCE S256 with per-attempt state/verifier and validated callback/return routes using the accepted backend protocol.
-- [ ] **11.2b** Keep access tokens only in memory. If a redirect requires transient state/verifier storage, define a short-lived one-shot policy, clear it after callback, and never put tokens there.
-- [ ] **11.2c** Implement expiry, revocation, logout, and top-level login recovery without persistent refresh tokens or hidden-iframe/third-party-cookie assumptions.
+- [x] **11.2a** Implement top-level Authorization Code + PKCE S256 with per-attempt state/verifier and validated callback/return routes using the accepted backend protocol.
+- [x] **11.2b** Keep access tokens only in memory. If a redirect requires transient state/verifier storage, define a short-lived one-shot policy, clear it after callback, and never put tokens there.
+- [x] **11.2c** Implement expiry, revocation, logout, and top-level login recovery without persistent refresh tokens or hidden-iframe/third-party-cookie assumptions.
 - [ ] **11.2d** Clear or partition user-specific Query caches on identity/permission changes and logout; handle expired auth during edits without leaking drafts between principals.
-- [ ] **11.2e** Use the public API client with `credentials: "omit"` for business calls; keep authorization-service cookie flows separate.
+- [x] **11.2e** Use the public API client with `credentials: "omit"` for business calls; keep authorization-service cookie flows separate.
 
 ### Step 11.3 — Build accessible reusable UI primitives
 

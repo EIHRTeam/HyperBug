@@ -10,6 +10,8 @@ Follow the user's current instructions, applicable repository guidance, and the 
 
 ## Current user-directed suspension
 
+On 2026-10-13 the user directed completing Module 11 through HANDOFF-11. The sequencing exception now covers 11.2a–e, 11.3a–e and 11.V2–V5 in addition to completed P1. G1 remains Not passed, Module 10 remains Blocked and 13.G6 remains open. Only local verification is authorized; no further P0/hosted traffic, later module, paid resource, staging/production, main, push, merge or PR edit is included.
+
 On 2026-10-13 the user applies the [CPU-measurement decision](evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13), authorizing one fresh bounded labelled Minimum pilot. Positive sent-request attribution replaces trial7's all-observed-invocations guard. Every harness request retains 10 ms and stops on overflow/failure/missing attribution; other traffic is recorded outside MVP metrics and still consumes account budget. All linked conditions and other scope/gate restrictions remain binding.
 
 On 2026-10-12, after the P0 report, the user explicitly continued and requested completing P1 (11.1a–g/11.V1), then requested React Compiler, oxlint and oxfmt for the frontend. This scoped sequencing exception supersedes the older SPA hold only for P1. It does not pass G1, close Module10, authorize more P0 load, paid/production/staging work, later frontend increments, push or PR edits. [P1 evidence](evidence/11-p1-foundation.md) records hosting and owned-resource cleanup state.

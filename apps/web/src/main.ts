@@ -1,4 +1,7 @@
 import { loadRuntimeConfig } from './runtime-config.ts';
+import { takeCallback, redirectAttemptKey } from './auth.ts';
+
+const callback = takeCallback();
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing application root');
@@ -25,6 +28,13 @@ loadRuntimeConfig()
   .then(async (config) => {
     document.title = config.applicationName;
     const { startApplication } = await import('./app.tsx');
-    startApplication(container, config);
+    await startApplication(container, config, callback);
   })
-  .catch(startupFailure);
+  .catch(() => {
+    try {
+      sessionStorage.removeItem(redirectAttemptKey);
+    } catch {
+      /* Fail closed. */
+    }
+    startupFailure();
+  });
