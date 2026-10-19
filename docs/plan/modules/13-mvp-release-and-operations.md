@@ -9,7 +9,7 @@ Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
 Make the MVP installable, upgradeable, observable, and recoverable in all three official deployment profiles, with a separately deployable static frontend.
 
-Reader documentation starts at the [documentation index](../../README.md). Its current outlines are preparation for 13.3d, not completed publication or exercised runbooks.
+Reader documentation starts at the [documentation index](../../README.md). Its paired reader content and local runbooks are prepared and verified at the scopes in the Module 13 evidence; 13.3d publication remains incomplete.
 
 Cloudflare Minimum is the formal third profile under [ADR 0012](../../decisions/0012-cloudflare-minimum-formal-profile.md), included in G1/G2. Items 13.1f–13.1g, 13.2g, 13.3f and 13.G6 add the profile's Free-plan packaging, disclosure, budget and recovery evidence; historical gate exclusions are superseded.
 
@@ -37,12 +37,12 @@ Cloudflare Minimum is the formal third profile under [ADR 0012](../../decisions/
 
 ### Step 13.3 — Validate and prepare release artifacts
 
-- [ ] **13.3a** Run required unit/integration/contract/security/browser/migration/storage/plugin suites on the final candidate and archive evidence.
+- [x] **13.3a** Run required unit/integration/contract/security/browser/migration/storage/plugin suites on the final candidate and archive evidence.
 - [ ] **13.3b** Run bounded load/abuse scenarios in authorized staging with authentication/authorization enabled; compare both profiles and frontend bundles against established budgets.
-- [ ] **13.3c** Review dependency/install-script/secret/license findings, produce artifact hashes and reproducible build metadata, and add provenance/signing where supported.
+- [x] **13.3c** Review dependency/install-script/secret/license findings, produce artifact hashes and reproducible build metadata, and add provenance/signing where supported.
 - [ ] **13.3d** Publish English and Simplified Chinese setup, API, extension, troubleshooting, security-reporting, upgrade, backup/restore, and release-note documentation through the VitePress site on GitHub Pages. Document limitations and unverified provider combinations honestly.
-- [ ] **13.3e** Prepare a concrete release checklist with environment, artifacts, migrations, rollback, and smoke checks. Perform production publishing only within actual session authorization.
-- [ ] **13.3f** Publish the mandatory minimum-tier degradation notice: the bilingual reader documentation under `docs/site/guide/` and `docs/site/zh-CN/guide/` states the degradations, the non-negotiable invariants, the compensating controls and the actual password-hash policy, and release notes state when that list or the tier's capabilities change. The engineering disclosure lives in [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md); the site statement must not be weaker than it.
+- [x] **13.3e** Prepare a concrete release checklist with environment, artifacts, migrations, rollback, and smoke checks. Perform production publishing only within actual session authorization.
+- [x] **13.3f** Publish the mandatory minimum-tier degradation notice: the bilingual reader documentation under `docs/site/guide/` and `docs/site/zh-CN/guide/` states the degradations, the non-negotiable invariants, the compensating controls and the actual password-hash policy, and release notes state when that list or the tier's capabilities change. The engineering disclosure lives in [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md); the site statement must not be weaker than it.
 
 ## MVP release gate
 

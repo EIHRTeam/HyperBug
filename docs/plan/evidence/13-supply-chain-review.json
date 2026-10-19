@@ -1,0 +1,129 @@
+{
+  "v": 1,
+  "recordedAt": "2026-10-19T01:43:11.016Z",
+  "scope": "prepared local candidate; no dependency change or publication",
+  "lockfileSha256": "c610f4adc73184dfbaf2f63ff2020316739bbb88276a6bf72076f729fe8183db",
+  "lockfileUnchangedFromProductBaseline": true,
+  "frozenInstall": {
+    "node": "24.21.0",
+    "pnpm": "11.26.0",
+    "exitCode": 0,
+    "layout": "default configured virtual store"
+  },
+  "licenseExpressions": [
+    "0BSD",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "CC-BY-4.0",
+    "CC0-1.0",
+    "ISC",
+    "LGPL-3.0-or-later",
+    "MIT",
+    "MIT OR Apache-2.0",
+    "MPL-2.0",
+    "Python-2.0",
+    "Unlicense"
+  ],
+  "inventoryPackageEntries": 482,
+  "lifecycleScripts": [
+    {
+      "name": "esbuild",
+      "version": "0.18.20",
+      "lifecycle": {
+        "postinstall": "node install.js"
+      }
+    },
+    {
+      "name": "esbuild",
+      "version": "0.25.12",
+      "lifecycle": {
+        "postinstall": "node install.js"
+      }
+    },
+    {
+      "name": "esbuild",
+      "version": "0.28.1",
+      "lifecycle": {
+        "postinstall": "node install.js"
+      }
+    },
+    {
+      "name": "esbuild",
+      "version": "0.28.2",
+      "lifecycle": {
+        "postinstall": "node install.js"
+      }
+    },
+    {
+      "name": "workerd",
+      "version": "1.20260926.1",
+      "lifecycle": {
+        "postinstall": "node install.js"
+      }
+    }
+  ],
+  "allowBuilds": {
+    "esbuild": true,
+    "workerd": true,
+    "sharp": false
+  },
+  "ignoredBuildsCommand": "could not identify automatic ignored builds in current layout; active installed package manifests inspected separately",
+  "audit": {
+    "advisories": {
+      "1102341": {
+        "findings": [
+          {
+            "version": "0.18.20",
+            "paths": [
+              ".>drizzle-kit>@esbuild-kit/esm-loader>@esbuild-kit/core-utils>esbuild"
+            ],
+            "dev": true,
+            "optional": false,
+            "bundled": false
+          }
+        ],
+        "id": 1102341,
+        "title": "esbuild enables any website to send any requests to the development server and read the response",
+        "module_name": "esbuild",
+        "vulnerable_versions": "<=0.24.2",
+        "patched_versions": ">=0.25.0",
+        "severity": "moderate",
+        "cwe": "CWE-346",
+        "github_advisory_id": "GHSA-67mh-4wv8-2f99",
+        "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99"
+      }
+    },
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 1,
+        "high": 0,
+        "critical": 0
+      },
+      "dependencies": 267,
+      "devDependencies": 510,
+      "optionalDependencies": 306,
+      "totalDependencies": 798
+    }
+  },
+  "moderateDisposition": {
+    "advisory": "GHSA-67mh-4wv8-2f99",
+    "path": "drizzle-kit > @esbuild-kit/esm-loader > @esbuild-kit/core-utils > esbuild@0.18.20",
+    "condition": "exposed affected esbuild development server; current release commands do not start that server",
+    "status": "unpatched existing development dependency; no ignore rule/upgrade/policy exception added; do not expose affected serve capability",
+    "runtimeBoundary": "not a selected production application dependency; use of any new tooling server needs reassessment"
+  },
+  "secretScan": {
+    "exitCode": 0,
+    "scope": "repository known-credential scanner; not exhaustive secret absence proof"
+  },
+  "privateVulnerabilityReporting": {
+    "checkedAt": "2026-10-19",
+    "enabled": true,
+    "method": "read-only gh api repos/EIHRTeam/HyperBug/private-vulnerability-reporting",
+    "submitted": false
+  },
+  "provenance": "unsigned source/lock/runtime/artifact metadata only; no trusted signing identity or hosted attestation configured"
+}

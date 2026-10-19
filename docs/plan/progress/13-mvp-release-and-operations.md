@@ -698,3 +698,16 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: Full Minimum recovery/RPO/RTO, current Free password CPU fit, complete quota/billing attribution and instance ceiling unavailable within the blocked-pilot boundary.13.1f/13.2g/13.G6 remain open.
 - Next actions: B4 final candidate matrix, frozen dependency/release review, bilingual remaining reader content and concrete unpublished checklist; then assess13.G1–G6.
 - Next-session cautions: Fresh provider inventories differ from historical counts; preserve the current3Workers/3domains/2DBs/4buckets. All owned resources0; no trial to resume. G1/G2 Not passed,Module10 Blocked,protected drafts unstaged,no publication/push/PR edit.
+
+
+### 2026-10-19 — B4 final candidate and release artifacts
+
+- Scope and checklist IDs:13.3a/c/e/f;13.3d content/build only, publication remains unchecked.
+- Progress: Required local matrix and all six actual-browser lanes pass; paired reader guides/indexes completed and concrete unpublished release checklist/hash metadata prepared.
+- Change summary: Add unsigned manifest tooling, source/artifact/dependency/lifecycle review, current private-reporting destination, completed reader quickstart/extensions/troubleshooting/security/release pages; preserve exact product source/bundles.
+- Files/artifacts: [Release readiness and full26-item assessment](../evidence/13-release-readiness.md),13-release-* /13-browser-* /13-upload-* /13-accessibility-* /13-supply-chain-review /13-reproducibility /13-bundle-continuity,`docs/RELEASE-CHECKLIST.md`,paired reader pages,`tooling/release-manifest.mjs`.
+- Verification: Build/types/lint/API77paths/schema/unit419/contract2/Node130/workerd308/PostgreSQL213/actual-scanner33 pass;12existing actual-R2 opt-in skips explicit. Core browser37/37/38,uploads11/10/10,27axe surfaces0violations. Frozen install,13license expressions,known-secret scan,scoped format/docs/whitespace pass;high/critical audit0,one existing moderate devtool finding reviewed.39app artifacts bit-identical;documentation same-input bytes vary and remain disclosed.153artifact/789source hashes recorded.
+- Decisions and deviations: No dependency/backend/frontend/policy/migration changes. Initial explicit-install layout mismatch corrected by default frozen install. Active lifecycle manifests inspected because ignored-builds cannot identify the layout. No trusted signer/hosted provenance configured;no signing claim. Prior human accessibility and large-collection metrics retain original unchanged-UI scope.
+- Blockers/open questions:13.3b staging,13.3dpublication,Minimum13.1f/13.2g/13.G6 and unchanged Module10/G1/G2 gaps remain. Documentation bit-for-bit reproducibility unavailable; exact final artifacts hashed.
+- Next actions: Final gate/status/checklist/link/cleanup/protected-file audit; commit prepared-but-unpublished assessment. No new test matrix or provider trial is needed.
+- Next-session cautions: All owned local services/private fixture files removed;Free resources0. Unrelated generated evidence restored from clean baseline;13-only refresh intentional. Protected drafts/handoffs unstaged,no publication/push/merge/PR edit or later module.

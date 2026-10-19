@@ -1,36 +1,27 @@
 # Build and manage extensions
 
-[Documentation home](../index.md)
+[Documentation home](../index.md) · [Public API](api.md) · [Security](security.md)
 
-> Status: Outline only. Product steps and examples are pending implementation and verification.
+Native plugins are trusted application code, with the process’s effective privileges. Manifest permissions describe reviewed intent; they are not a sandbox. Plugins provide mechanisms and cannot weaken Core authorization, validation, rate limits, required audit, encryption, sanitization or CORS. Arbitrary untrusted-code hosting is deferred.
 
-**For:** Extension authors and administrators evaluating plugins.  
-**Goal:** Prepare an extension quickstart and lifecycle guide.
+## Author against the public SDK
 
-## Understand trust and Core policy
+Use workspace `@hyperbug/plugin-sdk`, whose version is independent of Core and the Plugin API. It exports `definePlugin`, manifest/settings schemas, lifecycle decisions, hook envelopes, signed-event/capability contracts and CSP descriptors. The package is not published to a registry. Do not import host runtime/server internals into a plugin.
 
-To write: Explain that native plugins are trusted code and cannot weaken Core policy; arbitrary untrusted-code hosting is deferred.
+The actual [minimal example](https://github.com/EIHRTeam/HyperBug/blob/feat/v1/tests/fixtures/plugins/example-notifier.ts) defines `@hyperbug/example-notifier`, version `1.0.0`, trust tier `trusted-native`, API range `^1.0.0`, `notifications:deliver` and `events:publish`. `definePlugin` rejects an invalid manifest at author/build time. This test example echoes an accepted envelope; it is not an installed email notifier or delivered-message claim.
 
-## Build a minimal extension
+Use the [author quickstart](https://github.com/EIHRTeam/HyperBug/blob/feat/v1/docs/EXTENDING-PLUGINS.md) and [versioned specification](https://github.com/EIHRTeam/HyperBug/blob/feat/v1/docs/PLUGIN-SPEC.md) for exact fields and accepted protocol limits. The repository’s plugin unit/contracts and both-runtime persistence/hook suites verify lifecycle, permissions, settings, envelopes and failures.
 
-To write: Reserve the versioned public specification, SDK, manifest, capabilities and conforming example after module 05 acceptance.
+## Configure and manage
 
-## Configure and manage lifecycle
+An instance administrator needs current permission and a recent verified passkey ceremony. Register a compatible manifest first; registration alone runs no plugin code. Configure public values and write-only secrets, then enable only when required configuration is complete. Reads report secret presence, never its value; the management UI clears submitted secrets. Review native code/build provenance before integrating it into the backend.
 
-To write: Cover compatibility checks, public versus secret configuration, enable/disable, upgrades, namespaced data, and explicit removal/retention policy.
+Disable before upgrading; preserve the ID and raise the version. Disable retains settings/data and prevents new invocations. Uninstall requires an explicit retain/delete policy for namespaced plugin data. Review retained jobs, secrets and backups; do not assume uninstall erases external effects or Core history.
 
-## Handle events and failures
+## Handle work and UI safely
 
-To write: Reserve tested hook limits, failure behavior, durable side effects, idempotency and scoped external-service boundaries.
+Sync security hooks have bounded payloads, deadlines and concurrency and fail closed. Deferred reference-only events use the outbox with at-least-once delivery, current registry/permission checks and stable delivery identities. Supply downstream idempotency; a crash after an external effect may duplicate it if the provider lacks an idempotent API. Replay requires trusted authorized operator integration, not arbitrary queue mutation.
 
-## Choose optional integrations
+External services use scoped signed contracts with freshness/replay checks; they never receive arbitrary Core SQL. UI plugins are reviewed build-time descriptors with exact declared CSP origins. Public runtime config cannot load code or scripts. No remote script URL is a runtime installation mechanism.
 
-To write: Keep named provider integrations in the post-MVP roadmap until individually accepted; do not imply they ship with Core.
-
-## Completion requirements
-
-The example uses the public SDK and passes lifecycle, compatibility, authorization and failure tests on both profiles.
-
-## Source references
-
-[Plugin plan](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/05-plugin-foundation.md); [integration plan](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/16-official-integrations.md).
+SMTP/email, SSO providers, source-control connectors and other named integrations remain module 16 work. Do not advertise them as installed because the manifest vocabulary or example exists. Core account recovery remains available through its implemented passkey/recovery-code paths without requiring a mail plugin.

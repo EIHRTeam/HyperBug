@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "recordedAt": "2026-10-19T01:17:56.332Z",
+  "recordedAt": "2026-10-19T01:41:05.415Z",
   "scope": "disposable local only",
   "reports": [
     {
@@ -8,7 +8,7 @@
       "operatorCosts": [
         {
           "index": 0,
-          "elapsedMs": 0.551209000000199,
+          "elapsedMs": 0.4230830000001333,
           "rowsReturned": 1,
           "explain": [
             {
@@ -22,8 +22,8 @@
                 "Total Cost": 1.07,
                 "Plan Rows": 1,
                 "Plan Width": 8,
-                "Actual Startup Time": 0.003,
-                "Actual Total Time": 0.003,
+                "Actual Startup Time": 0.004,
+                "Actual Total Time": 0.004,
                 "Actual Rows": 1,
                 "Actual Loops": 1,
                 "Disabled": false,
@@ -47,8 +47,8 @@
                     "Total Cost": 1.05,
                     "Plan Rows": 1,
                     "Plan Width": 16,
-                    "Actual Startup Time": 0.002,
-                    "Actual Total Time": 0.002,
+                    "Actual Startup Time": 0.003,
+                    "Actual Total Time": 0.003,
                     "Actual Rows": 5,
                     "Actual Loops": 1,
                     "Disabled": false,
@@ -74,8 +74,8 @@
                         "Total Cost": 1.05,
                         "Plan Rows": 1,
                         "Plan Width": 16,
-                        "Actual Startup Time": 0.001,
-                        "Actual Total Time": 0.002,
+                        "Actual Startup Time": 0.003,
+                        "Actual Total Time": 0.003,
                         "Actual Rows": 5,
                         "Actual Loops": 1,
                         "Disabled": false,
@@ -116,7 +116,7 @@
         },
         {
           "index": 1,
-          "elapsedMs": 0.20670800000016243,
+          "elapsedMs": 0.1719169999996666,
           "rowsReturned": 1,
           "explain": [
             {
@@ -189,7 +189,7 @@
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0
               },
-              "Planning Time": 0.023,
+              "Planning Time": 0.014,
               "Triggers": [],
               "Execution Time": 0.004
             }
@@ -197,7 +197,7 @@
         },
         {
           "index": 2,
-          "elapsedMs": 0.1667499999998654,
+          "elapsedMs": 0.13675000000012005,
           "rowsReturned": 4,
           "explain": [
             {
@@ -209,7 +209,7 @@
                 "Total Cost": 1.09,
                 "Plan Rows": 4,
                 "Plan Width": 100,
-                "Actual Startup Time": 0.003,
+                "Actual Startup Time": 0.002,
                 "Actual Total Time": 0.003,
                 "Actual Rows": 4,
                 "Actual Loops": 1,
@@ -234,8 +234,8 @@
                     "Total Cost": 1.09,
                     "Plan Rows": 4,
                     "Plan Width": 100,
-                    "Actual Startup Time": 0.003,
-                    "Actual Total Time": 0.003,
+                    "Actual Startup Time": 0.002,
+                    "Actual Total Time": 0.002,
                     "Actual Rows": 4,
                     "Actual Loops": 1,
                     "Disabled": false,
@@ -270,7 +270,7 @@
                         "Plan Rows": 4,
                         "Plan Width": 100,
                         "Actual Startup Time": 0.001,
-                        "Actual Total Time": 0.002,
+                        "Actual Total Time": 0.001,
                         "Actual Rows": 4,
                         "Actual Loops": 1,
                         "Disabled": false,
@@ -301,15 +301,15 @@
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0
               },
-              "Planning Time": 0.009,
+              "Planning Time": 0.008,
               "Triggers": [],
-              "Execution Time": 0.005
+              "Execution Time": 0.004
             }
           ]
         },
         {
           "index": 3,
-          "elapsedMs": 0.12608399999999165,
+          "elapsedMs": 0.12658300000020972,
           "rowsReturned": 1,
           "explain": [
             {
@@ -346,7 +346,7 @@
                     "Total Cost": 1.02,
                     "Plan Rows": 1,
                     "Plan Width": 56,
-                    "Actual Startup Time": 0.001,
+                    "Actual Startup Time": 0.002,
                     "Actual Total Time": 0.002,
                     "Actual Rows": 1,
                     "Actual Loops": 1,
@@ -425,14 +425,14 @@
       "oldWriter": "frozen 0000 fixture",
       "tables": 55,
       "rows": 62,
-      "backupBytes": 195676,
+      "backupBytes": 195681,
       "blobBytes": 3,
       "blobDigest": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
       "scan": "synthetic clean fixture; no engine claim",
-      "capturedAt": 1792372674076,
-      "restoredAt": 1792372674248,
-      "restoreMs": 168.30099999999993,
-      "totalMs": 720.6007500000001,
+      "capturedAt": 1792374062610,
+      "restoredAt": 1792374062882,
+      "restoreMs": 269.0261659999999,
+      "totalMs": 840.0153339999999,
       "dataLoss": "one deliberate post-capture title update; no captured rows lost",
       "encryptedRead": true,
       "backupPinsPreserved": true,
@@ -444,28 +444,28 @@
       "operatorCosts": [
         {
           "index": 0,
-          "elapsedMs": 2.415541999999732,
+          "elapsedMs": 1.6765829999999369,
           "rowsReturned": 1,
           "rowsRead": 5,
           "rowsWritten": 0
         },
         {
           "index": 1,
-          "elapsedMs": 2.5962500000000546,
+          "elapsedMs": 1.39712499999996,
           "rowsReturned": 1,
           "rowsRead": 1,
           "rowsWritten": 0
         },
         {
           "index": 2,
-          "elapsedMs": 1.8512919999998303,
+          "elapsedMs": 1.455333999999766,
           "rowsReturned": 4,
           "rowsRead": 4,
           "rowsWritten": 0
         },
         {
           "index": 3,
-          "elapsedMs": 1.5883340000000317,
+          "elapsedMs": 1.4417920000000777,
           "rowsReturned": 1,
           "rowsRead": 2,
           "rowsWritten": 0
@@ -481,10 +481,10 @@
       "blobBytes": 3,
       "blobDigest": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
       "scan": "synthetic clean fixture; no engine claim",
-      "capturedAt": 1792372675351,
-      "restoredAt": 1792372675644,
-      "restoreMs": 268.96945800000003,
-      "totalMs": 1403.3956249999997,
+      "capturedAt": 1792374063932,
+      "restoredAt": 1792374064226,
+      "restoreMs": 269.7992499999996,
+      "totalMs": 1341.718292,
       "dataLoss": "one deliberate post-capture title update; no captured rows lost",
       "encryptedRead": true,
       "backupPinsPreserved": true,
@@ -493,20 +493,21 @@
     },
     {
       "profile": "node-artifact-rollback",
-      "source": "9b78e06 backend source unchanged by Module 13",
+      "sourceRevision": "13b962802a3daa7ebda421634e04448aed154234",
+      "priorArtifact": "captured compatible artifact slot; no changed-app-version claim",
       "artifactSha256": "d861dbe0907bee3791ac2eb6b2fb0b8d48003316ae947b7bc657cbb527868290",
       "sameSchema": true,
       "lifecycle": [
         {
           "slot": "candidate",
           "ready": true,
-          "shutdownMs": 7.227041000000099,
+          "shutdownMs": 7.754708999999821,
           "exitCode": 0
         },
         {
           "slot": "restored-prior",
           "ready": true,
-          "shutdownMs": 7.5500419999998485,
+          "shutdownMs": 8.236375000000407,
           "exitCode": 0
         }
       ]

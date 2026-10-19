@@ -7,7 +7,7 @@ Reader documentation is available in two matching versions:
 - [English](site/index.md)
 - [简体中文](site/zh-CN/index.md)
 
-The guides are outlines while the product is under development. / 产品尚在开发中，使用指南目前为提纲。
+The paired guides describe the prepared-but-unpublished candidate; backend/release/real-Free gates remain open. / 双语指南描述已准备但未发布的候选版本；后端、发布与真实 Free 验收门禁仍开放。
 
 ## Repository references
 

@@ -4,7 +4,7 @@
 
 HyperBug is an open-source issue tracker for public feedback and project triage. Start with the task you want to accomplish.
 
-> These reader guides are an initial skeleton, not a released product manual. The repository currently contains backend and persistence foundations; the product workflows, full API and static web application are still planned. See [current implementation status](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/PROGRESS.md). There is no production installation quickstart verified by this documentation.
+> This is the prepared-but-unpublished candidate manual (2026-10-19). Product workflows and local installation/recovery have evidence; hosted backend G1, MVP G2 and real-Free13.G6 remain open. No production or GitHub Pages publication is claimed.
 
 ## Find your guide
 
@@ -22,7 +22,7 @@ HyperBug is an open-source issue tracker for public feedback and project triage.
 | Build an API client | [Public API guide](guide/api.md) |
 | Build or manage a plugin | [Extension guide](guide/extensions.md) |
 | Diagnose a problem or find reporting guidance | [Troubleshooting and help](guide/troubleshooting.md) |
-| Review release changes and compatibility | [Release notes outline](guide/releases.md) |
+| Review release changes and compatibility | [Release notes](guide/releases.md) |
 
 ## Work on HyperBug today
 
@@ -34,12 +34,8 @@ For the existing backend workspace, use [backend development](https://github.com
 - [Implementation plan](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/README.md), [master progress](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/PROGRESS.md), and [source decisions](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/SOURCES.md) track scope, evidence, and gates.
 - MVP includes public feedback, discussion, triage, forms, attachments, search, and extension foundations. Relations, saved views, subscriptions, notifications, bulk/data jobs, and named provider integrations belong to later increments. AI and realtime collaborative editing remain deferred.
 
-## Complete these guides
+## Verification and publication scope
 
-All pages under `guide/` currently have **Outline only** status. Their headings define the intended reading flow; “To write” text specifies the remaining content. Each page records its audience, goal, sources, and completion evidence.
+All14guide paths have matching English/Simplified Chinese content. The public API/client and plugin SDK are workspace artifacts, not published registry packages. Installation, operator recovery, known provider limits, private security reporting and release decisions are documented with their actual verification scope. Use [release notes](guide/releases.md) and [operations](guide/operations.md) before deployment.
 
-Replace an outline with task steps only after the behavior is implemented and verified. A completed guide should contain prerequisites and permissions, numbered actions with expected results, recovery for likely failures, related reading, and the release/environment against which it was checked. Use actual interface labels and safe examples. Add screenshots only from the implemented product.
-
-Keep implementation and security policy in their canonical specifications; explain their user-visible effects here. Verify commands, API examples, configuration fields, support contacts, provider claims, and links before publication. Do not fill gaps with hypothetical commands or screenshots. Reader documentation is maintained in English and Simplified Chinese with matching page paths and scope. Update both versions together; engineering specifications, plans, and session records remain in English. Product localization is separate.
-
-Documentation preparation is tracked under [module 13.3d](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/13-mvp-release-and-operations.md), with its [session record](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/progress/13-mvp-release-and-operations.md). This skeleton completes no release checklist item and opens no implementation gate.
+The VitePress build compiles only this reader tree; engineering plans/evidence remain repository links. Local builds do not publish the site. Preserve matching locale paths and content when updating; product localization is separate. Production/staging decisions and open backend/Minimum gates remain in the [current progress](https://github.com/EIHRTeam/HyperBug/blob/feat/v1/docs/plan/PROGRESS.md).

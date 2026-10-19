@@ -1,0 +1,191 @@
+{
+  "v": 1,
+  "recordedAt": "2026-10-19T01:48:34.013Z",
+  "scope": "local final candidate; no staging, paid Standard or publication",
+  "environment": {
+    "node": "24.21.0",
+    "pnpm": "11.26.0",
+    "vitest": "5.0.1",
+    "postgres": "18.6",
+    "seaweedfs": "4.48",
+    "miniflare": "5.20260926.1-alpha",
+    "chrome": "155.0.8059.80",
+    "axe": "4.14.0",
+    "graphileWorker": "0.18.0",
+    "clamav": "1.5.4"
+  },
+  "matrix": [
+    {
+      "name": "build",
+      "command": "corepack pnpm build",
+      "exitCode": 0,
+      "elapsedMs": 3721,
+      "log": ".local/module13/b4-build.log"
+    },
+    {
+      "name": "types",
+      "command": "corepack pnpm typecheck",
+      "exitCode": 0,
+      "elapsedMs": 2006,
+      "log": ".local/module13/b4-types.log"
+    },
+    {
+      "name": "lint",
+      "command": "corepack pnpm lint",
+      "exitCode": 0,
+      "elapsedMs": 1010,
+      "log": ".local/module13/b4-lint.log"
+    },
+    {
+      "name": "api",
+      "command": "corepack pnpm api:check",
+      "exitCode": 0,
+      "elapsedMs": 1011,
+      "log": ".local/module13/b4-api.log"
+    },
+    {
+      "name": "db",
+      "command": "corepack pnpm db:check",
+      "exitCode": 0,
+      "elapsedMs": 1567,
+      "log": ".local/module13/b4-db.log"
+    },
+    {
+      "name": "unit",
+      "command": "corepack pnpm test:unit",
+      "exitCode": 0,
+      "elapsedMs": 9549,
+      "log": ".local/module13/b4-unit.log"
+    },
+    {
+      "name": "contract",
+      "command": "corepack pnpm test:contract",
+      "exitCode": 0,
+      "elapsedMs": 1038,
+      "log": ".local/module13/b4-contract.log"
+    },
+    {
+      "name": "node",
+      "command": "corepack pnpm test:node",
+      "exitCode": 0,
+      "elapsedMs": 34474,
+      "log": ".local/module13/b4-node.log"
+    },
+    {
+      "name": "workerd",
+      "command": "corepack pnpm test:workerd",
+      "exitCode": 0,
+      "elapsedMs": 144017,
+      "log": ".local/module13/b4-workerd.log"
+    },
+    {
+      "name": "postgres",
+      "command": "corepack pnpm test:postgres",
+      "exitCode": 0,
+      "elapsedMs": 135132,
+      "log": ".local/module13/b4-postgres.log"
+    },
+    {
+      "name": "scanner",
+      "command": "corepack pnpm test:scanner",
+      "exitCode": 0,
+      "elapsedMs": 109591,
+      "log": ".local/module13/b4-scanner.log"
+    }
+  ],
+  "counts": {
+    "unit": {
+      "passed": 419,
+      "skipped": 0
+    },
+    "contract": {
+      "passed": 2,
+      "skipped": 0
+    },
+    "node": {
+      "passed": 130,
+      "skipped": 8
+    },
+    "workerd": {
+      "passed": 308,
+      "skipped": 2
+    },
+    "postgres": {
+      "passed": 213,
+      "skipped": 2
+    },
+    "scanner": {
+      "passed": 33,
+      "skipped": 0
+    }
+  },
+  "optionalSkips": "12 pre-existing opt-in actual-R2 cases without selected private provider config; not disabled required tests",
+  "browser": [
+    {
+      "lane": "core",
+      "profile": "node",
+      "command": "node tooling/postgres-test-cluster.mjs node --import tsx tests/fixtures/web-product-local.ts --profile=node",
+      "exitCode": 0,
+      "elapsedMs": 20759
+    },
+    {
+      "lane": "core",
+      "profile": "standard",
+      "command": "node tooling/postgres-test-cluster.mjs node --import tsx tests/fixtures/web-product-local.ts --profile=standard",
+      "exitCode": 0,
+      "elapsedMs": 22400
+    },
+    {
+      "lane": "core",
+      "profile": "minimum",
+      "command": "node tooling/postgres-test-cluster.mjs node --import tsx tests/fixtures/web-product-local.ts --profile=minimum",
+      "exitCode": 0,
+      "elapsedMs": 22203
+    },
+    {
+      "lane": "uploads",
+      "profile": "node",
+      "command": "node tooling/postgres-test-cluster.mjs node --import tsx tests/fixtures/web-product-local.ts --profile=node --uploads",
+      "exitCode": 0,
+      "elapsedMs": 34138
+    },
+    {
+      "lane": "uploads",
+      "profile": "standard",
+      "command": "node tooling/postgres-test-cluster.mjs node --import tsx tests/fixtures/web-product-local.ts --profile=standard --uploads",
+      "exitCode": 0,
+      "elapsedMs": 33360
+    },
+    {
+      "lane": "uploads",
+      "profile": "minimum",
+      "command": "node tooling/postgres-test-cluster.mjs node --import tsx tests/fixtures/web-product-local.ts --profile=minimum --uploads",
+      "exitCode": 0,
+      "elapsedMs": 32906
+    }
+  ],
+  "browserChecks": {
+    "node": 37,
+    "standard": 37,
+    "minimum": 38
+  },
+  "uploadChecks": {
+    "node": 11,
+    "standard": 10,
+    "minimum": 10
+  },
+  "accessibility": {
+    "profiles": 3,
+    "surfacesPerProfile": 9,
+    "violations": 0,
+    "manual": "prior Module12 human acceptance retained at its recorded unchanged-UI scope; not repeated or expanded"
+  },
+  "scannerSnapshot": "existing signed Module12 snapshot; unchanged48-hour freshness and signature checks enforced by passing actual-scanner suite",
+  "publication": false,
+  "verificationSource": {
+    "runBase": "13b962802a3daa7ebda421634e04448aed154234",
+    "retainedEquivalentBase": "c089c64ebb0e7de9a4f47899c0df2639a907a34b",
+    "tree": "f9c9a955d6a6e816cc90bf23a57f9e24e11dc661",
+    "reason": "local B3 commit subject lowercased after verification; identical trees"
+  }
+}

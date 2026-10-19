@@ -4,7 +4,7 @@
 
 HyperBug 是一个面向公众反馈与项目分诊的开源问题跟踪平台。请从你想完成的任务开始阅读。
 
-> 这些读者指南目前只是初步骨架，并非已发布产品的完整手册。仓库现已具备后端和持久化基础；产品流程、完整 API 和静态 Web 应用仍在规划中。请查看[当前实现进度](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/PROGRESS.md)。本文档尚未验证完整产品的生产安装流程。
+> 这是2026-10-19已准备但未发布的候选手册。产品工作流与本地安装/恢复已有证据；托管后端G1、MVP G2与真实Free的13.G6仍未通过。不宣称生产或GitHub Pages已发布。
 
 ## 找到适合你的指南
 
@@ -22,7 +22,7 @@ HyperBug 是一个面向公众反馈与项目分诊的开源问题跟踪平台�
 | 开发 API 客户端 | [公共 API 指南](guide/api.md) |
 | 开发或管理插件 | [扩展指南](guide/extensions.md) |
 | 诊断问题或了解报告方式 | [故障排查与帮助](guide/troubleshooting.md) |
-| 查看发布变更与兼容性 | [发布说明提纲](guide/releases.md) |
+| 查看发布变更与兼容性 | [发布说明](guide/releases.md) |
 
 ## 参与当前开发
 
@@ -34,12 +34,8 @@ HyperBug 是一个面向公众反馈与项目分诊的开源问题跟踪平台�
 - [实现计划](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/README.md)、[总体进度](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/PROGRESS.md)和[来源决策](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/SOURCES.md)记录范围、证据与门禁。
 - MVP 涵盖公众反馈、讨论、分诊、表单、附件、搜索和扩展基础。问题关联、保存视图、订阅、通知、批量与数据任务及具体服务商集成属于后续增量。AI 和实时协同编辑仍暂缓实现。
 
-## 完善这些指南
+## 验证与发布范围
 
-`guide/` 下所有页面目前均标记为“仅为提纲”。标题定义预期阅读顺序，“待补充”文字说明后续需要撰写的内容。每篇都记录了读者、目标、依据和完成条件。
+全部14条指南路径均有对应英文/简体中文内容。公共API/客户端及插件SDK是工作区产物，未发布到注册表。安装、运营恢复、提供方限制、私密安全报告及发布决策均注明实际验证范围。部署前阅读[发布说明](guide/releases.md)与[运维](guide/operations.md)。
 
-只有在行为实现并验证后，才能用操作步骤替换提纲。完整指南应包含前置条件与权限、编号操作步骤和预期结果、常见失败的恢复方法、相关资料，以及验证所用版本和环境。使用实际界面名称和安全示例；截图必须来自已实现的产品。
-
-实现与安全策略仍由权威规范维护，这里解释用户可见的影响。发布前核实命令、API 示例、配置字段、支持联系方式、服务商兼容性和链接，不用假设的命令或截图填补空白。读者文档同时维护英文和简体中文版本，页面路径和范围保持对应，修改时同步更新。工程规范、计划和会话记录仍使用英文；产品本身的本地化是独立事项。
-
-文档准备工作归属[模块 13.3d](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/13-mvp-release-and-operations.md)，详见[会话记录](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/progress/13-mvp-release-and-operations.md)。本骨架不代表任何发布检查项完成，也不开放任何实现门禁。
+VitePress仅构建此读者目录；工程计划/证据通过仓库链接访问。本地构建不会发布站点。更新时保持语言路径与内容同步；产品本地化是独立事项。生产/staging决策及未通过的后端/Minimum门禁见[当前进度](https://github.com/EIHRTeam/HyperBug/blob/feat/v1/docs/plan/PROGRESS.md)。
