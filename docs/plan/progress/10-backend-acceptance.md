@@ -1,0 +1,817 @@
+# 10 progress — Backend acceptance and public API client
+
+Plan: [Detailed checklist](../modules/10-backend-acceptance.md)  
+Master: [Overall progress](../PROGRESS.md)  
+Required protocol: [Execution and handoff rules](../EXECUTION.md)
+
+## Current status
+
+- Status: Blocked
+- Delivery scope: MVP backend gate
+- Prerequisites: 00–09 complete. This is the mandatory gate before SPA development.
+- Implementation started: Yes; B1 prerequisite evidence consolidated.
+- Completed implementation checklist IDs: 10.1a–e, 10.2b/c/d/e, 10.3a/c/d/e/f.
+- Active/next checklist group: [Trial8](../evidence/10-p0-labelled-minimum-pilot.md) stopped after the first labelled instance GET403 lacked native attribution; verified TLS and cleanup complete. The [2026-10-13 decision](../evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13) retains10ms for every harness request. No further hosted load/remediation; report and await new user direction.
+- Last updated: 2026-10-13.
+- Blocking issues discovered: Provider inspection/TLS verified, but labelled instance GET403 has no unique native match, so representative CPU remains unmeasured. Standard unmeasured; actual Minimum integration/full metrics/quota attribution/capacity incomplete. G1 Not passed.
+- Evidence: [Client](../evidence/10-contract-client-validation.md), [upload closure](../evidence/10-upload-closure.md), [three-profile matrix](../evidence/10-backend-matrix.md).
+
+## Step tracking
+
+| Step | Purpose | State | Evidence |
+| --- | --- | --- | --- |
+| 10.1 | Complete public contracts and client | Complete | [B2](../evidence/10-contract-client-validation.md) |
+| 10.2 | Execute the backend MVP acceptance matrix | 10.2b/c/d/e verified; a/f partial | [B4 matrix](../evidence/10-backend-matrix.md) |
+| 10.3 | Establish measurable performance and operational readiness | Local baselines/basic readiness verified; b/g partial | [B5 report](../evidence/10-performance-readiness.md) |
+
+The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
+
+## Next actions
+
+Report [trial8](../evidence/10-p0-labelled-minimum-pilot.md)'s mandatory missing-attribution stop. No further hosted request or remediation is authorized. A new explicit user direction is needed for a bounded investigation of the unmeasurable labelled403 or a fresh pilot. Preserve the [decision's binding conditions](../evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13),10ms/security/TLS bounds, Standard exclusion and later-frontend hold.
+
+## Next-session cautions
+
+A passing mocked API test is not evidence of Workers/D1/R2 or Node/PostgreSQL/S3 compatibility. Keep unavailable deployment checks explicitly blocked.
+
+Do not infer completed implementation from this initialized record. Inspect the current repository and prior session entries before continuing.
+
+## Session log
+
+Every session affecting this module MUST append an entry following the [required template](../EXECUTION.md#required-session-entry-template), including progress, a change summary, verification, next actions, and next-session cautions. This includes planning, investigation, failed attempts, and documentation-only work.
+
+### 2026-09-17 — Plan initialization
+
+- Scope and checklist IDs: Defined module 10; no implementation checklist items executed.
+- Progress: Created the detailed module plan and this paired progress record.
+- Change summary: Established ordered work, dependencies, acceptance evidence, and continuity requirements for backend acceptance and public api client.
+- Files/artifacts: `docs/plan/modules/10-backend-acceptance.md`; `docs/plan/progress/10-backend-acceptance.md`.
+- Verification: Reviewed planning scope against the initial architecture and cross-module boundaries. Package-wide documentation checks are recorded in master progress; application/runtime tests were not run because this session only created plans.
+- Decisions and deviations: Follow the source reconciliations in [SOURCES](../SOURCES.md). No new implementation deviation approved.
+- Blockers/open questions: None resolved by implementation; close the module's design/compatibility decisions during its ordered steps.
+- Next actions: Complete prerequisites, then begin 10.1.
+- Next-session cautions: A passing mocked API test is not evidence of Workers/D1/R2 or Node/PostgreSQL/S3 compatibility. Keep unavailable deployment checks explicitly blocked.
+
+### 2026-09-20 — Minimum-tier acceptance separation planned
+
+- Scope and checklist IDs: Planning only. Added 10.2f and 10.3g, and extended 10.1a to cover the instance capability document. G1's scope is unchanged and no checklist item was checked.
+- Progress: Recorded that every acceptance environment states its deployment tier and quota headroom, that minimum-tier runs are labelled and excluded from the G1 evidence set, and that quota-aware measurements form their own evidence set.
+- Change summary: Extended the module plan with the tier items, the OpenAPI amendment and a source-coverage pointer.
+- Files/artifacts: `docs/plan/modules/10-backend-acceptance.md`; [FREE-TIER-PROFILE](../../FREE-TIER-PROFILE.md); this record.
+- Verification: Documentation-only session; the package-wide validator result is in the master session entry. No acceptance run occurred and G1 remains closed.
+- Decisions and deviations: The minimum tier is accepted by 13.G6 only and never substitutes for a gate item in this module.
+- Blockers/open questions: Free-plan measurement access is required for 10.3g; without it the evidence stays explicitly missing.
+- Next actions: Keep G1 scoped to the two first-class profiles; add the instance capability document during the OpenAPI consolidation in 10.1a.
+- Next-session cautions: Never merge minimum-tier measurements into standard-profile baselines or cite them as G1 evidence.
+
+
+### 2026-09-28 — Worktree consolidation and scope hold
+
+- Scope and checklist IDs: G1 planning only; no acceptance item.
+- Progress: Existing uncommitted work was inventoried and committed by dependency; no new checklist or gate was closed.
+- Change summary: Retained prior backend acceptance planning and verified that G1 was not marked passed by local tests.
+- Files/artifacts: This progress record, its paired plan where changed, and the [consolidation record](../evidence/2026-09-28-worktree-consolidation.md); commit details are in Git history.
+- Verification: Node 24.21.0 frozen offline install, typecheck, lint, Drizzle history, formatting, build, docs build, secret/license scans, and 301 local tests passed; a clean committed-source retry also passed 301. This is repository/local evidence only; see the linked record for the first clean-run timeout and exact limits.
+- Decisions and deviations: Respect the user-directed hold on new features; audits and Argon2id performance work remain suspended, Free tier disabled, Module 04/09 scope bounded, and SPA unstarted.
+- Blockers/open questions: The defined deployed two-profile acceptance matrix remains incomplete.
+- Next actions: Do not start the SPA; resume Module 10 only after its backend prerequisites and user direction.
+- Next-session cautions: Preserve applied migration files and ignored local/audit snapshots. Inspect the actual worktree and target environment before any future operation.
+
+### 2026-10-05 — Review remediation B3 verified
+
+- Scope and checklist IDs: 10.2b/10.2e (B3 supporting evidence only).
+- Progress: B3 complete locally; overall mission continues at B4. Existing module status/checklists and G1/G2/13.G6 are unchanged.
+- Change summary: Expanded both-store negative/concurrency/migration cases; no full acceptance checkbox or G1 gate closes. Real-Free and Standard deployment evidence stay pending.
+- Files/artifacts: Owning stores/routes/schema/tests and specifications listed in the [cross-module remediation record](../evidence/2026-10-05-review-remediation.md#b3-instance-roles-and-token-bound-assurance-2026-10-05). D1 0024/0025; PostgreSQL 0023/0024.
+- Verification: Final local matrix **916 passed / 18 optional-provider skips** (349 unit, 1 contract, 121 Node, 262 workerd/D1 emulation, 183 real isolated PostgreSQL 18.6). Typecheck, lint, Drizzle check (old timestamp warnings), docs build, tracked/new-source formatting and diff checks pass. Root formatting flags only supplied untracked review files; reports untouched. No actual deployment/provider claim. Initial wiring/schema/fixture failures and focused primary-agent security review are recorded in the linked evidence.
+- Decisions and deviations: Independent instance role and immutable presented-credential facts; configured default 300 s replaces hardcoded 900 s. No policy weakening, new protocol or new ADR required for B3; formal Minimum ADR remains B8.
+- Blockers/open questions: None for B3. Independent Sonnet review unavailable (model not callable); no independent review claimed. Atomic account/role/plugin audit remains B4.
+- Next actions: B4 audit transaction/failure cases, recovery-code step-up and passkey CAPTCHA forwarding, then B5–B15 in the approved order.
+- Next-session cautions: Never stage SECURITY.md or supplied reviews; preserve historical migration/audit rows, apply schema before adapters, inspect upgrade role recipient, and require new passkey login for old tokens. No SPA or later-module audit resume.
+
+### 2026-10-05 — Review remediation B4 accepted locally
+
+- Scope/checklist IDs: Approved B4 post-completion correction to 04.1c/d, 04.2f, 04.3c/V5 and 05.2a/05.3d, with data/security/acceptance dependencies. No later-module audit or gate expansion.
+- Progress/change summary: Prepared neutral audit port; atomic both-store account/role/plugin/recovery/enrollment writes, conditional denial guards, one bounded settings transaction and atomic uninstall cleanup. Recovery generation checks immutable ceremony freshness; passkey CAPTCHA admission precedes challenge consumption. B3 last-administrator serialization retained.
+- Files/artifacts: [Detailed B4 record](../evidence/2026-10-05-review-remediation.md#b4-atomic-administration-audit-recovery-freshness-and-passkey-captcha-2026-10-05), application ports, both adapters/server, shared rollback/stale and configured-CAPTCHA fixtures, contracts/specifications and paired reader guides.
+- Verification: Focused affected D1/workerd **10 passed** and real isolated PostgreSQL **18.6 13 passed**, no skips. Typecheck/lint/boundaries/scoped format/diff, documentation/all runtime builds and credential-signature scan pass; local Minimum journey adds 7 passes; broad unchanged lanes intentionally not repeated under the user's “Test less, write more” preference. Actual duplicate-audit failures roll back every listed mutation; stale generation preserves codes. Initial fixture errors corrected. Primary focused review recorded; no Sonnet or independent-review claim.
+- Decisions/blockers: No schema/deployment/provider change or B4 blocker. Standalone session/link/redeem events retain their prior path; later audit remains suspended. G1/G2 closed, 13.G6 open.
+- Next actions/cautions: Commit B4, then B5 conditional session renewal and B6–B15. Keep primary validation/revocation, atomic audit, last-admin locks and required UV/CAPTCHA. Preserve protected files, old SQL/audit history and test measurement artifacts.
+
+### 2026-10-05 — Review remediation B5 conditional session renewal
+
+- Scope/checklist IDs: Approved B5 correction to 04.2c with 02 session-port and 10 acceptance dependencies.
+- Progress/change summary: Primary session load now includes kind/idle expiry; requests validate current state and digest every time, renew only when due (User five minutes, Staff three minutes), and avoid writes when absolute expiry prevents growth. Conditional SQL and original ceremony facts remain unchanged.
+- Files/artifacts: [B5 record](../evidence/2026-10-05-review-remediation.md#b5-conditional-session-renewal-2026-10-05), application/D1/PostgreSQL/server session files, shared actual-adapter renewal contract, AUTH-FLOWS and paired reader guides.
+- Verification: Focused D1/workerd **4 passed**, real isolated PostgreSQL 18.6 **5 passed**, no skips; final changed renewal contract rerun on both stores. Covers intervals, near-idle/absolute expiry, concurrent tabs and immediate logout/owned revocation/credential revision rejection. Typecheck/lint/boundaries/scoped formatting/diff and documentation build pass. Broad unchanged tests omitted per user direction.
+- Decisions/blockers: No schema/deployment/crypto change or blocker. Concurrent due observations may each perform a safe conditional renewal; no global cache. Existing 30-minute/seven-day issuance retained, and the misleading shorter-Staff-lifetime documentation claim corrected. Gates unchanged.
+- Next actions/cautions: Commit B5, then B6 request-scoped authorization facts reuse and measured read-query counts. Preserve primary validation, recent-authentication timestamp, monotonic expiry and revocation semantics; never stage protected files.
+
+### 2026-10-05 — Review remediation B6 request-scoped authorization reuse
+
+- Scope/checklist IDs: Approved B6 correction to 04.2e and 06.2d/V4, with guarded plugin/content and 10 acceptance dependencies. Later audit remains suspended.
+- Progress/change summary: Built-in DB resolvers share exact-ID fact promises within one original HTTP Request; authoritative visibility seeds project facts and private membership admission shares its loader. Every permission evaluation retains its own resource/credential binding; decisions/token verification remain uncached.
+- Files/artifacts: [B6 record](../evidence/2026-10-05-review-remediation.md#b6-request-scoped-authorization-facts-2026-10-05), server resolver/guards/handler wiring, shared actual-adapter query/revocation contract and AUTH-FLOWS.
+- Verification: Both focused D1/workerd and real PostgreSQL 18.6 suites **9 passed each**, plus token-assurance unit **3 passed**, no skips. Measured anonymous list **5→4**, Staff list **11→7** database statements with the in-memory test key source; no unmeasured production count claim. Role removal/suspension/private visibility changes take effect on new requests; B2 negatives and existing query/index plans pass. Typecheck/lint/boundaries/scoped format/diff and documentation build pass.
+- Decisions/blockers: Actual authenticated count supersedes the plan's rough ~5 estimate. No schema/deployment/ADR/permission change or blocker. Gates unchanged; production key overhead and real-Free limits remain B7/B15.
+- Next actions/cautions: Commit B6, then B7 imported key reuse/per-purpose registry/request snapshots with immediate revocation. Keep cache lifetime at one Request, separate decisions/credentials, and retain authoritative project seed provenance. Preserve protected files and historical evidence.
+
+### 2026-10-05 — Review remediation B7 key-material reuse
+
+- Scope/checklist IDs: Approved B7 post-completion correction to 03 key lifecycle/admission, with 04/05 route and 10 acceptance dependencies.
+- Progress/change summary: Bounded imported key reuse by exact secret digest; fresh purpose-filtered primary registry loads and request-only snapshots, including abuse preparse handoff and standalone account/OAuth helpers. Password admission bounds retained.
+- Files/artifacts: ADR 0006, providers/registries/server wiring and shared key-material contract; [B7 evidence](../evidence/2026-10-05-review-remediation.md#b7-imported-key-reuse-and-request-lifecycle-snapshots-2026-10-05).
+- Verification: Focused new provider/abuse/D1 checks 13, real PostgreSQL 18.6 contract 1 and admission handoff 10 passed; typecheck/lint/boundaries pass. Preliminary affected route checks recorded separately in evidence. No real-Free CPU or independent-review claim.
+- Decisions/blockers: Request-local lifecycle only; sources and authoritative state reread on new requests. No schema/deployment or blocker. G1/G2 closed, 13.G6 open.
+- Next actions/cautions: Commit B7 then B8 formal Minimum ADR/profile/password accounts. Preserve complete administrative/backup registry inspection, shared password concurrency, audit history and protected files.
+
+### 2026-10-05 — Review remediation B8 formal Minimum profile
+
+- Scope/checklist IDs: Approved B8 to 03 tier/crypto/admission, 04 account journeys, 10/13 profile gates, with 01 composition and 02 contracts dependencies.
+- Progress/change summary: ADR 0012 supersedes old floor/gate exclusions; canonical tier/new acknowledgement, public peppered PBKDF2 passwords with bounded strength policy, durable login lockout/CAPTCHA, standard Argon2id upgrades and sensitive-route-only activation. Separate Minimum entry omits Wasm. Bilingual disclosures and active plans synchronized.
+- Files/artifacts: [B8 evidence](../evidence/2026-10-05-review-remediation.md#b8-formal-cloudflare-minimum-profile-2026-10-05), ADR 0012, roots/config/security/server/contracts/builds and focused fixtures; no database migration.
+- Verification: Selected config/audit/provider/activation 36, Minimum journey 7, real PostgreSQL 18.6 account/upgrade journey 1 and final admission 19 passed; typecheck/lint/boundaries/docs pass. Bundle and denylist sizes recorded, initial fixture failures corrected. Local evidence only, no Argon2id performance or independent review claim.
+- Decisions/blockers: Authorized Minimum-only offline-strength deviation disclosed; historical v1 audit rows preserved. G1/G2 now require all three profiles and stay closed; additional real-Free 13.G6 open. Actual CPU/startup remains B15.
+- Next actions/cautions: Commit B8 then B9 risk-tiered limits. Preserve scoped key/concurrency bounds, one-use permits, stronger-hash refusal, expected credential revision, append-only histories, protected files and remaining holds.
+
+### 2026-10-05 — Review remediation B9 risk-tiered limits
+
+- Scope/checklist IDs: Approved B9 correction to 03.3c/d and 06 content admission, with 10 acceptance dependencies; later audit suspended.
+- Progress/change summary: Closed category policy preserves identity all-version counters; content requires approximate principal/project shedding and one primary current-version principal counter. Rotation's content reset is disclosed in ADR 0008.
+- Files/artifacts: Security policy/providers, RATE-LIMITING, ADR 0008 and shared actual-store HTTP fixture; [B9 evidence](../evidence/2026-10-05-review-remediation.md#b9-risk-tiered-content-admission-2026-10-05).
+- Verification: Unit 17, D1 content/issue 2 and PostgreSQL 18.6 content/issue 2 passed; typecheck/lint/boundaries/scoped format/diff pass. One counter, rotation, identity continuity, 429 and approximate-outage no-write verified. Initial fixture corrections recorded.
+- Decisions/blockers: No schema/deployment or blocker; approximate project shedding is not a durable quota. Production budgets remain B15. No independent review claim; gates unchanged.
+- Next actions/cautions: Commit B9, then B10 explicit cache policy. Preserve identity all-version limits, mandatory content shedding, trusted IDs, primary fail-closed behavior and protected drafts.
+
+### 2026-10-05 — Review remediation B10 response cache policy
+
+- Scope/checklist IDs: Approved B10 amendment to 06.2e with 03 HTTP trust and 10 acceptance dependencies.
+- Progress/change summary: Anonymous instance metadata alone is public for 60 seconds with weak ETag/304 and Origin/Authorization/Cookie variation. Credentialed/error/other routes stay no-store; handler overrides cannot opt in. No Workers Cache or shared content cache enabled.
+- Files/artifacts: Server policy/hook/instance handler, shared HTTP fixture, API/security specs and bilingual guides; [B10 evidence](../evidence/2026-10-05-review-remediation.md#b10-server-owned-response-cache-table-2026-10-05).
+- Verification: Selected Node/workerd HTTP 6 passed / 62 intentionally deselected; typecheck/lint/boundaries/scoped format/diff/docs pass. Native/set override defenses and Origin errors remain closed. Initial response-inference issue corrected.
+- Decisions/blockers: No schema/deployment or blocker. Context7 cache/pricing gaps recorded; real Free request accounting B15. Gates unchanged.
+- Next actions/cautions: Commit B10, then B11 bounded expired cleanup only. Keep global Origin checks, credential/cache separation, metadata Vary, no shared content cache and audit history/protected drafts.
+
+### 2026-10-05 — Review remediation B11 bounded expired cleanup
+
+- Scope/checklist IDs: Approved B11, partial 09.3d and dependent data/security/account/acceptance retention.
+- Progress/change summary: Fixed indexed cleanup of expired credentials/receipts/counters and D1 lockouts on existing schedulers; 25 rows/target, eight D1/seven PG statements. Audit and history preserved.
+- Files/artifacts: [B11 record](../evidence/2026-10-05-review-remediation.md#b11-bounded-expired-cleanup-2026-10-05), application/adapters/roots, D1 0026/PG 0025 indexes/snapshots and DATA-MODEL/MIGRATIONS.
+- Verification: Focused D1 1, PostgreSQL 18.6 1 and Node scheduler 2 pass; typecheck/lint/boundaries/db history checks pass. Initial fixture/generation issues corrected in linked record.
+- Decisions/blockers: Credential/challenge post-expiry retention uses configured default one day; other records stored expiry. 09.3d remains partial; sustained/deployed retention and broader module scope open. Gates unchanged.
+- Next actions/cautions: Commit B11 then B12 unkeyed receipts; preserve old SQL/snapshots/audit and protected drafts. No queue/workflow or blob cleanup expansion.
+
+### 2026-10-05 — Review remediation B12 one-shot receipts
+
+- Scope/checklist IDs: Approved B12, 06.2c non-audit/V3 and dependent data/acceptance contracts.
+- Progress/change summary: Explicit unkeyed issue/comment intents skip receipts; keyed replay remains 24 hours. D1 captures committed result within batch; comment last-mutation witness fences edit history.
+- Files/artifacts: [B12 record](../evidence/2026-10-05-review-remediation.md#b12-one-shot-mutation-receipts-2026-10-05), identity/intents/adapters, D1 0027/PG 0026 and specs.
+- Verification: Focused D1/workerd 4 and PostgreSQL 18.6 4 pass, including three-statement reductions and concurrent losers/keyed replay; types/lint/boundaries/docs pass. Broad matrix B15.
+- Decisions/blockers: No gate or suspended-audit closure; nullable column leaves history unchanged.
+- Next actions/cautions: Commit B12 then B13; migrate before adapters, preserve atomic side records, protected drafts and old SQL.
+
+### 2026-10-05 — Review remediation B13 deadline/config consolidation
+
+- Scope/checklist IDs: Approved B13, 01/03 runtime bounds with 04/10 dependencies.
+- Progress/change summary: Named security/read/write deadlines, parsed store settings bound to request/nested signals; local safe debug diagnostics. Six unimplemented retention settings now reject explicit values; expired-session retention active.
+- Files/artifacts: [B13 record](../evidence/2026-10-05-review-remediation.md#b13-named-request-scoped-deadlines-and-active-configuration-2026-10-05), config/bounds/helper/root changes and bilingual security guide.
+- Verification: Unit security/config 9 and Node HTTP deadline 3 pass; types/lint/boundaries/docs pass. Call-site corrections recorded.
+- Decisions/blockers: Store defaults provisional 1000 ms pending B15 actual cold/p99 sizing; no gate closure or retention expansion.
+- Next actions/cautions: Commit B13 then B14; preserve per-request signal scoping, fail-closed decisions, safe diagnostics, history/protected drafts.
+
+### 2026-10-05 — Review remediation B14 composition/plugin bounds
+
+- Scope/checklist IDs: Approved B14, 01 route composition/05.1d/05.3c; 03/04/07/10 contract dependencies.
+- Progress/change summary: Six explicit-dependency route modules preserve schemas/hooks; payload JSON bytes and eight plugin/point slots enforced, including timed-out native work. Sampling explicit per environment. B6 media fact scope refreshed after object acquisition.
+- Files/artifacts: [B14 record](../evidence/2026-10-05-review-remediation.md#b14-route-composition-plugin-bounds-and-explicit-sampling-2026-10-05), server route/helper extraction, plugin runtime/spec, Wrangler/types and fixtures.
+- Verification: Focus10 plugin, Node33, Workers9 and media22 pass; composed final local matrix937 passed/18 optional-provider skips, with fresh-migration count corrected and focused2 pass. Types/lint/boundaries/build/db/docs/secret scan pass; query timing drift restored.
+- Decisions/blockers: Primary focused review only; actual Free metrics and final production sampling B15. G1/G2/13.G6 unchanged. Native CPU cannot be preempted and timeout never releases still-running capacity.
+- Next actions/cautions: Commit B14 then authorized B15 inventory/backup/migrations/metrics/cleanup; preserve exact dependency/schema/hooks, permission refresh before bytes, protected drafts and histories.
+
+### 2026-10-05 — Review remediation B15 measurements and cleanup
+
+- Scope and checklist IDs: Approved B15/10.2e–f/10.3a–f evidence dependency; no new module/gate completion.
+- Progress: B1–B15 implementation/evidence/owned cleanup recorded; Free acceptance remains incomplete.
+- Change summary: Recorded actual Minimum path metrics and cleanup; corrected 10.2f to include Minimum functional G1 evidence under ADR 0012 while separately attributing Free quotas.
+- Files/artifacts: module 10 acceptance wording and B15 report/JSON; [B15 measurements and cleanup](../evidence/2026-10-05-b15-live-measurements.md), [receipt](../evidence/2026-10-05-b15-live-metrics.json), [remediation record](../evidence/2026-10-05-review-remediation.md).
+- Verification: Reused B14 matrix 937 passed / 18 optional-provider skips. B15 Minimum 7 passed; Node timeout/stall 2 passed / 31 intentionally unselected (earlier incorrect filter selected zero); actual R2 2 passed / 6 intentionally unselected. Live 10/10 logins, scoped path/cleanup checks pass; final compile/lint/build/docs/format/secret results in linked record. No broad rerun or new automated tests.
+- Decisions and deviations: 1,000 ms defaults cover observed D1 trips (537 samples, max 284 ms); production sampling 0.1, test/staging 1; ten native PBKDF2 slots at the Minimum root. Cleanup retains FK-required tombstones and permanent keys rather than disabling history protections. Primary focused review only; Sonnet unavailable.
+- Blockers/open questions: Billing attribution unavailable; instrumented login CPU 20–47 ms exceeds nominal Free 10 ms. Successful live CAPTCHA passkey login, Standard measurements and complete quota/recovery evidence unverified. G1/G2 remain closed, 13.G6 open.
+- Next actions: Obtain missing billing/Free CPU/live CAPTCHA/Standard evidence; no G1 opening or SPA.
+- Next-session cautions: Test Workers/domain removed and tails stopped; mutable owned rows absent. One deleted User, archived private project, deleted issue/three comments plus immutable history remain; two owned keys are removed identities. Never stage protected drafts/reviews/HANDOFF; preserve baseline rows, migrations, audit/history, no SPA or Argon2id performance work.
+
+### 2026-10-09 — Module 08 B1 dependency handoff
+
+- Scope and checklist IDs: Module 08 08.1a–e public-semantics batch; no owning-module checklist closure.
+- Progress: Search runtime/both-store/Free-budget acceptance remains pending; B1 design and fixture preparation do not satisfy G1 or 13.G6.
+- Change summary: Documented dependency boundary and prepared shared search contract/fixtures; details in [Module 08 progress](08-search-and-query.md).
+- Files/artifacts: This record; `docs/SEARCH-SPEC.md`, contracts search types and shared search corpus; [B1 evidence](../evidence/08-search-validation.md).
+- Verification: One B1 pass: types/lint/boundaries/scoped TypeScript formatting/diff and nine new-document local links pass; unit 354/contract 1 pass. Exact commands in linked evidence; new parser fixtures, runtime search and hosted behavior remain unverified.
+- Decisions and deviations: Follow the approved Module 08 handoff scope and README's handler-before-dispatch interpretation. No normative baseline deviation.
+- Blockers/open questions: User approval of specification/bounds/AST/endpoint shape precedes B2; runtime and dispatch evidence remain open.
+- Next actions: Approve the concrete B1 contract, then execute Module 08 B2–B4 within the named checklist boundaries.
+- Next-session cautions: Preserve existing owning-module status/remainders, protected drafts and all gate states; do not infer deployment/Free-plan acceptance from local checks.
+
+### 2026-10-09 — Module 08 B2 compiler dependency
+
+- Scope and checklist IDs: 08.1b/08.2a/b/d and 08.V1/V2; no independent owning-module checklist closure.
+- Progress: 08.V1/V2 parser/store evidence passes locally on both stores; lifecycle/stale authorization/query/tier evidence still pending. G1/G2 remain closed, 13.G6 open.
+- Change summary: User approved B1; implemented bounded parser and parameterized native search with current canonical predicates, fixed-window keysets and batch hydration.
+- Files/artifacts: Application/database search modules, D1 0028/PG 0027 SQL/schema metadata, shared native fixtures, SEARCH-SPEC/ADR; [B2 evidence](../evidence/08-search-validation.md#b2--parser-and-dual-store-compilers-2026-10-09).
+- Verification: Unit 6/contract 1; selected D1/workerd14 and real isolated PG18.6 14 pass (final narrow refinements replace three results each). Types/lint/boundaries/db histories/local migrations pass; exact commands/first failures in evidence.
+- Decisions and deviations: Shared Unicode lowercase/NFC preprocessing resolves observed C-locale case mismatch without changing canonical projection. Additive derived-only migrations; no remote application or normative-document edit.
+- Blockers/open questions: No B2 blocker; B3/B4 and Module 09 dispatch/queue acceptance remain open.
+- Next actions: B3 authorization/readiness/lifecycle/representative measurements, then B4 handlers/tier budgets.
+- Next-session cautions: Preserve prior histories, protected drafts, owning-module remainders and gate states; emulated/local evidence is not hosted/actual Free-plan evidence.
+
+### 2026-10-09 — B3 lifecycle implementation checkpoint
+
+- Scope and checklist IDs: 08.2c/f/g and 08.V3/V4; Module 08 owns this batch.
+- Progress: B1/B2 committed; B3 in progress, unverified. Inspecting inherited index-store changes before integration.
+- Change summary: Bounded resumable initial indexing consumes canonical Module 07 projections; conditional revision/visibility fences prevent stale writes. PostgreSQL native position limits require token-sequence phrase rechecks.
+- Files/artifacts: Application search-index port and both adapter search-index implementations; shared SEARCH-SPEC/evidence will record final behavior.
+- Verification: Not run for B3; prior B2 results remain recorded in ../evidence/08-search-validation.md.
+- Decisions and deviations: User approval of B2 persists. No normative edits or scope expansion; dispatch and queue/retry remain Module 09 handoffs.
+- Blockers/open questions: B3 routes/readiness and larger-data evidence remain unfinished.
+- Next actions: Complete B3 implementation, run one relevant verification pass, record results and commit.
+- Next-session cautions: Preserve protected root drafts, canonical projection policy and closed G1/G2/open 13.G6; no hosted claims.
+
+### 2026-10-09 — B3 local acceptance
+
+- Scope and checklist IDs: 08.2c/f/g, 08.V3/V4; Module 08 owns implementation.
+- Progress: Both stores and composed HTTP routes verified; lifecycle/readiness and representative measurements complete locally.
+- Change summary: Approved search/suggestions use shared project authorization; stale visibility/membership/text cannot grant results. Bounded explicit backfill, incomplete-index errors, one-second store deadline and token-sequence phrase rechecks preserve canonical access.
+- Files/artifacts: Application/index ports, dual-store adapters, server/runtime bindings, existing shared suites; SEARCH-SPEC/ADR0013; ../evidence/08-search-validation.md B3 and dual-store query JSON.
+- Verification: Combined selected scope 10 checks per profile pass; types/lint/boundaries pass. Exact first failures/narrow repairs/metadata are in linked evidence; no hosted acceptance.
+- Decisions and deviations: Candidate ceilings 4096/256 total project Issues, 60-second operational delay target awaiting scheduling, no partial successful index. PostgreSQL bulk-load GIN pending scan investigated and VACUUM result recorded; no query-side vacuum.
+- Blockers/open questions: B4 events/quota/reindex remain; Module 09 dispatch and queue/retry open. No Module 07 remainder or integration/release gate closed.
+- Next actions: Commit B3, implement/verify B4 within Module08 scope.
+- Next-session cautions: Preserve protected untracked drafts, prior migrations, canonical content bounds, G1/G2 closed and 13.G6 open; local evidence cannot claim real Free CPU or quotas.
+
+### 2026-10-09 — B4 implementation checkpoint
+
+- Scope and checklist IDs: 08.2e/h, local 08.V5/V6; Module08 owns implementation, dispatch stays Module09.
+- Progress: B3 committed faa04f8; B4 written, verification pending.
+- Change summary: Canonical revision-reference/outbox handler, replay suppression, administrator-guarded one-page reindex, singleton atomic Minimum daily reservation and D1 row/statement metering. No public reindex endpoint or scheduler.
+- Files/artifacts: Search budget/index/application ports, dual adapters and new D1 0029/PG0028 budget migration families; server/composition and shared native fixtures.
+- Verification: Migration generation completed/SQL inspected; B4 static/runtime/migration checks not yet run.
+- Decisions and deviations: Conservative search allocation leaves provider quota for other modules; provider-global accounting/hosted CPU remains independent acceptance. Existing outbox mutation IDs resolve immutable timeline revisions, without changing payloads.
+- Blockers/open questions: Local checks/measurements pending; production dispatch/queue/retry and real Free-plan evidence remain open.
+- Next actions: Run one B4 relevant pass, fix failures narrowly, record evidence and commit; then requirement-by-requirement handoff audit.
+- Next-session cautions: Preserve earlier migrations and protected drafts; no normative edits, remote rollout or gate closure.
+
+### 2026-10-09 — B4 local acceptance and authorized handoff completion
+
+- Scope and checklist IDs: 08.V1–V6 backend-acceptance dependency; no Module10 gate closed.
+- Progress: All four authorized batches implemented and locally verified; 08.1a–e, 08.2a–d/f–h, 08.V1–V4 and local 08.V6 complete. 08.2e handler/08.V5 replay-rebuild pass; combined dispatch/queue checkboxes stay open. Module08 remains In progress.
+- Change summary: Local search parser/store/HTTP, stale authorization, quotas and representative plans recorded for both stores plus configured Minimum; queue/hosted acceptance remains future integration.
+- Files/artifacts: Application/server/runtime search ports; dual-store compilers/index/budget adapters and 0029/0028 migrations; existing shared native/unit fixtures; SEARCH-SPEC/ADR0013; [B4 evidence and requirement audit](../evidence/08-search-validation.md#b4--version-aware-indexing-and-tier-budgets-2026-10-09), query/reindex JSON and module/master records.
+- Verification: Composed selected scope D1/workerd22 and real isolated PG18.6 20 pass; unit7/contract1 pass; migration fresh/upgrade/application and db:check pass; final typecheck/lint/boundaries pass. Final narrowed PostgreSQL semantics/plan pass, including no canonical Seq Scan, <=4097 probes/node and zero denied-project Issues/document scan loops. Exact commands, failed assertions/imports/plan attempts, local metadata and limitations are in linked evidence.
+- Decisions and deviations: PostgreSQL logical LIMIT alone failed physical scan bounds; recursive keyset probes plus independent canonical/text materialization fix it without widened ceilings or planner-wide settings. Conservative Minimum ledger is not provider-global billing/CPU evidence. No normative edit or baseline deviation; user approval persists.
+- Blockers/open questions: No blocker within authorized handoff scope. Module09 dispatch/queue/retry/reconciliation and provider-global headroom, Module10 composed acceptance and actual Free CPU/quota 13.G6 remain open.
+- Next actions: Commit verified B4 as the fourth batch; stop Module08 implementation. Later authorized Module09 connects 08.2e dispatch and completes 08.V5; Module10/13 supply remaining gate evidence.
+- Next-session cautions: Preserve feat/v1 batch history, protected untracked drafts, earlier migrations, current canonical authorization and numeric ceilings. No remote rollout/push, SPA or Module07/14 expansion. G1/G2 stay closed and 13.G6 open; local evidence must not be promoted to hosted acceptance.
+
+### 2026-10-10 — Module 09 B3 search/plugin dispatch and crash recovery
+
+- Scope and checklist IDs: 09.1c/09.1d, 09.2d, 09.V1/V2/V5; close 08.2e/08.V5 integration handoffs.
+- Progress: Connected consumers and both-store injected failure/HTTP outage acceptance pass; Module 08 checklist is now complete at its documented local scope.
+- Change summary: Existing search handler is dispatched unchanged; trusted host plugin bindings reload lifecycle/settings and reauthorize delayed actions. Standard roots use the current Cron/Node interval; provider startup failure preserves canonical API availability and source events.
+- Files/artifacts: Application async-consumers, both app async roots/composition/task wiring, Wrangler queue bounds, shared crash/HTTP tests; [evidence](../evidence/09-async-validation.md).
+- Verification: Connected consumers 3 each D1/PG, explicit added processing-failure case 1 each, complete issue-route/HTTP journeys 2 each pass; types/lint/boundaries/build/secret/scoped-format/diff pass. Queue failures/downstream idempotency are deliberately injected; stores and HTTP runtimes are actual local services/emulation.
+- Decisions and deviations: No envelope/producer/search contract change. Missing host bindings retry boundedly; disabled/uninstalled plugins cancel. Core permission callbacks are required per binding. Primary focused review only; no audit resumed.
+- Blockers/open questions: None for B3; B4 workflow/scheduling and B5 Minimum/hosted quota proofs remain. Standard paid-profile performance stays unverified.
+- Next actions: B4 durable adapters/conformance and consolidated cleanup/operator documentation.
+- Next-session cautions: Preserve idempotency and current permissions/configuration; no official provider/features or public API expansion. G1/G2 closed, 13.G6 open; protect untracked drafts/handoffs.
+
+### 2026-10-10 — Module 09 B4 durable workflows and scheduling
+
+- Scope and checklist IDs: 09.3b/c/d/f and local 09.V3/V4; scheduler/database/runtime integration only.
+- Progress: B4 implemented and locally verified; B5 and suspended 09.3e remain open.
+- Change summary: Native Workflows and PostgreSQL/Graphile checkpoint adapters, persistent bounded upload cleanup cursors, configured retention on existing schedulers, fixed exhausted Graphile key reconciliation, internal operator runbook.
+- Files/artifacts: Runtime workflow/scheduler roots, application workflow/maintenance ports, config policy, additive maintenance migrations, shared cleanup/native workflow tests; [B4 evidence](../evidence/09-async-validation.md#b4--workflows-and-scheduled-maintenance).
+- Verification: Actual persistent local Workflow restart/resume/cancel 1; actual PostgreSQL Graphile/cleanup 2; D1 cleanup 1; typecheck/lint/db:check/build/types/secrets/scoped format/diff pass. Initial fixture/type failures corrected; exact commands and boundaries in evidence.
+- Decisions and deviations: No new dependency or normative change; tiny conformance has no artificial artifact reference. Graphile replace keys permit reconciliation of exhausted provider jobs. Existing upload/authorization semantics retained.
+- Blockers/open questions: Hosted Free CPU/quota headroom and Minimum budget/recovery pending B5; no paid Standard acceptance claim.
+- Next actions: Implement B5, verify authorized temporary hosted behavior and cleanup, then close only evidence-backed checklist items.
+- Next-session cautions: No hosted resources yet; preserve protected untracked drafts, source outbox/envelopes, audit suspension and G1/G2/13.G6 state.
+
+### 2026-10-10 — Module 09 B5 blocked, hosted cleanup complete
+
+- Scope and checklist IDs: 09 hosted evidence boundary; no 10 checklist/gate closure.
+- Progress: Actual Free Queue retry/ack, native Workflow retry/cancel and D1 event/checkpoint redeployment recovery observed. This is an authenticated probe slice, not full production root or paid Standard performance acceptance. Hosted quota-exhaustion was not run after CPU stop; G1 remains closed.
+- Change summary: Preserve B1–B4 acceptance; record uncommitted B5, actual Free CPU failure and scoped cleanup.
+- Files/artifacts: 09 async validation and sanitized hosted receipt; [detailed B5 evidence](../evidence/09-async-validation.md#b5--minimum-prototype-and-hosted-cpu-blocker) and [safe receipt](../evidence/09-hosted-minimum-receipt.json).
+- Verification: Focused local Minimum/replay-retention workerd 2, PostgreSQL retention/capability 2, Minimum capability 1, maximum multipart budget unit 1 and optimized recovery 1 pass; prior typecheck/lint/db:check/build/docs/secrets pass. Actual dispatch 15/20 ms fails required 10 ms. Final cleanup API/row/foreign-key guards pass; raw DNS inventory 403, independent absence unverified. Hosted quota exhaustion not run. Affected replay commands and limitations are in linked evidence. Final corepack pnpm docs:build, scan:secrets, scoped oxfmt --check and git diff --check pass; checklist/status/receipt/local-link/bilingual-path/empty-staging guards pass. No broad green-lane rerun.
+- Decisions and deviations: Follow HANDOFF-09 “If a bound cannot be met, stop and report.” No bound/normative change, dependency addition, B5 commit, push or PR update; audit stays suspended.
+- Blockers/open questions: Module09 B5 Free CPU fit. Further changes in Module08 require explicit bounded scope authorization; batching is a proposal, not a proven fix.
+- Next actions: Obtain that scope decision, then resume only authorized affected implementation/verification. Final scoped formatting/document checks passed; no staged files.
+- Next-session cautions: Keep B5 uncommitted and 09.1f/09.2e/09.3g/09.V6 unchecked; preserve protected drafts, baseline/append-only history and additive migrations. G1/G2 closed and 13.G6 open. Hosted owned mappings/resources are gone; ignored receipts contain private configuration and must not be staged.
+
+### 2026-10-10 — Authorized search batching verified locally, CPU still blocked
+
+- Scope and checklist IDs: 09 B5 hosted CPU evidence only; no 10 acceptance/gate closure.
+- Progress: Instrumented search-only 11 ms/three calls/2.2ms SQL and dispatcher 22 ms/14 statements are actual user-attested Workers Free observations. No full production-root or Standard paid performance acceptance.
+- Change summary: Complete the scoped investigation, retain uncommitted changes and stop hosted acceptance after the fresh CPU failure.
+- Files/artifacts: D1 search-budget/search-index, shared search-contract, bilingual deployment/internal docs, [follow-up evidence](../evidence/09-async-validation.md#authorized-module08-d1-batching-follow-up--2026-10-10) and [fresh receipt](../evidence/09-hosted-minimum-batching-receipt.json).
+- Verification: Focused workerd 4 / PostgreSQL 3, typecheck/lint/scoped format/diff pass; hosted profile/dispatcher results above, quota/max-body/recovery probes not run after stop. Owned API inventory zero, 102 baseline canonical rows exact, foreign keys valid, mutable fixture work absent and tail processes stopped. Final docs:build, secret scan, scoped formatting/diff, receipt/cleanup/checklist/local-link/empty-staging checks pass.
+- Decisions and deviations: Preserve every contract, guard and numeric ceiling; follow repeated HANDOFF-09 stop rule. No migrations/new dependencies, paid feature, audit resume, B5/search commit, push or PR update. Raw DNS absence remains independently unverified.
+- Blockers/open questions: Dispatcher22ms versus 10 ms. Candidate next direction: consolidate Minimum admission/claim/source and completion/telemetry call boundaries; needs a new user-directed decision after the stop, not a threshold waiver.
+- Next actions: Final documentation/format/receipt checks are complete; report the investigation and await the next direction after the required stop.
+- Next-session cautions: B1–B4 commits preserved; B5/search remain uncommitted, 09.1f/09.2e/09.3g/09.V6 unchecked, 09.3e suspended. G1/G2 closed and 13.G6 open; preserve protected drafts, accessible canonical rows/history and captured singleton state.
+
+### 2026-10-10 — User-authorized B5 and search checkpoint publication
+
+- Scope and checklist IDs: Commit and push the existing B5 prototype and scoped Module08 search optimization; 09.1f/09.2e/09.3g/09.V6 remain unchecked.
+- Progress: User explicitly authorizes publication of the prepared implementation and evidence. Module09 remains Blocked; this checkpoint does not establish acceptance.
+- Change summary: Preserve the bounded Minimum scheduler, quota/call budgets, retention migrations, search admission/source optimization, fixtures and CPU failure receipts. No new implementation or hosted activity.
+- Files/artifacts: Existing B5/search changes and [Module09 evidence](../evidence/09-async-validation.md); this progress record.
+- Verification: Reuse the recorded focused local/runtime checks and completed hosted cleanup; no green application lane rerun for commit preparation. Publication checks are scoped formatting, secret scan, diff hygiene and remote-ref verification.
+- Decisions and deviations: The new user instruction supersedes the prior instruction to leave B5/search uncommitted. Git CLI documentation resolved and queried through Context7 (/git/htmldocs) on 2026-10-10; normal branch push only.
+- Blockers/open questions: Latest actual dispatcher CPU is 22 ms against the required 10 ms; remaining hosted quota/acceptance evidence is incomplete.
+- Next actions: Preserve this checkpoint; further implementation or hosted acceptance requires a new user direction after the recorded stop.
+- Next-session cautions: No acceptance/checklist/gate closure, audit resume, PR edit or production deployment. G1/G2 stay closed and 13.G6 open. Exclude protected root drafts and ignored private configuration/backup artifacts.
+
+### 2026-10-10 — Dispatcher batching verified; native Cron evidence remains open
+
+- Scope and checklist IDs: Cross-module support for Module09 B5; authorized performance tests/refactoring, with audit suspension preserved.
+- Progress: 09.2e/09.3g verified; 09.1f/09.V6 remain open because native Cron execution was not observed.
+- Change summary: These Free-account probes do not establish paid Standard or full production-root acceptance; G1/G2 remain closed.
+- Files/artifacts: D1/runtime batching, migration 0035, focused tests and paired reader guides; [Module09 session](09-async-and-workflows.md) and [receipt](../evidence/09-hosted-minimum-dispatcher-receipt.json).
+- Verification: Focused workerd/migration/search checks, typecheck, lint, db:check, build, docs:build, scoped formatting, secrets and diff hygiene pass. Twelve explicit hosted ticks measured 1–10 ms CPU; native Cron proof remains missing.
+- Decisions and deviations: No contract, permission, numeric bound, dependency or gate change; detailed probe mistakes and restorations are recorded in Module09 evidence.
+- Blockers/open questions: Native Cron delivery/CPU remains unverified; registration is not execution.
+- Next actions: Obtain native Cron evidence before closing the remaining checks.
+- Next-session cautions: Owned resources zero; all 107 original records verified, singleton state restored, history preserved. Protected drafts/private backups excluded; no push or PR edit for this batch.
+
+### 2026-10-10 — Native Cron dispatch verified but CPU bound failed
+
+- Scope and checklist IDs: Module09 09.1f/09.V6 native scheduler verification under existing test authorization; audit remains suspended.
+- Progress: Real native delivery, canonical indexing and acknowledgement observed. Productive native tick measured 20 ms against the required 10 ms CPU bound; 09.1f/09.V6 remain open.
+- Change summary: Isolated provider delivery with a scheduled-only Worker, then tested the unchanged Minimum function on the same Worker. No application code, contract, dependency or migration change.
+- Files/artifacts: [Native evidence](../evidence/09-async-validation.md#native-scheduler-diagnostic-and-dispatch-cpu-failure--2026-10-10), [safe receipt](../evidence/09-hosted-native-scheduler-receipt.json), internal/paired reader guidance and status records; private helpers remain ignored.
+- Verification: Native witness 0 ms, empty dispatch 7 ms, canonical dispatch 20 ms; final index revision 1, source acknowledged, delivery attempts 1. Owned resources zero and tail stopped; all 115 original records/columns and captured singleton state verified, foreign keys valid, original two Workers/domains preserved. Final docs:build, secrets, receipt/cleanup/checklist/link guards, JSON serialization and diff hygiene pass. Scoped oxfmt had no eligible files because repository ignore rules exclude docs; no application lane rerun for this documentation-only session.
+- Decisions and deviations: Stop after CPU failure under HANDOFF-09. Fixed probe dispatch phase protects original expired identity rows; seed request CPU is outside async acceptance. No paid feature, threshold waiver, audit resume or gate closure.
+- Blockers/open questions: Native dispatch CPU exceeds the bound; earlier missing native delivery cause remains unknown.
+- Next actions: Report the measured failure; a new user direction after the HANDOFF-09 stop is required before further performance implementation or hosted acceptance. Native CPU profiling is the next proposed investigation. Preserve 09.2e/09.3g and Module08's existing dispatch/retry closure.
+- Next-session cautions: No further hosted probe/refactor after the failure. Keep original data/history and committed batches; retained inactive fixture has one timeline/one audit record. Raw DNS absence unverified, custom-domain mapping absent. No push or PR edit; G1/G2 closed and 13.G6 open.
+
+### 2026-10-11 — Metering and initialization profiling checkpoint
+
+- Scope and checklist IDs: Authorized Module09 B5 09.1f/09.V6 performance continuation and affected integration seams; no audit resume.
+- Progress: Direct metering facades, phase-specific factory construction, internal async exports and deferred upload configuration locally verified. Native r4 produced no event within its bounded window; CPU acceptance remains open.
+- Change summary: Preserve SQL, existing handlers, permissions, quotas and numeric limits. Keep default package entries and adapter imports; no lint exemption, dependency or migration.
+- Files/artifacts: Minimum composition/meter, internal application/D1 async entries, unit coverage; [profiling evidence](../evidence/09-async-validation.md#authorized-cpu-profiling-continuation--2026-10-11), [r4 receipt](../evidence/09-hosted-native-meter-retry-receipt.json).
+- Verification: Unit meter 3, search availability 28, workerd queue/workflow/Minimum 5 pass; typecheck, lint/boundaries, build and final Minimum target build, scoped format, secrets, docs build and diff pass. Local CPU/startup sampling is diagnostic only. R4 cleanup verifies 120 original records, foreign keys, singleton state, original two Workers/mappings and zero owned resources/work; live processes terminal.
+- Decisions and deviations: Human approval permits continued bounded attempts after failures. Reverted lint-rejected internal adapter/contract paths rather than adding exclusions. Fixed copied fixture missing IDs only after proving no writes; TLS readiness and OAuth refresh handled. No native execution/CPU inferred from handlers, registration or local timing.
+- Blockers/open questions: Latest productive native evidence remains 20 ms against 10 ms. Missing native delivery on r4 is unexplained.
+- Next actions: Preserve the verified refactor; test the compiled module graph and final-binding Cron registration using a fresh owned attempt with cleanup.
+- Next-session cautions: 09.1f/09.V6 open; 09.2e/09.3g and Module08 closure preserved; 09.3e suspended; G1/G2 closed and 13.G6 open. No push/PR edit. Exclude protected root/private helper files.
+
+
+### 2026-10-11 — Native admission result and cursor consolidation
+
+- Scope and checklist IDs: Authorized Module09 09.1f/09.V6 performance continuation and Module08 indexing seam.
+- Progress: Native r6 canonical dispatch took 14 ms CPU and still fails 10 ms; source indexed/acknowledged once. Cleanup verified before continuing. Consolidated cursor initialization and advancement reduces canonical work from eleven to ten SQL statements, preserving three provider round trips.
+- Change summary: Missing cursors use the existing zero prefix; one gated UPSERT initializes/advances or resets both bounded source cursors. Admission refusal retains all state. No lease, retry, quota, authorization or index contract changes.
+- Files/artifacts: D1 Minimum adapter and admission suite; [r6 receipt](../evidence/09-hosted-native-admission-retry-receipt.json), [detailed evidence](../evidence/09-async-validation.md#native-admission-result-and-cursor-consolidation--2026-10-11).
+- Verification: Focused Minimum workerd seven tests, typecheck, lint/boundaries and build pass. r6 preserved 130 baseline rows, singleton values, foreign keys and original two Workers/mappings; all owned resources/mutable work removed and processes terminal. No unchanged PostgreSQL lane rerun.
+- Decisions and deviations: Human now permits raising the project target and reducing Minimum capacity after repeated measured optimization failures. No target/capacity change applied yet. Context7 Workers resolve/query (2026-10-11) explicitly lists Free Cron CPU 10 ms; higher internal targets cannot establish provider acceptance. Native r6 arrived after the monitor deadline; tail/state prove execution. During continuation gap it emitted harmless empty ticks before cleanup.
+- Blockers/open questions: 09.1f/09.V6 remain open; 09.3e suspended, G1/G2 closed, 13.G6 open.
+- Next actions: Bounded fresh r7 native retry against the ten-statement path with independent backup and cleanup; measure representative size/recovery only after canonical fit.
+- Next-session cautions: No push/PR edit; preserve history and baseline data. Do not rerun inventory after seeding. Higher project CPU target must not rewrite provider limits or imply full Free acceptance.
+
+
+### 2026-10-11 — Ten-statement native retry running
+
+- Scope and checklist IDs: Authorized Module09 09.1f/09.V6 performance continuation; no target/capacity change yet.
+- Progress/change summary: f0c9a1d committed locally. Fresh r7 backup, native-only Worker, canonical producer fixture and one Cron are ready; tail confirmed live. Source pending; observation/cleanup are in progress.
+- Files/artifacts: [Detailed retry/profile record](../evidence/09-async-validation.md#native-r7-in-progress-and-coldwarm-diagnostic); ignored r7 and cold-profile helpers.
+- Verification: Reuse seven workerd checks and passed typecheck/lint/build/docs/secrets/scoped format/diff. Twenty cold/warm local isolate profiles provide diagnostic initialization evidence; not hosted acceptance. REST producer fixture used after custom-domain TLS readiness failure; no explicit tick or public API acceptance.
+- Decisions/deviations: Native observation 65 minutes, automatic owned cleanup on CPU failure or absolute 70-minute bound. Credentials refreshed before watchdog cleanup; no numeric runtime limit changed. Standing user permission allows lower Minimum capacity and higher project target if repeated optimization still fails; provider 10 ms remains independently disclosed.
+- Blockers/open questions: Native r7 result and cleanup pending; 09.1f/09.V6 open.
+- Next actions: Collect live native result; if fit, representative body/recovery proof; if failed, verify cleanup before measured capacity reduction. Every attempt must finish cleanup.
+- Next-session cautions: Owned Worker hyperbug-09-native-219f58b807f6, tail session1863, monitor87992; watchdog restarted after adding credential refresh. Deadline 19:39:09 UTC, cleanup bound19:44:09 UTC. Preserve 135 baseline records; no inventory rerun, push/PR edit or gate/audit changes.
+
+
+### 2026-10-11 — Refined cold-binding investigation during native wait
+
+- Scope/checklist IDs: Authorized 09.1f/09.V6 and affected Module08 seam; no application or normative change.
+- Progress/change summary: Confirm r7 monitor/tail/watchdog live, one Cron, pending canonical state. Private staged-import prototype showed no clear local gain and is unapplied. Refined local measurement includes first D1 binding use by seeding outside the Worker.
+- Files/artifacts: [Detailed investigation](../evidence/09-async-validation.md#native-r7-waiting-and-refined-cold-cost-investigation--2026-10-11), safe profile aggregates; private prototypes ignored.
+- Verification: Twenty fresh local isolates per diagnostic, actual canonical producer and D1 emulation; source/index acknowledgements observed locally. Not hosted CPU acceptance. Current Context7 trace enablement lookup records no default tracing and no substantiated benefit from disabling it. No green application lane repeated.
+- Decisions/deviations: Preserve current ten-statement deployment and all limits while native outcome is pending. User permits measured target/capacity revision after repeated failure; any higher project target must disclose unchanged provider 10 ms and retain recovery/backlog/security. No target or logging waiver applied.
+- Blockers/open questions: Native execution/CPU/cleanup pending. Module09 open, 09.3e suspended; G1/G2 closed, 13.G6 open.
+- Next actions: Revalidate native handles and canonical state; collect r7 CPU or absolute timeout cleanup. After failure verify cleanup before capacity/target work; after fit run prepared representative/recovery checks.
+- Next-session cautions: Tail 1863, monitor 87992, watchdog 20221; r7 deadline 19:39:09 UTC, automatic cleanup 19:44:09 UTC or earlier failure. Read ignored live-handles.json. Watchdog captures canonical state before restoring data. Do not restart because observation expired or rerun inventory; no push/PR edit.
+
+
+### 2026-10-11 — Maximum-content title-only capacity prototype
+
+- Scope/checklist IDs: Authorized 09.1f/09.V6 performance continuation and conditional Module08 capacity alternative.
+- Progress/change summary: Private maximum-content prototype verifies smaller index/source payload and lower cold local samples for title-only work. No production source, target or capacity change. r7 remains a verified live wait.
+- Files/artifacts: [Detailed measurements and limitations](../evidence/09-async-validation.md#maximum-content-title-only-prototype--2026-10-11), safe profile aggregates; private prototype ignored.
+- Verification: Twenty fresh actual local workerd/D1 isolates per full-text/title-only variant; canonical maximum 200-title/32768-body producer, current index revision 1 and 5,562-byte versus 2-byte body inspected. No native acceptance; sequential sparse profiles are not a controlled speedup. No broad green lane repeated.
+- Decisions/deviations: If native r7 fails, title-only is a measured fallback candidate; implement query/readiness/version/cursor/rebuild/disclosure consistently before deployment. User permits higher project target with reduced Minimum capacity after repeated failure; provider 10 ms stays separate and release gates remain open.
+- Blockers/open questions: Native r7 CPU/cleanup pending; no fallback activated.
+- Next actions: Inspect native monitor 87992/watchdog 20221 and canonical state; verify cleanup before a failed-trial fallback, or complete representative/recovery tests after fit.
+- Next-session cautions: Preserve source f0c9a1d trial, unchanged standard contracts and all security/lease/quota checks. Do not ship private title-source suppression without production mode safeguards; no inventory rerun, push/PR edit or audit/gate closure.
+
+### 2026-10-11 — Coherent Minimum title-only capacity implementation
+
+- Scope and checklist IDs: Authorized 09.1f/09.V6 performance continuation, Module08 capacity reduction and affected contract/acceptance checks.
+- Progress/change summary: Minimum source/index/query now use titles only with distinct readiness identity and cursor policy 2; Standard retains full text. Bounded bidirectional reconciliation preserves canonical data. Instance capability and paired reader disclosure updated. Native r7 remains on full-text f0c9a1d; no target change or hosted fallback yet.
+- Files/artifacts: Search adapters/application/capability contracts and tests, [ADR 0014](../../decisions/0014-minimum-title-search.md), [detailed evidence](../evidence/09-async-validation.md#coherent-minimum-title-only-implementation--2026-10-11), safe profiles and bilingual guides.
+- Verification: Workerd 19, unit 34, corrected focused PostgreSQL 14 and shared async workerd three pass; typecheck/lint/boundaries/build/docs/secrets/scoped format/diff and foundation contract pass. Accidental broad PostgreSQL run had 208 pass/four failures/two existing skips; relevant capability, sidecar table-count and claim fixture expectations fixed and focused regressions pass. Broad matrix not repeated/claimed green. Twenty current-production local cold/warm profiles verify empty indexed body; median cold 6,938.5 microseconds is diagnostic only.
+- Decisions/deviations: Human authorizes this reduced capacity after repeated native failures. ADR records review and upgrade/downgrade behavior. No canonical truncation, quota/security relaxation, schema or dependency change. Internal/project CPU target remains 10 ms; provider limit independently unchanged.
+- Blockers/open questions: r7 native outcome/cleanup pending; 09.1f/09.V6 open.
+- Next actions: Collect native r7; verify cleanup, then fresh bounded title-only native measurement and representative recovery.
+- Next-session cautions: r7 tail 1863/monitor 87992/watchdog 20221; deadlines 19:39/19:44 UTC. Preserve 135 baseline rows; no inventory rerun, push/PR edit, protected/private staging or audit/gate closure.
+
+
+### 2026-10-11 — Complete non-suspended Module 09 and native handoff
+
+- Scope and checklist IDs: Close 09.1f/09.V6 and the full authorized non-suspended Module 09 handoff; preserve Module 08 integration closure and separate acceptance gates.
+- Progress: Native composed interruption 9 ms, clean redeployment/resume 6 ms, maximum dispatch 9 ms. Exact checkpoint/witness and pending-event preservation verified. All 23 non-suspended checks complete; 09.3e remains suspended.
+- Change summary: Keep committed single fenced all/RETURNING optimization, title-only Minimum search, 10 ms target, canonical content limits and every security/quota/fence check. Update canonical checklist, master/current handoff, requirement audit, runbook/ADR and synchronized EN/ZH reader guides from actual evidence.
+- Files/artifacts: [Native receipt](../evidence/09-hosted-composed-native-recovery-receipt.json), [completion audit](../evidence/09-completion-audit.md), [R14 final evidence](../evidence/09-async-validation.md#r14-native-maximum-dispatch-and-independent-cleanup--final); ignored baseline/deploy/cleanup/terminal receipts.
+- Verification: Actual one declarative Cron across three fresh deployments; normal phases emit one safe summary and stay at nine/ten statements/conservative subrequests. R9 supplies native quota refusal/recovery; prior current-source focused D1 checks have 17 unique passes and source is unchanged. Guardian plus independent read-only data/resource checks preserve 172 original records/exact singleton sets/FKs/history and original resources; owned work/resources zero, inactive fixtures independently confirmed; all four handles terminal exit 0/PIDs absent. Final docs/links/JSON/checklist/secrets/diff checks recorded below; no unchanged application lane repeated.
+- Decisions and deviations: Native invocation interruption/redeployment is not an OS process kill. One sample per deployment, 1 ms dispatch margin and delayed adaptive headroom do not establish sustained/profile-wide/billing/paid Standard/release performance. Free remains user-attested; raw DNS inventory permission unavailable, mapping absence verified.
+- Blockers/open questions: None for authorized non-suspended Module 09 scope. 09.3e suspended; G1/G2 closed, 13.G6 open. Other modules' acceptance prerequisites remain outside this work.
+- Next actions: No further Module 09 implementation/trial; preserve the closed handoff. Future backend/profile/release acceptance requires its owning scope.
+- Next-session cautions: R14 closed; never restart or reuse its baseline. New authorized hosted work needs fresh backup/inventory. Keep protected/private files unstaged; no push/PR edit, paid capability, production action, crypto tuning, SPA or audit resume.
+
+Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secrets`,675 relative file links/new R14 anchors, receipt JSON, all24 stable Module09 IDs (23 complete/09.3e suspended), Module08 integration boxes, common production bundle hashes and `git diff --check` pass. Production source/tests/tooling/dependencies are unchanged since b756222; no unchanged application lane rerun. Reader EN/ZH content and gate/status/handoff consistency checked; documentation formatting is not claimed because the formatter excludes docs.
+
+### 2026-10-11 — Module 10 B1 hosted SAST closure
+
+- Scope and checklist IDs: 01.3f closed; 01.V4 partially verified; module 10 prerequisite assessment.
+- Progress: Revalidated hosted CodeQL PR analysis and uploaded Security results through the GitHub API. The earlier no-hosted-run blocker is historical, not current.
+- Change summary: Close the workflow implementation item; retain the independent main-push verification and Module 01 In progress.
+- Files/artifacts: [SAST evidence](../evidence/10-sast-validation.md); module 01 checklist/progress and module 10 progress.
+- Verification: Actual GitHub run 37266055745 is pull_request/completed/success; analysis job 111623017334 succeeds. Latest Security analysis 1931226057 on PR merge c364e5369a5baa20fbae9a806d0a1d92c782312e has 87 rules, zero results and no analysis error; open-alert query returns an empty array. Static workflow inspection confirms the default suite and job-local permissions. No application test needed for documentation-only B1.
+- Decisions and deviations: No workflow, query, token scope, branch or PR change. No main push authorized.
+- Blockers/open questions: 01.V4 main-push half requires the user's publication decision. Asked asynchronously; independent module 10 work may continue.
+- Next actions: B2 10.1a–e contract/client; leave 01.V4 open until actual main evidence exists.
+- Next-session cautions: Preserve protected drafts; PR analysis is not main-push evidence; G1 and the SPA remain closed.
+
+### 2026-10-11 — User equivalence decision for SAST verification
+
+- Scope and checklist IDs: 01.V4; module 10 prerequisite 10.G1.
+- Progress: Close 01.V4 under the user's explicit equivalence decision. Module 01 Complete.
+- Change summary: Same committed workflow, source, default query suite and job-local permissions ran on hosted PR #2 and uploaded Security results; the user accepts that evidence for the unexecuted main-push half.
+- Files/artifacts: Module 01 checklist/progress; master/plan user-directed state; [SAST evidence](../evidence/10-sast-validation.md). HANDOFF-10 remains protected and untracked.
+- Verification: Reuse the actual API results in B1; no new run, main push or PR merge.
+- Decisions and deviations: Explicit human instruction on 2026-10-11 replaces the main-push requirement for this acceptance item; it does not assert that a main run occurred.
+- Blockers/open questions: No Module 01 blocker. Residual risk: default-branch trigger execution remains unobserved; GitHub-side trigger failure would surface on the first real main push. PR #2 merge is a separate user decision outside this mission.
+- Next actions: Continue B2 10.1a–e and B3 upload closure.
+- Next-session cautions: Do not push main or merge PR #2. Standard remains unmeasured and G1 closed.
+
+### 2026-10-11 — Module 10 B2 public contract/client complete
+
+- Scope and checklist IDs: 10.1a–e; shared 02 public-contract compatibility.
+- Progress: OpenAPI and framework-independent client implemented and verified; all five 10.1 checks close.
+- Change summary: Consolidate existing schemas/methods/labels/errors; typed cookie-free client, safe bounded transport, explicit receipt/resource replay, drift checks and EN/ZH examples.
+- Files/artifacts: [B2 evidence](../evidence/10-contract-client-validation.md), contracts/openapi.json, packages/api-client, tooling/public-api.ts, existing server labels/errors, package/lock workspace links, contract/unit fixtures and API-CLIENT/paired API guides.
+- Verification: Nine focused unit/contract checks pass; final types/lint/api:check/build/docs/licenses/secrets/scoped-format/diff pass. Actual provider/deployment not run. Setup/initial failures and exact commands are in the evidence.
+- Decisions and deviations: No external dependency, protocol/schema meaning/baseline change or lint exemption; primary focused security/compatibility review. 01.V4 user equivalence retained.
+- Blockers/open questions: Standard not measured; overall G1 remains closed.
+- Next actions: B3 evidence-backed 07.3c/f/h/V4 closure, then B4 acceptance matrix.
+- Next-session cautions: No main push/PR merge/SPA; preserve protected drafts and pinned resolutions; estimates never fill Standard acceptance rows.
+
+### 2026-10-11 — Module 10 B3 upload closure
+
+- Scope and checklist IDs: 07.3c/f/h/V4; 10.G1 prerequisite.
+- Progress: Four canonical outcomes verified; Module 07 Complete at its stated scope.
+- Change summary: Fill real Node/S3 exact installed-CORS/browser gap; map every negative and existing actual scanner/provider/store proof; verify all three scheduling roots. No application change.
+- Files/artifacts: [B3 evidence](../evidence/10-upload-closure.md); Module 07 checklist/progress, master and Module 10 record.
+- Verification: Actual isolated SeaweedFS 4.48 + Node + Chrome155 positive/denied-origin/header/method/expiry proof; HEAD positive7 bytes/negative targets absent. Existing real ClamAV 15+18, actual providers and dual-store maintenance evidence reused. Static schedule wiring verified; documentation checks below.
+- Decisions and deviations: Close implementation/negative-test outcomes at canonical scope under HANDOFF-10; broader production scanner and historical recovery requirements remain explicit acceptance/release limits. SIGINT interrupted graceful service deletion; independent process/listener absence and exact isolated-data removal verified.
+- Blockers/open questions: Standard unmeasured; production scanner bridge/isolation/update and historical quiescence unclaimed. No gate opens.
+- Next actions: B4 10.2a–f acceptance matrix and integrated form/upload/search journey.
+- Next-session cautions: No main push/merge/SPA/paid capability; retained-key tombstones must not be erased from inferred provenance; no synthetic scan relabeling.
+
+B3 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=true corepack pnpm scan:secrets`, relative-link/checklist consistency and `git diff --check` pass. No unchanged application lane repeated.
+
+### 2026-10-11 — Module 10 B4 acceptance matrix
+
+- Scope and checklist IDs: 10.2a–f; shared module acceptance evidence consolidation.
+- Progress: Extended existing local Standard/Node HTTP journeys pass the complete form/upload/search/discussion/triage path. 10.2b/c/e close; a/d/f retain missing evidence.
+- Change summary: Shared form/upload/search helper and existing fixture composition; assemble migration/storage/async/plugin/security matrix with real/emulated/hosted attribution and quota limits.
+- Files/artifacts: [B4 matrix](../evidence/10-backend-matrix.md); tests/fixtures/acceptance-content-journey.ts and both acceptance-journey suites; Module10 checklist/progress.
+- Verification: One final pass per extended journey (local workerd/D1/R2 emulation; actual local PostgreSQL18.6/Node/S3 emulation); types/lint pass. Earlier failure/repair and unchanged reused evidence are enumerated in B4. No hosted resources.
+- Decisions and deviations: Synthetic journey scanner remains explicit; separate actual ClamAV retained. Test less/write more cadence; no unchanged broad/security/provider lane repeated.
+- Blockers/open questions: Actual Standard not measured; integrated Minimum and separate-registrable-domain/explicitly blocked-cookie browser proof absent; some quota attribution/headroom unavailable. G1/SPA closed,13.G6 open.
+- Next actions: B5 10.3a–f, then B6 model and gate assessment.
+- Next-session cautions: Never treat emulator tiers as paid measurements or inherited native receipts as current-source CPU; preserve all protected root drafts.
+
+B4 final verification: types/lint, two focused journeys, scoped oxfmt, docs build, secrets, relative links and `git diff --check` pass. No hosted resource created or new dependency.
+
+### 2026-10-11 — Module 10 B5 local performance and basic readiness
+
+- Scope and checklist IDs: 10.3a–f; relevant shared query/security/migration/upload/async evidence.
+- Progress: Eight security-active local HTTP paths measured on1,001 Issues; current PostgreSQL basic dump/restore passes. Close10.3a/c/d/e/f; b retains missing full-profile metrics.
+- Change summary: Opt-in bounded benchmark in existing journeys, scalar receipts, explicit local measured regression margins/comparator, basic restore helper and exact acceptance report. Production/schema/dependencies/hash policies unchanged.
+- Files/artifacts: [B5 report](../evidence/10-performance-readiness.md), two local HTTP baseline JSONs, local threshold JSON/comparator and PostgreSQL restore receipt; shared fixture helpers/existing journeys.
+- Verification: Corrected final benchmark journeys1pass each; operational unit6/node1; types/lint pass; comparator receipt consistency and intentional over-threshold refusal pass. Setup/continuation/quota failures and repairs recorded in B5; no failed attempt counts as a baseline.
+- Decisions and deviations: Process aggregate CPU/RSS excludes child runtime/database metrics; password hash timing stays inside login; n3/16/20 quantiles are observations, not sustained tails/SLO. Source bounds/cryptography unchanged; no broad green lane repeated.
+- Blockers/open questions: Actual Standard unmeasured; current Minimum full distributions, isolated memory/CPU/lag/object-operation and complete endpoint query metrics absent. Separate-domain browser/integrated Minimum/headroom gaps remain.
+- Next actions: B6 separately attributed Minimum quota evidence, Standard expectation model and10.G1–G5 assessment.
+- Next-session cautions: Opt-in benchmark rewrites only its own measurement receipts; use reviewed baseline/candidate separation. No main push/merge/SPA/paid/staging/production action.
+
+B5 final verification: types/lint, benchmark/restore and focused operational checks, scoped formatter (5matched code files; docs/receipts follow existing exclusions), docs build, secrets, JSON/relative links and diff pass. All owned test listeners/services/cluster stopped through successful fixture teardown; no hosted resource.
+
+### 2026-10-11 — Module 10 B6 assessment checkpoint
+
+- Scope and checklist IDs: 10.3g; Standard model;10.G1–G5; partial10.2a/d/f and10.3b.
+- Progress: Separate Minimum assessment and Standard expectation model written;10.G1/G3 met at component/canonical scopes,10.G2/G4/G5 unmet. Global G1 stays Not passed.
+- Change summary: Attribute reused native quota/degraded/auth/recovery observations and exact delayed headroom; identify historical pre-title-only receipt; model official paid CPU/billing/Queue/Workflow envelopes with explicit assumptions and unresolved documentation conflict.
+- Files/artifacts: [Minimum](../evidence/10-minimum-quota-assessment.md), [model](../evidence/10-standard-expectation-model.md), [gate assessment](../evidence/10-g1-assessment.md).
+- Verification: Source receipts/current tier policy inspected; Context7 official limits/pricing lookup2026-10-11 reused from this session. Final docs/link/secret/diff validation pending; no application behavior changed.
+- Decisions and deviations: Standard not measured by explicit user decision; every extrapolation stays outside acceptance/threshold/SLO rows. No normative change. Workflow concurrency table50,000/prose10,000 conflict retained, conservative10,000 model only.
+- Blockers/open questions: Complete Minimum/browser/current performance/headroom/capacity evidence missing; no truthful module10 completion or gate opening yet.
+- Next actions: Validate/commit B6, then fill authorized integration and browser gaps.
+- Next-session cautions: Do not relabel historical native CPU as current full-profile measurement; no main/merge/paid/SPA/staging action; protected root drafts stay untracked.
+
+B6 final documentation verification: `CI=true corepack pnpm docs:build`, `CI=true corepack pnpm scan:secrets`, evidence relative links and `git diff --check` pass. Application tests not repeated for documentation-only assessment; no hosted resource.
+
+### 2026-10-11 — Integrated local Minimum supplement
+
+- Scope and checklist IDs:10.2a/e/f,10.G2; local Minimum gap within B4.
+- Progress: Complete existing MVP journey passes on explicit Minimum composition;10.2a remains partial for unmeasured actual Standard/full actual Minimum.
+- Change summary: Parameterize existing workerd journey; fixture composes real peppered PBKDF2/ten-slot bound, durable lockout and audited lazy activation; verify exact capability/hash/title-only state after the entire workflow.
+- Files/artifacts: tests/fixtures/account-worker.ts, tests/workerd/acceptance-journey.test.ts; [matrix supplement](../evidence/10-backend-matrix.md).
+- Verification: Corrected final Minimum journey1pass (local workerd/D1/R2); first run failed wrong capability assertion deploymentTier, repaired to public tier. Types/lint and normal-profile fixture regression1pass. No hosted resource.
+- Decisions and deviations: No product/security/bound/contract change; explicit synthetic scan/manual backfill stays labelled; emulator does not enforce Free CPU. B6 formatter matched zero documentation files under existing ignores (exit2); docs/link/secrets/diff checks passed.
+- Blockers/open questions: Actual Standard excluded; browser/headroom/full-profile metrics/capacity still incomplete.
+- Next actions: Verify affected normal fixture and implement separate-domain blocked-cookie browser proof.
+- Next-session cautions: Keep opt-in Minimum distinct from local Standard benchmark receipts; no paid/SPA/main/merge action.
+
+### 2026-10-11 — Separate-domain browser checkpoint
+
+- Scope and checklist IDs:10.2d; existing both-store journeys only.
+- Progress: Independent HTTPS/static callback and explicit cookie-blocking driver implemented; validation ongoing.
+- Change summary: Distinct registrable .test sites on loopback, exact allowlists, first-party versus cross-site SameSite=None canary, CDP cookie restriction, top-level PKCE login/recovery and bearer-only business fetch; no frontend proxy or product SPA.
+- Files/artifacts: tests/fixtures/acceptance-browser.ts/.mjs and both existing journeys; scalar receipts pending.
+- Verification: Setup edit failed to match a single-line guard, corrected before wiring; initial ordinary Node run did not execute browser and is not browser evidence. Lint shadow warning repaired. First wired browser attempt timed out because synchronous child execution blocked local HTTPS listeners; replaced with asynchronous execFile. Final affected lanes pending.
+- Decisions and deviations: Context7 Playwright and Miniflare resolve/query2026-10-11; modern-web-guidance search/retrieve security guide; CDP cookie controls coverage gap verified by focused runtime experiment rather than invented docs. Bundled Playwright/Chrome reused, no dependency addition.
+- Blockers/open questions: Browser proof not yet accepted; existing Standard/full-profile/quota gaps unchanged.
+- Next actions: Final Node/workerd browser runs, record scalar receipts and cleanup, update10.2d only if all claims pass.
+- Next-session cautions: Test certificate exception is local only; never write auth cookies/code/token to receipts; no SPA/gate/main/paid action.
+
+Browser checkpoint: actual Chrome securitypolicyviolation confirms form-action on the registered cross-site login redirect. [Blocker and prepared repair](../evidence/10-browser-auth-blocker.md); product policy unchanged. Scope approval required under HANDOFF-10 before Module04 repair;10.2d remains unchecked. Cookie canary passed. Failed browser run is not acceptance and no successful receipt exists yet.
+
+Browser checkpoint final static verification: types/lint, docs build, secrets, scoped formatter, evidence links/JSON and diff pass after runner/redaction repairs. Browser acceptance remains failed at confirmed CSP redirect; no success receipt fabricated. Product policy/source untouched; prepared patch remains unapplied in/tmp. Goal is not complete.
+
+### 2026-10-11 — Authorized cross-site CSP repair and hosted preflight
+
+- Scope and checklist IDs: User-authorized narrow Module04 CSP repair supporting10.2d; hosted read-only preflight supporting10.2f/10.3g.
+- Progress: User explicitly authorized the prepared callback-origin CSP repair; implementation and both-profile browser verification now in scope. Fresh read-only authorized-account preflight succeeds.
+- Change summary: Record scope decision before implementation; sample current test inventory and delayed headroom without cloud mutations.
+- Files/artifacts: [Browser blocker](../evidence/10-browser-auth-blocker.md); private ignored .local/module10-hosted-preflight scripts/results.
+- Verification: Wrangler4.144.0 whoami succeeds; billing subscriptions403/code10000. At13:56:52Z sampled remaining D1 reads4,990,390/writes99,600 and Worker requests99,370. At13:58:05Z DB read-only check: active Staff1,pending outbox0,active jobs0,tables66,migrations36,current keys0; rows_written0. Initial outbox status SQL failed400/7500, corrected to delivered_at.
+- Decisions and deviations: Latest user instruction: “Authorize the narrow CSP repair.” No main push/PR merge/paid capability/SPA. Adaptive analytics headroom is approximate, not billing attribution.
+- Blockers/open questions: Standard remains not measured; full Minimum metrics/capacity and billing attribution incomplete. CSP browser proof pending repair.
+- Next actions: Apply exact validated callback-origin allowance, security ADR/review, Node and workerd browser verification; then remaining authorized Minimum evidence.
+- Next-session cautions: Never expose credentials or rerun cleaned hosted trials. Fresh backup/inventory/finite independent cleanup guard required before hosted mutation; no hosted resource created by preflight.
+
+### 2026-10-11 — Authorized CSP repair verified
+
+- Scope and checklist IDs: Explicitly authorized narrow Module04 repair;10.2d and affected OAuth/security regressions.
+- Progress: Callback-origin allowance and both-profile actual Chrome blocked-cookie proof pass;10.2d closes. Global G1 stays Not passed.
+- Change summary: Only login/consent form-action gains one previously validated callback origin; error pages stay self-only. Add exact page-policy/hostile redirect assertions and remove existing cookie-printing diagnostic.
+- Files/artifacts: packages/server/src/authorize-pages.ts; both OAuth tests; [ADR0015](../../decisions/0015-authorize-callback-form-action.md), [focused review/commands/receipts](../evidence/10-auth-csp-review.md); matrix/checklist/gate state.
+- Verification: Node real PostgreSQL/browser1pass; workerd Standard/browser1pass; local Minimum/browser1pass; affected OAuth Node3/workerd2pass; types/lint pass. Sandbox initdb shared memory denial repaired by running the authorized fixture outside restriction; no product bypass. Final docs/secrets/scoped formatting/links/diff recorded below.
+- Decisions and deviations: User explicitly authorized the prepared narrow CSP repair. Primary-agent focused review, not independent audit; registered-origin/path residual risk and browser enforcement differences recorded in ADR0015. No dependency/public DTO/schema/crypto change.
+- Blockers/open questions: Actual Standard not measured; actual Minimum integration/full metrics/headroom/sustainable capacity and billing attribution incomplete;13.G6 open.
+- Next actions: Fresh bounded current Minimum evidence under owned test resources/backup/independent finite cleanup guard; do not re-run unchanged green lanes.
+- Next-session cautions: Existing cookie diagnostic removed; disposable test session teardown complete. No main push/PR merge/paid/SPA/staging/production action; protected root drafts untouched.
+
+CSP repair final verification: docs build, known credential-signature scan, scoped formatter, changed evidence links/JSON and git diff --check pass. No hosted resources created; owned local teardown completed.
+
+### 2026-10-11 — Current-source uninstrumented Minimum pilot preparation
+
+- Scope and checklist IDs:10.2f/10.3b/g; bounded actual Minimum diagnostic only.
+- Progress: Current production Minimum/ingress bundles built from eb5c7f5 without metric wrappers. Fresh test-D1 logical backup imports locally with valid FKs:59 canonical tables/177 baseline records.
+- Change summary: Prepare fresh random test Workers/custom domain, real test R2 signing binding, fresh random private keys and unused abuse-key version; finite independent20-minute cleanup supervisor and standard Wrangler auth refresh. No new product path, crypto tuning or paid broker.
+- Files/artifacts: Ignored private .local/module10-native-pilot tooling/backup/config; public scalar receipt pending.
+- Verification: Existing exact bundle targets pass; installed Wrangler4.144.0 deploy help confirms no-bundle/secrets-file. Context7 workers-sdk query2026-10-11 covers secret safety/service binding; native tail field coverage remains a focused runtime question. Read-only preflight/backup pass; before-mutation isolation check requires zero current keys/pending events/active jobs and unused rate version.
+- Decisions and deviations: Stop before any further load on first measured native CPU above existing10ms target, invocation/server failure, missing attributable tail event or absolute deadline. Maximum9 HTTP requests, concurrency1; no external notification.
+- Blockers/open questions: Billing remains403, Standard unmeasured. Pilot alone cannot establish sustainable ceiling or full integrated acceptance.
+- Next actions: Start independently authenticated finite cleanup guard before any mutation; deploy only owned test resources, attach scalar-only tail, run pilot and verify exact baseline preservation/zero owned active state.
+- Next-session cautions: No rerun of old cleaned trials. Protect private backup/secrets/logs; no production/staging/main/merge/SPA action. Stop on guard cleanup marker, do not race its teardown.
+
+Native pilot checkpoint: first deploy attempt was refused before guard-ready existed (no mutation). After guard ready, API upload failed10021 because no-bundle omitted a relative ESM chunk; no acceptance HTTP request ran. Resource cleanup verified0 owned Workers/domains. Data cleanup initially failed7500 because key identities are permanent; corrected to current→revoked→removed under existing lifecycle guards, with177 original rows unchanged and0 owned active state. Four removed test-key identities are retained, no trigger relaxed. A fresh pilot2 starts from a new backup/inventory/names/secrets, with explicit no_bundle/find_additional_modules/base_dir/ESModule rules informed by Context7 and installed schema. Prior failed/cleaned trial is not reused as a measurement.
+
+### 2026-10-11 — Local Minimum metrics and actual production-root upload blocker
+
+- Scope and checklist IDs:10.2a/f,10.3b/d/g and10.G2/G4; owning Module04 composition finding. No unauthorized product patch applied.
+- Progress: Local Minimum eight-path metrics pass; fresh unchanged production-root native pilot fails upload validation before any HTTP request. All owned attempts cleaned.
+- Change summary: Extend existing opt-in benchmark with a distinct11-Issue/10-result title-only Minimum fixture and separate observed thresholds. Prepare/report narrow composition repair; no second journey, dependencies, policy/crypto/contract change.
+- Files/artifacts: [Local metrics/commands/failures](../evidence/10-minimum-local-performance.md), [native blocker/prepared patch](../evidence/10-native-startup-blocker.md), [scalar attempts/cleanup](../evidence/10-native-upload-attempts.json); matrix/readiness/quota/gate records.
+- Verification: Corrected local Minimum benchmark1pass/4.18s; types/lint pass. Initial21-Issue conservative reservation exhausted, then search20 denied400; fixture corrected to existing limits11/10 without policy relaxation. First actual upload omitted ESM chunk10021; fresh corrected upload failed OAuth prerequisite10021. No native CPU/HTTP acceptance. First cleanup attempted permanent-key delete7500, repaired through allowed revoke/remove.177/181 baseline rows unchanged, FKs valid,0 owned active resources/data; four permanent removed-key identities retained per trial. Ephemeral secret copies removed, donor storage credentials untouched.
+- Decisions and deviations: Standard not measured; no paid feature/main/merge/SPA/staging/production action. HANDOFF-10's explicit out-of-list rule requires a separate user scope decision for the new Module04 repair; question pending, patch unapplied. Comparator self-check is consistency only; no benchmark/lane rerun to bolster green evidence.
+- Blockers/open questions: Production-root OAuth/passkey prerequisite layering (only OAuth native failure measured); actual profile metrics/billing/headroom/sustainable capacity still incomplete. G1 Not passed,13.G6 open.
+- Next actions: User decision on /tmp/hyperbug-10-auth-startup-proposal.diff; if authorized, focused source/runtime fail-closed review and a fresh guarded production-root trial. Complete unaffected evidence/documentation first.
+- Next-session cautions: Never reuse a cleaned trial/baseline/token. Cloudflare upload validation lacks native bindings; earlier instrumented wrapper masks this check. Do not delete permanent key/audit identities or weaken guards. Pending approval is not inferred from elapsed time.
+
+Native pilot final headroom: corrected read-only GraphQL at14:35:25UTC estimates99,369 requests/4,987,961 D1 reads/99,520 writes remaining. Initial post-cleanup malformed queries returned200 GraphQL syntax errors; missing closing brace repaired. This is sampled account-wide headroom, not billing/per-trial attribution;0 native acceptance requests. Cleanup guard processes terminal.
+
+### 2026-10-11 — Auth composition repair authorized
+
+- Scope and checklist IDs: Explicit user-authorized narrow Module04 auth-composition repair supporting10.2a/f and10.3b/g.
+- Progress: User replied “Authorize the narrow auth-composition repair”; prepared patch is now in scope before implementation.
+- Change summary: Move only OAuth/passkey live DB/key-provider prerequisite checks from upload evaluation to before every runtime fetch, retaining static parsing and fail-closed behavior.
+- Files/artifacts: [Finding/proposal](../evidence/10-native-startup-blocker.md), /tmp/hyperbug-10-auth-startup-proposal.diff; focused review and verification to follow.
+- Verification: Actual10021 OAuth upload witness; neighboring passkey check is source pattern, not separately measured failure. Prior failed attempts fully cleaned; new trial requires new backup/guard/names/secrets.
+- Decisions and deviations: Latest explicit scope extension applies only to this composition prerequisite repair; no unrelated work, paid capability, main push, PR merge, SPA or staging/production deployment.
+- Blockers/open questions: Actual/native distributions/sustainable capacity still unmeasured; Standard excluded, G1 Not passed and13.G6 open.
+- Next actions: Commit completed independent Minimum metrics, then apply authorized patch, focused regression/review and fresh production-root trial.
+- Next-session cautions: Static malformed configuration must still reject; no synthetic DB wrapper or provider relabeling. Auth/resource failures remain fail closed.
+
+### 2026-10-11 — Authorized auth-composition repair checkpoint
+
+- Scope and checklist IDs: Explicit narrow Module04 authorization supporting10.2a/f,10.3b/g; no other product work.
+- Progress: Final composition-only repair passes4 production-bundle regressions and native API/ingress upload; first native HTTP fetch returns no response.
+- Change summary: Defer native-resource guards; keep parsed registry in root when resources unavailable, retaining shared-server constructor invariant and all-route runtime refusal.
+- Files/artifacts: apps/api-cloudflare/src/composition.ts, tests/workerd/auth-composition.test.ts; [focused review](../evidence/10-native-startup-blocker.md), [upload/cleanup receipt](../evidence/10-native-composition-upload.json).
+- Verification:4workerd cases/types/lint pass; initial converter/listener/constructor/response/disposal setup failures repaired. Native upload succeeds; fetch fails before response, TLS-only ECONNRESET; certificate inspection403/9109.185 original rows unchanged, FKs valid,0 owned resources/active data; four removed keys retained. Generated secret copies removed; guards/tail terminal.
+- Decisions and deviations: User-authorized root-only repair; no Core validation weakening, fake DB, crypto/dependency/contract change or new auth flow. Primary-agent focused security review, not independent audit.
+- Blockers/open questions: Native transport cause unresolved; full actual metrics/capacity/billing and Standard measurement remain missing. G1 Not passed;13.G6 open.
+- Next actions: Fresh isolated trial with verified TLS readiness before HTTP load; final evidence and coherent repair commit.
+- Next-session cautions: Never reuse cleaned trials, lower security parameters or disable certificate verification. No main/merge/paid/SPA/staging/production action.
+
+### 2026-10-12 — Auth composition repair verified; native continuation safely stopped
+
+- Scope and checklist IDs: Explicit narrow Module04 repair;10.2a/f,10.3b/g and10.G2/G4/G5 reporting.
+- Progress: Repair verified locally/native upload; remaining profile/capacity outcomes stay incomplete. No further load under current CPU stop rule.
+- Change summary: Fresh trial4 adds verified-TLS gate and independent finite cleanup; exact native/transport/cleanup findings consolidated.
+- Files/artifacts: [Focused review and exact commands](../evidence/10-native-startup-blocker.md), [trial4 scalar receipt](../evidence/10-native-tls-guarded-pilot.json), matrix/readiness/quota/gate/master records.
+- Verification:4 focused production-entry workerd regressions/types/lint/build/docs/secrets/scoped formatting pass; no unchanged green application lanes rerun.13 TLS handshakes fail; harness HTTP0.12 unlabelled native events/all outcome ok/CPU6–21ms; guard stops on first delivered14ms (not an exception).189 original records unchanged/FKs valid/0 owned Workers/domains/active data; four removed permanent keys retained. Guard/tail terminal, generated secret copies removed. User's signed-in dashboard proves no owned certificates, no SSL mutation. Final links/JSON/diff recorded below.
+- Decisions and deviations: Standard remains excluded; unlabelled traffic is not benchmark acceptance, provider limits are not measured capacity. No Core/auth/crypto/DTO/schema/baseline weakening, new paid feature, main push/PR merge/SPA/staging/production action.
+- Blockers/open questions:10.2a/f,10.3b/g and10.G2/G4/G5 remain incomplete; actual Standard absent, native TLS cause and21ms CPU-path attribution unresolved, sustainable instance ceiling unmeasured. G1 Not passed/13.G6 open.
+- Next actions: Commit coherent repair/evidence; leave remaining acceptance gates blocked until external/profile constraints change. Any future trial must first address observed stop conditions within separately authorized scope.
+- Next-session cautions: Trials1–4 cleaned; never reuse names/state/backups/tokens. No extra load or crypto tuning to force a pass. Existing unrelated certificates unchanged; private backups retained ignored; protected root files unstaged.
+
+Final repair/evidence verification: documentation build, known credential-signature scan,918 changed-file relative links, both new scalar JSON receipts and git diff --check pass. Source scoped formatter/types/lint and4 focused production-entry regressions already pass; unchanged green lanes not repeated.
+
+### 2026-10-12 — Retained native logs and final blocked audit
+
+- Scope and checklist IDs: Read-only evidence clarification for 10.2a/f, 10.3b/g and 10.G2/G4/G5; no product changes or new trial.
+- Progress: Twelve retained owned API invocation records establish GET404 root/eight-letter paths, including CPU overflow. All twelve CPU/wall/outcome tuples match the original scalar tail receipt uniquely; no timestamp-only or request-ID join claimed. No checklist item closes.
+- Change summary: Preserve the original trial4 receipt; add privacy-safe scalar supplement and interpretation across matrix/readiness/quota/native/gate reports. Correct the current progress date.
+- Files/artifacts: [Retained-log review](../evidence/10-native-retained-log-review.md), its linked JSON and existing reports; Module04 progress and master summary.
+- Verification: Signed-in retained Cloudflare Logs UI, exact owned API Worker/raw cf-worker-event filter, twelve expanded records. Documentation-only structure/relative links/JSON/tuple comparison/scoped formatting/diff checks recorded below; application lanes not rerun because behavior is unchanged.
+- Decisions and deviations: User now requires MCP or Wrangler for provider work; temporary dashboard log tab closed. Initial displayed-type filter returned no records, corrected from inspected raw type. Standard remains not measured; no new traffic/resource/certificate/SSL mutation, paid/main/merge/SPA or scope extension.
+- Blockers/open questions: Same Standard exclusion persists across three consecutive goal turns; actual Minimum integration/metrics/quota attribution/capacity and verified TLS remain unavailable, with 404 CPU above the existing stop. No meaningful authorized acceptance action remains. Goal requires an external/profile decision and authorized resolution of native stop conditions; it is blocked, not complete.
+- Next actions: Preserve 10.2a/f, 10.3b/g and 10.G2/G4/G5 unchecked. Resume dependent acceptance only when constraints or external conditions change; obtain needed provider access through MCP/Wrangler and report capability gaps.
+- Next-session cautions: Trials1–4 are cleaned; never reuse names/backups/tokens or run extra load under the 10ms stop. Do not infer auth CPU from these 404 samples, weaken security/thresholds, measure Standard without authorization, or stage protected root drafts. G1 Not passed, SPA blocked, 13.G6 open.
+
+Final documentation verification: installed VitePress1.6.4 docs build passes1.41s, known credential-signature scan passes,588 relative links/scalar JSON/twelve unique tuple comparisons/seven unchanged incomplete IDs/diff pass. pnpm's wrapper refuses on virtual-store setting mismatch; no reinstall/config edit. Installed oxfmt excludes docs under the existing docs/** rule, so formatting is recorded excluded. No application lanes or hosted trials rerun.
+
+### 2026-10-12 — P0 native blocker diagnosis and fresh-trial preparation
+
+- Scope and checklist IDs: HANDOFF-11 P0 only; 10.2a/f, 10.3b/g and 10.G2/G4 reporting. No P1 implementation.
+- Progress: Both authorized SSH hosts resolve the test zone to public Cloudflare addresses. Wrangler4.144.0 authentication refresh initially times out; IPv4-first DNS restores existing OAuth access without re-login or credential disclosure.
+- Change summary: Prepare a new isolated native trial with fresh backup/inventory/names/keys and finite independent cleanup. Preserve the 10 ms stop rule; correlate native samples with labels, request method/path and response status.
+- Files/artifacts: Ignored .local/module10-native-pilot5 tooling; public scalar diagnostic/evidence to follow.
+- Verification: SSH oci/unpkg server-side tool/DNS preflight pass; initial sandbox SSH/listener restrictions require authorized escalation. Default Wrangler refresh fails UND_ERR_CONNECT_TIMEOUT; NODE_OPTIONS=--dns-result-order=ipv4first whoami passes. Local DNS still supplies synthetic198.18/15 addresses, including IPv4-mapped IPv6.
+- Decisions and deviations: Reuse code only from trial4, never its names/state/backups/secrets. No provider dashboard, TLS bypass, threshold change, Standard measurement or SPA start. Context7 resolve/query refreshed Workers custom domains/tail and SDK OAuth transport; native CPU/status field coverage still requires runtime evidence.
+- Blockers/open questions: Exact fresh-domain DNS/certificate/TLS and labelled MVP CPU not yet measured; all prior incomplete gate items remain unchecked.
+- Next actions: Provider read-only preflight, fresh backup and guarded deploy; verified TLS from SSH before bounded labelled requests. Stop on first CPU above10ms or missing attribution.
+- Next-session cautions: Only one writer on feat/v1; protected root drafts untouched. Standard stays unmeasured, G1 Not passed, Module11 Not started and13.G6 open.
+
+P0 checkpoint: Trial5 stops before upload on Cloudflare504 Gateway Timeout from Wrangler's GET of the fresh Worker's secret metadata; this is not a10021 composition rejection or a harness90-second timeout. Independent cleanup verifies193 baseline records/FKs and0 owned Workers/domains/active data; four removed permanent key identities remain. Ephemeral secret copies removed. One new trial may address the transient provider failure; it requires a new backup, inventory, random names and independent guard, and preserves all CPU/TLS bounds.
+
+### 2026-10-12 — P0 stopped on provider capability gaps; cleanup verified
+
+- Scope and checklist IDs: HANDOFF-11 P0 only;10.2a/f,10.3b/g and10.G2/G4/G5 reporting. No product/P1 implementation or checklist closure.
+- Progress: IPv4-first DNS restores Wrangler login; both authorized SSH hosts resolve the test zone publicly. Certificate inventory403/9109 and DNS inventory403/10000 remain. Fresh trial5 fails Wrangler secret metadata GET with504; one fresh trial6 fails read-only inventory on30s timeout before deployment. Native target TLS/HTTP/CPU remain unmeasured.
+- Change summary: Record exact access/transport gaps and privacy-safe receipts; correct the old master paragraph that still described the already-authorized composition repair as pending. Prepared attribution tooling is ignored and unexercised; no claim that it passes live acceptance.
+- Files/artifacts: [P0 report/commands/lookup](../evidence/10-p0-provider-diagnostic.md), [scalar receipt](../evidence/10-p0-provider-diagnostic.json), native/gate reports, Module10/11 progress and master; ignored .local/module10-native-pilot5/6 diagnostics/backups/tooling.
+- Verification: Production Minimum/ingress build passes; verified fresh logical backups59tables/193 then197records. Both independent20-minute guards finish cleanup with original records unchanged, valid FKs and0 owned Workers/domains/active data. Exact owned-key query: trial5 four removed identities, trial6 zero; helper's unconditional configured-key count corrected only in the interpreted scalar receipt. Temporary secret/password copies removed; donor R2 credentials unchanged. Final sampled headroom99,966requests/4,997,890reads/99,960writes, account-wide/delayed, not billing attribution. Final docs/secrets/links/JSON/checklist/diff checks recorded below; unchanged application lanes not rerun.
+- Decisions and deviations: No certificate/dashboard/SSL/permission change, local proxy, TLS bypass, extra load, CPU reinterpretation, paid feature, Standard measurement, main/merge or SPA action. No remote Wrangler/Node/npx path exposed; no software installed. HANDOFF-11 requires reporting and stopping on unresolved capability gaps.
+- Blockers/open questions: Reliable authorized provider transport plus certificate/DNS visibility are needed before a fresh deployed TLS/labelled CPU trial. Standard is not the only missing criterion: actual Minimum integration/full metrics/quota attribution/capacity also remain incomplete. G1 Not passed,13.G6 open.
+- Next actions: Restore MCP/Wrangler access and run one entirely new guarded trial within existing bounds. Return any representative CPU above10ms to the user for a baseline decision; do not start P1.
+- Next-session cautions: Trials1–6 are cleaned; never reuse their names/state/backups/secrets. Preserve permanent removed-key identities and append-only history. No new native response, sample, quantile or capacity is established; protected root drafts stay unstaged.
+
+Final P0 verification: installed VitePress1.6.4 docs build passes1.59s; `node tooling/secrets.mjs` passes; scoped Python validation passes370 relative links, scalar JSON, unchanged repaired-production bundle hashes, observed cleanup/key counts, ephemeral secret removal and the exact seven unchecked Module10 IDs; G1/Module11 states are unchanged. `git diff --check` passes. Installed oxfmt explicitly excludes all seven documentation targets under existing ignore rules (exit2/no targets), so formatting is recorded excluded, not passed. Application/browser/performance lanes are not rerun because product behavior is unchanged; no hosted acceptance request or sample ran.
+
+### 2026-10-12 — P0 Cloudflare API MCP continuation started
+
+- Scope and checklist IDs: HANDOFF-11 P0 only; 10.2a/f, 10.3b/g and gate reporting; no P1 implementation.
+- Progress: MCP reads authorized Workers/domains, active zone, certificate packs and full DNS inventory successfully; earlier Wrangler certificate/DNS permission gaps are cleared on this connection.
+- Change summary: Prepare one fresh guarded production-bundle trial; exact-domain TLS probes from authorized oci, followed only by bounded labelled MVP requests if verified.
+- Files/artifacts: Ignored .local/module10-native-pilot7 preparation; scalar report pending.
+- Verification: Certificate/DNS MCP200, three existing certificate packs and36 DNS records; two original Worker domains. No matching old trial certificate or wildcard test DNS record.
+- Decisions and deviations: Preserve10ms stop on every observed invocation, no warm-up/filter/TLS bypass, no paid/Standard/SPA action.
+- Blockers/open questions: Fresh-domain certificate/TLS and representative CPU not yet established.
+- Next actions: Fresh backup/inventory, finite independent cleanup, unchanged native upload through MCP, domain/certificate verification and remote TLS.
+- Next-session cautions: Never reuse trials1–6 state/names/backups/secrets; G1 Not passed, Module11 Not started,13.G6 open.
+
+MCP checkpoint: Explicit user approval authorizes the private full D1 backup after automatic review rejects the broad extraction. Untruncated paginated schema/table retrieval produces a verified fresh59-table/197-row logical restore. Independent20-minute cleanup guard is active; four new lifecycle key references register and unchanged Minimum production API multipart upload succeeds200. Ingress upload is rejected by automatic review for transmitting its generated signing secret; exact Worker/account authorization is pending. No public-domain attachment, certificate creation, TLS or HTTP request yet.
+
+### 2026-10-12 — P0 MCP TLS resolved; CPU guard prevents attribution
+
+- Scope and checklist IDs: HANDOFF-11 P0 only; 10.2a/f, 10.3b/g and 10.G2/G4/G5 reporting. No product or frontend implementation.
+- Progress: MCP restores certificate/DNS/provider inspection; unchanged production Minimum and ingress upload. Fresh exact-domain automatic certificate becomes active and oci verifies TLSv1.3/chain/hostname. CPU attribution remains unresolved.
+- Change summary: Record fresh guarded trial7 and scalar evidence; replace stale current provider/TLS blocker text while preserving historical receipts and all incomplete checkboxes.
+- Files/artifacts: [MCP report/commands/lookup](../evidence/10-p0-mcp-trial.md), [scalar receipt](../evidence/10-p0-mcp-trial.json), linked acceptance reports, Module10/11 logs and master; private ignored .local/module10-native-pilot7 tooling/backup.
+- Verification: Explicitly authorized fresh private backup59tables/197rows restores locally with valid FKs. Both MCP uploads200, workers.dev/previews disabled, two unfiltered tails connect, exact domain/DNS/certificate observed pending→active. Eleven verified remote TLS attempts: ten SSLError, then success.34 unlabelled GET404 samples (17 per root), all outcome ok; API0–16ms/ingress1–3ms. Guard stops on first16ms; pilotHTTP0. Independent cleanup preserves197 original rows/FKs,4 exact removed key identities,0 owned active data/resources; full original Worker/domain/certificate IDs and36 DNS records preserved. Exact-pack cleanup returns1406; final inventories resolve absence without retry. Tail DELETE10007 after Worker deletion; all processes terminal, generated secret/payload/tail-URL copies removed. Final documentation checks follow.
+- Decisions and deviations: Automatic review rejects bulk backup and ingress test-secret upload; user explicitly approves both exact actions before retry. No remaining approval-review block. Context7 Workers queries return no matching content; SDK query and Cloudflare MCP docs/OpenAPI fill gaps, with actual scalar CPU/TLS evidence. No manual SSL/DCV change, paid/Standard/main/merge/push/SPA action, native warm-up/filter/extra load, backend repair or baseline change.
+- Blockers/open questions: Outside-harness404 CPU exceeds the unchanged10ms stop before labelled requests. Representative MVP CPU, integration/full metrics/quota/capacity remain unavailable. Standard is not the only unmet criterion; G1 Not passed and13.G6 open.
+- Next actions: Report partial P0 resolution and remaining stop condition; return any new rule/backend-remediation scope decision to the user. No further hosted request or P1 starts.
+- Next-session cautions: Trials1–7 are cleaned; never reuse names/state/backups/secrets or infer a causal CPU/certificate history, quantile/capacity/Free acceptance from these observations. Preserve permanent key tombstones, append-only history, protected root drafts and gate states.
+
+Final MCP P0 verification: installed VitePress1.6.4 documentation build passes; `node tooling/secrets.mjs` passes; scoped Python validates468 relative links, scalar JSON/cleanup/CPU/TLS invariants, the exact seven unchecked Module10 IDs and unchanged G1/Module11 gates; `git diff --check` passes. Scoped installed oxfmt exits2 because existing docs/** ignore rules exclude all10 targets; formatting is excluded, not passed. No product/application/browser/performance lane is rerun because source behavior is unchanged. No new hosted acceptance request is sent.
+
+### 2026-10-13 — PR 2 OpenAPI formatting CI repair
+
+- Scope and checklist IDs: Maintenance of 01.3b and 10.1a/e only; repair failed quality jobs 115023013824 and 115022997166 on PR #2 commit 3081b375. No gate/checklist status change.
+- Progress: Both failures are oxfmt rejection of packages/contracts/openapi.json; runtime Node/workerd, PostgreSQL, documentation and CodeQL checks succeeded on the original commit.
+- Change summary: Format generated OpenAPI through the installed oxfmt stdin CLI with the JSON target path, as already done for generated TypeScript. Regenerate the committed JSON without semantic changes.
+- Files/artifacts: tooling/public-api.ts, packages/contracts/openapi.json, and Module01/10 progress records; [failed job](https://github.com/EIHRTeam/HyperBug/actions/runs/38313027034/job/115023013824?pr=2).
+- Verification: Node24.21.0/oxfmt0.68.0; node tooling/public-api.ts --check passes75 paths, contract suite2/2 passes, root TypeScript/lint/import boundaries pass, parsed JSON matches HEAD exactly. Tracked-source snapshot oxfmt --check . passes571 files.
+- Decisions and deviations: Context7 resolve/query on2026-10-13: /websites/cli_github_manual (gh run view/pr checks) and /websites/oxc_rs (formatter stdin/config), citing https://cli.github.com/manual/gh_run_view and https://oxc.rs/docs/guide/usage/formatter/quickstart.html; installed CLI confirms behavior. No dependency/config/API policy change.
+- Blockers/open questions: Local pnpm scripts stop on pre-existing enableGlobalVirtualStore mismatch; installed script executables used directly. Full working-tree formatting also sees protected untracked drafts; explicit git-file arguments follow .claude skill links, unlike CI directory scanning. Clean tracked snapshot verifies the exact CI formatter invocation without changing drafts/skills. Hosted repair verification pending publication.
+- Next actions: Publish the scoped repair to feat/v1/PR2 and inspect fresh CI; preserve existing module next actions.
+- Next-session cautions: Protected root drafts/handoffs stay unstaged. Do not modify migration warnings or dependency installation settings as part of this formatting repair. G1/G2 and13.G6 remain unchanged; no main push or PR merge.
+
+Hosted checkpoint:157591e passes the original formatting failure and both quality jobs advance through contracts. The next high audit failure is the unused frontend generator graph, handled in Module01/11 maintenance records. No API semantics or Module10 gates changed.
+
+Hosted quality closure: repair commits157591e/886da14 are pushed to feat/v1/PR2. Both push and PR quality jobs pass the full lane (including frozen install, format,406 unit/2 contract checks, secrets/licenses, high-severity audit and full build): [PR run38316851149](https://github.com/EIHRTeam/HyperBug/actions/runs/38316851149), [push run38316845131](https://github.com/EIHRTeam/HyperBug/actions/runs/38316845131). Node runtime, Documentation38316851151 and CodeQL38316851226 also pass; workerd/PostgreSQL are still running at this recording checkpoint. Changed engineering/progress relative links and whitespace pass. Final CI observation remains before user handoff; no source modification or additional local application test is needed for this closing record. Module/gate state and protected drafts are unchanged.
+
+### 2026-10-13 — CPU observation decision and fresh labelled Minimum pilot preparation
+
+- Scope and checklist IDs: HANDOFF-11 P0(b), partial10.2a/f and10.3b/g; no gate closure.
+- Progress/change summary: Apply the dated user decision before hosted traffic; prepare fresh trial8 and shared positive-attribution classifier for tail, pilot and finite supervisor.
+- Files/artifacts: [P0 decision and all binding conditions](../evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13), plan user-directed state/EXECUTION, tooling/module10-native-attribution.mjs and private ignored trial8 tooling.
+- Verification: Preparation only; controlled attribution checks and actual fresh native pilot pending.
+- Decisions and deviations: Account for sent label/method/path/status with unique both-root matches. Every harness request retains10ms; overflow, invocation failure, missing CPU or attribution stops. Everything else is retained outside MVP quantiles with method/path/status/count/ranges, unknown origin and account request/CPU consumption. Only the self-imposed observation set changes; platform limit, published thresholds/baselines, degradation and13.G6 unchanged. No extra load/warm-up/wrapper/crypto/backend/path exemption; Standard unmeasured/G1 Not passed.
+- Blockers/open questions: Actual labelled CPU remains unknown; all seven incomplete Module10 checks remain open.
+- Next actions: Fresh inventory/backup, independent finite guard, unchanged production bundles/native tails, verified remote TLS, existing sequential eight-request maximum pilot.
+- Next-session cautions: No trial/name/key/backup reuse; stop and report any labelled breach rather than engineer around it. Preserve protected drafts and append-only history; P1 already complete, no later frontend work.
+
+### 2026-10-13 — Labelled Minimum pilot stopped for missing native attribution
+
+- Scope and checklist IDs: HANDOFF-11 P0(b), partial10.2a/f,10.3b/g;10.G2/G4/G5 unchanged.
+- Progress: Decision applied; fresh TLS verified; exactly1 labelled instance GET403 sent,0 uniquely matched native events. Missing attribution triggers stop; no representative CPU pass/breach, quantile, integration or capacity claim.
+- Change summary: Shared positive-attribution classifier; sequential sent ledger/no redirect/retry; unfiltered native tails and independent finite cleanup. All dated conditions recorded in P0 evidence/progress/plan user-directed state.
+- Files/artifacts: [Pilot report](../evidence/10-p0-labelled-minimum-pilot.md), [scalar receipt](../evidence/10-p0-labelled-minimum-pilot.json), [binding decision](../evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13), tooling helper, README/EXECUTION/master/Module11 log; private ignored trial8 backup/tooling.
+- Verification: Attribution boundary/failure/missing/duplicate checks and three syntax checks pass; native TLSv1.3/exact SAN, first labelled HTTP and mandatory12-second unmatched stop observed.62 tail/80 retained GET404 observations including two11ms events remain out-of-scope with exact path/count/ranges and account-budget disclosure.201 original rows/FKs/all original resources/DNS preserved; owned resources/active data0, exact4 removed key tombstones, all handles terminal/generated secrets removed. Docs build/scoped format/lint/secrets pass; final585-relative-link/receipt/accounting/cleanup/seven-unchecked-ID/diff checks pass. No unchanged application-lane rerun.
+- Decisions and deviations: Every harness request retains10ms; only positive sent label/method/path/status matching defines scope. Unknown-origin observations are recorded outside MVP quantiles but consume account budget. All platform/published baselines/thresholds/degradation/13.G6 requirements unchanged; no extra load/warm-up/wrapper/crypto/backend/path exemption. API upload used direct local API helper with Wrangler OAuth after tool-payload truncation rather than requested MCP/Wrangler command; procedural deviation recorded, other provider operations MCP. Failed local restore order/key timestamp corrected before dependent traffic, exact no-key-write inspected before retry.
+- Blockers/open questions: Labelled403 cause/native attribution unknown. Actual Minimum integration/full metrics/quota/capacity and Standard remain incomplete; G1 Not passed,13.G6 open.
+- Next actions: Stop/report and await explicit new direction; no further pilot, alternative client, edge-policy change or backend remediation.
+- Next-session cautions: Trial8 cleaned; do not reuse names/backup/keys or treat unlabelled11ms as labelled failure. Preserve append-only history/protected drafts/P1 completed scope; no later frontend increment or main/push/merge/PR action.
+
+Final closure: installed VitePress1.6.4 docs build, known-credential scan, scoped oxfmt/oxlint and git diff --check pass;585 relative links, JSON/sent ledger/observation counts/cleanup and all seven unchanged unchecked IDs verified. No application lane repeated. Exact tail termination143/supervisor0/transport0/pilot0 recorded; no remaining owned hosted/local process. Nothing staged or committed; protected root drafts untouched.
+
+### 2026-10-13 — User-authorized P0 checkpoint publication
+
+- Scope and checklist IDs: Commit/push the prepared CPU-decision, positive-attribution helper and trial8 evidence only; no checklist or gate closure.
+- Progress/change summary: User explicitly authorizes publication on feat/v1, superseding this batch's earlier no-push instruction. Pilot remains stopped after labelled instance GET403 lacked native attribution; no new implementation or hosted traffic.
+- Files/artifacts: Prepared Module10 P0 reports/receipt, plan state/EXECUTION, affected evidence and Module10/11 logs, tooling/module10-native-attribution.mjs. Protected root drafts/handoffs and ignored private backups/tooling remain excluded.
+- Verification: Prior focused attribution/syntax/docs/lint/format/secret/585-link/receipt/cleanup checks remain valid; publication hygiene and remote commit verification are performed in this session. Context7 resolve/query2026-10-13: /git/htmldocs for explicit staging, normal branch push and remote-ref verification; no documentation gap affecting the operation. No green application or hosted lanes repeated.
+- Decisions and deviations: Publish one coherent Conventional Commit with a normal non-force origin push.10ms/platform/baselines/degradation/13.G6 unchanged; Standard unmeasured/G1 Not passed/P1-only scope retained.
+- Blockers/open questions: Existing Module10 native attribution/integration/metrics/quota/capacity and Standard gaps remain.
+- Next actions: Complete authorized commit/push and verify origin/feat/v1; no further pilot or remediation without new direction.
+- Next-session cautions: Trial8 cleaned; no private data/protected drafts, main/merge/PR edit, force push or scope extension.
+
+
+### 2026-10-18 — Module 12 prerequisite checkpoint
+
+- Scope and checklist IDs: Module 12 public-client prerequisite; user-directed Module 12 completion and explicit audit-browsing resume.
+- Progress: Regenerated contracts/OpenAPI/client for safe previews and redacted audit reads. Current public contract tests pass 2/2; fixed first-party browser assets are explicitly outside the business API inventory. G1 remains Not passed, hosted Standard/Minimum/Free measurements remain untouched.
+- Change summary: See [Module 12 checkpoint](12-web-product-workflows.md) and [workflow contract decisions](../evidence/12-workflow-contracts.md).
+- Files/artifacts: Shared contracts/server/runtime roots or frontend boundary files described in the linked checkpoint; [ADR 0016](../../decisions/0016-first-party-passkey-step-up-controls.md) for the first-party ceremony controls.
+- Verification: Local workerd/D1 and PostgreSQL issue-route suites 2/2 each, focused frontend 16/16, public contracts 2/2 and builds pass at recorded checkpoints; newest passkey/browser work remains under verification. No hosted acceptance.
+- Decisions and deviations: No dependency, database migration, weakened assurance, persistent browser credential, raw HTML sink or hosted load.
+- Blockers/open questions: New browser acceptance/review remains owned by Module 12; G1/Module 10/13.G6 status unchanged.
+- Next actions: Complete the linked Module 12 verification and record final prerequisite results here.
+- Next-session cautions: Preserve protected user drafts and earlier evidence; this increment does not imply new hosted/release acceptance.
+
+
+### 2026-10-18 — Module 12 browser recovery checkpoint
+
+- Scope and checklist IDs: Necessary existing prerequisites for Module 12; no new owning-module checklist closure.
+- Progress: Both local HTTP issue-route suites pass 2/2 and the latest public contracts pass 2/2; three-profile product browser evidence does not close hosted acceptance or G1.
+- Change summary: Draft/form/conflict and plugin control fixes, separate revocation explanations, current local verification and reader/engineering documentation.
+- Files/artifacts: [Module 12 acceptance record](../evidence/12-browser-acceptance.md), linked profile reports/bundles and its [progress](12-web-product-workflows.md); scoped source formatting only on existing prerequisite files.
+- Verification: Node 31, Standard 31 and Minimum 32 local browser checks pass; focused unit 18/18, contracts 2/2, workerd HTTP 2/2 and PostgreSQL HTTP 2/2. Typecheck/lint/boundaries/build/secret/docs checks pass at recorded checkpoints.
+- Decisions and deviations: No new migration/dependency or policy weakening. See the linked record for failed harness assumptions and the fixture key-registry correction.
+- Blockers/open questions: Remaining Module 12 upload/media, failure/accessibility/performance/security acceptance stays open.
+- Next actions: Continue the bounded Module 12 acceptance matrix; preserve this module's existing gates and incomplete checks.
+- Next-session cautions: No hosted traffic, paid resources, push, merge or later-module work. G1 Not passed, Module 10 Blocked, 13.G6 open; protected root drafts remain uncommitted.
+
+
+### 2026-10-19 — Module 12 prerequisite closure
+
+- Scope and checklist IDs: Final local verification/documentation of this module's bounded Module 12 prerequisites; no additional owning-module checklist/gate closure.
+- Progress: Module 12 is Complete; its [24-item completion map](../evidence/12-completion.md) supersedes earlier pending Module 12 notes in this log.
+- Change summary: Final expiry/conflict/moderation/forms/first-party passkey checks, actual upload/media acceptance, human accessibility acceptance, focused review and measured performance are reconciled. No new prerequisite behavior during this documentation closure.
+- Files/artifacts: Module 12 completion/browser/upload/performance/review reports, ADR 0016, its checklist/progress and synchronized English/Chinese reader guidance.
+- Verification: Final local workflows 37/37/38, uploads 11/10/10, zero axe violations on nine surfaces/profile, user manual all-pass. Current-source units 18/18, contracts 2/2, workerd HTTP 6/6 and PostgreSQL HTTP 6/6; types/lint/API/build/docs/secrets/scoped format/whitespace pass. Final documentation checks are in Module 12's closing record.
+- Decisions and deviations: Human/manual, local genuine service, native emulator and instrumented lab scopes remain distinct. No production/provider/billing/hosted compatibility claim or security-policy relaxation.
+- Blockers/open questions: No Module 12 remainder. This module's pre-existing incomplete gates/checks and production provider/scanner remainders are unchanged; G1 Not passed, Module 10 Blocked and 13.G6 open.
+- Next actions: Follow this module's existing authorized scope; do not restart hosted/later-module work from the Module 12 closure.
+- Next-session cautions: Owned Module 12 services are stopped; manual URL obsolete and scanner snapshot expires normally. Protected drafts/handoffs remain uncommitted; no push/merge/PR edit or hosted resource action.

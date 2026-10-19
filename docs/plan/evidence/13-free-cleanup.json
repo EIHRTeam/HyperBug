@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-19T01:27:24.453Z",
+  "preserved": {
+    "workers": true,
+    "domains": true,
+    "databases": true,
+    "buckets": true,
+    "queues": true,
+    "workflows": true
+  },
+  "originalCounts": {
+    "workers": 3,
+    "domains": 3,
+    "databases": 2,
+    "buckets": 4,
+    "queues": 0,
+    "workflows": 0
+  },
+  "ownedD1Absent": true,
+  "current": {
+    "workers": [
+      {
+        "id": "block-me-not",
+        "etag": "347c2585b5b1fecd54b93f9dac7bd76e98c3646062acdd4821e4366851f2e51e"
+      },
+      {
+        "id": "c2pa-signing",
+        "etag": "6dad15bfe5bb6d6ad458ab2b31dc02c96e336b3d34f6624d667fb5d99221e644"
+      },
+      {
+        "id": "eihr-blog-api",
+        "etag": "b409298ac1cef776550bb45c69afd5bcbed8fffddcd3eb2c0d560d2313d2a267"
+      }
+    ],
+    "domains": [
+      {
+        "id": "c5b4e6c6c3bfbfffc978cb8cbfda42eb88d7cdcf",
+        "zone_id": "91caa1ca5e95ee6983770c84bb7dacd3",
+        "zone_name": "eihrteam.org",
+        "hostname": "blog.eihrteam.org",
+        "service": "eihr-blog-api",
+        "environment": "production",
+        "cert_id": "a21e3987-d330-4579-ae56-d31af3e5727f",
+        "previews_enabled": false,
+        "enabled": true
+      },
+      {
+        "id": "ed72be326a5816692203a6cd21085581e5f72bc9",
+        "zone_id": "91caa1ca5e95ee6983770c84bb7dacd3",
+        "zone_name": "eihrteam.org",
+        "hostname": "recaptcha.workers.eihrteam.org",
+        "service": "block-me-not",
+        "environment": "production",
+        "cert_id": "f99d1fb7-6849-4f1a-9df7-f6a8ca5cc2a2",
+        "previews_enabled": false,
+        "enabled": true
+      },
+      {
+        "id": "2801a09e4c68b8c234b5a141dc4b31af1fb72b7c",
+        "zone_id": "91caa1ca5e95ee6983770c84bb7dacd3",
+        "zone_name": "eihrteam.org",
+        "hostname": "mps.eihrteam.org",
+        "service": "c2pa-signing",
+        "environment": "production",
+        "cert_id": "95ffccf8-dc28-4bfb-a634-3f56aadaf6b1",
+        "previews_enabled": false,
+        "enabled": true
+      }
+    ],
+    "databases": [
+      {
+        "uuid": "5081af9c-7740-42b7-bc91-10010a0b8323",
+        "name": "hyperbug-test-1"
+      },
+      {
+        "uuid": "ca708e43-88c0-49eb-881c-ba84046d0332",
+        "name": "skland-1"
+      }
+    ],
+    "buckets": [
+      {
+        "name": "assets",
+        "creation_date": "2026-09-19T08:58:55.972Z"
+      },
+      {
+        "name": "pki",
+        "creation_date": "2026-10-06T17:30:26.917Z"
+      },
+      {
+        "name": "preservator",
+        "creation_date": "2026-06-27T16:08:25.285Z"
+      },
+      {
+        "name": "test",
+        "creation_date": "2026-10-03T10:15:49.052Z"
+      }
+    ],
+    "queues": [],
+    "workflows": []
+  }
+}

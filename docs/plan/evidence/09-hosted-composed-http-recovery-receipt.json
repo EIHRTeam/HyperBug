@@ -1,0 +1,311 @@
+{
+  "recordedAt": "2026-10-11T05:06:23.750127+00:00",
+  "trial": "R12",
+  "acceptance": "Hosted composed D1 checkpoint interruption/redeployment recovery verified; maximum dispatch fails10ms CPU target at14ms; independent cleanup complete",
+  "plan": "Workers Free (user-attested)",
+  "cpuTargetMs": 10,
+  "invocationKind": "Authenticated HTTP fixture calls actual Minimum scheduled method; not native Cron",
+  "resources": {
+    "worker": "hyperbug-09-native-2d2976859192",
+    "hostname": "async-http-2d2976859192.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cronCount": 0,
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused"
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-11T04:52:46.701Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4995864,
+      "remainingD1Writes": 99882,
+      "remainingWorkerRequests": 99867
+    },
+    "after": {
+      "at": "2026-10-11T05:01:43.466Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4994596,
+      "remainingD1Writes": 99798,
+      "remainingWorkerRequests": 99780
+    }
+  },
+  "deployments": [
+    {
+      "mode": "fault",
+      "createdAt": "2026-10-11T04:54:12.688251Z",
+      "deploymentId": "239b4623-4618-4e2a-a3cb-e46eaacaa418",
+      "versionIds": [
+        "5729f20d-7969-44f0-bd11-9790679c447e"
+      ],
+      "source": {
+        "at": "2026-10-11T04:52:44.088Z",
+        "commit": "82c8e1e361fb4eed9783c2abcd54b77e420a8821",
+        "mode": "fault",
+        "invocation": "Authenticated HTTP calls actual Minimum scheduled method; no native Cron proof",
+        "artifactSha256": {
+          "proof-worker.mjs": "5608f8172161855565de37d56537b2889cab992fe3e76c01fe1619d54721106c",
+          "rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+          "source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777"
+        },
+        "extraFaultPreflightQueries": 1,
+        "noDeployment": true
+      },
+      "cronCount": 0
+    },
+    {
+      "mode": "resume",
+      "createdAt": "2026-10-11T04:58:25.275445Z",
+      "deploymentId": "bdddecfc-33a2-412c-87d4-a0c59ffbc28f",
+      "versionIds": [
+        "4768d153-bc9e-43b0-af2f-91af1cdef990"
+      ],
+      "source": {
+        "at": "2026-10-11T04:58:15.478Z",
+        "commit": "82c8e1e361fb4eed9783c2abcd54b77e420a8821",
+        "mode": "resume",
+        "invocation": "Authenticated HTTP calls actual Minimum scheduled method; no native Cron proof",
+        "artifactSha256": {
+          "proof-worker.mjs": "ea50b2061edb27ebeefe0c5a09054bd355fd1964d901baa93d1609574cedf130",
+          "rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+          "source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777"
+        },
+        "extraFaultPreflightQueries": 0,
+        "noDeployment": true
+      },
+      "cronCount": 0
+    },
+    {
+      "mode": "dispatch",
+      "createdAt": "2026-10-11T04:59:52.848654Z",
+      "deploymentId": "7a0b25ab-54d5-43ec-8e27-98be012c7dd8",
+      "versionIds": [
+        "aa440963-4078-4bc5-a4ba-89e232a619a0"
+      ],
+      "source": {
+        "at": "2026-10-11T04:59:45.074Z",
+        "commit": "82c8e1e361fb4eed9783c2abcd54b77e420a8821",
+        "mode": "dispatch",
+        "invocation": "Authenticated HTTP calls actual Minimum scheduled method; no native Cron proof",
+        "artifactSha256": {
+          "proof-worker.mjs": "b6df59eda3bcd66b08291dfedefcd7f220aef1e8d9fc5c9fb8b230c275c26c6a",
+          "rolldown-runtime-hePW80VL.mjs": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021",
+          "source-D-2FAbRU.mjs": "d74a61851d8d63d4d99363accb37559fb8f1c901f5232d2b93730007c012e777"
+        },
+        "extraFaultPreflightQueries": 0,
+        "noDeployment": true
+      },
+      "cronCount": 0
+    }
+  ],
+  "measurements": [
+    {
+      "stage": "fault",
+      "at": "2026-10-11T04:57:24.360000+00:00",
+      "cpuMs": 9,
+      "wallMs": 665,
+      "outcome": "exception",
+      "exceptions": [
+        "Module09OwnedCheckpointAbort"
+      ],
+      "metrics": [
+        {
+          "component": "native-scheduler-witness",
+          "phase": 4,
+          "outcome": "checkpoint-response-lost",
+          "job": {
+            "checkpoint": 1,
+            "terminal": false
+          }
+        },
+        {
+          "component": "async-minimum",
+          "phase": 4,
+          "outcome": "bounded-error",
+          "job": null,
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 14,
+          "writes": 4,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791694419533
+          },
+          "ageMs": 225475
+        }
+      ],
+      "logCount": 2
+    },
+    {
+      "stage": "resume",
+      "at": "2026-10-11T04:59:14.707000+00:00",
+      "cpuMs": 7,
+      "wallMs": 530,
+      "outcome": "ok",
+      "exceptions": [],
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 4,
+          "outcome": "done",
+          "job": {
+            "checkpoint": 2,
+            "terminal": true
+          },
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 18,
+          "writes": 9,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791694419533
+          },
+          "ageMs": 335691
+        }
+      ],
+      "logCount": 1
+    },
+    {
+      "stage": "dispatch",
+      "at": "2026-10-11T05:00:37.567000+00:00",
+      "cpuMs": 14,
+      "wallMs": 437,
+      "outcome": "ok",
+      "exceptions": [],
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 10,
+          "subrequests": 10,
+          "reads": 63,
+          "writes": 22,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1
+    }
+  ],
+  "recovery": {
+    "interruption": "Uncaught named Worker invocation exception after committed step0 response loss, then actual clean redeployment; not OS process kill",
+    "afterFault": {
+      "checkpoint": 1,
+      "uniqueWitnesses": [
+        0
+      ],
+      "pendingEventPreserved": true
+    },
+    "afterRedeployment": {
+      "checkpoint": 2,
+      "uniqueWitnesses": [
+        0,
+        1
+      ],
+      "pendingEventPreserved": true
+    },
+    "cancelledSiblingPreserved": true,
+    "oversizedJobCreationRefused": true
+  },
+  "canonical": {
+    "capturedAt": "2026-10-11T05:00:50.677Z",
+    "revision": 1,
+    "indexedRevision": 1,
+    "titleCodePoints": 200,
+    "bodyCodePoints": 32768,
+    "indexedTitleBytes": 371,
+    "indexedBodyBytes": 0,
+    "projectionVersion": "title-v1:hyperbug-text-1",
+    "deliveryState": "done",
+    "attempts": 1
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 162,
+      "foreignKeysValid": true,
+      "singletonStateRestored": true,
+      "singletonCounts": {
+        "async_minimum_budget": 1,
+        "async_minimum_cursors": 2,
+        "search_budget": 0
+      },
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "original": {
+      "at": "2026-10-11T05:01:39.473Z",
+      "originalWorkerCount": 2,
+      "remainingWorkerCount": 2,
+      "originalWorkersPreserved": true,
+      "originalDomainsPreserved": true,
+      "ownedWorkerAbsent": true,
+      "ownedDomainAbsent": true,
+      "originalSchedulesPreserved": true,
+      "originalQueuesPreserved": true,
+      "originalWorkflowsPreserved": true
+    },
+    "processes": {
+      "tail": {
+        "handle": 2630,
+        "pid": 77062,
+        "terminal": true,
+        "exitCode": 0
+      },
+      "guardian": {
+        "handle": 97277,
+        "pid": 77006,
+        "terminal": true,
+        "exitCode": 0
+      }
+    },
+    "guardian": {
+      "at": "2026-10-11T05:01:43.476Z",
+      "reason": "authenticated HTTP CPU/outcome bound failed",
+      "cleaned": true
+    },
+    "privateTokenRemoved": true
+  },
+  "limitations": [
+    "Three separate cold deployment stages, one observation each; no sustained distribution",
+    "The actual scheduled method and config are executed, but HTTP delivery cannot replace native Cron proof",
+    "Fault-only preflight adds one unmetered SQL call; CPU includes it; lost-response metadata excludes committed step read/write counters",
+    "Private authentication/path/Response overhead included; no product HTTP/auth/performance acceptance",
+    "R9 separately supplies native quota refusal/recovery",
+    "Raw DNS inventory unavailable; Worker/custom-domain mappings verified",
+    "14ms fails unchanged project target; changing target cannot raise documented physical Free limit",
+    "09.1f/09.V6 remain incomplete;09.3e suspended;G1/G2 closed;13.G6 open"
+  ]
+}

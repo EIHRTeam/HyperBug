@@ -1,0 +1,1884 @@
+{
+  "profile": "standard",
+  "browser": "155.0.8059.80",
+  "environment": "Disposable local services, production SPA build; no hosted requests",
+  "browserPath": "Browser plugin not available; existing Playwright runtime",
+  "metricsCaveat": "Document-level lab observer diagnostics across SPA interactions and viewport changes. cls is cumulative layout-shift score, not the session-window CLS algorithm. interactions are event-duration candidates, not field INP. Minimum anonymous metrics reset on reload. No isolated-route CWV, hosted latency or SLO claim.",
+  "checks": [
+    "anonymous project landing, bounded list, URL cursor/back navigation",
+    "shared bookmarked search survives a full public-page reload",
+    "structured search and safe syntax error",
+    "server safe-tree rendering and inert external images",
+    "transported Markdown corpus: 20 accepted representations rendered, 9 invalid bodies rejected by actual API",
+    "1,000-comment window, page focus, native scroll anchor and visible comment permalink",
+    "390px layout and reduced-motion emulation",
+    "Issue Form: actual post-commit lost responses lock fields and retry one unchanged receipt",
+    "Public User: every non-upload form field including multi-select, focused validation and server preview/submission",
+    "Public User: comment and reaction through actual API",
+    "ambiguous response after actual commit: unchanged receipt retry produces one comment",
+    "comment edit: duplicate-ID-free composer, actual competing revision, preserved draft and explicit reload recovery",
+    "Public User: confirmed comment deletion removes the restricted body from public timeline",
+    "offline comment failure preserves locked draft and retries successfully",
+    "actual concurrent form replacement rejects stale submission, preserves draft, explicitly reloads v2 and accepts reviewed answers",
+    "issue edit: actual competing revision, retained draft, explicit fetched-snapshot reload and reviewed save",
+    "actual bearer revocation during comment submission rejects access and clears identity-bound draft",
+    "Public User: credential-free persistent storage",
+    "Triage: confirmed close/reopen with current revisions",
+    "Triage: actual label, type, milestone and eligible Staff assignee assignments with fresh revisions",
+    "actual role revocation denies triage write and clears permission-bound controls/drafts",
+    "Triage: credential-free persistent storage",
+    "Maintainer: restricted edit history, confirmed hide and restore through actual APIs",
+    "Maintainer: actual redaction hides the public timeline body while retaining staff-restricted history",
+    "Maintainer: actual label management",
+    "Maintainer: full type metadata, milestone due date and confirmed template replacement",
+    "Maintainer: actual YAML Issue Form creation and immutable replacement through production controls",
+    "browser memory-token expiry timer clears an in-progress editor (browser clock fast-forward; backend time and immutable assurance unchanged)",
+    "Maintainer: credential-free persistent storage",
+    "password-only sensitive administration is denied and clears stale identity state",
+    "first-party asset recovers from a simulated native NotAllowedError without granting assurance; subsequent registration/login remains native",
+    "native virtual-authenticator registration/login through first-party controls and PKCE step-up",
+    "Administrator: confirmed settings update and actual Staff role grant/removal under passkey assurance",
+    "Administrator: redacted audit browser",
+    "Administrator: actual registered plugin, public/write-only secret settings, trust/CSP disclosure, enable and disable",
+    "Administrator: confirmed authorization-session revocation and separate app bearer sign-out",
+    "Administrator: credential-free persistent storage"
+  ],
+  "screenshots": [
+    "/tmp/hyperbug12-standard-detail.png",
+    "/tmp/hyperbug12-standard-mobile.png",
+    "/tmp/hyperbug12-standard-dialog-triage.png",
+    "/tmp/hyperbug12-standard-dialog-settings.png"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/authorize"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/assets/passkeys.js"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/authorize/login"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/token"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/content/preview"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/forms/:id/submissions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/forms/:id/submissions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/forms/:id/submissions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/forms/:id/submissions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/authorize"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/assets/passkeys.js"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/authorize/login"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/token"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/close"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/reopen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/projects/:id/issues/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/projects/:id/issues/:id/type"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/projects/:id/issues/:id/milestone"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/projects/:id/issues/:id/assignees"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/projects/:id/issues/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/authorize"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/assets/passkeys.js"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/authorize/login"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/token"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/history"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/moderate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/history"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/moderate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/history"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/moderate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/history"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/projects/:id/templates/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/authorize"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/assets/passkeys.js"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/authorize/login"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/token"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/plugins"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/authorize"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/assets/passkeys.js"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/passkey/register/options"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/passkey/register"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/passkey/login/options"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/passkey/login/options"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/passkey/login"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/authorize"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/assets/passkeys.js"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/authorize/consent"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/token"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/projects/:id/members/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/projects/:id/members/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/:id/audit"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/plugins"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/plugins/configuration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/plugins/load"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/plugins/configure"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/plugins/configure"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/plugins/configuration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/plugins/load"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/plugins/enable"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/plugins"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/plugins/disable"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/plugins"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/account/sessions/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/account"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/token/revoke"
+    }
+  ],
+  "metrics": {
+    "anonymous": {
+      "lcp": 48,
+      "cls": 0.005320711263020834,
+      "longTasks": [],
+      "interactions": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "violations": []
+    },
+    "feedbackuser": {
+      "lcp": 120,
+      "cls": 0.017592783546447752,
+      "longTasks": [],
+      "interactions": [
+        40,
+        40,
+        40,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        24,
+        24,
+        24,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "violations": []
+    },
+    "triager": {
+      "lcp": 112,
+      "cls": 0,
+      "longTasks": [],
+      "interactions": [
+        40,
+        40,
+        40,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        56,
+        56,
+        56,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "violations": []
+    },
+    "maintainer": {
+      "lcp": 108,
+      "cls": 0.017632300482855905,
+      "longTasks": [],
+      "interactions": [
+        40,
+        40,
+        40,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        24,
+        24,
+        24,
+        16,
+        16,
+        16,
+        24,
+        24,
+        24,
+        16,
+        16,
+        16,
+        24,
+        24,
+        24,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "violations": []
+    },
+    "rootadmin": {
+      "lcp": 76,
+      "cls": 0.0208047056833903,
+      "longTasks": [],
+      "interactions": [
+        48,
+        48,
+        48,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        56,
+        56,
+        56,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        32,
+        32,
+        32,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "violations": []
+    }
+  },
+  "manual": "Not performed in this run",
+  "httpErrors": [
+    {
+      "path": "/api/v1/projects/:id/search",
+      "status": 400,
+      "code": "SEARCH_UNSUPPORTED"
+    },
+    {
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id",
+      "status": 409,
+      "code": "REVISION_CONFLICT"
+    },
+    {
+      "path": "/api/v1/projects/:id/issues/:id/comments/:id/reactions",
+      "status": 404,
+      "code": "NOT_FOUND"
+    },
+    {
+      "path": "/api/v1/projects/:id/forms/:id/submissions",
+      "status": 409,
+      "code": "FORM_VERSION_STALE"
+    },
+    {
+      "path": "/api/v1/projects/:id/issues/:id",
+      "status": 409,
+      "code": "REVISION_CONFLICT"
+    },
+    {
+      "path": "/api/v1/projects/:id/issues/:id/comments",
+      "status": 401,
+      "code": "AUTHENTICATION_REQUIRED"
+    },
+    {
+      "path": "/api/v1/projects/:id/issues/:id/labels",
+      "status": 403,
+      "code": "FORBIDDEN"
+    },
+    {
+      "path": "/api/v1/admin/plugins",
+      "status": 403,
+      "code": "REAUTHENTICATION_REQUIRED"
+    }
+  ],
+  "passed": true
+}

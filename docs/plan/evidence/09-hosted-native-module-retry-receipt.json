@@ -1,0 +1,131 @@
+{
+  "recordedAt": "2026-10-10T16:02:32.252Z",
+  "sourceCommit": "a78d5f0",
+  "plan": "Workers Free (user-attested)",
+  "cpuLimitMs": 10,
+  "acceptance": "failed: native canonical dispatch 12 ms CPU",
+  "resources": {
+    "worker": "hyperbug-09-native-ff6b06a71ec3",
+    "hostname": "async-native-ff6b06a71ec3.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "cron": "*/5 * * * *",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused"
+  },
+  "headroom": {
+    "before": {
+      "at": "2026-10-10T15:38:30.822Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4991240,
+      "remainingD1Writes": 99572,
+      "remainingWorkerRequests": 99775
+    },
+    "after": {
+      "at": "2026-10-10T15:57:37.411Z",
+      "kind": "Delayed adaptive analytics, not billing",
+      "remainingD1Reads": 4991167,
+      "remainingD1Writes": 99517,
+      "remainingWorkerRequests": 99739
+    }
+  },
+  "native": [
+    {
+      "scriptName": "hyperbug-09-native-ff6b06a71ec3",
+      "outcome": "ok",
+      "eventTimestamp": 1791647714208,
+      "cpuTime": 12,
+      "wallTime": 290,
+      "path": null,
+      "eventKind": "scheduled",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 53,
+          "writes": 22,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    }
+  ],
+  "canonical": {
+    "at": "2026-10-10T15:57:34.116Z",
+    "rows": [
+      {
+        "delivered_at": 1791647714502,
+        "canonical_revision": 1,
+        "search_revision": 1,
+        "title": " hosted asynchronous search ",
+        "state": "done",
+        "attempts": 1
+      }
+    ]
+  },
+  "checks": {
+    "explicitTickInvocations": 0,
+    "nativeSourceAcknowledged": true,
+    "deliveryAttempts": 1,
+    "logSummaries": 1,
+    "exceptions": 0
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 125,
+      "foreignKeysValid": true,
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "baselineSingletonsRestoredExactly": true,
+    "tailStopped": true,
+    "monitorStopped": true,
+    "rawDns": "Independent absence unverified; owned mapping absent",
+    "originalResourcesPreservedExactly": {
+      "workers": 2,
+      "domains": 2
+    }
+  },
+  "limitations": [
+    "Probe calls production Minimum function with phase 0 fixed to preserve original expired identity records",
+    "No full production root, paid Standard or global Free billing acceptance",
+    "Startup 5 ms is separate from native invocation CPU",
+    "No controlled attribution of the difference from prior 20 ms to a particular change",
+    "Maximum-body helper prepared but not run after canonical CPU failure; attempt cleaned first"
+  ]
+}

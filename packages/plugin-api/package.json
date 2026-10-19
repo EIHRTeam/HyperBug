@@ -1,0 +1,12 @@
+{
+  "name": "@hyperbug/plugin-api",
+  "version": "1.6.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "0.34.52"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "recordedAt": "2026-10-19T01:26:52.438Z",
+  "plan": "Workers Free user-attested; R2 free allowance; billing unverified",
+  "scope": "actual R2 object backup/restore; no product/CPU/capacity acceptance",
+  "bucket": "test",
+  "key": "objects/3ee92cea96ac7037674b8d3d806e01cf5fa3547eefe53eac83a14f3442071419",
+  "bytes": 3,
+  "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+  "quotaHeadroom": "R2 monthly usage unavailable; attempted budget <=2 PUT/2 GET/2 DELETE; no billing-cost attribution; account preflight 99970 sampled requests remaining",
+  "steps": [],
+  "failure": "First Wrangler object-put process exited nonzero; cause not retained in safe diagnostics; no compatibility claim",
+  "independentExactPrefixAbsent": true
+}

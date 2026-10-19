@@ -1,0 +1,479 @@
+{
+  "recordedAt": "2026-10-10T13:17:01.492Z",
+  "scope": "User-authorized Module09 Minimum dispatcher performance refactor and bounded hosted retry",
+  "plan": "Workers Free (user-attested; subscription API denied)",
+  "cpuLimitMs": 10,
+  "acceptance": "partial: explicit hosted-function CPU/quota/recovery passed; native Cron execution unverified",
+  "resources": {
+    "worker": "hyperbug-09-fa683e7d8848",
+    "hostname": "async-fa683e7d8848.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused and unchanged"
+  },
+  "samples": [
+    {
+      "utc": "2026-10-10T12:18:27.699Z",
+      "invocation": "/tick",
+      "cpuMs": 9,
+      "wallMs": 623,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 53,
+          "writes": 22,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:20:12.424Z",
+      "invocation": "/tick",
+      "cpuMs": 4,
+      "wallMs": 249,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "quota-exhausted",
+          "job": null,
+          "queries": 7,
+          "subrequests": 7,
+          "reads": 14,
+          "writes": 0,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791634805300
+          },
+          "ageMs": 7365
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:20:13.814Z",
+      "invocation": "/tick",
+      "cpuMs": 2,
+      "wallMs": 272,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 44,
+          "writes": 16,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:20:15.494Z",
+      "invocation": "/tick",
+      "cpuMs": 1,
+      "wallMs": 262,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "quota-exhausted",
+          "job": null,
+          "queries": 7,
+          "subrequests": 7,
+          "reads": 14,
+          "writes": 0,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791634811919
+          },
+          "ageMs": 3833
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:20:16.821Z",
+      "invocation": "/tick",
+      "cpuMs": 2,
+      "wallMs": 277,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 44,
+          "writes": 16,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:21:14.613Z",
+      "invocation": "/tick",
+      "cpuMs": 6,
+      "wallMs": 5434,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 54,
+          "writes": 21,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:22:27.636Z",
+      "invocation": "/tick",
+      "cpuMs": 9,
+      "wallMs": 1257,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 4,
+          "outcome": "done",
+          "job": {
+            "checkpoint": 1,
+            "terminal": false
+          },
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 16,
+          "writes": 9,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:24:40.731Z",
+      "invocation": "/tick",
+      "cpuMs": 10,
+      "wallMs": 293,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 44,
+          "writes": 11,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:24:41.417Z",
+      "invocation": "/tick",
+      "cpuMs": 9,
+      "wallMs": 1242,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 4,
+          "outcome": "done",
+          "job": {
+            "checkpoint": 2,
+            "terminal": true
+          },
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 16,
+          "writes": 9,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:26:53.658Z",
+      "invocation": "/tick",
+      "cpuMs": 9,
+      "wallMs": 1355,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 1,
+          "outcome": "done",
+          "job": null,
+          "queries": 10,
+          "subrequests": 10,
+          "reads": 28,
+          "writes": 3,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791635135713
+          },
+          "ageMs": 79295
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:28:41.960Z",
+      "invocation": "/tick",
+      "cpuMs": 7,
+      "wallMs": 521,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 3,
+          "outcome": "done",
+          "job": null,
+          "queries": 7,
+          "subrequests": 7,
+          "reads": 33,
+          "writes": 1,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791635135713
+          },
+          "ageMs": 186753
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    },
+    {
+      "utc": "2026-10-10T12:29:15.896Z",
+      "invocation": "/tick",
+      "cpuMs": 2,
+      "wallMs": 264,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 2,
+          "outcome": "done",
+          "job": null,
+          "queries": 2,
+          "subrequests": 2,
+          "reads": 5,
+          "writes": 1,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791635135713
+          },
+          "ageMs": 220439
+        }
+      ],
+      "logCount": 1,
+      "exceptions": []
+    }
+  ],
+  "headroom": {
+    "before": {
+      "capturedAt": "2026-10-10T12:12:55.541Z",
+      "observedD1": {
+        "reads": 3172,
+        "writes": 74
+      },
+      "remainingD1Reads": 4996828,
+      "remainingD1Writes": 99926,
+      "observedWorkerRequests": 71,
+      "remainingWorkerRequests": 99929,
+      "queueAndWorkflowUse": "No new resources; adaptive datasets empty",
+      "method": "Adaptive analytics snapshot, not real-time billing"
+    },
+    "after": {
+      "capturedAt": "2026-10-10T13:14:26.165Z",
+      "observedD1": {
+        "reads": 4840,
+        "writes": 307
+      },
+      "remainingD1Reads": 4995160,
+      "remainingD1Writes": 99693,
+      "observedWorkerRequests": 125,
+      "remainingWorkerRequests": 99875,
+      "queueAndWorkflowUse": "No new resources; adaptive datasets empty",
+      "method": "Adaptive analytics snapshot, not real-time billing"
+    }
+  },
+  "backup": {
+    "method": "Logical canonical schema/records; physical FTS shadow and provider internal state excluded; local import and FTS rebuild verified",
+    "canonicalTables": 59,
+    "canonicalRows": 107,
+    "localForeignKeysValid": true,
+    "migrationsApplied": [
+      "0035_async_admission_token.sql"
+    ]
+  },
+  "checks": {
+    "indexedCanonicalEvent": true,
+    "maximumBody": {
+      "codePoints": 32768,
+      "utf8Bytes": 44472,
+      "indexedProjectionLength": 4098,
+      "acknowledged": true
+    },
+    "quotaRefusal": {
+      "sourceUnchanged": true,
+      "visibleBacklog": 1,
+      "zeroWrites": true,
+      "recoveryAcknowledged": true
+    },
+    "restart": {
+      "checkpoint": 2,
+      "status": "completed",
+      "witnesses": [
+        0,
+        1
+      ],
+      "sourceAcknowledged": true
+    },
+    "nativeCronSourceAcknowledged": false,
+    "nativeCronSamples": 0,
+    "registeredCronTriggers": 1,
+    "scheduledHandlers": [
+      "fetch",
+      "scheduled"
+    ],
+    "logSummaryPerMeasuredInvocation": 1,
+    "finalReadOnlySchedulerAnalytics": {
+      "capturedAt": "2026-10-10T13:29:15.819Z",
+      "events": 0,
+      "errors": null
+    }
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 107,
+      "foreignKeysValid": true,
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 2
+        },
+        {
+          "audit": 2
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "baselineSingletonRowsRestoredExactly": true,
+    "baselineExpiryRestoration": {
+      "restored": {
+        "authorization_sessions": 0,
+        "oauth_codes": 0,
+        "oauth_access_tokens": 0,
+        "webauthn_challenges": 1,
+        "mutation_receipts": 0,
+        "account_lockouts": 0,
+        "rate_limit_counters": 1
+      },
+      "allPriorValuesVerified": true,
+      "foreignKeysValid": true
+    },
+    "tailProcessesStopped": true,
+    "rawDns": "Independent DNS inventory remains unavailable under scoped credentials; owned custom-domain mapping verified absent"
+  },
+  "limitations": [
+    "No native Cron event observed in the live tail or scheduler analytics through the recorded observation window; prepared source remained pending until scoped cleanup",
+    "Temporary protected probe invokes the production Minimum function; it does not establish full production-root or paid Standard acceptance",
+    "Maximum body uses the existing canonical projection ceiling; upload phase had no storage binding, so no new hosted upload claim",
+    "Reported integer CPU maximum10ms leaves no measured margin; no general SLA or account-global billing guarantee",
+    "Two quota cycles ran because a legacy helper executed on import; removed that import side effect before later probes",
+    "An expiry probe removed two pre-existing expired rows; their exact captured values were restored and final full baseline/foreign-key guards passed",
+    "No audit resume or G1/G2/13.G6 closure"
+  ]
+}

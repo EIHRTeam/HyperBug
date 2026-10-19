@@ -1,0 +1,1855 @@
+{
+  "profile": "standard",
+  "browser": "155.0.8059.80",
+  "method": "Three sequential fresh-context cold list/detail samples and one actual Staff login followed by create/admin SPA transitions. Production build; desktop 1280x900; no CPU/network throttling; local services. Optional Chromium soft navigation attribution is feature-detected. No field percentile, hosted latency, SLO or billing claim.",
+  "vitals": {
+    "version": "6.2.3",
+    "sha256": "edcdd0b35ec0af8519681ec3cc665034e619dc221552a3d5480772981967e026",
+    "productionDependency": false
+  },
+  "samples": [
+    {
+      "label": "list-1",
+      "readyMs": 127.544375,
+      "metrics": [
+        {
+          "name": "CLS",
+          "value": 0.008032677544487847,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {
+            "target": "#root>footer.site-footer",
+            "largestShiftValue": 0.008032677544487847
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 92,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {
+            "timeToFirstByte": 4.4000000059604645,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 87.59999999403954
+          }
+        },
+        {
+          "name": "INP",
+          "value": 24,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {
+            "target": "#content",
+            "inputDelay": 0.19999998807907104,
+            "processingDuration": 2.7000000178813934,
+            "presentationDelay": 21.099999994039536
+          }
+        }
+      ],
+      "longTasks": [],
+      "shifts": [
+        {
+          "startTime": 83.40000000596046,
+          "value": 0.008032677544487847,
+          "hadRecentInput": false,
+          "targets": [
+            "footer"
+          ]
+        }
+      ],
+      "supported": [
+        "element",
+        "event",
+        "first-input",
+        "interaction-contentful-paint",
+        "largest-contentful-paint",
+        "layout-shift",
+        "long-animation-frame",
+        "longtask",
+        "mark",
+        "measure",
+        "navigation",
+        "paint",
+        "resource",
+        "soft-navigation",
+        "visibility-state"
+      ],
+      "softNavigationSupported": true,
+      "elements": 138,
+      "timelineRows": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/projects/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/project-CrOjHFyQ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/labels"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issue-types"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/milestones"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/search"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        }
+      ]
+    },
+    {
+      "label": "detail-1",
+      "readyMs": 101.22208300000011,
+      "metrics": [
+        {
+          "name": "CLS",
+          "value": 0.08112943469153511,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "target": "#root>footer.site-footer",
+            "largestShiftValue": 0.08027777777777778
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 80,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "timeToFirstByte": 1.4000000059604645,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 78.59999999403954
+          }
+        },
+        {
+          "name": "INP",
+          "value": 16,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "target": "#root>a.skip-link",
+            "inputDelay": 0.09999999403953552,
+            "processingDuration": 3.2000000178813934,
+            "presentationDelay": 12.699999988079071
+          }
+        }
+      ],
+      "longTasks": [],
+      "shifts": [
+        {
+          "startTime": 75.59999999403954,
+          "value": 0.08027777777777778,
+          "hadRecentInput": false,
+          "targets": [
+            "footer"
+          ]
+        },
+        {
+          "startTime": 79.59999999403954,
+          "value": 0.0008516569137573242,
+          "hadRecentInput": false,
+          "targets": [
+            "p"
+          ]
+        }
+      ],
+      "supported": [
+        "element",
+        "event",
+        "first-input",
+        "interaction-contentful-paint",
+        "largest-contentful-paint",
+        "layout-shift",
+        "long-animation-frame",
+        "longtask",
+        "mark",
+        "measure",
+        "navigation",
+        "paint",
+        "resource",
+        "soft-navigation",
+        "visibility-state"
+      ],
+      "softNavigationSupported": true,
+      "elements": 216,
+      "timelineRows": 20,
+      "requests": [
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/projects/:id/issues/:id/1"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/issue-DJh9YEZY.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/command-form-Di8Dg2xZ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/ui-Bj0dJpIy.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/editor-CVQY_pPu.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id/timeline"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id/reactions"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        }
+      ]
+    },
+    {
+      "label": "list-2",
+      "readyMs": 109.15083300000015,
+      "metrics": [
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {}
+        },
+        {
+          "name": "LCP",
+          "value": 84,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {
+            "timeToFirstByte": 0.9000000059604645,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 83.09999999403954
+          }
+        },
+        {
+          "name": "INP",
+          "value": 24,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {
+            "target": "#root>a.skip-link",
+            "inputDelay": 0.20000001788139343,
+            "processingDuration": 3.199999988079071,
+            "presentationDelay": 20.599999994039536
+          }
+        }
+      ],
+      "longTasks": [],
+      "shifts": [],
+      "supported": [
+        "element",
+        "event",
+        "first-input",
+        "interaction-contentful-paint",
+        "largest-contentful-paint",
+        "layout-shift",
+        "long-animation-frame",
+        "longtask",
+        "mark",
+        "measure",
+        "navigation",
+        "paint",
+        "resource",
+        "soft-navigation",
+        "visibility-state"
+      ],
+      "softNavigationSupported": true,
+      "elements": 138,
+      "timelineRows": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/projects/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/project-CrOjHFyQ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/labels"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issue-types"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/milestones"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/search"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        }
+      ]
+    },
+    {
+      "label": "detail-2",
+      "readyMs": 120.30570799999987,
+      "metrics": [
+        {
+          "name": "CLS",
+          "value": 0.014968864758809408,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "target": "#root>footer.site-footer",
+            "largestShiftValue": 0.014117207845052084
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 84,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "timeToFirstByte": 2.0999999940395355,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 81.90000000596046
+          }
+        },
+        {
+          "name": "INP",
+          "value": 8,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "target": "#root>a.skip-link",
+            "inputDelay": 0.19999998807907104,
+            "processingDuration": 3.199999988079071,
+            "presentationDelay": 4.600000023841858
+          }
+        }
+      ],
+      "longTasks": [],
+      "shifts": [
+        {
+          "startTime": 76.40000000596046,
+          "value": 0.014117207845052084,
+          "hadRecentInput": false,
+          "targets": [
+            "footer"
+          ]
+        },
+        {
+          "startTime": 93,
+          "value": 0.0008516569137573242,
+          "hadRecentInput": false,
+          "targets": [
+            "p"
+          ]
+        }
+      ],
+      "supported": [
+        "element",
+        "event",
+        "first-input",
+        "interaction-contentful-paint",
+        "largest-contentful-paint",
+        "layout-shift",
+        "long-animation-frame",
+        "longtask",
+        "mark",
+        "measure",
+        "navigation",
+        "paint",
+        "resource",
+        "soft-navigation",
+        "visibility-state"
+      ],
+      "softNavigationSupported": true,
+      "elements": 216,
+      "timelineRows": 20,
+      "requests": [
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/projects/:id/issues/:id/1"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/issue-DJh9YEZY.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/command-form-Di8Dg2xZ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/ui-Bj0dJpIy.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/editor-CVQY_pPu.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id/timeline"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id/reactions"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        }
+      ]
+    },
+    {
+      "label": "list-3",
+      "readyMs": 80.74741600000016,
+      "metrics": [
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {}
+        },
+        {
+          "name": "LCP",
+          "value": 80,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {
+            "timeToFirstByte": 1.4000000059604645,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 78.59999999403954
+          }
+        },
+        {
+          "name": "INP",
+          "value": 8,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id",
+          "attribution": {
+            "target": "#root>a.skip-link",
+            "inputDelay": 0.09999999403953552,
+            "processingDuration": 1.9000000059604645,
+            "presentationDelay": 6
+          }
+        }
+      ],
+      "longTasks": [],
+      "shifts": [],
+      "supported": [
+        "element",
+        "event",
+        "first-input",
+        "interaction-contentful-paint",
+        "largest-contentful-paint",
+        "layout-shift",
+        "long-animation-frame",
+        "longtask",
+        "mark",
+        "measure",
+        "navigation",
+        "paint",
+        "resource",
+        "soft-navigation",
+        "visibility-state"
+      ],
+      "softNavigationSupported": true,
+      "elements": 138,
+      "timelineRows": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/projects/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/project-CrOjHFyQ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/labels"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issue-types"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/milestones"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/search"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        }
+      ]
+    },
+    {
+      "label": "detail-3",
+      "readyMs": 118.18212499999936,
+      "metrics": [
+        {
+          "name": "CLS",
+          "value": 0.08112943469153511,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "target": "#root>footer.site-footer",
+            "largestShiftValue": 0.08027777777777778
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 88,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "timeToFirstByte": 1,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 87
+          }
+        },
+        {
+          "name": "INP",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/projects/:id/issues/:id/1",
+          "attribution": {
+            "target": "#root>a.skip-link",
+            "inputDelay": 0.09999999403953552,
+            "processingDuration": 0,
+            "presentationDelay": 0
+          }
+        }
+      ],
+      "longTasks": [],
+      "shifts": [
+        {
+          "startTime": 79.69999998807907,
+          "value": 0.08027777777777778,
+          "hadRecentInput": false,
+          "targets": [
+            "footer"
+          ]
+        },
+        {
+          "startTime": 86.40000000596046,
+          "value": 0.0008516569137573242,
+          "hadRecentInput": false,
+          "targets": [
+            "p"
+          ]
+        }
+      ],
+      "supported": [
+        "element",
+        "event",
+        "first-input",
+        "interaction-contentful-paint",
+        "largest-contentful-paint",
+        "layout-shift",
+        "long-animation-frame",
+        "longtask",
+        "mark",
+        "measure",
+        "navigation",
+        "paint",
+        "resource",
+        "soft-navigation",
+        "visibility-state"
+      ],
+      "softNavigationSupported": true,
+      "elements": 216,
+      "timelineRows": 20,
+      "requests": [
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/projects/:id/issues/:id/1"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/issue-DJh9YEZY.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/command-form-Di8Dg2xZ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/ui-Bj0dJpIy.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/editor-CVQY_pPu.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id/timeline"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issues/:id/reactions"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        }
+      ]
+    },
+    {
+      "label": "authenticated-create-SPA",
+      "readyMs": 86.5373750000017,
+      "metrics": [
+        {
+          "name": "LCP",
+          "value": 108,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/oauth/callback",
+          "attribution": {
+            "timeToFirstByte": 30.099999994039536,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 77.90000000596046
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/oauth/callback",
+          "attribution": {}
+        },
+        {
+          "name": "LCP",
+          "value": 57.69999998807907,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/",
+          "attribution": {
+            "timeToFirstByte": 0,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 57.69999998807907
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/",
+          "attribution": {}
+        },
+        {
+          "name": "INP",
+          "value": 40,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/oauth/callback",
+          "attribution": {
+            "target": "#root>header.site-header>nav>a",
+            "inputDelay": 0.19999998807907104,
+            "processingDuration": 3.300000011920929,
+            "presentationDelay": 36.5
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 16.69999998807907,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id",
+          "attribution": {
+            "timeToFirstByte": 0,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 16.69999998807907
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id",
+          "attribution": {}
+        },
+        {
+          "name": "INP",
+          "value": 16,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/",
+          "attribution": {
+            "inputDelay": 0,
+            "processingDuration": 2.2999999821186066,
+            "presentationDelay": 13.700000017881393
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 38.400000005960464,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/new",
+          "attribution": {
+            "timeToFirstByte": 0,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 38.400000005960464
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/new",
+          "attribution": {}
+        },
+        {
+          "name": "INP",
+          "value": 16,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id",
+          "attribution": {
+            "inputDelay": 0.09999999403953552,
+            "processingDuration": 2.5,
+            "presentationDelay": 13.400000005960464
+          }
+        },
+        {
+          "name": "INP",
+          "value": 16,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/new",
+          "attribution": {
+            "target": "#_r_i_-title",
+            "inputDelay": 0.19999998807907104,
+            "processingDuration": 0.20000001788139343,
+            "presentationDelay": 15.599999994039536
+          }
+        }
+      ],
+      "longTasks": [],
+      "shifts": [
+        {
+          "startTime": 138.30000001192093,
+          "value": 0.000007161458333333333,
+          "hadRecentInput": true,
+          "targets": [
+            "a"
+          ]
+        },
+        {
+          "startTime": 233.80000001192093,
+          "value": 0.00159686279296875,
+          "hadRecentInput": true,
+          "targets": [
+            "dl",
+            "h2"
+          ]
+        },
+        {
+          "startTime": 349.90000000596046,
+          "value": 0.019870703125,
+          "hadRecentInput": true,
+          "targets": [
+            "form",
+            "div",
+            "div"
+          ]
+        }
+      ],
+      "supported": [
+        "element",
+        "event",
+        "first-input",
+        "interaction-contentful-paint",
+        "largest-contentful-paint",
+        "layout-shift",
+        "long-animation-frame",
+        "longtask",
+        "mark",
+        "measure",
+        "navigation",
+        "paint",
+        "resource",
+        "soft-navigation",
+        "visibility-state"
+      ],
+      "softNavigationSupported": true,
+      "elements": 63,
+      "timelineRows": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/account"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/account-Dqiw3B62.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/ui-Bj0dJpIy.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/command-form-Di8Dg2xZ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/auth/authorize"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/auth/assets/passkeys.js"
+        },
+        {
+          "method": "POST",
+          "kind": "api",
+          "path": "/auth/authorize/login"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/oauth/callback"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "POST",
+          "kind": "api",
+          "path": "/auth/token"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/account"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/account-Dqiw3B62.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/ui-Bj0dJpIy.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/command-form-Di8Dg2xZ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/account/sessions"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/overview-bs8iqyO9.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/project-CrOjHFyQ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/labels"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issue-types"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/milestones"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/search"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/new-issue--gO1Lvrd.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/editor-CVQY_pPu.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/templates"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/forms"
+        }
+      ]
+    },
+    {
+      "label": "authenticated-admin-SPA",
+      "readyMs": 97.6741660000007,
+      "metrics": [
+        {
+          "name": "LCP",
+          "value": 108,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/oauth/callback",
+          "attribution": {
+            "timeToFirstByte": 30.099999994039536,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 77.90000000596046
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/oauth/callback",
+          "attribution": {}
+        },
+        {
+          "name": "LCP",
+          "value": 57.69999998807907,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/",
+          "attribution": {
+            "timeToFirstByte": 0,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 57.69999998807907
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/",
+          "attribution": {}
+        },
+        {
+          "name": "INP",
+          "value": 40,
+          "rating": "good",
+          "navigationType": "navigate",
+          "path": "/oauth/callback",
+          "attribution": {
+            "target": "#root>header.site-header>nav>a",
+            "inputDelay": 0.19999998807907104,
+            "processingDuration": 3.300000011920929,
+            "presentationDelay": 36.5
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 16.69999998807907,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id",
+          "attribution": {
+            "timeToFirstByte": 0,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 16.69999998807907
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id",
+          "attribution": {}
+        },
+        {
+          "name": "INP",
+          "value": 16,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/",
+          "attribution": {
+            "inputDelay": 0,
+            "processingDuration": 2.2999999821186066,
+            "presentationDelay": 13.700000017881393
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 38.400000005960464,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/new",
+          "attribution": {
+            "timeToFirstByte": 0,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 38.400000005960464
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/new",
+          "attribution": {}
+        },
+        {
+          "name": "INP",
+          "value": 16,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id",
+          "attribution": {
+            "inputDelay": 0.09999999403953552,
+            "processingDuration": 2.5,
+            "presentationDelay": 13.400000005960464
+          }
+        },
+        {
+          "name": "INP",
+          "value": 16,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/new",
+          "attribution": {
+            "target": "#_r_i_-title",
+            "inputDelay": 0.19999998807907104,
+            "processingDuration": 0.20000001788139343,
+            "presentationDelay": 15.599999994039536
+          }
+        },
+        {
+          "name": "LCP",
+          "value": 18,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/manage",
+          "attribution": {
+            "timeToFirstByte": 0,
+            "resourceLoadDelay": 0,
+            "resourceLoadDuration": 0,
+            "elementRenderDelay": 18
+          }
+        },
+        {
+          "name": "CLS",
+          "value": 0,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/manage",
+          "attribution": {}
+        },
+        {
+          "name": "INP",
+          "value": 16,
+          "rating": "good",
+          "navigationType": "soft-navigation",
+          "path": "/projects/:id/manage",
+          "attribution": {
+            "target": "#content>fieldset>details>summary",
+            "inputDelay": 0.10000002384185791,
+            "processingDuration": 0.5,
+            "presentationDelay": 15.399999976158142
+          }
+        }
+      ],
+      "longTasks": [],
+      "shifts": [
+        {
+          "startTime": 138.30000001192093,
+          "value": 0.000007161458333333333,
+          "hadRecentInput": true,
+          "targets": [
+            "a"
+          ]
+        },
+        {
+          "startTime": 233.80000001192093,
+          "value": 0.00159686279296875,
+          "hadRecentInput": true,
+          "targets": [
+            "dl",
+            "h2"
+          ]
+        },
+        {
+          "startTime": 349.90000000596046,
+          "value": 0.019870703125,
+          "hadRecentInput": true,
+          "targets": [
+            "form",
+            "div",
+            "div"
+          ]
+        },
+        {
+          "startTime": 1968.9000000059605,
+          "value": 0.06250655449761285,
+          "hadRecentInput": true,
+          "targets": [
+            "details",
+            "details",
+            "details",
+            "details"
+          ]
+        }
+      ],
+      "supported": [
+        "element",
+        "event",
+        "first-input",
+        "interaction-contentful-paint",
+        "largest-contentful-paint",
+        "layout-shift",
+        "long-animation-frame",
+        "longtask",
+        "mark",
+        "measure",
+        "navigation",
+        "paint",
+        "resource",
+        "soft-navigation",
+        "visibility-state"
+      ],
+      "softNavigationSupported": true,
+      "elements": 315,
+      "timelineRows": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/account"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/account-Dqiw3B62.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/ui-Bj0dJpIy.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/command-form-Di8Dg2xZ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/auth/authorize"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/auth/assets/passkeys.js"
+        },
+        {
+          "method": "POST",
+          "kind": "api",
+          "path": "/auth/authorize/login"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/oauth/callback"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-DffC82J6.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/index-BNejdgux.css"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/config.json"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/app-56QAodNk.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "POST",
+          "kind": "api",
+          "path": "/auth/token"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/account"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/account-Dqiw3B62.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/ui-Bj0dJpIy.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/product-BGvJmnUV.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/command-form-Di8Dg2xZ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/instance"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/account/sessions"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/overview-bs8iqyO9.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/project-CrOjHFyQ.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/labels"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/issue-types"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/milestones"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/search"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/new-issue--gO1Lvrd.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/editor-CVQY_pPu.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/templates"
+        },
+        {
+          "method": "GET",
+          "kind": "api",
+          "path": "/api/v1/projects/:id/forms"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/assets/manage-BM3Cm9OX.js"
+        },
+        {
+          "method": "GET",
+          "kind": "static",
+          "path": "/favicon.svg"
+        }
+      ]
+    }
+  ],
+  "largeDiscussion": {
+    "storedComments": 1000,
+    "windowLimit": 20,
+    "nextReadyMs": 55.61370900000111,
+    "next": {
+      "rows": 20,
+      "elements": 216
+    },
+    "returnedRows": 20,
+    "requests": [
+      {
+        "method": "GET",
+        "kind": "api",
+        "path": "/api/v1/projects/:id/issues/:id/timeline"
+      },
+      {
+        "method": "GET",
+        "kind": "static",
+        "path": "/favicon.svg"
+      }
+    ],
+    "rendering": "Ordinary bounded DOM, no virtualization or content-visibility"
+  }
+}

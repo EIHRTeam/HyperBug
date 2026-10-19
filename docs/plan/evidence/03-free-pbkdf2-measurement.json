@@ -1,0 +1,860 @@
+{
+  "kind": "real Cloudflare Free-plan PBKDF2-HMAC-SHA256 feasibility measurement for 03.V7; per-invocation derivation only, one request per invocation",
+  "date": "2026-09-29",
+  "environment": {
+    "account": "Endfield Industries Human Resource Team (user-asserted Cloudflare Free plan)",
+    "worker": "hyperbug-phase03-pbkdf2-measure (temporary, capability-guarded, deleted after the run)",
+    "runtime": "workerd on workers.dev; Web Crypto PBKDF2-HMAC-SHA256, 256-bit output, fixed public test salt/input",
+    "constraint": "Workers Free allows 10 ms CPU per invocation; Date.now() does not advance during computation, so feasibility (success vs runtime CPU kill), not in-worker timing, is the observable"
+  },
+  "findings": {
+    "coarseLadder": "1,000-100,000 iterations succeed (3/3 each); 150,000-600,000 fail with a runtime error page (0/3 each)",
+    "fineLadder": "100,000 iterations succeed 5/5; 100,500-104,000 fail 0/5 each; the boundary is sharp and deterministic",
+    "linearity": "10x10,000, 5x20,000 and 2x50,000 (total 100,000) all pass 5/5; 8x12,000 (96,000) passes 5/5 - the budget is total-CPU and per-iteration cost is uniform",
+    "measuredCeilingIterations": 100000,
+    "firstFailingIterations": 100500,
+    "approxNanosecondsPerIteration": 100
+  },
+  "runs": [
+    {
+      "phase": "results.json",
+      "observations": [
+        {
+          "iterations": 1000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 809
+        },
+        {
+          "iterations": 1000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 1243
+        },
+        {
+          "iterations": 1000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 214
+        },
+        {
+          "iterations": 2500,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 470
+        },
+        {
+          "iterations": 2500,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 224
+        },
+        {
+          "iterations": 2500,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 530
+        },
+        {
+          "iterations": 5000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 301
+        },
+        {
+          "iterations": 5000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 391
+        },
+        {
+          "iterations": 5000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 265
+        },
+        {
+          "iterations": 7500,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 456
+        },
+        {
+          "iterations": 7500,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 300
+        },
+        {
+          "iterations": 7500,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 599
+        },
+        {
+          "iterations": 10000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 234
+        },
+        {
+          "iterations": 10000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 414
+        },
+        {
+          "iterations": 10000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 215
+        },
+        {
+          "iterations": 15000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 395
+        },
+        {
+          "iterations": 15000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 242
+        },
+        {
+          "iterations": 15000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 426
+        },
+        {
+          "iterations": 20000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 636
+        },
+        {
+          "iterations": 20000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 431
+        },
+        {
+          "iterations": 20000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 230
+        },
+        {
+          "iterations": 30000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 430
+        },
+        {
+          "iterations": 30000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 265
+        },
+        {
+          "iterations": 30000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 402
+        },
+        {
+          "iterations": 40000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 237
+        },
+        {
+          "iterations": 40000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 424
+        },
+        {
+          "iterations": 40000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 277
+        },
+        {
+          "iterations": 60000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 551
+        },
+        {
+          "iterations": 60000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 215
+        },
+        {
+          "iterations": 60000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 427
+        },
+        {
+          "iterations": 80000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 257
+        },
+        {
+          "iterations": 80000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 434
+        },
+        {
+          "iterations": 80000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 243
+        },
+        {
+          "iterations": 100000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 416
+        },
+        {
+          "iterations": 100000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 261
+        },
+        {
+          "iterations": 100000,
+          "ok": true,
+          "elapsedMs": 0,
+          "wallMs": 420
+        },
+        {
+          "iterations": 150000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 608
+        },
+        {
+          "iterations": 150000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 402
+        },
+        {
+          "iterations": 150000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 208
+        },
+        {
+          "iterations": 200000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 423
+        },
+        {
+          "iterations": 200000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 277
+        },
+        {
+          "iterations": 200000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 447
+        },
+        {
+          "iterations": 300000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 296
+        },
+        {
+          "iterations": 300000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 452
+        },
+        {
+          "iterations": 300000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 335
+        },
+        {
+          "iterations": 600000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 409
+        },
+        {
+          "iterations": 600000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 1097
+        },
+        {
+          "iterations": 600000,
+          "ok": false,
+          "status": 500,
+          "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class",
+          "wallMs": 968
+        }
+      ]
+    },
+    {
+      "phase": "results2.json",
+      "observations": [
+        {
+          "iterations": 100000,
+          "ok": true,
+          "status": 200
+        },
+        {
+          "iterations": 100000,
+          "ok": true,
+          "status": 200
+        },
+        {
+          "iterations": 100000,
+          "ok": true,
+          "status": 200
+        },
+        {
+          "iterations": 100000,
+          "ok": true,
+          "status": 200
+        },
+        {
+          "iterations": 100000,
+          "ok": true,
+          "status": 200
+        },
+        {
+          "iterations": 105000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 105000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 105000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 105000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 105000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 110000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 110000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 110000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 110000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 110000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 115000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 115000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 115000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 115000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 115000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 120000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 120000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 120000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 120000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 120000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 125000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 125000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 125000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 125000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 125000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 130000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 130000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 130000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 130000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 130000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 135000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 135000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 135000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 135000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 135000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 140000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 140000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 140000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 140000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 140000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 145000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 145000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 145000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 145000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 145000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 150000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 150000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 150000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 150000,
+          "ok": false,
+          "status": 500
+        },
+        {
+          "iterations": 150000,
+          "ok": false,
+          "status": 500
+        }
+      ]
+    },
+    {
+      "phase": "results3.json",
+      "observations": [
+        {
+          "i": 100000,
+          "r": 1,
+          "ok": true
+        },
+        {
+          "i": 100000,
+          "r": 1,
+          "ok": true
+        },
+        {
+          "i": 100000,
+          "r": 1,
+          "ok": true
+        },
+        {
+          "i": 100000,
+          "r": 1,
+          "ok": true
+        },
+        {
+          "i": 100000,
+          "r": 1,
+          "ok": true
+        },
+        {
+          "i": 100500,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 100500,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 100500,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 100500,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 100500,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 101000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 101000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 101000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 101000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 101000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 102000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 102000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 102000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 102000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 102000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 103000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 103000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 103000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 103000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 103000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 104000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 104000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 104000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 104000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 104000,
+          "r": 1,
+          "ok": false
+        },
+        {
+          "i": 10000,
+          "r": 10,
+          "ok": true
+        },
+        {
+          "i": 10000,
+          "r": 10,
+          "ok": true
+        },
+        {
+          "i": 10000,
+          "r": 10,
+          "ok": true
+        },
+        {
+          "i": 10000,
+          "r": 10,
+          "ok": true
+        },
+        {
+          "i": 10000,
+          "r": 10,
+          "ok": true
+        },
+        {
+          "i": 20000,
+          "r": 5,
+          "ok": true
+        },
+        {
+          "i": 20000,
+          "r": 5,
+          "ok": true
+        },
+        {
+          "i": 20000,
+          "r": 5,
+          "ok": true
+        },
+        {
+          "i": 20000,
+          "r": 5,
+          "ok": true
+        },
+        {
+          "i": 20000,
+          "r": 5,
+          "ok": true
+        },
+        {
+          "i": 50000,
+          "r": 2,
+          "ok": true
+        },
+        {
+          "i": 50000,
+          "r": 2,
+          "ok": true
+        },
+        {
+          "i": 50000,
+          "r": 2,
+          "ok": true
+        },
+        {
+          "i": 50000,
+          "r": 2,
+          "ok": true
+        },
+        {
+          "i": 50000,
+          "r": 2,
+          "ok": true
+        },
+        {
+          "i": 12000,
+          "r": 8,
+          "ok": true
+        },
+        {
+          "i": 12000,
+          "r": 8,
+          "ok": true
+        },
+        {
+          "i": 12000,
+          "r": 8,
+          "ok": true
+        },
+        {
+          "i": 12000,
+          "r": 8,
+          "ok": true
+        },
+        {
+          "i": 12000,
+          "r": 8,
+          "ok": true
+        }
+      ]
+    }
+  ]
+}

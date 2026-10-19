@@ -1,0 +1,191 @@
+{
+  "recordedAt": "2026-10-10T05:02:25.003Z",
+  "scope": "User-authorized Module08 D1 search batching investigation and B5 retry",
+  "plan": "Workers Free (user-attested; subscription API denied)",
+  "cpuLimitMs": 10,
+  "acceptance": "blocked: 22ms dispatcher CPU exceeds 10ms",
+  "resources": {
+    "worker": "hyperbug-09-c6b9b129da37",
+    "hostname": "async-c6b9b129da37.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "queue": "not created",
+    "workflow": "not created",
+    "r2": "unused and unchanged"
+  },
+  "samples": [
+    {
+      "utc": "2026-10-10T04:58:11.851Z",
+      "invocation": "/profile-search",
+      "cpuMs": 11,
+      "wallMs": 409,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "probe-search",
+          "calls": 3,
+          "samples": [
+            {
+              "statements": 1,
+              "sqlMs": 0.1776,
+              "rowsRead": 1,
+              "rowsWritten": 0
+            },
+            {
+              "statements": 1,
+              "sqlMs": 1.3088,
+              "rowsRead": 3,
+              "rowsWritten": 1
+            },
+            {
+              "statements": 1,
+              "sqlMs": 0.7008,
+              "rowsRead": 5,
+              "rowsWritten": 5
+            }
+          ],
+          "processed": 1,
+          "updated": 1,
+          "usage": {
+            "rowsRead": 8,
+            "rowsWritten": 6,
+            "statements": 2
+          }
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-10T04:58:49.484Z",
+      "invocation": "/tick",
+      "cpuMs": 22,
+      "wallMs": 972,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 14,
+          "subrequests": 14,
+          "reads": 43,
+          "writes": 18,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ]
+    }
+  ],
+  "searchProfile": {
+    "component": "probe-search",
+    "calls": 3,
+    "samples": [
+      {
+        "statements": 1,
+        "sqlMs": 0.1776,
+        "rowsRead": 1,
+        "rowsWritten": 0
+      },
+      {
+        "statements": 1,
+        "sqlMs": 1.3088,
+        "rowsRead": 3,
+        "rowsWritten": 1
+      },
+      {
+        "statements": 1,
+        "sqlMs": 0.7008,
+        "rowsRead": 5,
+        "rowsWritten": 5
+      }
+    ],
+    "processed": 1,
+    "updated": 1,
+    "usage": {
+      "rowsRead": 8,
+      "rowsWritten": 6,
+      "statements": 2
+    }
+  },
+  "headroom": {
+    "before": {
+      "capturedAt": "2026-10-10T04:52:32.901Z",
+      "observedD1": {
+        "reads": 1653,
+        "writes": 0
+      },
+      "remainingD1Reads": 4998347,
+      "remainingD1Writes": 100000,
+      "observedWorkerRequests": 2,
+      "remainingWorkerRequests": 99998,
+      "queueAndWorkflowUse": "No new Queue/Workflow resource or invocation; datasets empty",
+      "method": "Adaptive analytics snapshot, not real-time billing; recent cleanup may be delayed"
+    },
+    "after": {
+      "capturedAt": "2026-10-10T05:00:42.801Z",
+      "observedD1": {
+        "reads": 2295,
+        "writes": 49
+      },
+      "remainingD1Reads": 4997705,
+      "remainingD1Writes": 99951,
+      "observedWorkerRequests": 61,
+      "remainingWorkerRequests": 99939,
+      "queueAndWorkflowUse": "No new Queue/Workflow resource or invocation; datasets empty",
+      "method": "Adaptive analytics snapshot, not real-time billing; recent cleanup may be delayed"
+    }
+  },
+  "backup": {
+    "method": "Logical canonical records/schema snapshot; remote export refuses FTS5; provider internal/derived shadow state excluded, FTS rebuilt locally",
+    "canonicalTables": 59,
+    "canonicalRows": 102,
+    "localForeignKeysValid": true,
+    "migrationsApplied": false
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 102,
+      "foreignKeysValid": true,
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 1
+        },
+        {
+          "audit": 1
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "baselineSingletonRowsRestoredExactly": true,
+    "tailProcessesStopped": true,
+    "rawDns": "Independent fresh-hostname inventory not run; scoped credentials previously denied DNS inventory; custom-domain mapping verified absent"
+  },
+  "limitations": [
+    "Instrumented search-only CPU is not uninstrumented production CPU",
+    "Dispatcher processed an already indexed event, proved acknowledgement and idempotency; it still fails the bound",
+    "No additional max-body, hosted quota exhaustion or recovery test after CPU stop",
+    "No actual production-root or paid Standard performance acceptance"
+  ],
+  "commit": "B5 and search optimization remain uncommitted; no push/PR update"
+}

@@ -1,0 +1,33 @@
+{
+  "v": 1,
+  "scope": "owned module13 private temporary directories and final fixture cleanup; not unrelated processes",
+  "remainingOwnedTemporaryDirectories": {
+    "hyperbug-ops13-*": [],
+    "hyperbug-ops-worker-*": [],
+    "hyperbug-ops-check-*": [],
+    "hyperbug13-r2-*": []
+  },
+  "ownedNodePort30987Closed": true,
+  "providerCleanup": "independent 13-free-cleanup / 13-free-headroom-after; no provider mutation since",
+  "failedAttemptCorrection": {
+    "discovered": 2,
+    "cause": "runtime disposal rejection skipped the following private-directory removal in the original fixture finally block",
+    "exactOwnedNames": [
+      "hyperbug-ops-worker-TE2ve4",
+      "hyperbug-ops-worker-ax1qZz"
+    ],
+    "beforeDeletion": "owner/structure checked; lsof confirmed no open handles; no values inspected or printed",
+    "removed": true,
+    "guard": "nested finally guarantees private-directory removal even when disposal rejects",
+    "verification": "changed workerd fixture 3/3, including injected disposal rejection; types/lint pass"
+  },
+  "canonicalChecked": 20,
+  "canonicalOpen": [
+    "13.1f",
+    "13.2g",
+    "13.3b",
+    "13.3d",
+    "13.G2",
+    "13.G6"
+  ]
+}

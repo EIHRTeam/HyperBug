@@ -1,0 +1,34 @@
+{
+  "environment": "real local Node/PostgreSQL 18 and trusted HTTPS Chrome; no hosted traffic",
+  "browser": "155.0.8059.40",
+  "thirdPartyCookies": {
+    "firstPartyCanary": true,
+    "crossSiteCanary": false,
+    "blockedReasons": [
+      "UserPreferences"
+    ]
+  },
+  "spaLogin": true,
+  "reloadLosesToken": true,
+  "topLevelRecovery": true,
+  "apiOnlyLogout": true,
+  "revokedTokenStatus": 401,
+  "callbackCount": 2,
+  "cookieFreeRequests": 7,
+  "initialStorage": {
+    "local": 0,
+    "session": 0,
+    "cookies": "",
+    "caches": [],
+    "databases": 0
+  },
+  "finalStorage": {
+    "local": 0,
+    "session": 0,
+    "cookies": "",
+    "caches": [],
+    "databases": 0
+  },
+  "urlsAndConsoleTokenFree": true,
+  "tlsVerificationBypass": false
+}

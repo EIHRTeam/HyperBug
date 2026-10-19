@@ -1,0 +1,1162 @@
+[
+  {
+    "version": "before",
+    "lane": "canonical",
+    "ticks": 30,
+    "samples": 125,
+    "sampledActiveUs": 79293,
+    "sampledIdleUs": 22815,
+    "d1LeafUs": 21021,
+    "meterLeafUs": 1693
+  },
+  {
+    "version": "before",
+    "lane": "empty",
+    "ticks": 30,
+    "samples": 51,
+    "sampledActiveUs": 45106,
+    "sampledIdleUs": 15707,
+    "d1LeafUs": 7539,
+    "meterLeafUs": 1183
+  },
+  {
+    "version": "after",
+    "lane": "canonical",
+    "ticks": 30,
+    "samples": 111,
+    "sampledActiveUs": 63785,
+    "sampledIdleUs": 23441,
+    "d1LeafUs": 14890,
+    "meterLeafUs": 1024
+  },
+  {
+    "version": "after",
+    "lane": "empty",
+    "ticks": 30,
+    "samples": 53,
+    "sampledActiveUs": 37485,
+    "sampledIdleUs": 10441,
+    "d1LeafUs": 13402,
+    "meterLeafUs": 2693
+  },
+  {
+    "version": "combined-admission",
+    "lane": "canonical",
+    "ticks": 30,
+    "samples": 122,
+    "sampledActiveUs": 74361,
+    "sampledIdleUs": 29098,
+    "d1LeafUs": 24241,
+    "meterLeafUs": 1820
+  },
+  {
+    "version": "combined-admission",
+    "lane": "empty",
+    "ticks": 30,
+    "samples": 40,
+    "sampledActiveUs": 26426,
+    "sampledIdleUs": 18136,
+    "d1LeafUs": 10577,
+    "meterLeafUs": 518
+  },
+  {
+    "version": "cursor-consolidation-f0c9a1d",
+    "lane": "cold-canonical",
+    "ticks": 20,
+    "samples": 479,
+    "sampledActiveUs": 139254,
+    "sampledIdleUs": 456531,
+    "leafUs": [
+      [
+        "(anonymous)",
+        31639
+      ],
+      [
+        "fetch",
+        19740
+      ],
+      [
+        "runMinimumAsyncTick",
+        9300
+      ],
+      [
+        "admitAndClaim",
+        7508
+      ],
+      [
+        "toJson",
+        6869
+      ],
+      [
+        "searchTokenText",
+        6398
+      ],
+      [
+        "addD1MetaToSpan",
+        6243
+      ],
+      [
+        "firstIfArray",
+        4716
+      ],
+      [
+        "backfill",
+        4579
+      ],
+      [
+        "setAttributes",
+        3331
+      ],
+      [
+        "refsOf",
+        2944
+      ],
+      [
+        "aggregateD1Meta",
+        2859
+      ],
+      [
+        "batch",
+        2848
+      ],
+      [
+        "prepare",
+        2833
+      ],
+      [
+        "complete",
+        2364
+      ],
+      [
+        "handleSearchIndexEvent",
+        2292
+      ],
+      [
+        "URL",
+        2224
+      ],
+      [
+        "text",
+        1925
+      ]
+    ],
+    "method": "Twenty fresh local workerd isolates, one cold then one warm canonical dispatch each; Profiler 100 microseconds; diagnostic, not hosted CPU"
+  },
+  {
+    "version": "cursor-consolidation-f0c9a1d",
+    "lane": "warm-canonical",
+    "ticks": 20,
+    "samples": 115,
+    "sampledActiveUs": 51330,
+    "sampledIdleUs": 96514,
+    "leafUs": [
+      [
+        "(anonymous)",
+        10924
+      ],
+      [
+        "runMinimumAsyncTick",
+        4979
+      ],
+      [
+        "_send",
+        4266
+      ],
+      [
+        "(program)",
+        4109
+      ],
+      [
+        "fetch",
+        3531
+      ],
+      [
+        "toJson",
+        3307
+      ],
+      [
+        "admitAndClaim",
+        1650
+      ],
+      [
+        "setAttributes",
+        1270
+      ],
+      [
+        "backfill",
+        1023
+      ],
+      [
+        "reservation",
+        964
+      ],
+      [
+        "formatLog",
+        923
+      ],
+      [
+        "load",
+        908
+      ],
+      [
+        "mapD1Result",
+        899
+      ],
+      [
+        "now",
+        894
+      ],
+      [
+        "normalizeSearchText",
+        891
+      ],
+      [
+        "clearTimeoutImpl",
+        891
+      ],
+      [
+        "searchBackfillOptions",
+        880
+      ],
+      [
+        "claimStatements",
+        834
+      ]
+    ],
+    "method": "Twenty fresh local workerd isolates, one cold then one warm canonical dispatch each; Profiler 100 microseconds; diagnostic, not hosted CPU"
+  },
+  {
+    "version": "staged-import-prototype",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 477,
+    "sampledActiveUs": 137970,
+    "sampledIdleUs": 490457,
+    "tickMedianUs": 7072,
+    "tickRangeUs": [
+      3985,
+      9608
+    ],
+    "leafUs": [
+      [
+        "fetch",
+        23493
+      ],
+      [
+        "(anonymous)",
+        21925
+      ],
+      [
+        "batch",
+        13660
+      ],
+      [
+        "runMinimumAsyncTick",
+        12689
+      ],
+      [
+        "searchTokenText",
+        7078
+      ],
+      [
+        "(program)",
+        6274
+      ],
+      [
+        "admitAndClaim",
+        5063
+      ],
+      [
+        "_send",
+        4584
+      ],
+      [
+        "firstIfArray",
+        4439
+      ],
+      [
+        "complete",
+        3389
+      ],
+      [
+        "result",
+        2857
+      ],
+      [
+        "toJson",
+        2707
+      ]
+    ],
+    "method": "Local private source prototype omits two import statements after external staging/lease expiry; seeding through Worker warms D1 binding before profiling; sparse sampling; no native acceptance",
+    "applied": false
+  },
+  {
+    "version": "staged-import-prototype",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 116,
+    "sampledActiveUs": 49570,
+    "sampledIdleUs": 111991,
+    "tickMedianUs": 2550.5,
+    "tickRangeUs": [
+      1273,
+      3808
+    ],
+    "leafUs": [
+      [
+        "(anonymous)",
+        7179
+      ],
+      [
+        "fetch",
+        5782
+      ],
+      [
+        "(program)",
+        5458
+      ],
+      [
+        "runMinimumAsyncTick",
+        4704
+      ],
+      [
+        "result",
+        2741
+      ],
+      [
+        "_send",
+        2680
+      ],
+      [
+        "admitAndClaim",
+        1878
+      ],
+      [
+        "handleSearchOutboxEvent",
+        1522
+      ],
+      [
+        "setAttributes",
+        1491
+      ],
+      [
+        "json",
+        1168
+      ],
+      [
+        "wrap",
+        1140
+      ],
+      [
+        "enterSpan",
+        1071
+      ]
+    ],
+    "method": "Local private source prototype omits two import statements after external staging/lease expiry; seeding through Worker warms D1 binding before profiling; sparse sampling; no native acceptance",
+    "applied": false
+  },
+  {
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 564,
+    "sampledActiveUs": 157558,
+    "sampledIdleUs": 293333,
+    "tickMedianUs": 8152.5,
+    "tickRangeUs": [
+      5508,
+      9131
+    ],
+    "leafUs": [
+      [
+        "(anonymous)",
+        23075
+      ],
+      [
+        "fetch",
+        18148
+      ],
+      [
+        "(program)",
+        16337
+      ],
+      [
+        "_send",
+        15016
+      ],
+      [
+        "addAggregatedD1MetaToSpan",
+        12658
+      ],
+      [
+        "toJson",
+        9519
+      ],
+      [
+        "runMinimumAsyncTick",
+        9042
+      ],
+      [
+        "searchTokenText",
+        7313
+      ],
+      [
+        "text",
+        7208
+      ],
+      [
+        "admitAndClaim",
+        3250
+      ],
+      [
+        "mapD1Result",
+        2629
+      ],
+      [
+        "handleSearchIndexEvent",
+        2438
+      ],
+      [
+        "formatWithOptions",
+        1947
+      ],
+      [
+        "_wrappedFetch",
+        1829
+      ],
+      [
+        "backfill",
+        1801
+      ],
+      [
+        "batch",
+        1736
+      ],
+      [
+        "snapshot",
+        1595
+      ],
+      [
+        "complete",
+        1560
+      ]
+    ],
+    "version": "binding-cold-f0c9a1d",
+    "method": "Twenty fresh workerd isolates; canonical seeding through host-side D1 repository proxy, no Worker fetch before cold profiling; then one warm tick; requested sampling100 microseconds; diagnostic not hosted CPU"
+  },
+  {
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 126,
+    "sampledActiveUs": 54988,
+    "sampledIdleUs": 61122,
+    "tickMedianUs": 2665.5,
+    "tickRangeUs": [
+      1795,
+      4002
+    ],
+    "leafUs": [
+      [
+        "(anonymous)",
+        12113
+      ],
+      [
+        "toJson",
+        8145
+      ],
+      [
+        "_send",
+        3949
+      ],
+      [
+        "runMinimumAsyncTick",
+        3810
+      ],
+      [
+        "(program)",
+        3482
+      ],
+      [
+        "admitAndClaim",
+        3313
+      ],
+      [
+        "fetch",
+        2471
+      ],
+      [
+        "addD1MetaToSpan",
+        2395
+      ],
+      [
+        "setAttributes",
+        1266
+      ],
+      [
+        "enterSpan",
+        1190
+      ],
+      [
+        "reservation",
+        1151
+      ],
+      [
+        "json",
+        1151
+      ],
+      [
+        "createD1MinimumAsyncStore",
+        957
+      ],
+      [
+        "taskReference",
+        903
+      ],
+      [
+        "bind",
+        899
+      ],
+      [
+        "validateTaskReference",
+        896
+      ],
+      [
+        "refsOf",
+        892
+      ],
+      [
+        "minimumInvocationBudget",
+        829
+      ]
+    ],
+    "version": "binding-cold-f0c9a1d",
+    "method": "Twenty fresh workerd isolates; canonical seeding through host-side D1 repository proxy, no Worker fetch before cold profiling; then one warm tick; requested sampling100 microseconds; diagnostic not hosted CPU"
+  },
+  {
+    "label": "full-text",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 695,
+    "sampledActiveUs": 183374,
+    "sampledIdleUs": 289053,
+    "tickMedianUs": 9252.5,
+    "tickRangeUs": [
+      6771,
+      11918
+    ],
+    "index": {
+      "revision": 1,
+      "title_bytes": 371,
+      "body_bytes": 5562
+    },
+    "leafUs": [
+      [
+        "(program)",
+        26778
+      ],
+      [
+        "(anonymous)",
+        24392
+      ],
+      [
+        "fetch",
+        18721
+      ],
+      [
+        "_send",
+        14788
+      ],
+      [
+        "searchTokenText",
+        13201
+      ],
+      [
+        "toJson",
+        11243
+      ],
+      [
+        "addAggregatedD1MetaToSpan",
+        10514
+      ],
+      [
+        "runMinimumAsyncTick",
+        9826
+      ],
+      [
+        "(garbage collector)",
+        9102
+      ],
+      [
+        "backfill",
+        6681
+      ],
+      [
+        "admitAndClaim",
+        3446
+      ],
+      [
+        "complete",
+        3041
+      ]
+    ],
+    "version": "maximum-content-full-text-f0c9a1d",
+    "method": "Twenty fresh workerd isolates per variant; host-side canonical maximum title200/body32768 preparation before profiling; first Worker request cold D1 then warm; sampling100 microseconds; diagnostic, private title-only write prototype lacks production mode/readiness/cursor changes",
+    "applied": true
+  },
+  {
+    "label": "full-text",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 132,
+    "sampledActiveUs": 51267,
+    "sampledIdleUs": 53403,
+    "tickMedianUs": 2576.5,
+    "tickRangeUs": [
+      1849,
+      3570
+    ],
+    "index": {
+      "revision": 1,
+      "title_bytes": 371,
+      "body_bytes": 5562
+    },
+    "leafUs": [
+      [
+        "(anonymous)",
+        12001
+      ],
+      [
+        "toJson",
+        3467
+      ],
+      [
+        "(program)",
+        3187
+      ],
+      [
+        "mapD1Result",
+        2988
+      ],
+      [
+        "searchTokenText",
+        2299
+      ],
+      [
+        "fetch",
+        2257
+      ],
+      [
+        "text",
+        2042
+      ],
+      [
+        "revisionOf",
+        1941
+      ],
+      [
+        "setTimeout",
+        1657
+      ],
+      [
+        "runMinimumAsyncTick",
+        1601
+      ],
+      [
+        "_send",
+        1518
+      ],
+      [
+        "randomUUID",
+        1289
+      ]
+    ],
+    "version": "maximum-content-full-text-f0c9a1d",
+    "method": "Twenty fresh workerd isolates per variant; host-side canonical maximum title200/body32768 preparation before profiling; first Worker request cold D1 then warm; sampling100 microseconds; diagnostic, private title-only write prototype lacks production mode/readiness/cursor changes",
+    "applied": true
+  },
+  {
+    "label": "title-only-prototype",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 554,
+    "sampledActiveUs": 138310,
+    "sampledIdleUs": 284769,
+    "tickMedianUs": 7033.5,
+    "tickRangeUs": [
+      5081,
+      8156
+    ],
+    "index": {
+      "revision": 1,
+      "title_bytes": 371,
+      "body_bytes": 2
+    },
+    "leafUs": [
+      [
+        "(program)",
+        21869
+      ],
+      [
+        "(anonymous)",
+        19380
+      ],
+      [
+        "toJson",
+        18549
+      ],
+      [
+        "searchTokenText",
+        14041
+      ],
+      [
+        "fetch",
+        12078
+      ],
+      [
+        "runMinimumAsyncTick",
+        7928
+      ],
+      [
+        "backfill",
+        5306
+      ],
+      [
+        "_send",
+        4646
+      ],
+      [
+        "admitAndClaim",
+        3097
+      ],
+      [
+        "mapD1Result",
+        2709
+      ],
+      [
+        "setAttributes",
+        2346
+      ],
+      [
+        "enterSpan",
+        2317
+      ]
+    ],
+    "version": "maximum-content-title-only-prototype-f0c9a1d",
+    "method": "Twenty fresh workerd isolates per variant; host-side canonical maximum title200/body32768 preparation before profiling; first Worker request cold D1 then warm; sampling100 microseconds; diagnostic, private title-only write prototype lacks production mode/readiness/cursor changes",
+    "applied": false
+  },
+  {
+    "label": "title-only-prototype",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 170,
+    "sampledActiveUs": 52488,
+    "sampledIdleUs": 55445,
+    "tickMedianUs": 2632.5,
+    "tickRangeUs": [
+      1887,
+      3004
+    ],
+    "index": {
+      "revision": 1,
+      "title_bytes": 371,
+      "body_bytes": 2
+    },
+    "leafUs": [
+      [
+        "(garbage collector)",
+        17224
+      ],
+      [
+        "(anonymous)",
+        3725
+      ],
+      [
+        "(program)",
+        3485
+      ],
+      [
+        "fetch",
+        2837
+      ],
+      [
+        "toJson",
+        2288
+      ],
+      [
+        "_send",
+        1984
+      ],
+      [
+        "setTimeout",
+        1670
+      ],
+      [
+        "runMinimumAsyncTick",
+        1541
+      ],
+      [
+        "toArrayOfObjects",
+        1540
+      ],
+      [
+        "claimStatements",
+        1280
+      ],
+      [
+        "result",
+        1148
+      ],
+      [
+        "admitAndClaim",
+        1144
+      ]
+    ],
+    "version": "maximum-content-title-only-prototype-f0c9a1d",
+    "method": "Twenty fresh workerd isolates per variant; host-side canonical maximum title200/body32768 preparation before profiling; first Worker request cold D1 then warm; sampling100 microseconds; diagnostic, private title-only write prototype lacks production mode/readiness/cursor changes",
+    "applied": false
+  },
+  {
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 512,
+    "sampledActiveUs": 142595,
+    "sampledIdleUs": 272662,
+    "tickMedianUs": 6938.5,
+    "tickRangeUs": [
+      6101,
+      9656
+    ],
+    "leafUs": [
+      [
+        "(anonymous)",
+        32105
+      ],
+      [
+        "(program)",
+        18237
+      ],
+      [
+        "fetch",
+        14583
+      ],
+      [
+        "searchTokenText",
+        9605
+      ],
+      [
+        "runMinimumAsyncTick",
+        9135
+      ],
+      [
+        "toJson",
+        6828
+      ],
+      [
+        "addAggregatedD1MetaToSpan",
+        5150
+      ],
+      [
+        "_send",
+        4281
+      ],
+      [
+        "setAttributes",
+        3360
+      ],
+      [
+        "admitAndClaim",
+        3357
+      ],
+      [
+        "text",
+        2960
+      ],
+      [
+        "_sendOrThrow",
+        2828
+      ],
+      [
+        "backfill",
+        2704
+      ],
+      [
+        "mapD1Result",
+        2699
+      ],
+      [
+        "batch",
+        2596
+      ],
+      [
+        "handleSearchIndexEvent",
+        2301
+      ],
+      [
+        "complete",
+        1800
+      ],
+      [
+        "formatWithOptions",
+        1446
+      ],
+      [
+        "aggregateD1Meta",
+        1422
+      ],
+      [
+        "enterSpan",
+        1418
+      ]
+    ],
+    "version": "current-production-title-only-working-tree-from-f0c9a1d",
+    "method": "Twenty fresh local workerd/D1 isolates using the current production title-only implementation; host-side actual repository producer; 200-code-point title and 32768-code-point body; first D1 Worker request cold then one warm; 100-microsecond requested sparse sampling. Diagnostic only, not native CPU or a controlled speedup.",
+    "applied": true,
+    "hostedAcceptance": false,
+    "index": {
+      "revision": 1,
+      "titleUtf8Bytes": 371,
+      "bodyUtf8Bytes": 0
+    }
+  },
+  {
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 169,
+    "sampledActiveUs": 54760,
+    "sampledIdleUs": 51136,
+    "tickMedianUs": 2617.0,
+    "tickRangeUs": [
+      1587,
+      4566
+    ],
+    "leafUs": [
+      [
+        "(garbage collector)",
+        12387
+      ],
+      [
+        "(anonymous)",
+        11175
+      ],
+      [
+        "_send",
+        4509
+      ],
+      [
+        "toJson",
+        3455
+      ],
+      [
+        "fetch",
+        3014
+      ],
+      [
+        "(program)",
+        1921
+      ],
+      [
+        "validateTaskReference",
+        1407
+      ],
+      [
+        "runMinimumAsyncTick",
+        1395
+      ],
+      [
+        "setAttributes",
+        1274
+      ],
+      [
+        "statement",
+        1156
+      ],
+      [
+        "setTimeout",
+        1038
+      ],
+      [
+        "createD1PluginRegistryStore",
+        1020
+      ],
+      [
+        "text",
+        895
+      ],
+      [
+        "admitAndClaim",
+        773
+      ],
+      [
+        "validateSearchIndexEvent",
+        767
+      ],
+      [
+        "createD1SearchIndexStore",
+        762
+      ],
+      [
+        "addD1MetaToSpan",
+        761
+      ],
+      [
+        "Timeout",
+        758
+      ],
+      [
+        "enterSpan",
+        733
+      ],
+      [
+        "_wrappedFetch",
+        706
+      ]
+    ],
+    "version": "current-production-title-only-working-tree-from-f0c9a1d",
+    "method": "Twenty fresh local workerd/D1 isolates using the current production title-only implementation; host-side actual repository producer; 200-code-point title and 32768-code-point body; first D1 Worker request cold then one warm; 100-microsecond requested sparse sampling. Diagnostic only, not native CPU or a controlled speedup.",
+    "applied": true,
+    "hostedAcceptance": false,
+    "index": {
+      "revision": 1,
+      "titleUtf8Bytes": 371,
+      "bodyUtf8Bytes": 0
+    }
+  },
+  {
+    "version": "checkpoint-job-unbatched",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 306,
+    "sampledActiveUs": 120743,
+    "sampledIdleUs": 256974,
+    "medianActiveUs": 5517.0,
+    "minActiveUs": 4570,
+    "maxActiveUs": 15442,
+    "sqlStatements": 11,
+    "providerCalls": 10,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
+    "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
+  },
+  {
+    "version": "checkpoint-job-unbatched",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 79,
+    "sampledActiveUs": 49918,
+    "sampledIdleUs": 54674,
+    "medianActiveUs": 2735.5,
+    "minActiveUs": 252,
+    "maxActiveUs": 3381,
+    "sqlStatements": 11,
+    "providerCalls": 10,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
+    "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
+  },
+  {
+    "version": "checkpoint-job-batched",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 308,
+    "sampledActiveUs": 113263,
+    "sampledIdleUs": 280001,
+    "medianActiveUs": 5558.0,
+    "minActiveUs": 4358,
+    "maxActiveUs": 9323,
+    "sqlStatements": 11,
+    "providerCalls": 8,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
+    "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
+  },
+  {
+    "version": "checkpoint-job-batched",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 98,
+    "sampledActiveUs": 55870,
+    "sampledIdleUs": 52038,
+    "medianActiveUs": 2859.0,
+    "minActiveUs": 1883,
+    "maxActiveUs": 3798,
+    "sqlStatements": 11,
+    "providerCalls": 8,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates",
+    "acceptance": "local sparse diagnostic only; no native CPU or controlled speedup claim"
+  },
+  {
+    "version": "checkpoint-job-compact-prototype",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 262,
+    "sampledActiveUs": 89339,
+    "sampledIdleUs": 261449,
+    "medianActiveUs": 4171.0,
+    "minActiveUs": 3534,
+    "maxActiveUs": 10152,
+    "sqlStatements": 9,
+    "providerCalls": 4,
+    "applied": false,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates; host-side store setup; requested 100-microsecond sampling",
+    "acceptance": "Sparse local diagnostic only. Exclude only (idle), including (program) as in earlier records. A zero means no active sample, not zero CPU. Sequential runs and sampler variation do not establish a causal native speedup. Provider calls include backlog. No native acceptance."
+  },
+  {
+    "version": "checkpoint-job-compact-prototype",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 57,
+    "sampledActiveUs": 32793,
+    "sampledIdleUs": 46556,
+    "medianActiveUs": 1855.0,
+    "minActiveUs": 0,
+    "maxActiveUs": 3245,
+    "sqlStatements": 9,
+    "providerCalls": 4,
+    "applied": false,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates; host-side store setup; requested 100-microsecond sampling",
+    "acceptance": "Sparse local diagnostic only. Exclude only (idle), including (program) as in earlier records. A zero means no active sample, not zero CPU. Sequential runs and sampler variation do not establish a causal native speedup. Provider calls include backlog. No native acceptance."
+  },
+  {
+    "version": "checkpoint-job-compact-production",
+    "lane": "cold",
+    "ticks": 20,
+    "samples": 271,
+    "sampledActiveUs": 88009,
+    "sampledIdleUs": 268702,
+    "medianActiveUs": 4436.5,
+    "minActiveUs": 3557,
+    "maxActiveUs": 5231,
+    "sqlStatements": 9,
+    "providerCalls": 4,
+    "applied": true,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates; host-side store setup; requested 100-microsecond sampling",
+    "acceptance": "Sparse local diagnostic only. Exclude only (idle), including (program) as in earlier records. A zero means no active sample, not zero CPU. Sequential runs and sampler variation do not establish a causal native speedup. Provider calls include backlog. No native acceptance.",
+    "sourceFilesSha256": {
+      "apps/api-cloudflare/src/async-minimum.ts": "0cb9e925d20a478c38fa9730029d8411f19b64d56a057b31c9e047930be24b88",
+      "packages/database/d1/src/async-minimum-jobs.ts": "cd89eae4f23c440fec030ecadf5dd69dde3d88dbe881e64c7212036de508207e",
+      "packages/database/d1/src/async-minimum-budget.ts": "a2d2355a3fa1e22ab1284e098fee0069815313522fe7d7ad5e14ba0839c45303",
+      "packages/database/d1/src/async-processing.ts": "3634adbd37817bc75aa3984b1389541a923fdb4f41757c13db0f64996a3ae23b",
+      "packages/database/d1/src/async-minimum.ts": "f18395fcde0bc9749ed3f5209c0ea52e7d0c6fb55665c0aafc437aef0019e800"
+    }
+  },
+  {
+    "version": "checkpoint-job-compact-production",
+    "lane": "warm",
+    "ticks": 20,
+    "samples": 61,
+    "sampledActiveUs": 41638,
+    "sampledIdleUs": 52350,
+    "medianActiveUs": 1961.5,
+    "minActiveUs": 386,
+    "maxActiveUs": 5493,
+    "sqlStatements": 9,
+    "providerCalls": 4,
+    "applied": true,
+    "fixture": "two-step conformance job; cold checkpoint1, warm terminal checkpoint2; twenty fresh workerd/D1 isolates; host-side store setup; requested 100-microsecond sampling",
+    "acceptance": "Sparse local diagnostic only. Exclude only (idle), including (program) as in earlier records. A zero means no active sample, not zero CPU. Sequential runs and sampler variation do not establish a causal native speedup. Provider calls include backlog. No native acceptance.",
+    "sourceFilesSha256": {
+      "apps/api-cloudflare/src/async-minimum.ts": "0cb9e925d20a478c38fa9730029d8411f19b64d56a057b31c9e047930be24b88",
+      "packages/database/d1/src/async-minimum-jobs.ts": "cd89eae4f23c440fec030ecadf5dd69dde3d88dbe881e64c7212036de508207e",
+      "packages/database/d1/src/async-minimum-budget.ts": "a2d2355a3fa1e22ab1284e098fee0069815313522fe7d7ad5e14ba0839c45303",
+      "packages/database/d1/src/async-processing.ts": "3634adbd37817bc75aa3984b1389541a923fdb4f41757c13db0f64996a3ae23b",
+      "packages/database/d1/src/async-minimum.ts": "f18395fcde0bc9749ed3f5209c0ea52e7d0c6fb55665c0aafc437aef0019e800"
+    }
+  }
+]

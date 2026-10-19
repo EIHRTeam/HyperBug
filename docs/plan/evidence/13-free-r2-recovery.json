@@ -1,0 +1,41 @@
+{
+  "v": 1,
+  "recordedAt": "2026-10-19T01:28:19.583Z",
+  "plan": "Workers Free user-attested; R2 free allowance, monthly headroom unavailable",
+  "scope": "actual R2 tiny object capture/restore; no application/CPU/capacity acceptance",
+  "key": "objects/8fe9ab56a94644b7a2ff03467826c198d9553acef1054205a4733896ad16e4da",
+  "fixtureBytes": 3,
+  "steps": [
+    {
+      "step": "create",
+      "response": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "key": "objects/8fe9ab56a94644b7a2ff03467826c198d9553acef1054205a4733896ad16e4da",
+          "size": "3",
+          "etag": "900150983cd24fb0d6963f7d28e17f72",
+          "version": "7e5eae39e455c70fd52497562d50ad3f",
+          "uploaded": "2026-10-19T01:28:20.346Z",
+          "storage_class": "Standard"
+        },
+        "status": 200
+      }
+    },
+    {
+      "step": "capture-read",
+      "response": {
+        "success": true,
+        "status": 200,
+        "result": "abc"
+      }
+    }
+  ],
+  "restored": true,
+  "restoreThroughVerifiedReadMs": 1068,
+  "cleanupDelete": {
+    "success": true,
+    "status": 200
+  }
+}

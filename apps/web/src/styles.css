@@ -1,0 +1,424 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #fafaf7;
+  --foreground: #202c25;
+  --primary: #223c2e;
+  --primary-foreground: #ffffff;
+  --muted-foreground: #56635a;
+  --border: #d6ded7;
+  --ring: #315e42;
+  --radius: 0.5rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: var(--foreground);
+  background: var(--background);
+  line-height: 1.6;
+}
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 20rem;
+}
+#root {
+  isolation: isolate;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+a {
+  color: inherit;
+  text-underline-offset: 0.25em;
+}
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 5px;
+}
+button,
+.primary-link {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  text-decoration: none;
+  font: inherit;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+.site-header,
+.site-footer,
+main {
+  width: min(100% - 3rem, 68rem);
+  margin-inline: auto;
+}
+.site-header {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  overflow-wrap: anywhere;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-radius: var(--radius);
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  text-decoration: none;
+  color: var(--muted-foreground);
+}
+nav a[aria-current='page'] {
+  color: var(--foreground);
+  text-decoration: underline;
+  font-weight: 650;
+}
+main {
+  flex: 1;
+  padding-block: clamp(2rem, 6vw, 5rem);
+}
+h1 {
+  font-size: clamp(2.25rem, 5vw, 4.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  font-weight: 650;
+  max-width: 17ch;
+  margin: 0.5rem 0 1.5rem;
+}
+h2 {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  margin-block: 2rem 0.75rem;
+  font-weight: 650;
+}
+p {
+  max-width: 65ch;
+  margin-block: 0.75rem;
+}
+.eyebrow {
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.intro {
+  color: var(--muted-foreground);
+  font-size: 1.15rem;
+  margin-bottom: 2rem;
+}
+.overview-summary {
+  margin-top: 4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.overview-summary dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+dt {
+  color: var(--muted-foreground);
+}
+dd {
+  margin: 0.25rem 0 0;
+  font-weight: 600;
+}
+.capability-list {
+  max-width: 48rem;
+}
+.capability-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-nav {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.disclosure {
+  margin-top: 2rem;
+  color: var(--muted-foreground);
+}
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding-block: 1.25rem;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+}
+.startup {
+  padding-block: 4rem;
+}
+.startup h1 {
+  font-size: 2rem;
+}
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  padding: 0.75rem;
+  background: var(--background);
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+ul {
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+code {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 40rem) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .overview-summary dl {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .capability-list div {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+output {
+  display: block;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+.field {
+  margin-block: 1.5rem;
+  max-width: 36rem;
+}
+.field label {
+  display: block;
+  font-weight: 600;
+}
+.field-hint {
+  color: var(--muted-foreground);
+  margin-block: 0.25rem 0.5rem;
+}
+.field input,
+select,
+textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem;
+  font: inherit;
+  border: 1px solid #6d7a71;
+  border-radius: var(--radius);
+  color: var(--foreground);
+  background: #ffffff;
+}
+.field input[aria-invalid='true'] {
+  border: 2px solid #9b2424;
+}
+.field-error {
+  color: #9b2424;
+  font-weight: 600;
+}
+.error-summary {
+  border: 2px solid #9b2424;
+  padding: 1rem;
+  max-width: 36rem;
+}
+.error-summary h2 {
+  margin-top: 0;
+}
+.state-message {
+  margin-block: 1rem;
+}
+dialog {
+  color: var(--foreground);
+  background: var(--background);
+  margin: auto;
+  border: 1px solid #6d7a71;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: min(36rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  overflow: auto;
+}
+dialog h2 {
+  margin-top: 0;
+}
+dialog::backdrop {
+  background: rgb(0 0 0 / 50%);
+}
+
+.issue-title {
+  max-width: 32ch;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  overflow-wrap: anywhere;
+}
+.issue-list,
+.timeline {
+  list-style: none;
+  padding: 0;
+  max-width: 52rem;
+}
+.issue-list > li,
+.timeline > li {
+  padding-block: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-block: 2rem;
+}
+.issue-list > li > a {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.issue-meta {
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}
+.minimum-notice {
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.minimum-notice p {
+  max-width: 85ch;
+}
+details {
+  margin-block: 1.5rem;
+  padding-block: 0.75rem;
+  border-block: 1px solid var(--border);
+}
+summary {
+  cursor: pointer;
+  min-height: 2.75rem;
+  font-weight: 600;
+}
+summary:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 4px;
+}
+.markdown {
+  overflow-wrap: anywhere;
+  max-width: 65ch;
+}
+.markdown pre,
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+.markdown table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+.markdown td,
+.markdown th {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+}
+.markdown img {
+  max-width: 100%;
+}
+textarea {
+  resize: vertical;
+}
+:where(input, textarea, select)[aria-invalid='true'] {
+  border: 2px solid #9b2424;
+}
+.checkbox-label {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-block: 0.5rem;
+  font-weight: 400 !important;
+}
+.checkbox-label input,
+.markdown input[type='checkbox'] {
+  width: 1.25rem;
+  min-height: 1.25rem;
+  flex: 0 0 1.25rem;
+  margin-block: 0.4rem;
+  accent-color: var(--primary);
+}
+fieldset {
+  border: 1px solid #6d7a71;
+  padding: 1rem;
+}
+.image-reference {
+  display: block;
+  padding-block: 0.75rem;
+}
+progress {
+  display: block;
+  width: 100%;
+  margin-block: 0.75rem;
+}
+
+/* Reserve observed loading geometry without hiding or clipping content. */
+.project-heading {
+  min-block-size: 2.16em;
+}
+.project-load-status {
+  min-block-size: 1.6em;
+}
+.issue-overview {
+  min-block-size: 32rem;
+}

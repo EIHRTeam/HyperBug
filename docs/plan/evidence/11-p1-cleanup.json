@@ -1,0 +1,61 @@
+{
+  "checkedAt": "2026-10-12T21:45:49.280Z",
+  "accountId": "aa51b5f3a1a926d4c97fbd0bd7e48646",
+  "projectName": "hyperbug-11-9f880c7e4720",
+  "explicitCleanupAuthorization": true,
+  "deletion": {
+    "success": true,
+    "status": 200
+  },
+  "ownedProjects": 0,
+  "ownedDeployments": 0,
+  "originalProjectsPreserved": true,
+  "originalProjects": [
+    {
+      "name": "endfield-blueprint-editor",
+      "subdomain": "endfield-blueprint-editor.pages.dev"
+    },
+    {
+      "name": "preservator",
+      "subdomain": "preservator.pages.dev"
+    },
+    {
+      "name": "auth",
+      "subdomain": "auth-kb4.pages.dev"
+    },
+    {
+      "name": "lynchpin",
+      "subdomain": "lynchpin.pages.dev"
+    },
+    {
+      "name": "main",
+      "subdomain": "main-a42.pages.dev"
+    },
+    {
+      "name": "esperanta",
+      "subdomain": "esperanta.pages.dev"
+    }
+  ],
+  "absenceChecks": [
+    {
+      "path": "/accounts/aa51b5f3a1a926d4c97fbd0bd7e48646/pages/projects/hyperbug-11-9f880c7e4720",
+      "absent": true,
+      "providerErrorCode": 8000007
+    },
+    {
+      "path": "/accounts/aa51b5f3a1a926d4c97fbd0bd7e48646/pages/projects/hyperbug-11-9f880c7e4720/deployments",
+      "absent": true,
+      "providerErrorCode": 8000007
+    },
+    {
+      "path": "/accounts/aa51b5f3a1a926d4c97fbd0bd7e48646/pages/projects/hyperbug-11-9f880c7e4720/deployments/06c264dc-b4e9-4023-8056-5d075cc2fdde",
+      "absent": true,
+      "providerErrorCode": 8000007
+    },
+    {
+      "path": "/accounts/aa51b5f3a1a926d4c97fbd0bd7e48646/pages/projects/hyperbug-11-9f880c7e4720/deployments/f7988915-f3a8-41c6-8560-30e27c7408c8",
+      "absent": true,
+      "providerErrorCode": 8000007
+    }
+  ]
+}

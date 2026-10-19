@@ -1,0 +1,328 @@
+{
+  "recordedAt": "2026-10-09T18:43:04.972Z",
+  "plan": "Workers Free (user-attested; subscriptions API unavailable)",
+  "acceptance": "blocked: dispatch exceeds 10ms CPU",
+  "resources": {
+    "worker": "hyperbug-09-d61de8b43059",
+    "queue": "hyperbug-09-events-d61de8b43059",
+    "workflow": "hyperbug-09-workflow-d61de8b43059",
+    "hostname": "async-d61de8b43059.test.eihrteam.org",
+    "database": "hyperbug-test-1",
+    "r2": "unused and unmodified"
+  },
+  "cpuLimitMs": 10,
+  "samples": [
+    {
+      "utc": "2026-10-09T18:24:41.570Z",
+      "invocation": "/tick",
+      "cpuMs": 10,
+      "wallMs": 1317,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 4,
+          "outcome": "done",
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 18,
+          "writes": 9,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791570279792
+          },
+          "ageMs": 3072
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:24:47.094Z",
+      "invocation": "queue",
+      "cpuMs": 0,
+      "wallMs": 1,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "probe-queue",
+          "attempts": [
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:25:15.106Z",
+      "invocation": "scheduled",
+      "cpuMs": 20,
+      "wallMs": 1723,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "queries": 17,
+          "subrequests": 17,
+          "reads": 37,
+          "writes": 16,
+          "backlog": {
+            "pending": 2,
+            "failed": 0,
+            "oldestAt": 1791570278633
+          },
+          "ageMs": 38278
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:25:17.621Z",
+      "invocation": "queue",
+      "cpuMs": 12,
+      "wallMs": 648,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "probe-queue",
+          "attempts": [
+            2
+          ]
+        },
+        {
+          "component": "async",
+          "metric": {
+            "kind": "consume",
+            "outcome": "done",
+            "durationMs": 626,
+            "lagMs": 39738
+          }
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:26:03.941Z",
+      "invocation": "/tick",
+      "cpuMs": 15,
+      "wallMs": 1466,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "queries": 19,
+          "subrequests": 19,
+          "reads": 40,
+          "writes": 15,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:26:05.666Z",
+      "invocation": "/tick",
+      "cpuMs": 8,
+      "wallMs": 1210,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 4,
+          "outcome": "done",
+          "queries": 11,
+          "subrequests": 11,
+          "reads": 16,
+          "writes": 9,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:30:20.304Z",
+      "invocation": "scheduled",
+      "cpuMs": 3,
+      "wallMs": 531,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "queries": 8,
+          "subrequests": 8,
+          "reads": 18,
+          "writes": 3,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:33:42.055Z",
+      "invocation": "/tick",
+      "cpuMs": 15,
+      "wallMs": 1002,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 15,
+          "subrequests": 15,
+          "reads": 43,
+          "writes": 21,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:35:14.412Z",
+      "invocation": "scheduled",
+      "cpuMs": 7,
+      "wallMs": 585,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 19,
+          "writes": 3,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-09T18:40:15.015Z",
+      "invocation": "scheduled",
+      "cpuMs": 3,
+      "wallMs": 529,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 9,
+          "subrequests": 9,
+          "reads": 19,
+          "writes": 7,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ]
+    }
+  ],
+  "headroom": {
+    "method": "Adaptive analytics snapshots; not real-time billing; pre-test snapshot applies to all samples; post-test snapshot includes delayed observations and may omit recent cleanup",
+    "utcDate": "2026-10-09",
+    "before": {
+      "d1Reads": 4999242,
+      "d1Writes": 100000,
+      "workerRequests": 99976,
+      "queueOperations": 10000,
+      "workflowSteps": 3000,
+      "workflowNote": "Empty dataset before test, not independent billing proof"
+    },
+    "after": {
+      "capturedAt": "2026-10-09T18:42:31.146Z",
+      "observedD1": {
+        "reads": 2162,
+        "writes": 281
+      },
+      "remainingD1Reads": 4997838,
+      "remainingD1Writes": 99719,
+      "observedWorkerRequests": 83,
+      "remainingWorkerRequests": 99917,
+      "observedQueueOperations": 4,
+      "remainingQueueOperations": 9996,
+      "workflowStepHeadroom": null,
+      "workflowNote": "Event counts do not measure billable steps; post-test step headroom unavailable"
+    }
+  },
+  "cleanup": {
+    "resources": {
+      "workers": 0,
+      "domains": 0,
+      "queues": 0,
+      "workflows": 0
+    },
+    "data": {
+      "preExistingRowsVerified": 85,
+      "foreignKeysValid": true,
+      "ownedActiveRows": {
+        "outbox": 0,
+        "deliveries": 0,
+        "jobs": 0,
+        "steps": 0,
+        "search": 0
+      },
+      "retainedInactive": {
+        "principals": 1,
+        "projects": 1,
+        "issues": 1
+      },
+      "appendOnlyHistory": [
+        {
+          "timeline": 2
+        },
+        {
+          "audit": 2
+        }
+      ],
+      "additiveMigrationHistoryPreserved": true
+    },
+    "guards": {
+      "budget": 0,
+      "cursors": 0,
+      "searchBudget": 0,
+      "inactivePrincipal": 1,
+      "inactiveProject": 1,
+      "inactiveIssue": 1
+    },
+    "rawDns": "Exact hostname DNS record inventory denied (403/code10000); custom-domain mapping verified absent",
+    "tailProcessStopped": true
+  },
+  "hostedQuotaExhaustion": "not run after CPU stop",
+  "gates": {
+    "G1": "closed",
+    "G2": "closed",
+    "13.G6": "open",
+    "09.3e": "suspended"
+  },
+  "commit": "B1-B4 committed; B5 prototype uncommitted"
+}

@@ -1,0 +1,193 @@
+{
+  "profile": "standard",
+  "browser": "155.0.8059.80",
+  "tool": "Standalone axe-core injected only by test instrumentation; no production dependency or disabled CSP",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22aa"
+  ],
+  "manual": "Separate human evidence required; incomplete findings require review",
+  "passed": true,
+  "audits": [
+    {
+      "surface": "Anonymous search error",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [],
+      "contrastReview": []
+    },
+    {
+      "surface": "Anonymous large discussion",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [],
+      "contrastReview": []
+    },
+    {
+      "surface": "Public User form validation",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "#_r_m_-platforms"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+            }
+          ]
+        }
+      ],
+      "contrastReview": [
+        {
+          "target": [
+            "#_r_m_-platforms"
+          ],
+          "foreground": "rgb(32, 44, 37)",
+          "background": [
+            255,
+            255,
+            255
+          ],
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "computedStyleRatio": 14.4987334157017,
+          "status": "Computed styles supplement the incomplete result; visual overlap/native-control review still required"
+        }
+      ]
+    },
+    {
+      "surface": "Public User issue and comment controls",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [],
+      "contrastReview": []
+    },
+    {
+      "surface": "Confirmation: Close issue",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "#_r_19_-description > p"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+            }
+          ]
+        }
+      ],
+      "contrastReview": [
+        {
+          "target": [
+            "#_r_19_-description > p"
+          ],
+          "foreground": "rgb(32, 44, 37)",
+          "background": [
+            250,
+            250,
+            247
+          ],
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "computedStyleRatio": 13.865015610700029,
+          "status": "Computed styles supplement the incomplete result; visual overlap/native-control review still required"
+        }
+      ]
+    },
+    {
+      "surface": "Triage controls",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [],
+      "contrastReview": []
+    },
+    {
+      "surface": "Maintainer expanded management",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [],
+      "contrastReview": []
+    },
+    {
+      "surface": "Confirmation: Save project settings",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "#_r_25_-description > p"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+            }
+          ]
+        }
+      ],
+      "contrastReview": [
+        {
+          "target": [
+            "#_r_25_-description > p"
+          ],
+          "foreground": "rgb(32, 44, 37)",
+          "background": [
+            250,
+            250,
+            247
+          ],
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "computedStyleRatio": 13.865015610700029,
+          "status": "Computed styles supplement the incomplete result; visual overlap/native-control review still required"
+        }
+      ]
+    },
+    {
+      "surface": "Administrator plugin public and secret controls",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [],
+      "contrastReview": []
+    }
+  ]
+}

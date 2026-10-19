@@ -1,0 +1,57 @@
+{
+  "environment": "local workerd/Miniflare/D1 with actual existing Minimum fixture and real shared routes; not hosted acceptance",
+  "browser": "155.0.8059.40",
+  "realInstance": {
+    "tier": "cloudflare-minimum",
+    "degradationIds": [
+      "FREE-01",
+      "FREE-02",
+      "FREE-03",
+      "FREE-04",
+      "FREE-05",
+      "FREE-06",
+      "FREE-07",
+      "FREE-08"
+    ],
+    "passwordHashPolicy": {
+      "algorithm": "pbkdf2-hmac-sha256",
+      "downgraded": true
+    },
+    "authentication": {
+      "passwordRegistration": true,
+      "passwordLogin": true,
+      "recoveryCodes": true,
+      "passkeys": false,
+      "administratorAssistedRecovery": true
+    },
+    "background": {
+      "mode": "checkpointed-cron",
+      "dispatchBatch": 1,
+      "maxJobSteps": 4,
+      "checkpointBytes": 1024,
+      "bulk": false,
+      "import": false,
+      "export": false,
+      "longRunning": false
+    },
+    "search": {
+      "textScope": "title"
+    },
+    "limits": {
+      "documented": "docs/FREE-TIER-PROFILE.md#capacity-ceilings-and-quotas"
+    }
+  },
+  "realMinimumUiApplied": true,
+  "realApiPaths": [
+    "/api/v1/instance"
+  ],
+  "unavailablePasskeysExplained": true,
+  "backgroundLimitsApplied": true,
+  "cspViolations": [],
+  "faultInjection": {
+    "classification": "client failure-state coverage, not provider acceptance",
+    "allAuthenticationUnavailable": true,
+    "noUnavailableAuthRequests": true,
+    "invalidSchemaFailsClosed": true
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "environment": "single cold local Chrome sample, Node/PostgreSQL public instance, 1280x900, no CPU/network throttling, cache disabled; no hosted/field SLO claim",
+  "browser": "155.0.8059.40",
+  "method": "automated Playwright/CDP browser-performance tooling; PerformanceObserver plus DevTools timeline trace, no native computer-use",
+  "settlingWindowMs": 250,
+  "initial": {
+    "lcpMs": 88,
+    "fcpMs": 48,
+    "cls": 0
+  },
+  "interactionBaseline": {
+    "inpCandidateMs": 40,
+    "observedInteractions": [
+      {
+        "id": 7376,
+        "durationMs": 40
+      },
+      {
+        "id": 7376,
+        "durationMs": 40
+      },
+      {
+        "id": 7376,
+        "durationMs": 40
+      },
+      {
+        "id": 7383,
+        "durationMs": 24
+      },
+      {
+        "id": 7383,
+        "durationMs": 24
+      },
+      {
+        "id": 7383,
+        "durationMs": 24
+      },
+      {
+        "id": 7390,
+        "durationMs": 16
+      },
+      {
+        "id": 7390,
+        "durationMs": 16
+      },
+      {
+        "id": 7390,
+        "durationMs": 16
+      },
+      {
+        "id": 7397,
+        "durationMs": 16
+      },
+      {
+        "id": 7397,
+        "durationMs": 16
+      },
+      {
+        "id": 7397,
+        "durationMs": 16
+      }
+    ],
+    "observerFloorMs": 16,
+    "traceEventTimingRecords": 118,
+    "caveat": "lab interaction sample; not a field INP percentile. Null means no interaction reached the observer floor."
+  },
+  "finalCls": 0,
+  "longTasksMs": [],
+  "cspViolations": [],
+  "splitting": {
+    "accountAndInstanceAbsentInitially": true,
+    "loadedOnNavigation": true,
+    "productionFixtureEntryAbsent": true
+  },
+  "assets": [
+    {
+      "file": "account-BW2gh-9Z.js",
+      "bytes": 4120,
+      "gzipBytes": 1748,
+      "initiallyLoaded": false
+    },
+    {
+      "file": "app-DeGoS1QT.js",
+      "bytes": 334833,
+      "gzipBytes": 105377,
+      "initiallyLoaded": true
+    },
+    {
+      "file": "index-B56D7gce.js",
+      "bytes": 34481,
+      "gzipBytes": 7426,
+      "initiallyLoaded": true
+    },
+    {
+      "file": "index-CBZpDdij.css",
+      "bytes": 10226,
+      "gzipBytes": 3073,
+      "initiallyLoaded": true
+    },
+    {
+      "file": "instance-DLNrMgRG.js",
+      "bytes": 4661,
+      "gzipBytes": 1858,
+      "initiallyLoaded": false
+    },
+    {
+      "file": "overview-BOcXrpsr.js",
+      "bytes": 2565,
+      "gzipBytes": 1190,
+      "initiallyLoaded": true
+    }
+  ],
+  "initialJavaScriptBytes": 371879,
+  "initialJavaScriptGzipBytes": 113993,
+  "largestJavaScriptChunk": {
+    "file": "app-DeGoS1QT.js",
+    "bytes": 334833,
+    "gzipBytes": 105377,
+    "initiallyLoaded": true
+  },
+  "rawPublicTrace": "temporary /tmp trace inspected, removed at closure"
+}

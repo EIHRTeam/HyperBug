@@ -1,0 +1,12 @@
+{
+  "name": "@hyperbug/plugin-runtime",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@hyperbug/plugin-api": "workspace:*"
+  }
+}

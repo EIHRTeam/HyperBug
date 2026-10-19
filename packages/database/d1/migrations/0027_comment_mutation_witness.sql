@@ -1,0 +1,1 @@
+ALTER TABLE `comments` ADD `last_mutation_id` text;

@@ -1,0 +1,76 @@
+{
+  "recordedAt": "2026-10-10T21:47:12.908Z",
+  "sourceCommit": "371aeb90efed34de9951d4a3727f358f7705bd51",
+  "plan": "Workers Free (user-attested)",
+  "cpuLimitMs": 10,
+  "maximum": [
+    {
+      "delivered_at": 1791668444123,
+      "canonical_revision": 1,
+      "canonical_title_points": 200,
+      "canonical_body_points": 32768,
+      "search_revision": 1,
+      "indexed_body_bytes": 0,
+      "projection_version": "title-v1:hyperbug-text-1"
+    }
+  ],
+  "frames": [
+    {
+      "at": "2026-10-10T21:40:43.524Z",
+      "cpuMs": 10,
+      "wallMs": 804,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "done",
+          "job": null,
+          "queries": 10,
+          "subrequests": 10,
+          "reads": 63,
+          "writes": 22,
+          "backlog": {
+            "pending": 0,
+            "failed": 0,
+            "oldestAt": null
+          },
+          "ageMs": null
+        }
+      ],
+      "exceptions": []
+    },
+    {
+      "at": "2026-10-10T21:45:46.321Z",
+      "cpuMs": 2,
+      "wallMs": 490,
+      "outcome": "ok",
+      "metrics": [
+        {
+          "component": "async-minimum",
+          "phase": 0,
+          "outcome": "quota-exhausted",
+          "job": null,
+          "queries": 7,
+          "subrequests": 7,
+          "reads": 22,
+          "writes": 0,
+          "backlog": {
+            "pending": 1,
+            "failed": 0,
+            "oldestAt": 1791668693257
+          },
+          "ageMs": 53548
+        }
+      ],
+      "exceptions": []
+    }
+  ],
+  "quotaRefusal": 1,
+  "cleanup": "Verified; final observation and recovery receipt: 09-hosted-native-declarative-retry-receipt.json",
+  "limitations": [
+    "One maximum-content native sample meets the CPU ceiling without measured margin",
+    "Phase-0 production-function probe; full production composition and billing attribution unverified",
+    "Quota recovery observed at 4 ms; native checkpoint/redeployment remains pending in a separate trial"
+  ]
+}
