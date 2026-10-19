@@ -28,6 +28,12 @@ After the P0 report the user explicitly continued only11.1a–g/11.V1. The stati
 
 The user directs completing Module 12 and explicitly resumes its audit browsing. This supersedes earlier Module 12 exclusion text only for this scope and necessary bounded backend prerequisites. G1 remains Not passed, Module 10 Blocked and 13.G6 open; no hosted load or later-module work is included. The user separately authorized committing and pushing the completed scope to the existing `feat/v1` upstream. All 24 Module 12 items are complete at their recorded local/manual scopes; see the [completion evidence and handoff](evidence/12-completion.md) and [progress](progress/12-web-product-workflows.md).
 
+## Module 13 sequencing exception — 2026-10-19
+
+The user authorizes the release-preparation scope in `HANDOFF-13.md` despite the unmet backend prerequisite. Module 12 is complete. Module 13 may prepare packaging, rehearse local recovery, collect bounded temporary Free-account evidence and prepare unpublished artifacts. G1 remains Not passed, Module 10 Blocked, global G2 Not passed; no staging, publication, paid capability, push, merge, PR edit or later module is authorized. Free evidence is Minimum-only and cannot establish paid Standard acceptance.
+
+[Release preparation outcome](evidence/13-release-readiness.md): 20/26 checks complete at their recorded scopes; Module 13 remains In progress, prepared but unpublished. 13.1f/13.2g/13.3b/13.3d-publication/13.G2/13.G6 stay open. Global G1/G2 remain Not passed and Module 10 Blocked. No further authorized preparation action remains.
+
 ## Start here
 
 1. Read [Master progress](PROGRESS.md), [Execution protocol](EXECUTION.md), and the latest progress entry for the next eligible module.
@@ -141,7 +147,3 @@ No calendar estimates or fabricated service-level commitments are assigned. Sequ
 - [Session and checklist protocol](EXECUTION.md)
 - [Architecture sources and current research](SOURCES.md)
 - [Requirement coverage and cross-module handoffs](COVERAGE.md)
-
-## Module 13 sequencing exception — 2026-10-19
-
-The user authorizes the release-preparation scope in `HANDOFF-13.md` despite the unmet backend prerequisite. Module 12 is complete. Module 13 may prepare packaging, rehearse local recovery, collect bounded temporary Free-account evidence and prepare unpublished artifacts. G1 remains Not passed, Module 10 Blocked, global G2 Not passed; no staging, publication, paid capability, push, merge, PR edit or later module is authorized. Free evidence is Minimum-only and cannot establish paid Standard acceptance.

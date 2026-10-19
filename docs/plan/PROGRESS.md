@@ -42,7 +42,7 @@ Module09 completion (2026-10-11): all23 non-suspended checks are verified;09.3e 
 | 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | Blocked (Standard unmeasured; actual Minimum metrics/capacity incomplete) | [Session record](progress/10-backend-acceptance.md) |
 | 11 | [Static web application, authentication client, and UI foundation](modules/11-static-web-foundation.md) | Complete (scoped sequencing exception, 2026-10-13) | [Final evidence](evidence/11-completion.md); [session record](progress/11-static-web-foundation.md) |
 | 12 | [Public feedback, discussion, and staff web workflows](modules/12-web-product-workflows.md) | Complete (user-directed local scope, 2026-10-19) | [Completion evidence](evidence/12-completion.md); G1 remains Not passed, no new hosted load |
-| 13 | [MVP release, deployment, and maintenance readiness](modules/13-mvp-release-and-operations.md) | In progress — release preparation under the 2026-10-19 sequencing exception | [Session record](progress/13-mvp-release-and-operations.md) |
+| 13 | [MVP release, deployment, and maintenance readiness](modules/13-mvp-release-and-operations.md) | In progress — prepared but unpublished; 13.1f/13.2g/13.3b/13.3d-publication/13.G2/13.G6 open | [Final assessment](evidence/13-release-readiness.md); [session record](progress/13-mvp-release-and-operations.md) |
 | 14 | [Post-MVP issue relations, hierarchy, and saved views](modules/14-relations-and-saved-views.md) | Not started | [Session record](progress/14-relations-and-saved-views.md) |
 | 15 | [Post-MVP subscriptions, notifications, bulk actions, and data jobs](modules/15-notifications-and-bulk-jobs.md) | Not started | [Session record](progress/15-notifications-and-bulk-jobs.md) |
 | 16 | [Post-MVP official plugins and isolated integration APIs](modules/16-official-integrations.md) | Not started | [Session record](progress/16-official-integrations.md) |
@@ -54,8 +54,8 @@ All 16 module 00 guidance checklist items are complete. Module 01 has reproducib
 | Gate | Required evidence | Current state |
 | --- | --- | --- |
 | G0 — Guidance ready | Module 00 skills, registration, and validation | Passed; [evidence](evidence/00-guidance-validation.md) |
-| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; user-directed Module 11 sequencing exception (2026-10-13); Module 10 remains Blocked; 2026-10-19 Module 13 exception covers local release preparation and bounded Free evidence only; global G2 Not passed |
-| G2 — MVP accepted | Module 13.G1–13.G5 including deployment/recovery evidence | Not passed |
+| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; user-directed Module 11/12/13 sequencing exceptions; Module 10 remains Blocked. Module 13 (2026-10-19) prepares local release/recovery artifacts and bounded Free witnesses only; no paid Standard acceptance |
+| G2 — MVP accepted | Module 13.G1–13.G5 including deployment/recovery evidence | Not passed; Module 13 prepared but unpublished, 13.G2 and staging/publication gaps open |
 | Post-MVP backend gates | Backend acceptance before UI in 14, 15, and each provider in 16 | Not started |
 | Markdown representation policy | 07.1 implementation, local determinism/persistence/cost and replacement-bundle cursor/validator evidence | Implemented and locally verified including V7; deployment unclaimed ([07 evidence](evidence/07-content-validation.md)) |
 | Minimum tier (Cloudflare Free) | 13.G6 evidence on a real Free account: measured password parameters, quota-aware measurements, bilingual disclosure, recorded recovery objectives | Open; additional real-Free evidence for the formal third profile |
@@ -1350,3 +1350,10 @@ All 24 items are verified in the [completion audit](evidence/12-completion.md). 
 ### 2026-10-19 — Module 12 commit pushed
 
 The user authorized committing/pushing the completed Module 12 scope. Commit `9b78e06` (`feat(web): complete product workflows`) is on `origin/feat/v1`; push advanced from `22a0dde` and exited 0. No PR was created or modified. Protected root security, handoff and review drafts remain untracked. All module acceptance and outstanding global gates are recorded in the [completion audit](evidence/12-completion.md); G1 remains Not passed, Module 10 Blocked and 13.G6 open.
+
+
+### 2026-10-19 — Module 13 release preparation complete at the authorized boundary
+
+Module 13 remains **In progress — prepared but unpublished**: 20 of 26 checks complete, with 13.1f/13.2g/13.3b/13.3d-publication/13.G2/13.G6 open. [The final assessment](evidence/13-release-readiness.md) maps every item and gate. Packaging, actual local migration/recovery/rollback, final candidate suites, paired reader content, dependency review, exact artifacts and release checklist are prepared. 1,072 backend/default and 33 actual-scanner checks pass; browser core37/37/38 and uploads11/10/10 pass, 27axe surfaces have0violations. Tiny managed D1/R2 recovery witnesses and independent cleanup are recorded separately from full Minimum recovery/capacity. All owned local/Free resources are zero and original inventory/protected drafts preserved. All39application artifact hashes reproduce; documentation byte variation, unsigned provenance and one moderate development-tool advisory are disclosed. Global G1/G2 remain Not passed, Module10 Blocked; no paid Standard claim, staging, publication, push, merge, PR edit or later-module action. See Module13 progress for local batch commits and next-session restrictions.
+
+Final cleanup audit correction: two private directories from an earlier failed Worker rehearsal were found and removed after owner/no-open-handle checks. `59d50be` fixes disposal-error cleanup and passes its changed-file3/3 regression; exact source hashes are refreshed, application artifacts remain unchanged. The [final cleanup receipt](evidence/13-final-cleanup.json) verifies zero owned leftovers and supersedes the earlier failed-attempt cleanup assumption.

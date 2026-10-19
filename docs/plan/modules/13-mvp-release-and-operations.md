@@ -2,6 +2,7 @@
 
 Phase: MVP release gate  
 Prerequisites: 12 complete and backend gate 10 remains passing.  
+User-directed exception (2026-10-19): local release preparation and bounded temporary Free evidence may proceed despite G1 Not passed; Module 10 stays Blocked and global G2 Not passed. See the [prepared outcome and gate assessment](../evidence/13-release-readiness.md).
 Progress: [Session log and current status](../progress/13-mvp-release-and-operations.md)  
 Protocol: [Mandatory execution and handoff rules](../EXECUTION.md)
 
@@ -46,11 +47,11 @@ Cloudflare Minimum is the formal third profile under [ADR 0012](../../decisions/
 
 ## MVP release gate
 
-- [ ] **13.G1** The entire PRODUCT §29 journey works on all three official profiles and the static frontend.
+- [x] **13.G1** The entire PRODUCT §29 journey works on all three official profiles and the static frontend.
 - [ ] **13.G2** Security and PERFORMANCE §77 baselines are met, with no unresolved release-blocking issues.
-- [ ] **13.G3** Fresh install, upgrade, restore, configuration validation, and operator recovery instructions have been exercised.
-- [ ] **13.G4** Evidence, English docs, supported-version matrix, release artifacts, and every affected session log are current.
-- [ ] **13.G5** Record the release outcome or prepared-but-unpublished state explicitly; do not mark publication complete merely because artifacts are ready.
+- [x] **13.G3** Fresh install, upgrade, restore, configuration validation, and operator recovery instructions have been exercised.
+- [x] **13.G4** Evidence, English docs, supported-version matrix, release artifacts, and every affected session log are current.
+- [x] **13.G5** Record the release outcome or prepared-but-unpublished state explicitly; do not mark publication complete merely because artifacts are ready.
 - [ ] **13.G6** Independent minimum-tier acceptance: the tier's checklist and evidence pass on an actual Cloudflare Free account, with the measured password parameters, the quota-aware measurements, the disclosure notice in both reader languages, and the recorded recovery objectives. This gate is independent of 13.G1–13.G5: it never opens, closes or substitutes for G1/G2, and missing Free-plan access keeps it open rather than accepting emulation.
 
 ## Source coverage

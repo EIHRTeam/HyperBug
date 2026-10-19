@@ -6,37 +6,38 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: In progress — authorized release preparation; publication and staging excluded
-- Delivery scope: MVP release gate
-- Prerequisites: 12 complete and backend gate 10 remains passing.
-- Implementation started: 2026-10-19, under the user-directed sequencing exception.
-- Completed implementation checklist IDs: 13.1a–e/g, 13.2a–f (B1/B2 local packaging and rehearsal scope).
-- Active/next checklist group: B4 final-candidate suites/artifacts/reader content, then gate assessment. B3 partial; 13.1f/13.2g/13.G6 remain open.
+- Status: In progress — prepared but unpublished; no authorized preparation action remains.
+- Delivery scope: HANDOFF-13 local packaging/rehearsal, bounded Free service witnesses, unpublished release artifacts and gate assessment.
+- Prerequisites: Module 12 complete; G1 remains Not passed / Module 10 Blocked. The user grants a Module 13 sequencing exception dated 2026-10-19; global G2 remains Not passed.
+- Implementation started: 2026-10-19.
+- Completed implementation checklist IDs: 13.1a–e/g, 13.2a–f, 13.3a/c/e/f, 13.G1/G3/G4/G5 at the evidence scopes below (20 of 26).
+- Active/next checklist group: No further implementation/trial in this mission. Open: 13.1f, 13.2g, 13.3b, 13.3d publication, 13.G2 and 13.G6.
 - Last updated: 2026-10-19.
-- Blocking issues discovered: G1 Not passed / Module 10 Blocked. User grants a Module 13 sequencing exception only; global G2 stays Not passed. Staging/publication are unauthorized; 13.G6 requires independent actual-Free evidence.
-- Evidence: Bilingual reader outlines and a locally built VitePress documentation site; product release implementation and hosted Pages publication remain unverified.
+- Blocking issues: Full Minimum current-password CPU fit, instance ceiling/quota attribution/full recovery and deferred SMTP; unchanged Module 10 release blockers; staging and publication unauthorized. Documentation bytes vary across identical-input builds; exact artifacts are hashed, not claimed bit-reproducible.
+- Evidence: [Final 26-item/gate assessment](../evidence/13-release-readiness.md), [packaging](../evidence/13-deployment-packaging.md), [local rehearsal](../evidence/13-maintenance-rehearsal.md), [actual-Free limits/cleanup](../evidence/13-minimum-tier-evidence.md), [concrete release checklist](../../RELEASE-CHECKLIST.md).
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 13.1 | Package supported deployments | In progress | [B1 packaging](../evidence/13-deployment-packaging.md); e verified in B2, f awaits Minimum evidence |
-| 13.2 | Rehearse maintenance and recovery | In progress | [B2 local rehearsal](../evidence/13-maintenance-rehearsal.md); a–f complete, g awaits real-Free evidence |
-| 13.3 | Validate and prepare release artifacts | Not started | None yet |
+| 13.1 | Package supported deployments | In progress — Minimum 13.1f partial | B1/B2 a–e/g complete; B3 measured ceiling/password/SMTP limits remain |
+| 13.2 | Rehearse maintenance and recovery | In progress — Minimum 13.2g partial | B2 a–f complete locally; B3 tiny service witnesses cannot replace full Minimum objectives |
+| 13.3 | Validate and prepare release artifacts | In progress — staging/publication open | B4 local suites/artifacts/content complete; 13.3b and 13.3d publication excluded |
 
-The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
+The canonical checklist owns completion; the [final report](../evidence/13-release-readiness.md) maps every item to evidence and distinguishes global G1/G2 from locally scoped 13.G1/G3/G4/G5. Module 13 is not Complete.
 
 ## Next actions
 
-1. Read the latest master and dependency progress records and verify prerequisites.
-2. Start the first unfinished item in 13.1.
-3. Record the actual files changed, checks run, decisions, and next-session cautions here.
+1. Keep the prepared candidate unpublished; do not run another matrix or provider trial for unchanged source.
+2. Resolve Module 10 blockers only in its separately authorized scope; this mission makes no Module 10 change.
+3. Obtain an applicable environment/scope decision for the remaining Minimum password/quota/capacity/full-resource recovery and deferred SMTP before attempting 13.1f/13.2g/13.G6 closure.
+4. Obtain explicit staging authorization/environment for 13.3b and separate Pages publication authorization for 13.3d. Any production rollout follows the concrete release checklist and actual authorization.
 
 ## Next-session cautions
 
-Separate staging checks from production release actions. Only claim a provider/profile is tested when evidence exists for that exact combination.
+All owned local and Free resources/private generated fixture material are removed; original provider inventory is preserved. Never reuse deleted trial IDs/bookmarks/baselines. Fresh provider state has three original Workers/three domains/two D1 databases/four R2 buckets, not historical counts.
 
-Do not infer completed implementation from this initialized record. Inspect the current repository and prior session entries before continuing.
+G1 remains Not passed, Module 10 Blocked, global G2 Not passed and 13.G6 open. Do not open modules 14–16, add staging/paid capability, reopen P0, publish, push, merge or edit a PR automatically. Preserve the attributed 10 ms stop, security/content/browser-token invariants and prior source thresholds. Protected root drafts/handoffs remain untracked and unchanged. All five preparation commits are local; no push is performed.
 
 ## Session log
 
@@ -711,3 +712,30 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions:13.3b staging,13.3dpublication,Minimum13.1f/13.2g/13.G6 and unchanged Module10/G1/G2 gaps remain. Documentation bit-for-bit reproducibility unavailable; exact final artifacts hashed.
 - Next actions: Final gate/status/checklist/link/cleanup/protected-file audit; commit prepared-but-unpublished assessment. No new test matrix or provider trial is needed.
 - Next-session cautions: All owned local services/private fixture files removed;Free resources0. Unrelated generated evidence restored from clean baseline;13-only refresh intentional. Protected drafts/handoffs unstaged,no publication/push/merge/PR edit or later module.
+
+
+### 2026-10-19 — Final prepared-but-unpublished gate assessment
+
+- Scope and checklist IDs: Final 13.G1–13.G6 assessment and all 26 canonical items; no later module.
+- Progress: 20 complete / 6 open. Locally scoped 13.G1/G3/G4 and explicit outcome 13.G5 pass. 13.G2/G6 remain open; Module 13 stays In progress, prepared but unpublished.
+- Change summary: Align canonical checks, module/master/entry-point state and next-session handoff with actual B1–B4 results. Record publication/staging exclusions and Minimum/Module 10 gaps without weakening gates.
+- Files/artifacts: [Final report](../evidence/13-release-readiness.md), canonical module plan, this record, master PROGRESS, EXECUTION and plan README. Batch commits: B1 `067b453`, B2 `9c1f763`, B3 `c089c64`, B4 `fee82a7`; final assessment commit follows this entry.
+- Verification: Final scope/hash/link/JSON/protected-file audit and whitespace pass; exact results appended below. Current local matrix has 1,072 default/backend passes plus 33 actual-scanner passes, 12 optional provider skips; browser core 37/37/38 and uploads 11/10/10, 27 axe surfaces with zero violations. No green application lane repeated for bookkeeping.
+- Decisions and deviations: The handoff boundary is achieved as a prepared outcome, not full Module 13 completion. One moderate developer-tool advisory and documentation non-determinism remain honestly recorded; exact app artifacts reproduce and exact final docs bytes are hashed. B3 subject capitalization corrected locally with an identical tree; raw run bases retained transparently.
+- Blockers/open questions: 13.1f, 13.2g, 13.3b, 13.3d publication, 13.G2 and 13.G6 require the named missing evidence/authorization; no authorized action remains here.
+- Next actions: Hold the prepared candidate and use the concrete release checklist after the relevant scope/environment decisions. No publication, push or PR edit is part of this outcome.
+- Next-session cautions: All owned local/Free resources zero; unrelated generated evidence restored; protected drafts unchanged/untracked. Global G1/G2 remain Not passed, Module 10 Blocked; no paid Standard/full Minimum acceptance or later module is inferred.
+
+### 2026-10-19 — Failed-attempt cleanup correction and final closure
+
+- Scope and checklist IDs: 13.2b–c/13.3a cleanup verification; final 13.G3/G4 handoff.
+- Progress: Final filesystem audit finds two private failed-attempt directories, removes them exactly after owner/no-open-handle checks, and verifies zero owned leftovers. No secret values printed.
+- Change summary: Fix the new Worker rehearsal's cleanup with nested finally; add the observed disposal-rejection regression. Earlier successful-run cleanup did not prove failed-attempt cleanup and is corrected explicitly in the evidence.
+- Files/artifacts: `tests/workerd/operations-rollback.test.ts`, [final cleanup receipt](../evidence/13-final-cleanup.json), refreshed exact source manifest/run receipts, maintenance/release evidence. Correction commit `59d50be` (`test(ops): guarantee private rehearsal cleanup`).
+- Verification: Changed fixture 3/3, types/scoped lint/format and all 39 application artifact hashes pass. No full matrix repeated for this fixture-only repair. Final 26 stable IDs verify 20 checked/6 open; source/artifact/link/protected-file audit passes with exact totals below.
+- Decisions and deviations: Discovered cleanup gap is fixed within Module 13 test infrastructure; no backend/policy/contract/migration/dependency change. Raw earlier run metadata remains transparently dated; current source hashes include the repair.
+- Blockers/open questions: Only the six documented authorization/evidence remainders remain; no authorized preparation action or cleanup remains.
+- Next actions: Hold the prepared-but-unpublished candidate. Further staging, publication, blocked backend/Minimum acceptance or later-module work needs its own applicable scope/environment decision.
+- Next-session cautions: All owned local/Free resources zero; protected drafts/handoffs unchanged and untracked; all commits local. Module 13 In progress, global G1/G2 Not passed, Module 10 Blocked, 13.G6 open.
+
+Closing verification: 26 unique stable IDs (20 checked / six explicitly open), 14 synchronized guide pairs, 471 scoped relative Markdown links, 31 rendered pages and 1,124 rendered links/assets/anchors pass. All 153 artifact hashes and 789 source-input hashes match the final workspace. Nine protected root files retain their initial hashes; application/dependency files and both Module 10 records are byte-identical to product baseline `9b78e06`. Owned temporary directory prefixes are empty, the Node fixture port is closed, and prior independent provider inventory/object absence receipts remain applicable. Final known-credential scan, scoped format/lint and whitespace pass. No publication, push, merge, PR edit or new provider request is performed during closure.
