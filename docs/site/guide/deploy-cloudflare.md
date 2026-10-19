@@ -39,3 +39,23 @@ Async work reserves a separate daily allowance of 1.5 million D1 reads and 30,00
 Cloudflare Minimum searches Issue titles only. Cloudflare Standard searches titles and canonical plain-text bodies. Structured filters remain available; Issue bodies and comments keep their existing content limits. The instance capability document reports `search.textScope` as `title` or `title-and-body`.
 
 When changing profiles, stop dispatchers using the old search mode and rebuild the derived index with the existing authorized administrator service, one bounded page at a time. Follow its returned cursor; Minimum allows at most ten documents per page. Search returns `SEARCH_INDEX_INCOMPLETE` until rebuilding completes. Rebuild again when rolling back. Earlier Minimum search cursors return `CURSOR_STALE`; start a new search. The capacity reduction passes local semantic checks and focused native async CPU/recovery checks; complete profile performance and release acceptance remain open. The 10 ms Free provider ceiling and the separate release acceptance gate remain unchanged.
+
+## Minimum on a Free account
+
+Select the tier explicitly and acknowledge `minimum-v2`; plan quotas never select or downgrade it automatically. New passwords require at least 12 Unicode code points, at most 1,024 UTF-8 bytes and rejection of the bundled common-password list. New PBKDF2 records use 50,000 iterations, stored costs above 100,000 are refused, and existing stronger records within that ceiling are never reduced. Pepper and per-user salt are mandatory. This is weaker offline protection than Standard Argon2id; prefer passkeys. Online lockout/CAPTCHA cannot offset database-plus-pepper compromise.
+
+Before downgrade, inventory Argon2id credentials with this read-only D1 query (on your exact selected primary):
+
+```sql
+SELECT count(*) AS argon2id_remaining
+FROM password_credentials
+WHERE json_extract(record, '$.alg') = 'Argon2id';
+```
+
+Do not enable Minimum while affected accounts lack a verified working passkey/recovery path or an actually available authorized reset. Current Core has no forced-password setter. Test recovery before changing the tier; never rewrite an Argon2id record into a weaker verifier. After upgrading to Standard, successful PBKDF2 login produces the version-fenced Argon2id replacement.
+
+Allocate budgets below account ceilings, including other services, diagnostic queries and unknown-origin traffic. Async has its separate 1.5-million-read/30,000-write daily reservation. Inspect safe retained logs within three days, primary failed-job state, oldest backlog age and adaptive account usage; no Logpush/OTLP export is enabled. Alert on quota allocation exhaustion, growing failures and backlog across two 25-minute phase intervals. Counts saturating at 1001 are lower bounds. Keep each harness-sent native invocation at or below 10 ms with positive label/method/path/status attribution; stop on failure or missing/ambiguous CPU. No warm-up or path exemption is allowed.
+
+The SMTP implementation is deferred to module 16, so there is no runnable relay setting in current Core. Its required future operator relay is public/reachable, TLS implicit 465 or STARTTLS 587 with SASL and private encrypted credentials; no port 25/direct-to-MX or deliverability guarantee. Do not advertise email notifications or invent environment switches.
+
+Actual Free-account evidence on 2026-10-19 demonstrates only a tiny managed-D1 bookmark restore (1,423 ms through verification) and a three-byte R2 capture/restore (1,068 ms), followed by independently verified owned-resource cleanup. Workers Free remains user-attested because billing access is denied. Preflight sampled request headroom was 99,970; D1 headroom was unavailable until delayed 4-read/4-write observations, then 4,999,996/99,996 remained against documented quotas. R2 monthly headroom is unavailable. These service witnesses are not a full Minimum recovery objective or instance ceiling. Password Free CPU fit, complete quota/capacity attribution and full resource recovery remain unverified; 13.1f/13.2g/13.G6 remain open. No staging/paid/publication action occurred.

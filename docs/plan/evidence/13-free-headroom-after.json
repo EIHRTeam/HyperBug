@@ -1,0 +1,45 @@
+{
+  "recordedAt": "2026-10-19T01:28:40.727Z",
+  "objects": [
+    {
+      "prefix": "objects/3ee92cea96ac7037674b8d3d806e01cf5fa3547eefe53eac83a14f3442071419",
+      "status": 200,
+      "result": []
+    },
+    {
+      "prefix": "objects/8fe9ab56a94644b7a2ff03467826c198d9553acef1054205a4733896ad16e4da",
+      "status": 200,
+      "result": []
+    }
+  ],
+  "usage": {
+    "success": true,
+    "status": 200,
+    "result": {
+      "viewer": {
+        "accounts": [
+          {
+            "d1AnalyticsAdaptiveGroups": [
+              {
+                "sum": {
+                  "rowsRead": 4,
+                  "rowsWritten": 4
+                }
+              }
+            ],
+            "workersInvocationsAdaptive": [
+              {
+                "sum": {
+                  "requests": 30
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "errors": [],
+    "messages": []
+  },
+  "plan": "Workers Free user-attested; adaptive sampled/delayed, not billing"
+}

@@ -1,0 +1,36 @@
+{
+  "v": 1,
+  "recordedAt": "2026-10-19T01:26:20.963Z",
+  "account": "aa51b5f3a1a926d4c97fbd0bd7e48646",
+  "plan": "Workers Free user-attested; subscription API10000",
+  "name": "hyperbug-13-recovery-127059a64170",
+  "databaseId": "220b0013-a6b7-4f09-844f-d91b46c17288",
+  "scope": "managed Time Travel tiny service witness only",
+  "quotaHeadroom": {
+    "requestsDelayedRemaining": 99970,
+    "d1": "adaptive groups empty at preflight; complete/billing headroom unavailable",
+    "fixtureBudget": {
+      "maxStatements": 20,
+      "maxRows": 10
+    }
+  },
+  "fixture": {
+    "tables": 1,
+    "rows": 1,
+    "sizeBytes": 16384,
+    "statements": 4,
+    "rowsRead": 4,
+    "rowsWritten": 4,
+    "postCaptureUpdateLost": true
+  },
+  "bookmark": "00000000-00000008-00005109-7f66d48b9ccbf0eb6eea9eb7e2bed133",
+  "restoreCallMs": 1089,
+  "restoreThroughVerifiedReadMs": 1423,
+  "restored": true,
+  "cleanupDelete": {
+    "success": true,
+    "status": 200
+  },
+  "independentDatabaseAbsence": true,
+  "harnessWorkerRequests": 0
+}

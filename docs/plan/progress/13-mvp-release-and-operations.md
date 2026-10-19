@@ -11,7 +11,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Prerequisites: 12 complete and backend gate 10 remains passing.
 - Implementation started: 2026-10-19, under the user-directed sequencing exception.
 - Completed implementation checklist IDs: 13.1a–e/g, 13.2a–f (B1/B2 local packaging and rehearsal scope).
-- Active/next checklist group: B1 — 13.1a–e and 13.1g; then B2 local rehearsals, B3 Free evidence, B4 final candidate and gate assessment.
+- Active/next checklist group: B4 final-candidate suites/artifacts/reader content, then gate assessment. B3 partial; 13.1f/13.2g/13.G6 remain open.
 - Last updated: 2026-10-19.
 - Blocking issues discovered: G1 Not passed / Module 10 Blocked. User grants a Module 13 sequencing exception only; global G2 stays Not passed. Staging/publication are unauthorized; 13.G6 requires independent actual-Free evidence.
 - Evidence: Bilingual reader outlines and a locally built VitePress documentation site; product release implementation and hosted Pages publication remain unverified.
@@ -685,3 +685,16 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: Real-Free recovery/capacity independent; no local blocker remains.
 - Next actions: B3 inspect authorized Free account/headroom, rehearse only owned provider recovery, disclose missing ceiling/password evidence, clean to zero; B4 final candidate matrix follows.
 - Next-session cautions: Local resources/private files removed; no hosted state altered. Only new Module13 evidence drift is intentional; protected drafts and Module10 state untouched. Keep G1/G2 Not passed, Module10 Blocked, 13.G6 open.
+
+
+### 2026-10-19 — B3 bounded Free-account evidence and honest limits
+
+- Scope and checklist IDs:13.1f/13.2g/13.G6 evidence pieces; all remain partial/unchecked.
+- Progress: Actual managed D1 Time Travel and R2 tiny capture/restore pass; independent cleanup verifies0owned resources and unchanged original inventory.
+- Change summary: Extend paired Minimum runbook with quota/log/SMTP/downgrade limits and exact read-only inventory; archive provider receipts/headroom/failure/cleanup. No Worker/API pilot, paid capability or Module10 state change.
+- Files/artifacts: [B3 evidence](../evidence/13-minimum-tier-evidence.md),13-free-* receipts,13-r2-recovery failure receipt, paired deploy-cloudflare pages.
+- Verification: D1 one-table/one-row16KiB restore1,423ms through read,4reads/4writes; R2 three-byte restore1,068ms;DELETE200 plus independent listabsence,all original WorkerETags/domain mappings/DBs/buckets/Queues/Workflows preserved. User-attested Free; billing endpoint10000, delayed request headroom99,970 and later D1 4,999,996/99,996; not billing/capacity proof. Additional read-only downgrade query1read/0write returns0testArgon2id. Docs/secrets/whitespace pass.
+- Decisions and deviations: First Wrangler R2 command fails without sufficient retained cause; exact objectabsence verified before MCP,which is authorized. Native Worker harness requests0,so no CPU or password fit claim. SMTP implementation is deferred to16; no fictitious config or backend expansion.
+- Blockers/open questions: Full Minimum recovery/RPO/RTO, current Free password CPU fit, complete quota/billing attribution and instance ceiling unavailable within the blocked-pilot boundary.13.1f/13.2g/13.G6 remain open.
+- Next actions: B4 final candidate matrix, frozen dependency/release review, bilingual remaining reader content and concrete unpublished checklist; then assess13.G1–G6.
+- Next-session cautions: Fresh provider inventories differ from historical counts; preserve the current3Workers/3domains/2DBs/4buckets. All owned resources0; no trial to resume. G1/G2 Not passed,Module10 Blocked,protected drafts unstaged,no publication/push/PR edit.
