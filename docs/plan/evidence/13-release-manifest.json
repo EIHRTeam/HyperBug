@@ -1,10 +1,10 @@
 {
   "v": 1,
-  "recordedAt": "2026-10-19T01:54:50.543Z",
+  "recordedAt": "2026-10-19T02:02:17.652Z",
   "status": "prepared-but-unpublished",
-  "sourceRevision": "c089c64ebb0e7de9a4f47899c0df2639a907a34b",
+  "sourceRevision": "fee82a7186c525d01702ea9589f75a0ce17727b9",
   "sourceRevisionRole": "base commit; exact working-tree inputs are identified by sourceInputsSha256",
-  "sourceInputsSha256": "9c4e7c4477124560b8489d8ca5e43c21bd7d8027af38425e58f1b29703080d5e",
+  "sourceInputsSha256": "1a77911ca9138da6e8979fa2184c3a2adc969b219f27d3917ee84dd0b4c85f9c",
   "lockfileSha256": "c610f4adc73184dfbaf2f63ff2020316739bbb88276a6bf72076f729fe8183db",
   "runtime": {
     "node": "v24.21.0",
@@ -3779,7 +3779,7 @@
     },
     {
       "path": "tests/workerd/operations-rollback.test.ts",
-      "sha256": "bdf1c56c0bc2a0aa1520e14a6686663311f56c6bc760c52f127b0b06617b1fdd"
+      "sha256": "7e04e32e05f7a2a247ceec1ee10c726c9068fd0837fd08520ffc96491b582daf"
     },
     {
       "path": "tests/workerd/passkey-route.test.ts",

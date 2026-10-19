@@ -1,5 +1,13 @@
 import { beforeAll, expect, it } from 'vitest';
-import { mkdtemp, cp, readFile, rm, mkdir, writeFile } from 'node:fs/promises';
+import {
+  mkdtemp,
+  cp,
+  readFile,
+  rm,
+  mkdir,
+  writeFile,
+  stat,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -10,6 +18,17 @@ import { createD1KeyRegistry } from '@hyperbug/database-d1';
 import { activateOperatorKeys } from '../../tooling/operator-registry.ts';
 import { migrationStatements } from '../../tooling/migrations.ts';
 import { workerModules } from '../fixtures/worker-modules.ts';
+
+async function cleanRehearsal(
+  directory: string,
+  dispose: () => Promise<void> | undefined,
+) {
+  try {
+    await dispose();
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}
 
 beforeAll(() => {
   execFileSync(
@@ -149,7 +168,20 @@ for (const tier of ['standard', 'minimum'] as const)
         ) + '\n',
       );
     } finally {
-      await mf?.dispose();
-      await rm(directory, { recursive: true, force: true });
+      await cleanRehearsal(directory, () => mf?.dispose());
     }
   }, 30000);
+
+// Reproduces the disposal-rejection boundary that left private B2 files behind.
+it('removes private rehearsal material even when runtime disposal rejects', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hyperbug-ops-worker-'));
+  await writeFile(join(directory, 'private-fixture'), 'disposable fixture', {
+    mode: 0o600,
+  });
+  await expect(
+    cleanRehearsal(directory, async () => {
+      throw new Error('fixture disposal rejection');
+    }),
+  ).rejects.toThrow('fixture disposal rejection');
+  await expect(stat(directory)).rejects.toMatchObject({ code: 'ENOENT' });
+});

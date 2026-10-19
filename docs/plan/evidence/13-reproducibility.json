@@ -61,5 +61,7 @@
     "finalCount": 114,
     "changedOrRenamed": 41,
     "limitation": "same source-input digest, differing local-search/theme/app asset hashes and HTML references; cause not attributed; no bit-for-bit documentation reproducibility claim"
-  }
+  },
+  "comparedSourceInputsSha256": "9c4e7c4477124560b8489d8ca5e43c21bd7d8027af38425e58f1b29703080d5e",
+  "laterFixtureCleanupPatch": "final source-input digest includes a fixture-only cleanup guard added after the repeated-build observation; all application source/artifact hashes remain unchanged"
 }

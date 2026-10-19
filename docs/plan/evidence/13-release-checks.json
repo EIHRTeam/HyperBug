@@ -187,5 +187,15 @@
     "retainedEquivalentBase": "c089c64ebb0e7de9a4f47899c0df2639a907a34b",
     "tree": "f9c9a955d6a6e816cc90bf23a57f9e24e11dc661",
     "reason": "local B3 commit subject lowercased after verification; identical trees"
+  },
+  "fixtureCleanupFollowup": {
+    "command": "corepack pnpm exec vitest run --project workerd tests/workerd/operations-rollback.test.ts",
+    "passed": 3,
+    "skipped": 0,
+    "overlapWithFullMatrix": 2,
+    "newCase": 1,
+    "scope": "only new fixture cleanup changed after full matrix; application code/artifacts unchanged; focused changed-file verification instead of another full matrix",
+    "typecheckExitCode": 0,
+    "lintExitCode": 0
   }
 }

@@ -2,7 +2,7 @@
   "v": 1,
   "tier": "standard",
   "scope": "native local workerd/D1; health and metadata compatibility only",
-  "sourceRevision": "13b962802a3daa7ebda421634e04448aed154234",
+  "sourceRevision": "fee82a7186c525d01702ea9589f75a0ce17727b9",
   "priorArtifact": "captured compatible artifact slot; no changed-app-version claim",
   "entrySha256": "7c1f665d05593f09416c8372e2f8e38c6df1e0b415ed68be6ef0ac2862c55a17",
   "sameSchema": true,
