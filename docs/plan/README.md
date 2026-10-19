@@ -141,3 +141,7 @@ No calendar estimates or fabricated service-level commitments are assigned. Sequ
 - [Session and checklist protocol](EXECUTION.md)
 - [Architecture sources and current research](SOURCES.md)
 - [Requirement coverage and cross-module handoffs](COVERAGE.md)
+
+## Module 13 sequencing exception — 2026-10-19
+
+The user authorizes the release-preparation scope in `HANDOFF-13.md` despite the unmet backend prerequisite. Module 12 is complete. Module 13 may prepare packaging, rehearse local recovery, collect bounded temporary Free-account evidence and prepare unpublished artifacts. G1 remains Not passed, Module 10 Blocked, global G2 Not passed; no staging, publication, paid capability, push, merge, PR edit or later module is authorized. Free evidence is Minimum-only and cannot establish paid Standard acceptance.

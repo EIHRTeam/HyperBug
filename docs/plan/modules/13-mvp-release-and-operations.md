@@ -17,13 +17,13 @@ Cloudflare Minimum is the formal third profile under [ADR 0012](../../decisions/
 
 ### Step 13.1 — Package supported deployments
 
-- [ ] **13.1a** Provide Cloudflare templates/runbooks for Workers, D1, R2, Queues, Workflows, bindings/secrets, exact CORS, media isolation, and Cloudflare Pages static hosting.
-- [ ] **13.1b** Provide self-host packaging/runbooks for Node 24, PostgreSQL 18.x, a tested S3-compatible provider, Graphile Worker, reverse-proxy TLS where used, and graceful worker shutdown.
-- [ ] **13.1c** Document independent frontend/backend releases, `config.json`, SPA fallback, preview-to-staging pairing, CSP/header generation, and cache rules for Pages plus a generic static server.
-- [ ] **13.1d** Publish the tested S3 provider/version/feature matrix; leave Workers + PostgreSQL/Hyperdrive outside guaranteed profiles unless separately verified.
+- [x] **13.1a** Provide Cloudflare templates/runbooks for Workers, D1, R2, Queues, Workflows, bindings/secrets, exact CORS, media isolation, and Cloudflare Pages static hosting.
+- [x] **13.1b** Provide self-host packaging/runbooks for Node 24, PostgreSQL 18.x, a tested S3-compatible provider, Graphile Worker, reverse-proxy TLS where used, and graceful worker shutdown.
+- [x] **13.1c** Document independent frontend/backend releases, `config.json`, SPA fallback, preview-to-staging pairing, CSP/header generation, and cache rules for Pages plus a generic static server.
+- [x] **13.1d** Publish the tested S3 provider/version/feature matrix; leave Workers + PostgreSQL/Hyperdrive outside guaranteed profiles unless separately verified.
 - [ ] **13.1e** Provide safe initial-admin setup, account recovery, key provisioning/rotation, plugin trust guidance, resource quotas, and production configuration validation.
 - [ ] **13.1f** Provide the minimum tier's packaging and runbook: Cloudflare Free setup, the tier and acknowledgement configuration, quota budgets and alerting, the no-Logpush observability substitute, SMTP relay configuration, the measured instance ceiling, and the downgrade pre-check that migrates or resets Argon2id password records before the tier is enabled.
-- [ ] **13.1g** Publish the tier capability and degradation matrix alongside the tested provider/version matrix (13.1d), including what the tier cannot do, what changes after an upgrade to Workers Paid, and the dated provider facts the tier relies on.
+- [x] **13.1g** Publish the tier capability and degradation matrix alongside the tested provider/version matrix (13.1d), including what the tier cannot do, what changes after an upgrade to Workers Paid, and the dated provider facts the tier relies on.
 
 ### Step 13.2 — Rehearse maintenance and recovery
 

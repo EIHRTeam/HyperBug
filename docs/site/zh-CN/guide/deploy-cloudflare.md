@@ -1,35 +1,28 @@
 # 安装 Cloudflare 配置
 
-[文档首页](../index.md)
+[文档首页](../index.md) · [提供方与配置矩阵](deployment.md) · [运维](operations.md)
 
-> 状态：仅为提纲。产品操作步骤和示例有待实现与验证。
+这是未发布的部署准备指南。付费账号上的 Standard 尚未测量；本地与 Free 结果不能替代其验收。
 
-**适用读者：** 选择 Cloudflare 后端的运维人员。  
-**目标：** 准备 Cloudflare 安装操作指南。
+## 准备资源与绑定
 
-## 前置条件与资源
+使用 `apps/api-cloudflare/wrangler.jsonc`、`wrangler-ingress.jsonc` 源模板及 `deploy/cloudflare/README.md` 绑定映射。在忽略的运营目录复制，解析入口/迁移的绝对路径，选择独立资源名/ID 与精确来源。API 保持私有，关闭 workers.dev 与预览；仅暴露受控入口，其 `API` 服务绑定连接后端，两端使用同一 256 位 base64url `HYPERBUG_INGRESS_KEY`。
 
-待补充：部署包就绪后，列出已验证的账号权限和必需的 Workers、D1、R2、Queues、Workflows 资源。
+Standard 需要 D1 `DB`；选择上传时配对 R2 `HYPERBUG_UPLOAD_BLOB` 与后端签名机密；还需要 `ASYNC_TASKS` Queue 生产者/消费者、`ASYNC_WORKFLOW`（`HyperBugWorkflow`）。保留五分钟 Cron、兼容标志及 `ABUSE_VOLUMETRIC`。Minimum 使用独立 `src/minimum.ts`，显式设置 `HYPERBUG_DEPLOYMENT_TIER=cloudflare-minimum`、`HYPERBUG_DEGRADATION_ACK=minimum-v2`，移除 Queue/Workflow 绑定，遵守 D1/Cron 限制。命名环境须重复不可继承的绑定。
 
-## 配置与安装
+## 配置与验证
 
-待补充：预留经过测试的绑定、密钥、数据库迁移、API 与后台任务独立部署，以及初始管理员设置。
+运行 `node tooling/provision-operator-files.ts /absolute/new/private/directory` 生成私有运营文件。将密钥/滥用密钥内容通过 Worker Secrets 提供给 `HYPERBUG_KEY_RING` / `HYPERBUG_ABUSE_KEY_RING`。启用账号前，经现有受信任 KeyRegistry 集成审计激活公开密钥引用。初始化使用机密 `HYPERBUG_BOOTSTRAP_ENROLLMENT`，不是普通变量。不得复制夹具测试材料。配置 Turnstile 时必须完整提供机密、站点密钥及主机名；公开测试密钥仅限本地。
 
-## 连接前端与媒体服务
+用 `node tooling/check-deployment.ts cloudflare deploy/node/public-policy.example.json` 检查公开策略。获授权上线前，用已安装 Wrangler 对精确私有配置执行 dry-run。使用 `corepack pnpm exec wrangler d1 migrations list <selected-db> --remote --config <private-config>` 检查；对应 `migrations apply` 仅在获授权上线时运行。本地演练始终使用 `--local` 和独立持久化目录。本准备过程不执行生产/staging 远程迁移。
 
-待补充：链接静态托管说明，明确精确来源配置、隔离的媒体分发及资源配额。
+Worker Secrets 可通过已安装的 `wrangler secret put <binding> --config <private-config>` 私有提示或文件输入提供；不得打印值或放入进程参数。仅在单独获授权后先部署私有 API，再部署入口。验证精确主机名证书、就绪状态、第一方初始化/通行密钥、注册的 `hyperbug-web` 回调及真实 bearer 权限。无法唯一归因原生事件的 403 必须停止，不应重试或改动边缘策略。
 
-## 验证与恢复
+## 前端、媒体与恢复
 
-待补充：预留冒烟检查、故障信号、停止条件、回滚参考及获授权预发布环境的演练证据。
+将[静态构建](deploy-frontend.md)独立托管到 Pages 或通用静态服务器。精确 CORS 必须包含实际前端；上传 CORS 只允许审核的方法/请求头并暴露 ETag。媒体使用隔离来源、当前授权与安全下载头。存储凭据不得进入公开配置；上传成功不代表扫描或放行。生产扫描桥接、隔离及更新仍需单独验收。
 
-## 完成条件
-
-记录发布版本、资源配置、已验证的服务商工具，以及成功的全新安装和恢复演练。
-
-## 参考依据
-
-[部署要求](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/13-mvp-release-and-operations.md); [安装概览](deployment.md).
+上线前记录资源 ID、版本、公开配置及必需历史密钥的访问。区分本地、真实 Free 与付费证据。遵循[恢复流程](operations.md)，完整性、授权、审计或 CPU 失败即停止；评估结束后删除所有自有临时资源。本任务不部署 staging，不发布 Pages 或生产。
 
 ## 后台能力限制
 

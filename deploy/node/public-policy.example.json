@@ -1,0 +1,9 @@
+{
+  "HYPERBUG_ENV": "production",
+  "ALLOWED_ORIGINS": "https://issues.example.org",
+  "DEBUG": "false",
+  "HYPERBUG_OAUTH_CLIENTS": "[{\"clientId\":\"hyperbug-web\",\"redirectUris\":[\"https://issues.example.org/oauth/callback\"],\"scopes\":[\"public-api\"]}]",
+  "PASSKEY_RP_ID": "auth.example.net",
+  "PASSKEY_RP_NAME": "HyperBug",
+  "PASSKEY_ORIGIN": "https://auth.example.net"
+}

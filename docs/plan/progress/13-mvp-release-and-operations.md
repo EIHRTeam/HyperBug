@@ -6,21 +6,21 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 ## Current status
 
-- Status: Not started
+- Status: In progress — authorized release preparation; publication and staging excluded
 - Delivery scope: MVP release gate
 - Prerequisites: 12 complete and backend gate 10 remains passing.
-- Implementation started: No.
-- Completed implementation checklist IDs: None.
-- Active/next checklist group: 13.1, after prerequisites are satisfied.
-- Last updated: 2026-09-19.
-- Blocking issues discovered: None during planning; prerequisite completion is still required.
+- Implementation started: 2026-10-19, under the user-directed sequencing exception.
+- Completed implementation checklist IDs: 13.1a–d, 13.1g (B1 packaging scope).
+- Active/next checklist group: B1 — 13.1a–e and 13.1g; then B2 local rehearsals, B3 Free evidence, B4 final candidate and gate assessment.
+- Last updated: 2026-10-19.
+- Blocking issues discovered: G1 Not passed / Module 10 Blocked. User grants a Module 13 sequencing exception only; global G2 stays Not passed. Staging/publication are unauthorized; 13.G6 requires independent actual-Free evidence.
 - Evidence: Bilingual reader outlines and a locally built VitePress documentation site; product release implementation and hosted Pages publication remain unverified.
 
 ## Step tracking
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 13.1 | Package supported deployments | Not started | None yet |
+| 13.1 | Package supported deployments | In progress | [B1 packaging](../evidence/13-deployment-packaging.md); e awaits real-store operator proof, f awaits Minimum evidence |
 | 13.2 | Rehearse maintenance and recovery | Not started | None yet |
 | 13.3 | Validate and prepare release artifacts | Not started | None yet |
 
@@ -646,3 +646,29 @@ Every session affecting this module MUST append an entry following the [required
 - Next-session cautions: R14 closed; never restart or reuse its baseline. New authorized hosted work needs fresh backup/inventory. Keep protected/private files unstaged; no push/PR edit, paid capability, production action, crypto tuning, SPA or audit resume.
 
 Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secrets`,675 relative file links/new R14 anchors, receipt JSON, all24 stable Module09 IDs (23 complete/09.3e suspended), Module08 integration boxes, common production bundle hashes and `git diff --check` pass. Production source/tests/tooling/dependencies are unchanged since b756222; no unchanged application lane rerun. Reader EN/ZH content and gate/status/handoff consistency checked; documentation formatting is not claimed because the formatter excludes docs.
+
+
+### 2026-10-19 — Module 13 scope and B1 start
+
+- Scope and checklist IDs: HANDOFF-13 B1–B4 and final gate assessment; first batch 13.1a–e/13.1g.
+- Progress: In progress. Read current source, handoff, owning checklist/log and maintenance/development references; inspect existing deployment assets and command inventory.
+- Change summary: Record the dated sequencing exception in EXECUTION, plan README and master G1/module rows.
+- Files/artifacts: Plan entry points and this record.
+- Verification: Branch `feat/v1`; only protected root drafts untracked at start; package script inventory inspected. No implementation checks run yet.
+- Decisions and deviations: Explicit user exception permits local release preparation and bounded temporary Free-account evidence despite G1; G1 remains Not passed, Module 10 Blocked, global G2 Not passed. No later module opens.
+- Blockers/open questions: Standard hosted acceptance and P0 remain outside scope; staging/publication unauthorized; minimum ceiling/recovery evidence to assess honestly.
+- Next actions: Extend existing bilingual guides and packaging, verify B1 once, commit; then deliberate B2 rehearsals.
+- Next-session cautions: Protected root drafts/handoffs never staged; no backend/policy/contract/migration changes, no publication/push/merge/PR edit, every harness Worker request subject to attributed 10 ms stop.
+
+
+### 2026-10-19 — B1 deployment packaging
+
+- Scope and checklist IDs: 13.1a–e/13.1g; a–d/g verified and checked, e awaits B2 registry rehearsal.
+- Progress: Both profile runbooks/input maps, existing independent static-host guide, provider/version and tier matrices prepared in paired reader languages.
+- Change summary: Add offline policy validation and exclusive private material generation; wrap existing audited registry activation without a public maintenance endpoint or backend policy change. Document exact bindings, secrets, media/CORS, current recovery limitations and private API/ingress boundary.
+- Files/artifacts: `deploy/`, three tooling entry points, `docs/OPERATIONS.md`, paired deployment/frontend/security pages and [B1 evidence](../evidence/13-deployment-packaging.md).
+- Verification: Public-policy positive/negative, private file/parser/exclusive-write proof, three Wrangler dry-runs, types/lint/scoped format/docs build/whitespace pass. No full matrix or deployment. Initial tooling import failure fixed; no policy changed.
+- Decisions and deviations: Reuse source configuration/templates; no unsupported provider/proxy/scanner certification. CLI registry TCP requires verified TLS; native D1 uses existing trusted binding integration.
+- Blockers/open questions: Actual new registry integration and maintenance recovery await B2; full hosted acceptance remains outside this batch.
+- Next actions: B2 deliberate fresh/upgrade/failure/restore/rollback and operator recovery exercises, then bounded Free evidence.
+- Next-session cautions: No staging/publication/push/PR edit, no backend/contract/migration changes; protected root drafts/handoffs remain untracked. G1 Not passed, Module 10 Blocked, G2 Not passed, 13.G6 open.

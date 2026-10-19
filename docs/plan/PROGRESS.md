@@ -42,7 +42,7 @@ Module09 completion (2026-10-11): all23 non-suspended checks are verified;09.3e 
 | 10 | [Backend acceptance and public API client](modules/10-backend-acceptance.md) | Blocked (Standard unmeasured; actual Minimum metrics/capacity incomplete) | [Session record](progress/10-backend-acceptance.md) |
 | 11 | [Static web application, authentication client, and UI foundation](modules/11-static-web-foundation.md) | Complete (scoped sequencing exception, 2026-10-13) | [Final evidence](evidence/11-completion.md); [session record](progress/11-static-web-foundation.md) |
 | 12 | [Public feedback, discussion, and staff web workflows](modules/12-web-product-workflows.md) | Complete (user-directed local scope, 2026-10-19) | [Completion evidence](evidence/12-completion.md); G1 remains Not passed, no new hosted load |
-| 13 | [MVP release, deployment, and maintenance readiness](modules/13-mvp-release-and-operations.md) | Not started | [Session record](progress/13-mvp-release-and-operations.md) |
+| 13 | [MVP release, deployment, and maintenance readiness](modules/13-mvp-release-and-operations.md) | In progress — release preparation under the 2026-10-19 sequencing exception | [Session record](progress/13-mvp-release-and-operations.md) |
 | 14 | [Post-MVP issue relations, hierarchy, and saved views](modules/14-relations-and-saved-views.md) | Not started | [Session record](progress/14-relations-and-saved-views.md) |
 | 15 | [Post-MVP subscriptions, notifications, bulk actions, and data jobs](modules/15-notifications-and-bulk-jobs.md) | Not started | [Session record](progress/15-notifications-and-bulk-jobs.md) |
 | 16 | [Post-MVP official plugins and isolated integration APIs](modules/16-official-integrations.md) | Not started | [Session record](progress/16-official-integrations.md) |
@@ -54,7 +54,7 @@ All 16 module 00 guidance checklist items are complete. Module 01 has reproducib
 | Gate | Required evidence | Current state |
 | --- | --- | --- |
 | G0 — Guidance ready | Module 00 skills, registration, and validation | Passed; [evidence](evidence/00-guidance-validation.md) |
-| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; user-directed Module 11 sequencing exception (2026-10-13); Module 10 remains Blocked |
+| G1 — Backend accepted | Module 10.G1–10.G5 on all three profiles | Not passed; user-directed Module 11 sequencing exception (2026-10-13); Module 10 remains Blocked; 2026-10-19 Module 13 exception covers local release preparation and bounded Free evidence only; global G2 Not passed |
 | G2 — MVP accepted | Module 13.G1–13.G5 including deployment/recovery evidence | Not passed |
 | Post-MVP backend gates | Backend acceptance before UI in 14, 15, and each provider in 16 | Not started |
 | Markdown representation policy | 07.1 implementation, local determinism/persistence/cost and replacement-bundle cursor/validator evidence | Implemented and locally verified including V7; deployment unclaimed ([07 evidence](evidence/07-content-validation.md)) |

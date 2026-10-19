@@ -1,35 +1,28 @@
 # Install the Cloudflare profile
 
-[Documentation home](../index.md)
+[Documentation home](../index.md) · [Provider/tier matrix](deployment.md) · [Operations](operations.md)
 
-> Status: Outline only. Product steps and examples are pending implementation and verification.
+This is prepared, unpublished deployment guidance. Standard is not measured on a paid account; local and Free results cannot substitute for that acceptance.
 
-**For:** Operators choosing the Cloudflare backend.  
-**Goal:** Prepare the Cloudflare installation walkthrough.
+## Prepare resources and bindings
 
-## Prerequisites and resources
+Use the source templates `apps/api-cloudflare/wrangler.jsonc` and `wrangler-ingress.jsonc`, with the packaging map in `deploy/cloudflare/README.md`. Make an ignored operator copy with resolved absolute entry/migration paths, dedicated resource names/IDs and exact origins. Keep API private (workers.dev and previews disabled); expose only controlled ingress with the `API` service binding and the same 256-bit base64url `HYPERBUG_INGRESS_KEY` on both roots.
 
-To write: List verified account permissions and required Workers, D1, R2, Queues and Workflows resources when the deployment package exists.
+Standard needs D1 `DB`, R2 `HYPERBUG_UPLOAD_BLOB` with matching backend signing secret when uploads are selected, `ASYNC_TASKS` Queue producer/consumer and `ASYNC_WORKFLOW` (`HyperBugWorkflow`). Preserve the five-minute Cron, compatibility flags and `ABUSE_VOLUMETRIC` binding. Minimum uses the separate `src/minimum.ts` entry with explicit `HYPERBUG_DEPLOYMENT_TIER=cloudflare-minimum` and `HYPERBUG_DEGRADATION_ACK=minimum-v2`; omit Queue/Workflow bindings and retain its D1/Cron limits. Repeat non-inherited bindings in each named environment.
 
-## Configure and install
+## Provision and validate
 
-To write: Reserve tested bindings, secrets, database migrations, independent API and job deployment, and initial administrator setup.
+Generate private operator files with `node tooling/provision-operator-files.ts /absolute/new/private/directory`. Supply key/abuse contents as `HYPERBUG_KEY_RING` / `HYPERBUG_ABUSE_KEY_RING` Worker Secrets. Activate public key references through the existing audited trusted KeyRegistry integration before accounts are enabled. Bootstrap uses secret `HYPERBUG_BOOTSTRAP_ENROLLMENT`, not an ordinary variable. Never copy test material from fixtures. A configured Turnstile requires the complete secret/site-key/hostname selection; public test keys are local-only.
 
-## Connect the frontend and media
+Check public policy with `node tooling/check-deployment.ts cloudflare deploy/node/public-policy.example.json`. Run installed Wrangler dry-run against your exact private config before an authorized rollout. Use `corepack pnpm exec wrangler d1 migrations list <selected-db> --remote --config <private-config>` to inspect, and the corresponding `migrations apply` only during an authorized rollout. Local rehearsal always uses `--local` and an isolated persistence directory. No remote production/staging migration is performed by this guide's preparation.
 
-To write: Link static hosting instructions and specify exact origin configuration, isolated media delivery and quotas.
+Worker Secrets can be supplied with the installed `wrangler secret put <binding> --config <private-config>` private prompt or file input; never print values or include them in process arguments. Deploy private API before ingress only when separately authorized. Validate exact hostname certificates, readiness, first-party bootstrap/passkey enrollment, registered `hyperbug-web` callback and real bearer permission checks. A 403 with no uniquely attributed native event is a stop, not an invitation to retry or alter edge policy.
 
-## Verify and recover
+## Frontend, media and recovery
 
-To write: Reserve smoke checks, failure signals, stop conditions, rollback references and evidence from an authorized staging rehearsal.
+Host [the static build](deploy-frontend.md) independently on Pages or a generic static server. Exact CORS must name the actual frontend; upload CORS permits only reviewed methods/headers and exposes ETag. Media is an isolated origin with current authorization and safe download headers. Storage credentials never enter public config, and successful upload does not establish scanning/release. Production scanner bridge/isolation/update acceptance remains separate.
 
-## Completion requirements
-
-Record the release, resource configuration, verified provider tooling, and successful fresh-install and recovery rehearsal.
-
-## Source references
-
-[Deployment requirements](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/13-mvp-release-and-operations.md); [installation overview](deployment.md).
+Record resource IDs, versions, public config and required historical key access before rollout. Keep local/real-Free/paid results separate. Use [the recovery procedure](operations.md), stop on integrity/authorization/audit/CPU failures, and remove every disposable owned resource after an evaluation. This mission does not deploy staging, publish Pages or publish production.
 
 ## Background capability limits
 
