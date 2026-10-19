@@ -27,7 +27,7 @@ export function deploymentPolicy(
     "style-src-attr 'none'",
     `img-src 'self' data: blob: ${[...config.mediaOrigins, ...origins('images')].join(' ')}`.trim(),
     "font-src 'self'",
-    `connect-src 'self' ${[...new Set([config.apiBaseUrl, config.authBaseUrl, ...origins('connect')])].join(' ')}`,
+    `connect-src 'self' ${[...new Set([config.apiBaseUrl, config.authBaseUrl, ...config.mediaOrigins, ...(config.uploadOrigins ?? []), ...origins('connect')])].join(' ')}`,
     "object-src 'none'",
     "base-uri 'none'",
     "frame-ancestors 'none'",

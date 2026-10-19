@@ -1,0 +1,498 @@
+{
+  "profile": "minimum",
+  "browser": "155.0.8059.80",
+  "environment": "Disposable native workerd/D1/R2 emulation with test-only loopback signer and Miniflare development CORS; actual ClamAV through private streaming binding; production SPA; not production R2 policy/signing acceptance",
+  "mediaTls": "Isolated media uses an ephemeral SPKI pin and browser-only loopback resolver rule; no system trust or DNS changes",
+  "scanner": {
+    "engine": "ClamAV",
+    "engineVersion": "1.5.4",
+    "signatureVersion": "daily:28157,main:63,bytecode:339"
+  },
+  "browserPath": "Browser plugin not available; existing Playwright runtime",
+  "checks": [
+    "direct signed PUT uses progress and refreshes an expired returned capability once",
+    "actual immutable processing, quarantined/unscanned state, pinned ClamAV clean scan and separate release",
+    "released upload consumed by Issue Form, decoded raster preview and byte-exact isolated attachment download",
+    "HTML remains octet-stream attachment under isolated sandbox CSP, cannot be raster-previewed and does not execute in SPA or media navigation",
+    "9 MiB multipart transfer renews an expired part capability, cancels/resumes one reservation, skips acknowledged first part and releases after actual clean scanning",
+    "actual ClamAV partial result for encrypted benign archive stays quarantined and cannot be selected",
+    "server immutable verification rejects declared image bytes with invalid magic",
+    "actual signed ClamAV detects EICAR and prevents file selection/release",
+    "actual expired reservation is explained and retry reserves a fresh upload ID",
+    "empty files rejected before transfer and unchanged authoritative quota exhaustion receives actionable copy"
+  ],
+  "media": [
+    {
+      "type": "application/octet-stream",
+      "disposition": true,
+      "nosniff": "nosniff",
+      "sandbox": "sandbox; default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+      "previewType": "image/png"
+    },
+    {
+      "type": "application/octet-stream",
+      "disposition": true,
+      "nosniff": "nosniff",
+      "sandbox": "sandbox; default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+      "previewType": "image/png"
+    },
+    {
+      "type": "application/octet-stream",
+      "disposition": true,
+      "nosniff": "nosniff",
+      "sandbox": "sandbox; default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+      "previewType": null
+    },
+    {
+      "type": "application/octet-stream",
+      "disposition": true,
+      "nosniff": "nosniff",
+      "sandbox": "sandbox; default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+      "previewType": null
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/auth/authorize"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/auth/assets/passkeys.js"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/auth/authorize/login"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/auth/token"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/account"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/instance"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/account/sessions"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/labels"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/issue-types"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/milestones"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/search"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/capability"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/finalize"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/forms/:id/submissions"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "origin": "media",
+      "path": "/attachments/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "media",
+      "path": "/attachments/:id"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/finalize"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/forms/:id/submissions"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/templates"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/forms"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/forms/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/issues/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/issues/:id/timeline"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/issues/:id/reactions"
+    },
+    {
+      "method": "GET",
+      "origin": "media",
+      "path": "/attachments/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "media",
+      "path": "/attachments/:id"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart/parts/1/capability"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart/parts/1/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart/parts/1"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart/parts/2/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart/parts/2/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart/parts/2"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/multipart/complete"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/finalize"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/finalize"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/finalize"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "GET",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/capability"
+    },
+    {
+      "method": "PUT",
+      "origin": "storage",
+      "path": "/cdn-cgi/local/r2/s3/hyperbug-browser/staging/:key"
+    },
+    {
+      "method": "POST",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id/finalize"
+    },
+    {
+      "method": "PUT",
+      "origin": "api",
+      "path": "/api/v1/projects/:id/uploads/:id"
+    }
+  ],
+  "screenshots": [
+    "/tmp/hyperbug12-upload-minimum-raster.png",
+    "/tmp/hyperbug12-upload-minimum-multipart.png"
+  ],
+  "passed": true,
+  "storageCredentialChecks": 10,
+  "downloadSha256": "1f1e6d05506eb86f311a0e803f00175e9cf949e00d8141e5aabc15fc06140253"
+}

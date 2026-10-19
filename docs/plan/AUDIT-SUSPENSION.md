@@ -34,7 +34,7 @@ Previously implemented audit tables, immutable migrations, append-only protectio
 
 - Resumed 2026-09-29: `03.3a` in full, and audit-related portions of `03.3d`, `03.3g`, `03.V4`, `03.V6` and `03.V7`. The audit-related portion of `03.2e` is already resolved non-blockingly by [ADR 0009](../decisions/0009-standard-password-login.md) with its 2026-09-29 acceptance.
 - Resumed 2026-10-01: the audited account-linking portion of `04.3a`, the audit portions of `04.3c`, and `04.V5`. Also resumed 2026-10-01: the audited-endpoint portion of `05.2a` and the configuration-audit portion of `05.3d`.
-- Resumed and verified 2026-10-11: `06.1c`, `06.2c`, `07.2e`, `09.3e`. Still suspended: `12.3b`, `15.1d`, `16.1c` and `16.2c`, plus any other unresumed audit follow-up.
+- Resumed and verified 2026-10-11: `06.1c`, `06.2c`, `07.2e`, `09.3e`. Module 12 audit browsing (`12.3b`) additionally resumed 2026-10-18. Still suspended: `15.1d`, `16.1c` and `16.2c`, plus any other unresumed audit follow-up.
 - The same rule applies to audit follow-ups in release/capability/retention documentation and future plan items, even when the word “audit” is not in an item's title.
 - Work still suspended stays unchecked; it is neither complete nor failed. Skip it when selecting the next executable development batch.
 - The main Phase 03 goal stays active. Continue transport, rate/abuse controls, outbound policy, cache/failure handling and other authorized non-audit work.
@@ -45,3 +45,7 @@ Previously implemented audit tables, immutable migrations, append-only protectio
 The unfinished audit source and integration snapshots are preserved locally under `.local/phase03-suspended-audit/2026-09-21/`, with a SHA-256 manifest and restoration cautions. Six new source/test files and only their integration changes were removed from the active build. The snapshot is ignored, local-only, incomplete and not accepted code; do not restore it automatically or copy full integrated files over newer work.
 
 Before suspension, typechecks/lint and four new unit tests passed. The workerd database suite had 44 passes and one new fixture failure: its audit seed used 450 SQL parameters, exceeding D1's limit. The PostgreSQL additions did not run because the command stopped at that failure. No migration, production deployment or external mutation occurred. This is historical handoff evidence; under the 2026-09-29 Module 03 resume, fixing and rerunning these audit tests is authorized work.
+
+## Module 12 audit-browsing resume (2026-10-18)
+
+The user explicitly answered “Resume module 12 audit browsing” during the Module 12 completion request. This resumes only the 12.3b audit-browsing surface and its bounded redacted Administrator read prerequisite. Other suspended audit work remains suspended. This is authorization to implement and verify, not evidence of completion or G1 acceptance.

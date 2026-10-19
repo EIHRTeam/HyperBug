@@ -277,3 +277,54 @@ P0 closure checks:585 relative links/receipt/gate/cleanup consistency and git di
 - Next-session cautions: [Cleanup](../evidence/11-local-cleanup.json) independently verifies exact certificate/trust removal with preserved originals, process/four listeners/private files absent and temporary UI/trace removed; private cluster wrapper exits0 and Minimum emulator/static child disposed. Protected root drafts/handoffs remain untracked; G1 Not passed and Module 10 Blocked must not be inferred otherwise from frontend completion.
 
 Final closure checks: 422 scoped relative links, all22 canonical checks, retained G1/Module10/13.G6/Module12 states, evidence JSON/manual/cleanup/bilingual assertions, secret signatures and git diff --check pass. Final VitePress1.6.4 docs build passes. Web/root types, scoped lint/format and final production build pass; auth5 and foundation/plugin6 pass in their focused runs. B1 commit59c5690 and B2 commit55cb982 are local; B3 is prepared for its separate commit. No remaining Module 11 blocker or owned local service/certificate/private fixture remains.
+
+
+### 2026-10-18 — Module 12 prerequisite checkpoint
+
+- Scope and checklist IDs: Module 12 auth/config/presentation prerequisites; user-directed Module 12 completion and explicit audit-browsing resume.
+- Progress: Added optional exact uploadOrigins and the corresponding storage/isolated-media connect-src entries; BrowserAuth retains private memory credentials while providing fixed-path isolated-media downloads and clear passkey step-up notices. Route drafts are keyed by identity epoch and pathname. Existing focused auth/foundation checks pass; broader new product checks belong to Module 12.
+- Change summary: See [Module 12 checkpoint](12-web-product-workflows.md) and [workflow contract decisions](../evidence/12-workflow-contracts.md).
+- Files/artifacts: Shared contracts/server/runtime roots or frontend boundary files described in the linked checkpoint; [ADR 0016](../../decisions/0016-first-party-passkey-step-up-controls.md) for the first-party ceremony controls.
+- Verification: Local workerd/D1 and PostgreSQL issue-route suites 2/2 each, focused frontend 16/16, public contracts 2/2 and builds pass at recorded checkpoints; newest passkey/browser work remains under verification. No hosted acceptance.
+- Decisions and deviations: No dependency, database migration, weakened assurance, persistent browser credential, raw HTML sink or hosted load.
+- Blockers/open questions: New browser acceptance/review remains owned by Module 12; G1/Module 10/13.G6 status unchanged.
+- Next actions: Complete the linked Module 12 verification and record final prerequisite results here.
+- Next-session cautions: Preserve protected user drafts and earlier evidence; this increment does not imply new hosted/release acceptance.
+
+
+### 2026-10-18 — Module 12 browser recovery checkpoint
+
+- Scope and checklist IDs: Necessary existing prerequisites for Module 12; no new owning-module checklist closure.
+- Progress: Updated frontend state/config/research guidance and synchronized English/Chinese account/project/frontend-hosting guides. Unique IDs, draft boundaries, lazy chunks and current build evidence supplement foundation behavior without reopening its completed checklist.
+- Change summary: Draft/form/conflict and plugin control fixes, separate revocation explanations, current local verification and reader/engineering documentation.
+- Files/artifacts: [Module 12 acceptance record](../evidence/12-browser-acceptance.md), linked profile reports/bundles and its [progress](12-web-product-workflows.md); scoped source formatting only on existing prerequisite files.
+- Verification: Node 31, Standard 31 and Minimum 32 local browser checks pass; focused unit 18/18, contracts 2/2, workerd HTTP 2/2 and PostgreSQL HTTP 2/2. Typecheck/lint/boundaries/build/secret/docs checks pass at recorded checkpoints.
+- Decisions and deviations: No new migration/dependency or policy weakening. See the linked record for failed harness assumptions and the fixture key-registry correction.
+- Blockers/open questions: Remaining Module 12 upload/media, failure/accessibility/performance/security acceptance stays open.
+- Next actions: Continue the bounded Module 12 acceptance matrix; preserve this module's existing gates and incomplete checks.
+- Next-session cautions: No hosted traffic, paid resources, push, merge or later-module work. G1 Not passed, Module 10 Blocked, 13.G6 open; protected root drafts remain uncommitted.
+
+### 2026-10-19 — Module 12 actual upload and accessibility checkpoint
+
+- Scope and checklist IDs: Necessary existing prerequisites for 12.2c/12.V2/12.V5; no reopening of this module's completed checklist.
+- Progress: [Module 12 upload evidence](../evidence/12-upload-acceptance.md) now records actual local Node 11, Standard 10, Minimum 10 browser checks, including scanning, quarantine/release and isolated media. [Core acceptance](../evidence/12-browser-acceptance.md) records explicit reload race recovery and three zero-violation automated accessibility reports.
+- Change summary: Product transfer renewal/status, ordinary attachment-link controls, safe-tree checkbox names and fetched edit baselines. Frontend guidance and English/Chinese hosting pages synchronized. All-owned-resource cleanup and manual stop verified.
+- Files/artifacts: Linked Module 12 reports/progress and its frontend/test fixtures; no migration/dependency change.
+- Verification: Latest core browser Node 31, Standard 31, Minimum 32; typecheck/lint/boundaries pass, focused state/passkey 7/7. Manual observations and final review pending; no production provider/scanner or hosted acceptance.
+- Decisions and deviations: Genuine local SeaweedFS/ClamAV and native workerd/D1/R2 are distinguished from Miniflare test signing/CORS. No weakened policy.
+- Blockers/open questions: Module 12 manual WCAG/performance/security and remaining workflows stay open.
+- Next actions: Complete remaining Module 12 evidence and synchronize final prerequisite notes.
+- Next-session cautions: Live manual fixture must remain available until human testing finishes; do not rebuild shared dist or reuse stale URLs. G1 Not passed, Module 10 Blocked, 13.G6 open; protected user drafts untouched.
+
+
+### 2026-10-19 — Module 12 prerequisite closure
+
+- Scope and checklist IDs: Final local verification/documentation of this module's bounded Module 12 prerequisites; no additional owning-module checklist/gate closure.
+- Progress: Module 12 is Complete; its [24-item completion map](../evidence/12-completion.md) supersedes earlier pending Module 12 notes in this log.
+- Change summary: Final expiry/conflict/moderation/forms/first-party passkey checks, actual upload/media acceptance, human accessibility acceptance, focused review and measured performance are reconciled. No new prerequisite behavior during this documentation closure.
+- Files/artifacts: Module 12 completion/browser/upload/performance/review reports, ADR 0016, its checklist/progress and synchronized English/Chinese reader guidance.
+- Verification: Final local workflows 37/37/38, uploads 11/10/10, zero axe violations on nine surfaces/profile, user manual all-pass. Current-source units 18/18, contracts 2/2, workerd HTTP 6/6 and PostgreSQL HTTP 6/6; types/lint/API/build/docs/secrets/scoped format/whitespace pass. Final documentation checks are in Module 12's closing record.
+- Decisions and deviations: Human/manual, local genuine service, native emulator and instrumented lab scopes remain distinct. No production/provider/billing/hosted compatibility claim or security-policy relaxation.
+- Blockers/open questions: No Module 12 remainder. This module's pre-existing incomplete gates/checks and production provider/scanner remainders are unchanged; G1 Not passed, Module 10 Blocked and 13.G6 open.
+- Next actions: Follow this module's existing authorized scope; do not restart hosted/later-module work from the Module 12 closure.
+- Next-session cautions: Owned Module 12 services are stopped; manual URL obsolete and scanner snapshot expires normally. Protected drafts/handoffs remain uncommitted; no push/merge/PR edit or hosted resource action.

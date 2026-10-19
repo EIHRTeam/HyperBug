@@ -344,13 +344,100 @@ export class BrowserAuth {
           error.status === 401
             ? 'Your session is no longer valid. Sign in to continue. Unsaved changes were cleared.'
             : error.code === 'REAUTHENTICATION_REQUIRED'
-              ? 'Sign in again to confirm access. Unsaved changes were cleared.'
+              ? 'A recent verified passkey sign-in is required. Password sign-in alone cannot confirm this sensitive action. Unsaved changes were cleared.'
               : 'Permission denied. Cached data and unsaved changes were cleared.',
         );
       throw error;
     } finally {
       input?.signal?.removeEventListener('abort', abort);
       this.#requests.delete(controller);
+    }
+  }
+
+  /** Fixed isolated-media path; never send the bearer to storage capabilities. */
+  async downloadAttachment(
+    id: string,
+    origin: string,
+    signal: AbortSignal,
+  ): Promise<{ blob: Blob; imageType: string | null }> {
+    if (
+      !/^[0-9a-f-]{36}$/.test(id) ||
+      !this.config.mediaOrigins.includes(origin)
+    )
+      throw new ApiClientError(0, 'INVALID_PARAMETERS');
+    const epoch = this.#snapshot.epoch;
+    const token = this.#readToken();
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    signal.addEventListener('abort', abort, { once: true });
+    if (signal.aborted) controller.abort();
+    this.#requests.add(controller);
+    const timer = setTimeout(abort, 60000);
+    try {
+      const response = await fetch(new URL(`/attachments/${id}`, origin), {
+        credentials: 'omit',
+        redirect: 'error',
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer',
+        signal: controller.signal,
+        headers: token ? { authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok) {
+        void response.body?.cancel();
+        if ([401, 403].includes(response.status))
+          this.#invalidate(
+            'Attachment access changed. Sign in again to continue.',
+          );
+        throw new ApiClientError(response.status, 'ATTACHMENT_UNAVAILABLE');
+      }
+      if (
+        !response.body ||
+        response.headers.get('x-content-type-options') !== 'nosniff' ||
+        !response.headers.get('content-disposition')?.startsWith('attachment')
+      ) {
+        void response.body?.cancel();
+        throw new ApiClientError(0, 'INVALID_RESPONSE');
+      }
+      const reader = response.body.getReader();
+      const chunks: Uint8Array<ArrayBuffer>[] = [];
+      let length = 0;
+      try {
+        async function next(): Promise<void> {
+          const { done, value } = await reader.read();
+          if (done) return;
+          length += value.byteLength;
+          if (length > 33554432)
+            throw new ApiClientError(0, 'RESPONSE_TOO_LARGE');
+          chunks.push(new Uint8Array(value));
+          return next();
+        }
+        await next();
+      } finally {
+        void reader.cancel().catch(() => {});
+        reader.releaseLock();
+      }
+      if (epoch !== this.#snapshot.epoch || controller.signal.aborted)
+        throw new ApiClientError(0, 'CANCELLED');
+      const type = response.headers.get('x-hyperbug-preview-type') ?? '';
+      const imageType = [
+        'image/png',
+        'image/jpeg',
+        'image/gif',
+        'image/webp',
+      ].includes(type)
+        ? type
+        : null;
+      return {
+        blob: new Blob(chunks, { type: 'application/octet-stream' }),
+        imageType,
+      };
+    } catch (error) {
+      if (error instanceof ApiClientError) throw error;
+      throw new ApiClientError(0, 'ATTACHMENT_UNAVAILABLE');
+    } finally {
+      clearTimeout(timer);
+      this.#requests.delete(controller);
+      signal.removeEventListener('abort', abort);
     }
   }
 

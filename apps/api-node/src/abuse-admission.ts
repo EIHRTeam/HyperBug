@@ -109,6 +109,7 @@ export interface NodeAbuseAdmission {
     | null;
   /** Append-only audit sink sharing this database's pool. */
   readonly auditAppend: AuditAppend | null;
+  readonly auditRepository: import('@hyperbug/security').AuditRepository | null;
   /** Trusted maintenance call; the runtime also schedules it every five minutes. */
   purgeExpiredRateCounters(nowMs: number): Promise<number>;
   runAsync(): Promise<void>;
@@ -172,6 +173,7 @@ export function configureNodeAbuseAdmission(
       accountAdministration: null,
       passkeyStores: null,
       auditAppend: null,
+      auditRepository: null,
       purgeExpiredRateCounters: async () => {
         throw new Error('Rate counter cleanup unavailable');
       },
@@ -274,7 +276,8 @@ export function configureNodeAbuseAdmission(
           keyRegistry,
           authorizationTimeoutMs,
         );
-  const auditAppend = createPostgresAuditRepository(pool).append;
+  const auditRepository = createPostgresAuditRepository(pool);
+  const auditAppend = auditRepository.append;
   return Object.freeze({
     abuse: provider
       ? Object.freeze({
@@ -318,6 +321,7 @@ export function configureNodeAbuseAdmission(
     accountAdministration: createPostgresAccountAdministration(pool),
     passkeyStores: createPostgresPasskeyStores(pool),
     auditAppend,
+    auditRepository,
     runAsync: asyncRuntime.run,
     configureAsyncUploads: asyncRuntime.configureUploads,
     purgeExpiredRateCounters: (nowMs: number) =>

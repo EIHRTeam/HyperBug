@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import { useAuth, useInstance } from '../app.tsx';
 import { ConfirmDialog, StateMessage } from '../components/ui.tsx';
+import { Link } from '@tanstack/react-router';
+import { useProductQuery } from '../product-api.ts';
+import { QueryStatus } from '../components/product.tsx';
+import { CommandForm } from '../components/command-form.tsx';
 
 export function Account() {
   const { auth, state } = useAuth();
   const { data } = useInstance();
   const [checking, setChecking] = useState(false);
   const [message, setMessage] = useState('');
+  const sessions = useProductQuery(
+    'GET /api/v1/account/sessions',
+    {},
+    Boolean(state.account),
+  );
   const canSignIn =
     data && (data.authentication.passwordLogin || data.authentication.passkeys);
   return (
@@ -26,6 +35,46 @@ export function Account() {
             Account type:{' '}
             {state.account.kind === 'staff' ? 'Staff' : 'Public user'}
           </p>
+          {state.account.kind === 'staff' ? (
+            <Link to="/plugins">Instance plugins</Link>
+          ) : null}
+          {data?.authentication.passkeys ? (
+            <button
+              type="button"
+              onClick={() => {
+                void auth.signIn();
+              }}
+            >
+              Verify a passkey for sensitive actions
+            </button>
+          ) : null}
+          <h2>Authorization sessions</h2>
+          <p>
+            Revoking a session stops its reuse at the authorization service. App
+            access tokens are separate; sign out of this app to revoke its
+            token.
+          </p>
+          <QueryStatus query={sessions} />
+          {sessions.data?.sessions.map((session) => (
+            <section key={session.id}>
+              <p>
+                Session created {new Date(session.createdAt).toLocaleString()} ·
+                expires {new Date(session.absoluteExpiresAt).toLocaleString()}
+              </p>
+              <CommandForm
+                label={`Revoke session ${session.id}`}
+                confirm
+                fields={[]}
+                onSave={async () => {
+                  await auth.request('DELETE /api/v1/account/sessions/{id}', {
+                    params: { id: session.id },
+                    body: {},
+                  });
+                  await sessions.refetch();
+                }}
+              />
+            </section>
+          ))}
           <div className="actions">
             <button
               type="button"
@@ -83,7 +132,11 @@ export function Account() {
         </StateMessage>
       )}
       {data?.authentication.passkeys ? (
-        <p>Passkeys are available through the authorization service.</p>
+        <p>
+          Passkeys are available through the authorization service. For
+          sensitive changes, choose “Use a passkey” there before authorizing
+          access.
+        </p>
       ) : (
         <p>Passkeys are unavailable on this instance.</p>
       )}

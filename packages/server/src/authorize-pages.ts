@@ -1,7 +1,7 @@
 /**
  * Backend-owned authorization-service pages (04.2d). Server-rendered HTML on
  * the authorization origin only: semantic forms, visible labels, described
- * hints, aria-live error regions, language attribute, no scripts and no
+ * hints, aria-live error regions, language attribute, optional fixed passkey script and no
  * inline styles — the UA default focus outline provides visible focus
  * (guides: forms, accessible-error-announcement; 2026-09-30 retrieval).
  */
@@ -48,6 +48,7 @@ function hiddenFields(query: AuthorizeQuery): string {
 export function contentSecurityPolicy(
   captcha: boolean,
   validatedRedirectUri?: string,
+  passkeys = false,
 ): string {
   // Callers must validate the exact registered URI before rendering. Serialize
   // only its web origin: paths/query text must never become CSP source tokens.
@@ -62,9 +63,7 @@ export function contentSecurityPolicy(
   )
     throw new Error('Expected a validated web callback');
   const callbackOrigin = callback === undefined ? '' : ` ${callback.origin}`;
-  const provider = captcha
-    ? '; script-src https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src https://challenges.cloudflare.com'
-    : '';
+  const provider = `${passkeys || captcha ? `; script-src ${passkeys ? "'self' " : ''}${captcha ? 'https://challenges.cloudflare.com' : ''}; connect-src ${passkeys ? "'self' " : ''}${captcha ? 'https://challenges.cloudflare.com' : ''}` : ''}${captcha ? '; frame-src https://challenges.cloudflare.com' : ''}`;
   return `default-src 'none'; form-action 'self'${callbackOrigin}; base-uri 'none'; frame-ancestors 'none'${provider}`;
 }
 
@@ -73,6 +72,7 @@ function document(
   body: string,
   captcha: boolean,
   validatedRedirectUri?: string,
+  passkeys = false,
 ): Response {
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -80,6 +80,7 @@ function document(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(title)}</title>
+${passkeys ? '<script src="/auth/assets/passkeys.js" defer></script>' : ''}
 </head>
 <body>
 <main>
@@ -94,6 +95,7 @@ ${body}
       'content-security-policy': contentSecurityPolicy(
         captcha,
         validatedRedirectUri,
+        passkeys,
       ),
     },
   });
@@ -119,6 +121,7 @@ export function authorizeLoginPage(input: {
   readonly error: string | null;
   /** When false, the credential form becomes an explained non-actionable state. */
   readonly passwordSigninAvailable: boolean;
+  readonly passkeySigninAvailable?: boolean;
   /** Persistent degradation notice; null on standard deployments. */
   readonly notice: string | null;
 }): Response {
@@ -140,6 +143,10 @@ export function authorizeLoginPage(input: {
     : // Turnstile's bootstrap loader is not SRI-pinnable (its bytes change on
       // Cloudflare's side); the exact-origin script-src pin above is the control.
       '';
+  const passkeys = input.passkeySigninAvailable ?? false;
+  const passkeyControls = passkeys
+    ? '<p>For sensitive administration, use a verified passkey before authorizing access.</p><button type="button" id="passkey-login">Use a passkey</button><output id="passkey-status" aria-live="polite"></output>'
+    : '';
   const credentials = passwordSigninAvailable
     ? `<form method="POST" action="/auth/authorize/login">
 ${hiddenFields(query)}
@@ -169,9 +176,12 @@ ${captcha}
 <p id="client-note" class="hint">The application <strong>${escapeHtml(query.client_id)}</strong> requests access to your HyperBug account.</p>
 ${noticeRegion(notice)}
 ${errorRegion(error)}
-${credentials}`,
-    captchaRequired && passwordSigninAvailable,
+${credentials}
+${passkeyControls}
+${!passwordSigninAvailable && passkeys ? captcha : ''}`,
+    captchaRequired && (passwordSigninAvailable || passkeys),
     query.redirect_uri,
+    passkeys,
   );
 }
 
@@ -180,8 +190,12 @@ export function authorizeConsentPage(input: {
   readonly handle: string | null;
   readonly error: string | null;
   readonly notice: string | null;
+  readonly passkeySigninAvailable?: boolean;
+  readonly captchaRequired?: boolean;
+  readonly captchaSiteKey?: string | null;
 }): Response {
   const { query, handle, error, notice } = input;
+  const passkeys = input.passkeySigninAvailable ?? false;
   const scopes = query.scope
     .split(' ')
     .filter((token) => token.length > 0)
@@ -195,12 +209,14 @@ export function authorizeConsentPage(input: {
 <ul>${scopes}</ul>
 ${noticeRegion(notice)}
 ${errorRegion(error)}
+${passkeys ? `<section aria-labelledby="passkey-heading"><h2 id="passkey-heading">Passkey verification</h2><p>Sensitive administration requires a recent verified passkey sign-in. Register a passkey for this account if needed, then use it before authorizing access.</p><button type="button" id="passkey-register">Register a passkey</button><button type="button" id="passkey-login">Use a passkey</button><output id="passkey-status" aria-live="polite"></output>${input.captchaRequired ? `<div class="cf-turnstile" data-sitekey="${escapeHtml(input.captchaSiteKey ?? '')}" data-action="login" data-response-field-name="captchaToken"></div><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>` : ''}</section>` : ''}
 <form method="POST" action="/auth/authorize/consent">
 ${hiddenFields(query)}
 <button type="submit">Authorize</button>
 </form>`,
-    false,
+    passkeys && Boolean(input.captchaRequired),
     query.redirect_uri,
+    passkeys,
   );
 }
 

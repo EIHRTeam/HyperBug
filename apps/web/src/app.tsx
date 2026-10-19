@@ -5,6 +5,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { BrowserAuth } from './auth.ts';
+import { createApiClient } from '@hyperbug/api-client';
 import { createRoot } from 'react-dom/client';
 import {
   QueryClient,
@@ -18,15 +19,19 @@ import {
   lazyRouteComponent,
   Link,
   Outlet,
+  useLocation,
   RouterProvider,
 } from '@tanstack/react-router';
 import { instanceQuery } from './capabilities.ts';
 import type { RuntimeConfig } from './runtime-config.ts';
+import { validateIssueSearch } from './product-state.ts';
+import { MinimumNotice } from './components/minimum-notice.tsx';
 
 interface ApplicationContext {
   config: RuntimeConfig;
   instance: ReturnType<typeof instanceQuery>;
   auth: BrowserAuth;
+  publicClient: ReturnType<typeof createApiClient>;
 }
 
 const rootRoute = createRootRouteWithContext<ApplicationContext>()({
@@ -68,6 +73,57 @@ const accountRoute = createRoute({
     'Account',
   ),
 });
+export const projectRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/projects/$projectId',
+  validateSearch: validateIssueSearch,
+  component: lazyRouteComponent(
+    () => import('./routes/project.tsx'),
+    'Project',
+  ),
+});
+export const newIssueRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/projects/$projectId/new',
+  component: lazyRouteComponent(
+    () => import('./routes/new-issue.tsx'),
+    'NewIssue',
+  ),
+});
+export const issueRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/projects/$projectId/issues/$issueId/$number',
+  validateSearch: (raw: Record<string, unknown>) => ({
+    cursor:
+      typeof raw.cursor === 'string' && raw.cursor.length <= 2048
+        ? raw.cursor
+        : '',
+    comment:
+      typeof raw.comment === 'string' && /^[0-9a-f-]{36}$/.test(raw.comment)
+        ? raw.comment
+        : '',
+  }),
+  component: lazyRouteComponent(() => import('./routes/issue.tsx'), 'Issue'),
+});
+export const manageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/projects/$projectId/manage',
+  validateSearch: (raw: Record<string, unknown>) => ({
+    auditAfter:
+      typeof raw.auditAfter === 'string' && raw.auditAfter.length <= 1024
+        ? raw.auditAfter
+        : '',
+  }),
+  component: lazyRouteComponent(() => import('./routes/manage.tsx'), 'Manage'),
+});
+const pluginsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/plugins',
+  component: lazyRouteComponent(
+    () => import('./routes/plugins-admin.tsx'),
+    'PluginsAdmin',
+  ),
+});
 
 function makeRouter(context: ApplicationContext) {
   return createRouter({
@@ -75,6 +131,11 @@ function makeRouter(context: ApplicationContext) {
       overviewRoute,
       instanceRoute,
       accountRoute,
+      projectRoute,
+      newIssueRoute,
+      issueRoute,
+      manageRoute,
+      pluginsRoute,
     ]),
     context,
     defaultPreload: 'intent',
@@ -101,6 +162,9 @@ export function useInstance() {
 export function usePublicConfig() {
   return rootRoute.useRouteContext().config;
 }
+export function usePublicClient() {
+  return rootRoute.useRouteContext().publicClient;
+}
 export { instanceRoute };
 export function useAuth() {
   const { auth } = rootRoute.useRouteContext();
@@ -111,6 +175,7 @@ export function useAuth() {
 }
 
 function ApplicationShell() {
+  const routePath = useLocation({ select: (current) => current.pathname });
   const config = usePublicConfig();
   const instance = useInstance();
   const { state } = useAuth();
@@ -176,10 +241,16 @@ function ApplicationShell() {
             </button>
           </>
         ) : (
-          <Outlet key={state.epoch} />
+          <>
+            {routePath !== '/account' && state.notice ? (
+              <output>{state.notice}</output>
+            ) : null}
+            <Outlet key={`${state.epoch}:${routePath}`} />
+          </>
         )}
       </main>
       <footer className="site-footer">
+        <MinimumNotice />
         <p>Powered by HyperBug · A shared place for feedback</p>
       </footer>
     </>
@@ -196,19 +267,30 @@ export async function startApplication(
   });
   const auth = new BrowserAuth(config, queryClient);
   if (callback) await auth.completeCallback(callback);
-  const router = makeRouter({ config, instance: instanceQuery(config), auth });
-  let previousHref = location.pathname + location.search;
+  const publicClient = createApiClient({
+    baseUrl: config.apiBaseUrl,
+    maxRetries: 0,
+  });
+  const router = makeRouter({
+    config,
+    instance: instanceQuery(config),
+    auth,
+    publicClient,
+  });
+  let previousPath = location.pathname;
   router.subscribe('onRendered', ({ toLocation }) => {
     const page =
       toLocation.pathname === '/account'
         ? 'Account'
         : toLocation.pathname === '/instance'
           ? 'Instance'
-          : 'Overview';
+          : toLocation.pathname.startsWith('/projects/')
+            ? 'Project'
+            : 'Overview';
     document.title = `${page} · ${config.applicationName}`;
-    if (previousHref !== toLocation.href)
+    if (previousPath !== toLocation.pathname)
       document.getElementById('content')?.focus();
-    previousHref = toLocation.href;
+    previousPath = toLocation.pathname;
   });
   createRoot(container).render(
     <StrictMode>

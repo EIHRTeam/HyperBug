@@ -2,39 +2,36 @@
 
 [Documentation home](../index.md)
 
-> Status: Backend content policy partially verified locally; product steps and examples remain pending.
+The product workflows pass local browser verification across Node/PostgreSQL and both Workers tiers. Hosted backend acceptance and release readiness remain separate gates.
 
-**For:** Visitors and signed-in feedback participants.  
-**Goal:** Find existing feedback, submit a useful report, and follow its discussion.
+## Find feedback
 
-## Find an existing issue
+Open the project link shared by its team, or enter its complete project ID on Overview. The instance checks access to private projects. Search and page state are in the URL, so links can be shared and browser back/forward restores them. Only newest-created sorting is supported.
 
-To write: Cover project scope, search, filters, sorting, pagination, shareable links, and invalid searches; add syntax only after module 08 acceptance.
+Search accepts words, quoted phrases and filters such as `state:open`, `label:UUID`, `type:UUID`, `milestone:UUID`, `author:me` and `assignee:me`. Replace UUID with a real identifier; “me” requires sign-in. Labels, types and milestones are listed under the project summaries. Search is limited to 512 characters and a bounded result window. Narrow the query when the window is full. Minimum instances search titles only; Standard searches titles and bodies. Comments are not searched.
 
-## Submit feedback
+## Submit an issue
 
-To write: Outline template selection, required form fields, a clear title, reproduction details, expected and actual results, preview, and submission confirmation.
+Sign in, choose **New issue**, then select a Markdown template or an Issue Form. Provide a clear title and complete required fields. Forms support text, multiline text, dropdowns, checkboxes and upload fields. Required checkbox choices must all be selected. **Preview current content** asks the instance to render the current draft without publishing it; preview shares the comment request budget.
 
-The backend now accepts bounded GitHub Issue Forms YAML, stores immutable form/template versions and provides staff management APIs. Active forms generate deterministic Markdown and retain their structured answers when creating an issue. A stale draft must reload its definition; a committed retry with the same idempotency key and payload returns its original issue even if the form later changes. Templates and enabled forms follow project visibility; pinned or disabled history requires a maintainer. Form upload answers require a matching draft identity and files owned by the reporter that have been finalized, released and bound to a current clean scan. Linking commits atomically with the issue, and each upload can be consumed once. Actual scanner acceptance remains pending. Product controls and browser walkthroughs remain pending. See the [format and API specification](https://github.com/EIHRTeam/HyperBug/blob/main/docs/ISSUE-FORMS.md).
+Drafts remain only in the current page’s memory. Navigation, reload, sign-out, expiry or permission changes clear them. Copy anything you need to preserve before leaving the page, taking care with private information. If a form version changes, load the current form and review every answer. The app does not remap old answers automatically.
 
-## Write content and add attachments
+If the result of a submission is uncertain, retry the unchanged submission. Its receipt prevents a duplicate after a committed request whose reply was lost. Changing the payload starts a different submission.
 
-Verified backend policy (Module 07; product UI remains pending): content supports headings, emphasis, code, lists, task checkboxes, tables and links. The server sanitizes raw HTML and removes scripts, event handlers, SVG/MathML and unsafe URLs. Bodies allow at most 32,768 Unicode code points subject to API byte limits; deeply nested or unusually complex formatting is rejected. External images are represented as inert references for a future click-to-load control. Attachment references do not grant download access. Optional backend upload intents now reserve quota and issue short-lived direct PUT capabilities below the configured multipart threshold. Larger reservations use multipart create/resume, part upload capabilities, receipts and completion/abort. Abort retains quota until physical cleanup; an uncertain creation can require operator reconciliation. Manual background verification preserves immutable final bytes, but files remain unscanned and quarantined; automatic processing and authorized download delivery remain pending. Form attachment linking is implemented behind current clean-scan release checks. Scanner hooks now enforce complete immutable-byte verification, quarantine and recorded results before release; no actual scanner is configured or accepted, and synthetic tests do not prove malware detection. Issue/comment lists carry stored plain-text previews, while authorized details and visible timeline comments include a safe tree. No product browser walkthrough or deployed acceptance is claimed.
+## Attach files and read content
+
+Uploads require an operator-configured direct-upload destination. Choose a file, upload it, and use progress/cancel/retry controls as needed. Files can require processing and scanning before release; uploaded bytes alone do not mean the file is safe or usable. Check processing status before submitting required upload answers. Expired uploads need a fresh reservation; quota and file-type limits still apply.
+
+Content is rendered from the instance’s centralized safe representation. Raw HTML, scripts and unsafe links are removed by the server. External image links stay inert until you choose to reveal/open them; opening contacts that external host. Released attachments are fetched through a separately configured media origin with current access checks. Dangerous formats download as files, never as active content in the app. Only released PNG, JPEG, GIF or WebP images up to 8 MiB are eligible for explicit image preview.
 
 ## Discuss and track progress
 
-To write: Cover comments, reactions, permitted edits, stable links, timeline entries, moderation states, and closed or archived issues.
+Issue links include the stable issue identifier and its project-local number. Comments and events share a paginated timeline; only one page of 20 entries is rendered at a time. Use timeline page links and comment permalinks to revisit older discussion. Browser back/forward preserves page state.
 
-## Recover from an interrupted action
+Signed-in participants can comment, add/remove their reactions and edit/delete their own comments where policy permits. Maintainers can inspect original edit history and moderate content. Hidden, redacted and deleted content has an explained unavailable state. Closed issues retain their history; archived projects are read-only.
 
-To write: Cover expired sign-in, stale form versions, conflicting edits, failed uploads, and uncertain submission outcomes without encouraging duplicate reports.
+## Recover from errors
 
-## Completion requirements
+Network failure preserves the in-memory draft while you stay on the page. A conflict means the resource changed: load the latest version, compare your work and retry deliberately. Authentication or permission loss clears private caches and drafts; sign in again with the appropriate identity. Sensitive staff actions require a recent verified passkey sign-in; repeating password sign-in alone is insufficient.
 
-Browser walkthroughs cover successful and failed submissions, accessible forms, discussion, and uploads against both accepted backend profiles.
-
-## Source references
-
-[Workflow acceptance](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/12-web-product-workflows.md); [content policy](https://github.com/EIHRTeam/HyperBug/blob/main/docs/MARKDOWN-POLICY.md); [search plan](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/08-search-and-query.md).
-
-The backend can now serve released attachments from an explicitly configured, separate HTTPS media origin. Public downloads follow the visibility of their issue or comment; private downloads require current authorized access, and a link alone grants none. Files download with safe filenames and no shared caching, including HTML, SVG and scripts. Local checks cover both backend profiles; production origins, browser steps and actual scanner acceptance remain pending.
+See [Accounts and access](accounts.md), [Project management](project-management.md), and the [content policy](https://github.com/EIHRTeam/HyperBug/blob/main/docs/MARKDOWN-POLICY.md).

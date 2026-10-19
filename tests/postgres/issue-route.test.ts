@@ -1,3 +1,4 @@
+import { webWorkflowContract } from '../fixtures/web-workflow-contract.ts';
 import { createPostgresAsyncStore } from '@hyperbug/database-postgres';
 import { searchHttpContract } from '../fixtures/search-contract.ts';
 import { createPostgresSearchIndexStore } from '@hyperbug/database-postgres';
@@ -309,6 +310,7 @@ beforeAll(async () => {
     searchIndexStore: configured.searchIndexStore,
     accountAdministration: configured.accountAdministration,
     auditAppend: configured.auditAppend,
+    auditRepository: configured.auditRepository,
     bootstrapCode: enrollmentCode,
     staffEnrollmentStore: configured.staffEnrollmentStore,
   };
@@ -393,6 +395,7 @@ it('delivers the issue lifecycle on Node/PostgreSQL', async () => {
     'issueauthor',
     'long-functional-password',
   );
+  await webWorkflowContract(call, staffToken, authorToken);
   const staffAccount = await call('/api/v1/account', { token: staffToken });
   const staffPrincipalId = (
     (await staffAccount.json()) as { principalId: string }

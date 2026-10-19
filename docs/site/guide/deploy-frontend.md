@@ -5,7 +5,7 @@
 **For:** Operators evaluating the static frontend foundation.
 **Goal:** Host the same build independently of the API and replace public configuration without rebuilding.
 
-The foundation provides overview, account and instance-capability pages, with sign-in through the authorization service. Issue workflows remain a later increment. Generic hosting and a temporary Pages preview were verified against a local Node public endpoint. Backend acceptance G1 and release acceptance remain incomplete; this is not a production release or a complete backend compatibility matrix.
+The foundation provides overview, account and instance-capability pages, with sign-in through the authorization service. Module 12 issue and staff workflows are implemented and pass local browser verification across Node/PostgreSQL and both Workers tiers. Generic hosting and a temporary Pages preview were verified against a local Node public endpoint. Backend acceptance G1 and release acceptance remain incomplete; this is not a production release or a complete backend compatibility matrix.
 
 ## Build and check
 
@@ -33,7 +33,8 @@ Create a deployment-specific file such as `frontend-config.json`:
   "applicationName": "My HyperBug",
   "apiBaseUrl": "https://api.example.net",
   "authBaseUrl": "https://auth.example.org",
-  "mediaOrigins": ["https://media.example.com"]
+  "mediaOrigins": ["https://media.example.com"],
+  "uploadOrigins": ["https://uploads.example.net"]
 }
 ```
 
@@ -90,3 +91,8 @@ Access tokens stay in memory. Reloading requires a new top-level sign-in; expiry
 ## Source references
 
 [Static web plan](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/11-static-web-foundation.md); [P1 evidence](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/evidence/11-p1-foundation.md); [release checklist](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/13-mvp-release-and-operations.md).
+
+
+## Product upload configuration
+
+`uploadOrigins` is optional public configuration with at most 16 exact HTTPS storage origins (loopback HTTP for local development). Regenerate CSP headers together with config. Storage origins must differ from the frontend/API/authorization origins and contain no credentials, paths, query or fragments. Storage must permit the frontend's direct PUT and multipart requests and expose ETag; never put signed capability URLs into runtime config. Without upload origins, forms explain that uploads are unavailable. `mediaOrigins` configures isolated downloads; processing, release and access checks still apply. Local product upload checks pass for all three profiles. Node uses real local S3-compatible storage; Workers use native local R2 with a test transfer endpoint. These checks do not establish production provider/CORS/scanner acceptance.

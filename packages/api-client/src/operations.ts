@@ -21,6 +21,20 @@ export const operations = {
     replay: 'none',
     contentType: 'application/json',
   },
+  'POST /api/v1/projects/{projectId}/content/preview': {
+    method: 'POST',
+    path: '/api/v1/projects/{projectId}/content/preview',
+    authentication: 'bearer',
+    replay: 'none',
+    contentType: 'application/json',
+  },
+  'GET /api/v1/projects/{projectId}/audit': {
+    method: 'GET',
+    path: '/api/v1/projects/{projectId}/audit',
+    authentication: 'bearer',
+    replay: 'none',
+    contentType: 'application/json',
+  },
   'GET /api/v1/account': {
     method: 'GET',
     path: '/api/v1/account',
@@ -752,6 +766,61 @@ export interface OperationTypes {
       };
       search: { textScope: 'title' | 'title-and-body' };
       limits: { documented: string };
+    };
+  };
+  'POST /api/v1/projects/{projectId}/content/preview': {
+    params: { projectId: string };
+    query: Record<string, never>;
+    body:
+      | { body: string }
+      | {
+          formId: string;
+          formVersion: number;
+          values: Record<string, string | Array<string> | Array<number>>;
+        };
+    response: {
+      bodyTree: {
+        type: 'root';
+        children: Array<
+          | { type: 'text'; value: string }
+          | {
+              type: 'element';
+              tagName: string;
+              properties: Record<
+                string,
+                string | number | boolean | Array<string>
+              >;
+              children: Array<SafeMarkdownNode>;
+            }
+          | {
+              type: 'image';
+              source:
+                | { kind: 'external'; url: string }
+                | { kind: 'attachment'; id: string };
+              alt: string;
+              title: null | string;
+            }
+        >;
+      };
+      contentPolicyVersion: string;
+    };
+  };
+  'GET /api/v1/projects/{projectId}/audit': {
+    params: { projectId: string };
+    query: { limit?: number | string; after?: string };
+    body: undefined;
+    response: {
+      items: Array<{
+        id: string;
+        projectId: string;
+        actorId: null | string;
+        systemActor: null | string;
+        action: string;
+        targetId: string;
+        result: 'success' | 'failure';
+        createdAt: string;
+      }>;
+      nextCursor: null | string;
     };
   };
   'GET /api/v1/account': {

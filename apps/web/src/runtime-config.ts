@@ -4,6 +4,7 @@ export interface RuntimeConfig {
   readonly apiBaseUrl: string;
   readonly authBaseUrl: string;
   readonly mediaOrigins: readonly string[];
+  readonly uploadOrigins?: readonly string[];
 }
 
 export function publicOrigin(value: unknown): string {
@@ -38,8 +39,10 @@ export function validateRuntimeConfig(input: unknown): RuntimeConfig {
     'mediaOrigins',
   ];
   if (
-    Object.keys(value).length !== keys.length ||
-    Object.keys(value).some((key) => !keys.includes(key)) ||
+    keys.some((key) => !(key in value)) ||
+    Object.keys(value).some(
+      (key) => !keys.includes(key) && key !== 'uploadOrigins',
+    ) ||
     value.schemaVersion !== 1 ||
     typeof value.applicationName !== 'string' ||
     !value.applicationName.trim() ||
@@ -53,6 +56,16 @@ export function validateRuntimeConfig(input: unknown): RuntimeConfig {
   )
     throw new Error('INVALID_CONFIGURATION');
   const mediaOrigins = value.mediaOrigins.map(publicOrigin);
+  if (
+    value.uploadOrigins !== undefined &&
+    (!Array.isArray(value.uploadOrigins) || value.uploadOrigins.length > 16)
+  )
+    throw new Error('INVALID_CONFIGURATION');
+  const uploadOrigins = (value.uploadOrigins as unknown[] | undefined)?.map(
+    publicOrigin,
+  );
+  if (uploadOrigins && new Set(uploadOrigins).size !== uploadOrigins.length)
+    throw new Error('INVALID_CONFIGURATION');
   if (new Set(mediaOrigins).size !== mediaOrigins.length)
     throw new Error('INVALID_CONFIGURATION');
   return Object.freeze({
@@ -61,6 +74,7 @@ export function validateRuntimeConfig(input: unknown): RuntimeConfig {
     apiBaseUrl: publicOrigin(value.apiBaseUrl),
     authBaseUrl: publicOrigin(value.authBaseUrl),
     mediaOrigins: Object.freeze(mediaOrigins),
+    ...(uploadOrigins ? { uploadOrigins: Object.freeze(uploadOrigins) } : {}),
   });
 }
 

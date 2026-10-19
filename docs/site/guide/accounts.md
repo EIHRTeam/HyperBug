@@ -2,30 +2,32 @@
 
 [Documentation home](../index.md)
 
-> Status: Outline only. Product steps and examples are pending implementation and verification.
-
 **For:** Feedback participants and project staff.  
 **Goal:** Understand sign-in, public visibility, and access to your account.
 
 ## Sign in and manage sessions
 
-To write: Document only implemented sign-in options, sign-out behavior, expiration, and session revocation.
+Open **Account → Sign in**. Credential entry and consent happen on the instance's authorization service. Available methods depend on its capability document. Your app access token stays in memory; after reload, start a fresh top-level sign-in. Unsaved drafts disappear on navigation, reload, identity changes, sign-out or denied access.
+
+**Check access** verifies your current app access. Under **Authorization sessions**, confirm **Revoke session** to end a listed first-party authorization session. App access tokens are separate; use app sign-out to revoke this app’s token. **Sign out of this app** clears local private state and attempts to revoke this app's token. Its first-party authorization session is separate; the app reports if token revocation could not be confirmed.
+
+Sensitive administration requires a recent verified passkey sign-in. When available, choose **Verify a passkey for sensitive actions**, then **Use a passkey** on the authorization service before authorizing access. If no passkey is enrolled, the signed-in consent page can offer **Register a passkey**; registration alone does not complete step-up, so then use the passkey to sign in. Password-only sign-in cannot satisfy this assurance requirement. Contact the operator when passkeys are unavailable.
 
 ## Understand public and staff identities
 
-To write: Explain that a public account does not automatically receive staff privileges; project roles and membership determine staff actions.
+A Public User account can submit feedback and participate where permitted. It does not gain Staff privileges by sharing an email address or name. Project Triage, Maintainer and Administrator roles determine Staff actions; the server checks each operation. A visible control is not proof of permission.
 
 ## Know what others can see
 
-To write: Describe public issues, private projects, attachments, edit history, and moderation visibility from accepted policy. Remind readers to omit credentials and personal information from public reports.
+Public issues and visible discussion can be read without signing in. Private projects, hidden/redacted content, restricted edit history and audit records use the instance's access policy. Attachment access is checked separately; uploading does not make a file released or publicly readable. Keep credentials and unnecessary personal information out of public reports. Drafts are not a private backup and are never stored by the app for later recovery.
 
 ## Recover access
 
-To write: Reserve separate verified paths for public accounts and staff, including deployments without email or SSO; do not promise an unimplemented recovery channel.
+An expired or denied app session offers a fresh sign-in. Recheck your role with the project administrator if an action remains denied. Do not repeatedly submit a sensitive action with password-only authentication. Account recovery methods depend on the operator's enabled providers and policy; this app does not promise email, SSO or a self-service recovery channel that the instance lacks.
 
-## Completion requirements
+## Verification scope
 
-Identity and recovery flows pass acceptance, and visibility statements match the implemented authorization policy.
+Local product journeys now pass on Node/PostgreSQL and both Workers tiers, supplemented by automated accessibility checks and the reported manual test matrix. Hosted backend acceptance and release readiness remain separate; this is not a complete device or assistive-technology matrix.
 
 ## Source references
 

@@ -1,0 +1,203 @@
+{
+  "scope": "Production build artifact sizes; sums of independently gzipped files, including shared shell and CSS, excluding HTML/config and optional dynamic imports unless named. No hosted transfer, field CWV or SLO claim.",
+  "manifestSha256": "ccf9b37da3228f144363dfe42fb5c9a1915ef4b5ef196a9ceba78e76b839bd79",
+  "routes": {
+    "list": {
+      "files": [
+        "assets/index-BNejdgux.css",
+        "assets/index-DffC82J6.js",
+        "assets/app-56QAodNk.js",
+        "assets/project-CrOjHFyQ.js",
+        "assets/product-BGvJmnUV.js"
+      ],
+      "bytes": 401633,
+      "gzipBytes": 124115
+    },
+    "detail": {
+      "files": [
+        "assets/index-BNejdgux.css",
+        "assets/index-DffC82J6.js",
+        "assets/app-56QAodNk.js",
+        "assets/issue-DJh9YEZY.js",
+        "assets/product-BGvJmnUV.js",
+        "assets/command-form-Di8Dg2xZ.js",
+        "assets/ui-Bj0dJpIy.js",
+        "assets/editor-CVQY_pPu.js"
+      ],
+      "bytes": 479332,
+      "gzipBytes": 145081
+    },
+    "staffDetail": {
+      "files": [
+        "assets/index-BNejdgux.css",
+        "assets/index-DffC82J6.js",
+        "assets/app-56QAodNk.js",
+        "assets/issue-DJh9YEZY.js",
+        "assets/product-BGvJmnUV.js",
+        "assets/command-form-Di8Dg2xZ.js",
+        "assets/ui-Bj0dJpIy.js",
+        "assets/editor-CVQY_pPu.js",
+        "assets/triage-DzSLxnUL.js"
+      ],
+      "bytes": 483650,
+      "gzipBytes": 146439
+    },
+    "create": {
+      "files": [
+        "assets/index-BNejdgux.css",
+        "assets/index-DffC82J6.js",
+        "assets/app-56QAodNk.js",
+        "assets/new-issue--gO1Lvrd.js",
+        "assets/ui-Bj0dJpIy.js",
+        "assets/product-BGvJmnUV.js",
+        "assets/editor-CVQY_pPu.js"
+      ],
+      "bytes": 480661,
+      "gzipBytes": 145389
+    },
+    "management": {
+      "files": [
+        "assets/index-BNejdgux.css",
+        "assets/index-DffC82J6.js",
+        "assets/app-56QAodNk.js",
+        "assets/manage-BM3Cm9OX.js",
+        "assets/product-BGvJmnUV.js",
+        "assets/command-form-Di8Dg2xZ.js",
+        "assets/ui-Bj0dJpIy.js"
+      ],
+      "bytes": 469039,
+      "gzipBytes": 140188
+    },
+    "audit": {
+      "files": [
+        "assets/index-BNejdgux.css",
+        "assets/index-DffC82J6.js",
+        "assets/app-56QAodNk.js",
+        "assets/manage-BM3Cm9OX.js",
+        "assets/product-BGvJmnUV.js",
+        "assets/command-form-Di8Dg2xZ.js",
+        "assets/ui-Bj0dJpIy.js",
+        "assets/audit-browser-BeqCI2TJ.js"
+      ],
+      "bytes": 470912,
+      "gzipBytes": 141167
+    },
+    "plugins": {
+      "files": [
+        "assets/index-BNejdgux.css",
+        "assets/index-DffC82J6.js",
+        "assets/app-56QAodNk.js",
+        "assets/plugins-admin-C5kE14Rk.js",
+        "assets/product-BGvJmnUV.js",
+        "assets/command-form-Di8Dg2xZ.js",
+        "assets/ui-Bj0dJpIy.js"
+      ],
+      "bytes": 462155,
+      "gzipBytes": 139101
+    }
+  },
+  "assets": [
+    {
+      "file": "assets/account-Dqiw3B62.js",
+      "bytes": 3180,
+      "gzipBytes": 1358,
+      "sha256": "c121bdcebbf0010fd48dedcba32412cba314f8effa83e468a8a97032ededd2e1"
+    },
+    {
+      "file": "assets/app-56QAodNk.js",
+      "bytes": 341834,
+      "gzipBytes": 107921,
+      "sha256": "9b033fe624d1d5a42e5d44180ab17bb395aa49a041cd789ea54f7eb4783b2427"
+    },
+    {
+      "file": "assets/audit-browser-BeqCI2TJ.js",
+      "bytes": 1873,
+      "gzipBytes": 979,
+      "sha256": "c0b97e90c8b9ddc191ba9705ddff577dd9fa7832da48a682f6600f84481ac9d9"
+    },
+    {
+      "file": "assets/command-form-Di8Dg2xZ.js",
+      "bytes": 2310,
+      "gzipBytes": 1201,
+      "sha256": "a6be8135fbadc49674359035da39bcb48f5877de45f40e6e2169025dde3659b2"
+    },
+    {
+      "file": "assets/editor-CVQY_pPu.js",
+      "bytes": 8159,
+      "gzipBytes": 3358,
+      "sha256": "9629dd2f144f307597bfc347b45258b61d54ad6380c659851140d9aabeb3b377"
+    },
+    {
+      "file": "assets/index-BNejdgux.css",
+      "bytes": 11991,
+      "gzipBytes": 3499,
+      "sha256": "8cc7d5e67a2884105de01670df1cb881c231d863fd36a0f8772f649cf385be80"
+    },
+    {
+      "file": "assets/index-DffC82J6.js",
+      "bytes": 36674,
+      "gzipBytes": 7992,
+      "sha256": "504d90a0086178bec3554d085f9af811c896768dac217dae2a5532daac3cfdd2"
+    },
+    {
+      "file": "assets/instance-0uymN3qR.js",
+      "bytes": 4671,
+      "gzipBytes": 1863,
+      "sha256": "38f1b1bea879cc7f27fc8b4b4564db4b811c27ee4a67830a9dbcb327241486bc"
+    },
+    {
+      "file": "assets/issue-DJh9YEZY.js",
+      "bytes": 13103,
+      "gzipBytes": 4433,
+      "sha256": "031f7b4ea329db3d3801ce8345871430ad72f7ec534c6c17797f42bfd95f7e06"
+    },
+    {
+      "file": "assets/manage-BM3Cm9OX.js",
+      "bytes": 10969,
+      "gzipBytes": 2898,
+      "sha256": "e2cfc0a5d5431d4d8a393a2c39f941af8dd8e872291293da9254d48d05794bd2"
+    },
+    {
+      "file": "assets/new-issue--gO1Lvrd.js",
+      "bytes": 16742,
+      "gzipBytes": 5942,
+      "sha256": "2b74b09ee2ced48c10f0b09a59fd5be2cc57f8f1874f7914ed2c3b2671f6f497"
+    },
+    {
+      "file": "assets/overview-bs8iqyO9.js",
+      "bytes": 3709,
+      "gzipBytes": 1666,
+      "sha256": "d13a4e6ea2a45c732fc1b48e65c6f2cf2beb41af892d56da649b980c05f321ad"
+    },
+    {
+      "file": "assets/plugins-admin-C5kE14Rk.js",
+      "bytes": 4085,
+      "gzipBytes": 1811,
+      "sha256": "d5148159fbb07bf88ec7f3e0427e6af16d87ea7647b06f340c49f81e2e3581be"
+    },
+    {
+      "file": "assets/product-BGvJmnUV.js",
+      "bytes": 2399,
+      "gzipBytes": 1137,
+      "sha256": "6e87b474fb77a45742bbca4bb8ee97757e33f432acbce5c04ea45f249cec1962"
+    },
+    {
+      "file": "assets/project-CrOjHFyQ.js",
+      "bytes": 8735,
+      "gzipBytes": 3566,
+      "sha256": "47d4968224f1674d6005e8eb2d530bc2fe56e425fac168372baf2159777c9808"
+    },
+    {
+      "file": "assets/triage-DzSLxnUL.js",
+      "bytes": 4318,
+      "gzipBytes": 1358,
+      "sha256": "de914ae6bdcab0b94de6b522ea4bf9e21b04e6d346a7f5c4cfd85768a9a4461c"
+    },
+    {
+      "file": "assets/ui-Bj0dJpIy.js",
+      "bytes": 62862,
+      "gzipBytes": 15540,
+      "sha256": "a167fcfccb36a6694aef6b4a420fbba53dd3ab899744799d38a4f6dc66aca443"
+    }
+  ]
+}

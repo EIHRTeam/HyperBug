@@ -64,7 +64,7 @@ export function publicRoutes() {
     ),
     telemetry: { request() {} },
     ready: async () => true,
-  }).routes;
+  }).routes.filter((route) => !route.path.startsWith('/auth/assets/'));
 }
 
 function receipt(path: string, method: string): 'none' | 'key' | 'resource' {
@@ -114,7 +114,7 @@ function auth(path: string, method: string) {
   if (
     method === 'GET' &&
     path.startsWith('/api/v1/projects/') &&
-    !/\/(uploads|members)(\/|$)/.test(path)
+    !/\/(uploads|members|audit)(\/|$)/.test(path)
   )
     return 'optional-bearer';
   return 'bearer';

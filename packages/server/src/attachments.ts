@@ -118,7 +118,7 @@ export function createAttachmentMediaHandler(
         headers.set('access-control-allow-origin', origin);
         headers.set(
           'access-control-expose-headers',
-          'content-disposition, content-length, content-range, x-request-id',
+          'content-disposition, content-length, content-range, x-request-id, x-content-type-options, x-hyperbug-preview-type',
         );
       }
       const match =
@@ -206,6 +206,14 @@ export function createAttachmentMediaHandler(
       await permit(request, context, current);
       if (request.signal.aborted) throw new RequestFailure('REQUEST_TIMEOUT');
       headers.set('content-type', 'application/octet-stream');
+      // Download remains forced. Only a released raster can opt into an
+      // explicitly requested browser image preview; active formats never can.
+      if (
+        ['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(
+          file.mediaType,
+        )
+      )
+        headers.set('x-hyperbug-preview-type', file.mediaType);
       headers.set(
         'content-disposition',
         disposition(file.upload.filename, file.id),

@@ -10,6 +10,8 @@ Follow the user's current instructions, applicable repository guidance, and the 
 
 ## Current user-directed suspension
 
+On 2026-10-18 the user requested completing Module 12 and explicitly resumed its audit browsing. The sequencing exception now covers Module 12 and its necessary bounded backend prerequisites (safe preview, redacted audit read, and first-party passkey controls for required administration assurance). G1 remains Not passed, Module 10 Blocked and 13.G6 open. Local verification only; no new hosted load, paid resource, later module, push, merge or PR edit. On 2026-10-19 the user separately authorized committing and pushing the completed Module 12 scope to its existing `feat/v1` upstream. This authorizes that branch push only; no PR creation/edit, merge, hosted deployment/load, paid resource or later-module work.
+
 On 2026-10-13 the user directed completing Module 11 through HANDOFF-11. The sequencing exception now covers 11.2a–e, 11.3a–e and 11.V2–V5 in addition to completed P1. G1 remains Not passed, Module 10 remains Blocked and 13.G6 remains open. Only local verification is authorized; no further P0/hosted traffic, later module, paid resource, staging/production, main, push, merge or PR edit is included.
 
 On 2026-10-13 the user applies the [CPU-measurement decision](evidence/10-p0-mcp-trial.md#user-directed-cpu-measurement-decision--2026-10-13), authorizing one fresh bounded labelled Minimum pilot. Positive sent-request attribution replaces trial7's all-observed-invocations guard. Every harness request retains 10 ms and stops on overflow/failure/missing attribution; other traffic is recorded outside MVP metrics and still consumes account budget. All linked conditions and other scope/gate restrictions remain binding.

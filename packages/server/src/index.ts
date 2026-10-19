@@ -1,4 +1,6 @@
+import { authPasskeyScript } from './auth-passkey-script.ts';
 import { routeLabelFor } from './route-labels.ts';
+import { webWorkflowRoutes } from './route-web-workflows.ts';
 import { searchIssues, type SearchContext } from './search.ts';
 import type { SearchStore, SearchIndexStore } from '@hyperbug/application';
 import { accountsRoutes } from './route-accounts.ts';
@@ -340,6 +342,7 @@ export interface AppOptions {
   accountAdministration?: AccountAdministrationStore | null;
   /** Append-only sink for standalone session, linking and recovery events. */
   auditAppend?: AuditAppend | null;
+  auditRepository?: import('@hyperbug/security').AuditRepository | null;
   /** Reports pending enrollment for readiness; null or failure omits the field. */
   bootstrapState?: (() => Promise<boolean>) | null;
   minimumLoginAdmission?: BoundMinimumLoginAdmission | null;
@@ -468,6 +471,7 @@ export function createApp({
   pluginEventOutbox = null,
   accountAdministration = null,
   auditAppend = null,
+  auditRepository = null,
   bootstrapState = null,
   minimumLoginAdmission,
 }: AppOptions) {
@@ -1052,6 +1056,18 @@ export function createApp({
         readiness,
         instanceDocument,
       }),
+    )
+    .use((app) => webWorkflowRoutes(app, issueContext, auditRepository))
+    .get(
+      '/auth/assets/passkeys.js',
+      () =>
+        new Response(authPasskeyScript, {
+          headers: {
+            'content-type': 'text/javascript; charset=utf-8',
+            'cache-control': 'no-store',
+            'x-content-type-options': 'nosniff',
+          },
+        }),
     )
     .use((app) =>
       accountAdministrationRoutes(app, {
@@ -2604,6 +2620,9 @@ export function createApp({
           : null;
       if (session)
         return authorizeConsentPage({
+          passkeySigninAvailable: passkey !== null,
+          captchaRequired: captchaGate.enabled,
+          captchaSiteKey: publicCaptchaSiteKey,
           query,
           handle: null,
           error: null,
@@ -2616,6 +2635,7 @@ export function createApp({
         captchaSiteKey: publicCaptchaSiteKey,
         error: null,
         passwordSigninAvailable: passwordCapable,
+        passkeySigninAvailable: passkey !== null,
         notice: degradationNotice,
       });
     })
@@ -2693,6 +2713,7 @@ export function createApp({
             captchaSiteKey: publicCaptchaSiteKey,
             error: loginFailure,
             passwordSigninAvailable: passwordCapable,
+            passkeySigninAvailable: passkey !== null,
             notice: degradationNotice,
           });
         }
@@ -2750,6 +2771,7 @@ export function createApp({
             captchaSiteKey: publicCaptchaSiteKey,
             error: 'Sign-in failed. Check your credentials.',
             passwordSigninAvailable: passwordCapable,
+            passkeySigninAvailable: passkey !== null,
             notice: degradationNotice,
           });
         }

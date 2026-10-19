@@ -304,3 +304,121 @@ dialog h2 {
 dialog::backdrop {
   background: rgb(0 0 0 / 50%);
 }
+
+.issue-title {
+  max-width: 32ch;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  overflow-wrap: anywhere;
+}
+.issue-list,
+.timeline {
+  list-style: none;
+  padding: 0;
+  max-width: 52rem;
+}
+.issue-list > li,
+.timeline > li {
+  padding-block: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-block: 2rem;
+}
+.issue-list > li > a {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.issue-meta {
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}
+.minimum-notice {
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.minimum-notice p {
+  max-width: 85ch;
+}
+details {
+  margin-block: 1.5rem;
+  padding-block: 0.75rem;
+  border-block: 1px solid var(--border);
+}
+summary {
+  cursor: pointer;
+  min-height: 2.75rem;
+  font-weight: 600;
+}
+summary:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 4px;
+}
+.markdown {
+  overflow-wrap: anywhere;
+  max-width: 65ch;
+}
+.markdown pre,
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+.markdown table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+.markdown td,
+.markdown th {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+}
+.markdown img {
+  max-width: 100%;
+}
+textarea {
+  resize: vertical;
+}
+:where(input, textarea, select)[aria-invalid='true'] {
+  border: 2px solid #9b2424;
+}
+.checkbox-label {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-block: 0.5rem;
+  font-weight: 400 !important;
+}
+.checkbox-label input,
+.markdown input[type='checkbox'] {
+  width: 1.25rem;
+  min-height: 1.25rem;
+  flex: 0 0 1.25rem;
+  margin-block: 0.4rem;
+  accent-color: var(--primary);
+}
+fieldset {
+  border: 1px solid #6d7a71;
+  padding: 1rem;
+}
+.image-reference {
+  display: block;
+  padding-block: 0.75rem;
+}
+progress {
+  display: block;
+  width: 100%;
+  margin-block: 0.75rem;
+}
+
+/* Reserve observed loading geometry without hiding or clipping content. */
+.project-heading {
+  min-block-size: 2.16em;
+}
+.project-load-status {
+  min-block-size: 1.6em;
+}
+.issue-overview {
+  min-block-size: 32rem;
+}

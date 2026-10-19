@@ -24,6 +24,10 @@ The user applies HANDOFF-11 P0(b): [binding conditions](evidence/10-p0-mcp-trial
 
 After the P0 report the user explicitly continued only11.1a–g/11.V1. The static foundation and React Compiler/oxlint/oxfmt are implemented; actual same-build hosting and zero-owned-resource Pages cleanup are verified. P1 is complete. This overrides the earlier no-SPA instruction only for this scope. G1 remains Not passed, all incomplete Module10 checks remain incomplete, and at that checkpoint later increments were unauthorized. The 2026-10-13 completion decision below extends only Module 11. See [P1 evidence](evidence/11-p1-foundation.md).
 
+## Module 12 continuation (2026-10-18)
+
+The user directs completing Module 12 and explicitly resumes its audit browsing. This supersedes earlier Module 12 exclusion text only for this scope and necessary bounded backend prerequisites. G1 remains Not passed, Module 10 Blocked and 13.G6 open; no hosted load or later-module work is included. The user separately authorized committing and pushing the completed scope to the existing `feat/v1` upstream. All 24 Module 12 items are complete at their recorded local/manual scopes; see the [completion evidence and handoff](evidence/12-completion.md) and [progress](progress/12-web-product-workflows.md).
+
 ## Start here
 
 1. Read [Master progress](PROGRESS.md), [Execution protocol](EXECUTION.md), and the latest progress entry for the next eligible module.

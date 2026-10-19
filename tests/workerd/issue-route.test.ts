@@ -1,3 +1,4 @@
+import { webWorkflowContract } from '../fixtures/web-workflow-contract.ts';
 import { createD1AsyncStore } from '@hyperbug/database-d1';
 import { searchHttpContract } from '../fixtures/search-contract.ts';
 import { createD1SearchIndexStore } from '@hyperbug/database-d1';
@@ -226,6 +227,7 @@ it('delivers the issue lifecycle on workerd/D1', async () => {
     throw new Error('Missing session cookies');
   const staffToken = await tokenFromCookie(staffCookie, 'staff');
   const authorToken = await tokenFromCookie(authorCookie, 'author');
+  await webWorkflowContract(call, staffToken, authorToken);
   const otherToken = await tokenFromCookie(otherCookie, 'other');
   const staffAccount = await call('/api/v1/account', { token: staffToken });
   const staffPrincipalId = (

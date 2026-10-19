@@ -137,6 +137,7 @@ const app = createApp({
   pluginEventOutbox: abuse.pluginEventOutbox,
   accountAdministration: abuse.accountAdministration,
   auditAppend: abuse.auditAppend,
+  auditRepository: abuse.auditRepository,
   passkey,
   oauthClients,
   oauthCodeStore: abuse.oauthCodeStore,

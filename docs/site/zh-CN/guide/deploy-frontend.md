@@ -5,7 +5,7 @@
 **适用读者：** 评估静态前端基础的运维人员。
 **目标：** 独立于 API 托管同一构建，并在不重新构建的情况下替换公开配置。
 
-当前基础提供概览页、账户页和实例能力页，并通过授权服务完成登录。议题工作流仍属于后续增量。通用托管和临时 Pages 预览已连接本地 Node 公开端点验证。后端验收 G1 和发布验收仍未完成；这不是生产发布，也不是完整的后端兼容性矩阵。
+当前基础提供概览页、账户页和实例能力页，并通过授权服务完成登录。模块 12 的议题和工作人员流程已实现，并在 Node/PostgreSQL 和两个 Workers 配置档通过本地浏览器验证。通用托管和临时 Pages 预览已连接本地 Node 公开端点验证。后端验收 G1 和发布验收仍未完成；这不是生产发布，也不是完整的后端兼容性矩阵。
 
 ## 构建与检查
 
@@ -33,7 +33,8 @@ corepack pnpm --filter @hyperbug/web build
   "applicationName": "My HyperBug",
   "apiBaseUrl": "https://api.example.net",
   "authBaseUrl": "https://auth.example.org",
-  "mediaOrigins": ["https://media.example.com"]
+  "mediaOrigins": ["https://media.example.com"],
+  "uploadOrigins": ["https://uploads.example.net"]
 }
 ```
 
@@ -90,3 +91,8 @@ Pages 使用生成的响应头和重定向；没有 Functions 目录。请保留
 ## 参考依据
 
 [静态 Web 计划](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/11-static-web-foundation.md)；[P1 证据](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/evidence/11-p1-foundation.md)；[发布检查清单](https://github.com/EIHRTeam/HyperBug/blob/main/docs/plan/modules/13-mvp-release-and-operations.md)。
+
+
+## 产品上传配置
+
+`uploadOrigins` 是可选公开配置，最多包含 16 个精确 HTTPS 存储源（本地开发可用回环 HTTP）。配置后必须同时重新生成 CSP 响应头。上传源必须独立于前端/API/授权源，不能包含凭据、路径、查询或片段。存储服务需要允许前端的直接 PUT 和 multipart 请求，并暴露 ETag；不要将签名能力 URL 放入运行时配置。未配置上传源时，表单解释上传不可用。`mediaOrigins` 配置隔离下载服务；附件仍需经过处理、放行和访问检查。三个配置档的本地产品上传检查均已通过。Node 使用真实的本地 S3 兼容存储；Workers 使用原生本地 R2 和测试传输端点。这些检查不能证明生产提供商、CORS 策略或扫描服务已通过验收。

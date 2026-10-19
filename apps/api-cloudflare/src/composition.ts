@@ -365,6 +365,7 @@ export function createCloudflareApi(
     pluginEventOutbox,
     accountAdministration,
     auditAppend: auditRepository?.append ?? null,
+    auditRepository,
     bootstrapCode,
     staffEnrollmentStore,
     bootstrapState: staffEnrollmentStore

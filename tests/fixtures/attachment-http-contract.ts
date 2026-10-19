@@ -108,6 +108,7 @@ export async function attachmentHttpContract(options: {
   ).toBe(200);
   expect(anonymous.headers.get('cache-control')).toBe('no-store');
   expect(anonymous.headers.get('x-content-type-options')).toBe('nosniff');
+  expect(anonymous.headers.get('x-hyperbug-preview-type')).toBeNull();
   expect(anonymous.headers.get('content-type')).toBe(
     'application/octet-stream',
   );

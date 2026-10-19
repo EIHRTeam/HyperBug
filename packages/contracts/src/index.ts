@@ -3,6 +3,7 @@ export * from './markdown.ts';
 export * from './uploads.ts';
 export * from './content-definitions.ts';
 export * from './search.ts';
+export * from './web-workflows.ts';
 import { Type, type Static } from '@sinclair/typebox';
 
 export const ErrorSchema = Type.Object(

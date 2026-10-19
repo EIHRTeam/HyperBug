@@ -228,6 +228,189 @@
         "x-cache-policy": "Anonymous GET: public max-age=60 with Vary Origin, Authorization, Cookie; otherwise no-store"
       }
     },
+    "/api/v1/projects/{projectId}/content/preview": {
+      "post": {
+        "operationId": "POST /api/v1/projects/{projectId}/content/preview",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documented result",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewContent"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Closed safe error envelope. Possible status/code depends on the route and global boundary; see API-CONVENTIONS and the error catalog.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 86400
+                },
+                "description": "Only when RATE_LIMITED (429) provides a validated hint."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-authentication": "bearer",
+        "x-rate-limit": "global bounded input/deadline; no additional per-route limiter advertised",
+        "x-replay": "none",
+        "x-route-label": "project.content",
+        "x-permission-policy": "docs/API-OPERATIONS.md; current object/project authorization on every attempt; private invisibility and assurance remain enforced",
+        "x-cache-policy": "no-store",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewContentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/audit": {
+      "get": {
+        "operationId": "GET /api/v1/projects/{projectId}/audit",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "maximum": 100,
+                  "type": "integer"
+                },
+                {
+                  "pattern": "^(?:[1-9][0-9]?|100)$",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 1024,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documented result",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditBrowsePage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Closed safe error envelope. Possible status/code depends on the route and global boundary; see API-CONVENTIONS and the error catalog.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 86400
+                },
+                "description": "Only when RATE_LIMITED (429) provides a validated hint."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-authentication": "bearer",
+        "x-rate-limit": "global bounded input/deadline; no additional per-route limiter advertised",
+        "x-replay": "none",
+        "x-route-label": "project.read",
+        "x-permission-policy": "docs/API-OPERATIONS.md; current object/project authorization on every attempt; private invisibility and assurance remain enforced",
+        "x-cache-policy": "no-store"
+      }
+    },
     "/api/v1/account": {
       "get": {
         "operationId": "GET /api/v1/account",
@@ -9344,6 +9527,121 @@
           }
         }
       },
+      "AuditBrowsePage": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["items", "nextCursor"],
+        "properties": {
+          "items": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "id",
+                "projectId",
+                "actorId",
+                "systemActor",
+                "action",
+                "targetId",
+                "result",
+                "createdAt"
+              ],
+              "properties": {
+                "id": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "projectId": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "actorId": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "format": "uuid",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "systemActor": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "maxLength": 80,
+                      "type": "string"
+                    }
+                  ]
+                },
+                "action": {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                "targetId": {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "result": {
+                  "anyOf": [
+                    {
+                      "const": "success",
+                      "type": "string"
+                    },
+                    {
+                      "const": "failure",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "createdAt": {
+                  "format": "date-time",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "maxLength": 1024,
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      "AuditBrowseQuery": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "limit": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "maximum": 100,
+                "type": "integer"
+              },
+              {
+                "pattern": "^(?:[1-9][0-9]?|100)$",
+                "type": "string"
+              }
+            ]
+          },
+          "after": {
+            "maxLength": 1024,
+            "type": "string"
+          }
+        }
+      },
       "AuthorizeRequest": {
         "additionalProperties": false,
         "type": "object",
@@ -13816,6 +14114,222 @@
             "type": "string"
           },
           "updatedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "PreviewContentRequest": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["body"],
+            "properties": {
+              "body": {
+                "maxLength": 131072,
+                "type": "string"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["formId", "formVersion", "values"],
+            "properties": {
+              "formId": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "formVersion": {
+                "minimum": 1,
+                "maximum": 2147483647,
+                "type": "integer"
+              },
+              "values": {
+                "maxProperties": 64,
+                "type": "object",
+                "patternProperties": {
+                  "^[a-zA-Z0-9_-]{1,80}$": {
+                    "anyOf": [
+                      {
+                        "maxLength": 16384,
+                        "type": "string"
+                      },
+                      {
+                        "maxItems": 64,
+                        "type": "array",
+                        "items": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "maxItems": 64,
+                        "type": "array",
+                        "items": {
+                          "minimum": 0,
+                          "maximum": 63,
+                          "type": "integer"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PreviewContent": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["bodyTree", "contentPolicyVersion"],
+        "properties": {
+          "bodyTree": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["type", "children"],
+            "properties": {
+              "type": {
+                "const": "root",
+                "type": "string"
+              },
+              "children": {
+                "maxItems": 8192,
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": ["type", "value"],
+                      "properties": {
+                        "type": {
+                          "const": "text",
+                          "type": "string"
+                        },
+                        "value": {
+                          "maxLength": 131072,
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": ["type", "tagName", "properties", "children"],
+                      "properties": {
+                        "type": {
+                          "const": "element",
+                          "type": "string"
+                        },
+                        "tagName": {
+                          "maxLength": 16,
+                          "type": "string"
+                        },
+                        "properties": {
+                          "type": "object",
+                          "patternProperties": {
+                            "^(.*)$": {
+                              "anyOf": [
+                                {
+                                  "maxLength": 131072,
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "maxItems": 8,
+                                  "type": "array",
+                                  "items": {
+                                    "maxLength": 64,
+                                    "type": "string"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "children": {
+                          "maxItems": 8192,
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SafeMarkdownNode"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": ["type", "source", "alt", "title"],
+                      "properties": {
+                        "type": {
+                          "const": "image",
+                          "type": "string"
+                        },
+                        "source": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": ["kind", "url"],
+                              "properties": {
+                                "kind": {
+                                  "const": "external",
+                                  "type": "string"
+                                },
+                                "url": {
+                                  "maxLength": 2048,
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": ["kind", "id"],
+                              "properties": {
+                                "kind": {
+                                  "const": "attachment",
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "format": "uuid",
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "alt": {
+                          "maxLength": 131072,
+                          "type": "string"
+                        },
+                        "title": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "maxLength": 131072,
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "contentPolicyVersion": {
+            "maxLength": 80,
             "type": "string"
           }
         }

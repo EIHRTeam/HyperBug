@@ -1,3 +1,6 @@
+import { browserR2Capabilities } from './web-r2-capabilities.ts';
+import { browserUploadAction } from './web-upload-control.ts';
+import { configureWorkerAttachmentScanner } from '../../apps/api-cloudflare/src/attachment-scanner.ts';
 import { passkeyCaptcha } from './passkey-captcha.ts';
 import { configureWorkerUploads } from '../../apps/api-cloudflare/src/uploads.ts';
 import { uploadProof } from './upload-proof.ts';
@@ -61,6 +64,14 @@ const uploads = configureWorkerUploads(
   db,
   env as unknown as Parameters<typeof configureWorkerUploads>[1],
 );
+if (uploads && env.HYPERBUG_TEST_BROWSER_UPLOAD_ENDPOINT) {
+  const selected = JSON.parse(env.HYPERBUG_UPLOAD_STORAGE);
+  uploads.capabilities = browserR2Capabilities(
+    env.HYPERBUG_TEST_BROWSER_UPLOAD_ENDPOINT,
+    selected.bucket,
+    selected.credentials,
+  );
+}
 const captcha =
   env.HYPERBUG_TEST_PASSKEY_CAPTCHA === '1'
     ? passkeyCaptcha('auth.poc.example')
@@ -194,10 +205,13 @@ const app = createApp({
   taxonomyStore: createD1TaxonomyStore(db),
   contentDefinitionStore: createD1ContentDefinitionStore(db),
   attachmentStore: createD1AttachmentStore(db),
-  mediaOrigin: uploads ? 'https://media.poc.invalid' : null,
+  mediaOrigin: uploads
+    ? (env.HYPERBUG_TEST_BROWSER_MEDIA_ORIGIN ?? 'https://media.poc.invalid')
+    : null,
   uploads,
   accountAdministration: createD1AccountAdministration(db),
   auditAppend: createD1AuditRepository(db).append,
+  auditRepository: createD1AuditRepository(db),
   oauthCodeStore: createD1OAuthStores(db),
   keyProvider: env.HYPERBUG_KEY_RING
     ? createWorkerKeyProvider(env.HYPERBUG_KEY_RING, createD1KeyRegistry(db))
@@ -213,6 +227,30 @@ const app = createApp({
         .bind(String(body.id))
         .first<{ id: string; projectId: string; principalId: string }>();
       if (!scope) throw new Error();
+      if (
+        env.HYPERBUG_TEST_BROWSER_UPLOAD_ENDPOINT &&
+        String(body.operation).startsWith('browser-')
+      ) {
+        const query = async (sql: string, values: (string | number)[] = []) =>
+          (
+            await db
+              .prepare(sql)
+              .bind(...values)
+              .all<Record<string, unknown>>()
+          ).results;
+        const scanner = configureWorkerAttachmentScanner(
+          env.HYPERBUG_TEST_BROWSER_SCANNER,
+          env.HYPERBUG_TEST_BROWSER_SCANNER_SECRET,
+        );
+        await browserUploadAction(
+          uploads,
+          query,
+          scanner,
+          scope.id,
+          String(body.operation).slice(8),
+        );
+        return { completed: true };
+      }
       return await uploadProof(
         uploads,
         scope,

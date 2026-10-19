@@ -8,6 +8,12 @@ export const routeLabelRules: readonly {
   readonly infix?: string;
 }[] = [
   {
+    label: 'project.content',
+    methods: ['POST'],
+    prefix: '/api/v1/projects/',
+    infix: '/content/preview',
+  },
+  {
     label: 'account.register',
     methods: ['GET', 'POST'],
     path: '/api/v1/accounts/register',
