@@ -21,18 +21,18 @@ Cloudflare Minimum is the formal third profile under [ADR 0012](../../decisions/
 - [x] **13.1b** Provide self-host packaging/runbooks for Node 24, PostgreSQL 18.x, a tested S3-compatible provider, Graphile Worker, reverse-proxy TLS where used, and graceful worker shutdown.
 - [x] **13.1c** Document independent frontend/backend releases, `config.json`, SPA fallback, preview-to-staging pairing, CSP/header generation, and cache rules for Pages plus a generic static server.
 - [x] **13.1d** Publish the tested S3 provider/version/feature matrix; leave Workers + PostgreSQL/Hyperdrive outside guaranteed profiles unless separately verified.
-- [ ] **13.1e** Provide safe initial-admin setup, account recovery, key provisioning/rotation, plugin trust guidance, resource quotas, and production configuration validation.
+- [x] **13.1e** Provide safe initial-admin setup, account recovery, key provisioning/rotation, plugin trust guidance, resource quotas, and production configuration validation.
 - [ ] **13.1f** Provide the minimum tier's packaging and runbook: Cloudflare Free setup, the tier and acknowledgement configuration, quota budgets and alerting, the no-Logpush observability substitute, SMTP relay configuration, the measured instance ceiling, and the downgrade pre-check that migrates or resets Argon2id password records before the tier is enabled.
 - [x] **13.1g** Publish the tier capability and degradation matrix alongside the tested provider/version matrix (13.1d), including what the tier cannot do, what changes after an upgrade to Workers Paid, and the dated provider facts the tier relies on.
 
 ### Step 13.2 — Rehearse maintenance and recovery
 
-- [ ] **13.2a** Test fresh installation and upgrade from a recorded prior schema/build for both profiles, including a compatible rolling sequence and failed-migration recovery.
-- [ ] **13.2b** Back up and restore database records, blobs, configuration, and required encryption-key versions; verify cross-resource consistency and attachment integrity after restore.
-- [ ] **13.2c** Rehearse application rollback separately from data-schema rollback; use forward fixes/restore for irreversible migrations and document recovery objectives based on the rehearsal.
-- [ ] **13.2d** Exercise key compromise/revocation, role revocation, DLQ replay, search rebuild, retention cleanup, and provider outage procedures.
-- [ ] **13.2e** Publish logs/metrics/traces dashboards or equivalent operator queries, alerts for queue lag/failures/errors, and measured performance/cost baselines.
-- [ ] **13.2f** Update the maintenance guidance with actual commands and operational lessons; remove placeholder instructions that no longer match the implementation.
+- [x] **13.2a** Test fresh installation and upgrade from a recorded prior schema/build for both profiles, including a compatible rolling sequence and failed-migration recovery.
+- [x] **13.2b** Back up and restore database records, blobs, configuration, and required encryption-key versions; verify cross-resource consistency and attachment integrity after restore.
+- [x] **13.2c** Rehearse application rollback separately from data-schema rollback; use forward fixes/restore for irreversible migrations and document recovery objectives based on the rehearsal.
+- [x] **13.2d** Exercise key compromise/revocation, role revocation, DLQ replay, search rebuild, retention cleanup, and provider outage procedures.
+- [x] **13.2e** Publish logs/metrics/traces dashboards or equivalent operator queries, alerts for queue lag/failures/errors, and measured performance/cost baselines.
+- [x] **13.2f** Update the maintenance guidance with actual commands and operational lessons; remove placeholder instructions that no longer match the implementation.
 - [ ] **13.2g** Rehearse operations under the minimum tier's limits (7-day D1 Time Travel, 24-hour message retention, bounded logging, no log export) and record measured recovery objectives and limitations for that tier instead of inheriting the standard-profile objectives.
 
 ### Step 13.3 — Validate and prepare release artifacts

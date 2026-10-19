@@ -10,7 +10,7 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 - Delivery scope: MVP release gate
 - Prerequisites: 12 complete and backend gate 10 remains passing.
 - Implementation started: 2026-10-19, under the user-directed sequencing exception.
-- Completed implementation checklist IDs: 13.1a–d, 13.1g (B1 packaging scope).
+- Completed implementation checklist IDs: 13.1a–e/g, 13.2a–f (B1/B2 local packaging and rehearsal scope).
 - Active/next checklist group: B1 — 13.1a–e and 13.1g; then B2 local rehearsals, B3 Free evidence, B4 final candidate and gate assessment.
 - Last updated: 2026-10-19.
 - Blocking issues discovered: G1 Not passed / Module 10 Blocked. User grants a Module 13 sequencing exception only; global G2 stays Not passed. Staging/publication are unauthorized; 13.G6 requires independent actual-Free evidence.
@@ -20,8 +20,8 @@ Required protocol: [Execution and handoff rules](../EXECUTION.md)
 
 | Step | Purpose | State | Evidence |
 | --- | --- | --- | --- |
-| 13.1 | Package supported deployments | In progress | [B1 packaging](../evidence/13-deployment-packaging.md); e awaits real-store operator proof, f awaits Minimum evidence |
-| 13.2 | Rehearse maintenance and recovery | Not started | None yet |
+| 13.1 | Package supported deployments | In progress | [B1 packaging](../evidence/13-deployment-packaging.md); e verified in B2, f awaits Minimum evidence |
+| 13.2 | Rehearse maintenance and recovery | In progress | [B2 local rehearsal](../evidence/13-maintenance-rehearsal.md); a–f complete, g awaits real-Free evidence |
 | 13.3 | Validate and prepare release artifacts | Not started | None yet |
 
 The linked module plan owns the detailed checkboxes. Update this table as work proceeds and link test reports/decisions rather than duplicating the whole checklist.
@@ -672,3 +672,16 @@ Final closing verification: `corepack pnpm docs:build`, `corepack pnpm scan:secr
 - Blockers/open questions: Actual new registry integration and maintenance recovery await B2; full hosted acceptance remains outside this batch.
 - Next actions: B2 deliberate fresh/upgrade/failure/restore/rollback and operator recovery exercises, then bounded Free evidence.
 - Next-session cautions: No staging/publication/push/PR edit, no backend/contract/migration changes; protected root drafts/handoffs remain untracked. G1 Not passed, Module 10 Blocked, G2 Not passed, 13.G6 open.
+
+
+### 2026-10-19 — B2 local maintenance and recovery
+
+- Scope and checklist IDs: 13.1e and 13.2a–f. All checked at local/documented scope.
+- Progress: Actual PostgreSQL 18.6/SeaweedFS 4.48 and native local D1 coordinated recovery pass; Node shutdown and native Standard/Minimum artifact-slot restoration pass.
+- Change summary: Add meaningful composed recovery fixtures, safe operator-query cost reports and synchronized operations guides. Exercise frozen prior writer/migration failure repair, full resource restore, deliberate data loss and current revocation reconciliation; preserve required pins/audit/history.
+- Files/artifacts: `tests/postgres/operations.test.ts`, `tests/workerd/operations-rollback.test.ts`, paired operations pages, [rehearsal](../evidence/13-maintenance-rehearsal.md), scalar measurements/Worker receipts.
+- Verification: Composed1/1; native rollback/role4/4; PG role1/1; recovery8/8 each adapter; types/lint/scoped format/docs/secrets/whitespace pass. Initial fixture wiring/persistence/WAL/module-root failures are recorded and corrected without backend changes. Tiny measured restore168/269ms and Node drain7–8ms are observations only.
+- Decisions and deviations: Synthetic clean scan labels recovery fixture only. Prior/candidate app bytes are identical because Module13 changes no backend source; rollback proves slot/schema compatibility, not an app-version transition. No inherited production/Free RPO/RTO or billing-cost claim.
+- Blockers/open questions: Real-Free recovery/capacity independent; no local blocker remains.
+- Next actions: B3 inspect authorized Free account/headroom, rehearse only owned provider recovery, disclose missing ceiling/password evidence, clean to zero; B4 final candidate matrix follows.
+- Next-session cautions: Local resources/private files removed; no hosted state altered. Only new Module13 evidence drift is intentional; protected drafts and Module10 state untouched. Keep G1/G2 Not passed, Module10 Blocked, 13.G6 open.

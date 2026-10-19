@@ -1,0 +1,21 @@
+{
+  "v": 1,
+  "tier": "minimum",
+  "scope": "native local workerd/D1; health and metadata compatibility only",
+  "source": "9b78e06 backend source unchanged by Module 13",
+  "entrySha256": "9dab65e262a347076b1620ea19c13ed036272457ae6e992e2b7c7a406674c0a1",
+  "sameSchema": true,
+  "evidence": [
+    {
+      "slot": "candidate",
+      "ready": 200,
+      "instance": 200
+    },
+    {
+      "slot": "restored-prior",
+      "ready": 200,
+      "instance": 200
+    }
+  ],
+  "cleanup": "owned runtimes/private files/state removed in finally"
+}
